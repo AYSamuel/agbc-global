@@ -1,0 +1,46 @@
+# 24 · Phase -1: Accounts, Access, Lead Times, First Week
+
+Everything that must exist BEFORE Phase 0 can run smoothly. Lead times verified 2026-07-13; the long fuses (Meta verification, Nigerian sender ID) are measured in WEEKS and must be lit on day 1. Items marked **ASK AYO** need information or action only Ayo/the church can provide.
+
+## 1. Accounts and lead times
+
+| # | Item | Who | Lead time | Blocks if late |
+|---|------|-----|-----------|----------------|
+| 1 | **Meta Business Manager + business verification** (needs the church LEGAL ENTITY: incorporation/charity registration + matching utility bill) | Church docs + developer | typically 1-3 business days, up to 2 weeks | ALL WhatsApp (OTP channel AND broadcasts). Kick off day 1. **ASK AYO:** which legal entity, who holds its documents |
+| 2 | Twilio account (upgraded) + Verify service; Geo Permissions allowlist (UK/DE/NL/NG), Fraud Guard ON, spend alert | Developer | same day | Phase 2 auth config |
+| 3 | **Twilio Verify WhatsApp channel = bring-your-own sender** (own WABA + own number via Twilio self-signup; Twilio auto-creates the Meta auth templates) | Developer, gated on #1 | ~1 hour AFTER Meta verification clears | WhatsApp-first OTP; SMS fallback carries launch if late |
+| 4 | **Two WhatsApp numbers needed**: a number registers with exactly ONE provider/WABA, so the Verify sender (Twilio) and the broadcast sender (Cloud API) cannot share a number (both can sit under the same verified Meta portfolio) | Church | n/a | **ASK AYO:** two church-owned numbers not currently bound to personal WhatsApp |
+| 5 | **WhatsApp broadcast tier ramp**: unverified = 250 business-initiated conversations/24h; verified = 1,000, scaling to 10k+ only through sustained high-quality usage | Follows #1 | weeks of organic ramp | A 2,000-member blast is impossible at tier 1; fine for Phase 3 only if verification + display-name review complete in month 1 |
+| 6 | **Nigeria SMS sender-ID registration** (NCC pre-registration, submitted via Twilio; may need church letterhead) | Developer | **2-3 weeks** | NG SMS fallback dead at launch (DND already swallows unregistered traffic). Submit day 1. DE/UK need no registration |
+| 7 | **Apple Developer team**: membership current? fee waiver re-confirmed annually by the Account Holder? Ayo = Admin? Confirm last shipped iOS build number | **ASK AYO** | invite same day; lapsed renewal = days | Everything iOS |
+| 8 | **Google Play Console**: add developer user; confirm highest uploaded versionCode (> 19 rule) and the **Play App Signing SHA-256** (needed for assetlinks.json) | **ASK AYO:** account owner | same day | Android release + App Links |
+| 9 | Firebase project + **FCM V1 service account key** into EAS credentials (required for Expo Push on Android; no Firebase SDK in the app) | Developer | same day | Phase 3 push |
+| 10 | **Supabase org access + the region check** (19 §7: a non-EU region flips the whole backend plan; check this literally first) | **ASK AYO:** org owner | same day | Everything backend: this is a decision gate |
+| 11 | **Church website deploy + DNS access** (AASA, assetlinks.json, security.txt on the Astro site; DNS for email SPF/DKIM) | **ASK AYO:** who deploys the site, who holds the registrar | hours once access exists | Universal links, App Links, email sending |
+| 12 | **Transactional email**: Resend (the website already uses it) wired as Supabase Auth custom SMTP; SPF/DKIM on the domain (Supabase's built-in sender is 2 emails/hour, dev-only) | Developer, needs #11 | ~1 day once DNS access exists | Email verification → Payhip restore-purchase (Phase 4) |
+| 13 | Payhip API key + webhook config (no approval process) | **ASK AYO:** Payhip account owner (the pastor?) | same day | Phase 4 entitlements |
+| 14 | Google Cloud project + YouTube Data API key (default 10k units/day is ample) | Developer | same day | Phase 1 Watch |
+| 15 | GitHub org + private repo, Expo/EAS, Vercel, PostHog EU, Sentry, healthchecks.io, UptimeRobot | Developer | same day each | CI, builds, observability. EAS Free covers week 1; plan Starter ($19/mo) at launch |
+
+## 2. Decisions that block the first commit (proposed defaults)
+
+1. **Repo**: private GitHub repo `agbc-global` under a new org (bus factor; see `23`). **ASK AYO:** org vs personal.
+2. **Versions**: Node LTS pinned in `.nvmrc` + `engines`; pnpm pinned via `packageManager`. Corepack is being removed from newer Node distributions: install pnpm standalone.
+3. **Lint/format**: ESLint flat config (`eslint-config-expo` + `next/core-web-vitals` + `typescript-eslint` strict), Prettier with `singleQuote: true`, shared config package.
+4. **apps/mobile internal structure** (satisfies the frontend-bootstrap stages): `app/` = Expo Router routes only, thin files (`(tabs)/home|watch|family|give|more`, `auth/`, `sermon/[id]`, ...); `src/features/<feature>/` (components, hooks, api per feature); `src/components/ui/` (the `05` primitives: Button, Card, GateSheet, Skeleton, EmptyState, Toast...); `src/lib/` (supabase client, analytics, storage); `src/theme/` (re-exports tokens); `src/i18n/`; `src/state/` (Zustand stores incl. gate-return); `assets/fonts/`.
+5. **i18n layout**: `src/i18n/locales/{en,de,nl}/{common,home,watch,family,give,events,auth,settings,errors}.json`; i18next namespaces = filenames; keys mandatory from Phase 1.
+6. **Design tokens as code**: `packages/shared/src/theme/tokens.ts` exporting typed `light`/`dark` objects with the exact `05` values; consumed by BOTH the mobile theme provider and the dashboard Tailwind config so app and dashboard cannot drift.
+7. **Project CLAUDE.md** for the monorepo, containing: the stack + versions; the command list; the app identity block (`com.oami.agbcapp`, versionCode >= 20, existing keystore, `com.olayinkaademiluka.grace-portal`; never regenerate credentials); the **FENCED SUPABASE OBJECTS list** (placeholder until the `19` audit fills it; no migration/policy/GRANT may touch them); conventions (i18n keys only, four data states, guest-first gates, server-trusted writes, tokens only, no em-dashes); the secrets map pointer to `21` §3 / `23`.
+
+## 3. Windows 11 dev machine
+
+Docker Desktop with WSL2 backend (required for `supabase start`; if ports 54321-54329 collide with Hyper-V's reserved ranges, check `netsh int ipv4 show excludedportrange protocol=tcp` and remap in config.toml); Node via nvm-windows; pnpm standalone; Android Studio (bundled JDK, SDK 36, emulator) + the physical Android; `eas-cli`, `supabase` CLI (Scoop), Deno 2.x, GitHub CLI. iPhone: `eas device:create` BEFORE the first dev build, and enable Developer Mode on the phone (Settings > Privacy & Security) or the install will not launch. Optional: Windows Defender exclusions for the repo + Metro cache.
+
+## 4. First-week execution order
+
+- **Day 1: light every long fuse + access audit.** Meta business verification submitted (chase the document holder TODAY); Twilio account + Verify + Geo/Fraud config; NG sender-ID registration submitted; the full ASK-AYO sweep (Apple team, Play console + versionCode + signing SHA-256, Supabase org + REGION CHECK, Payhip owner, website/DNS owner, two WhatsApp numbers); GitHub org + repo; run the `23` §4 bootstrap through the docs-import commit.
+- **Day 2: machine + skeleton.** Dev environment (§3); monorepo scaffold + CLAUDE.md + lint config + empty pr.yml; dev Supabase project (EU); PostHog/Sentry/healthchecks/UptimeRobot accounts.
+- **Day 3: app identity + credentials.** create-expo-app (Router, TS strict); identity values + versionCode 20; fonts + tokens.ts; EAS project + profiles; upload the existing keystore to EAS; Apple signing via EAS; `eas device:create`; kick off both development builds; Firebase project + FCM key into EAS.
+- **Day 4: local backend.** `supabase init` + `supabase start`; begin the `02` schema as migrations against local; seeds skeleton; wire the supabase CI job (migrations + pgTAP) + mobile typecheck/lint/Jest.
+- **Day 5: green exit.** Dev builds installed on both phones with hot reload from Windows; dark/light tokens render; CI fully green on the empty app; buffer for surprises. Week 1 exit = Phase 0 exit minus prod work, which correctly waits for the region decision, the audit, and the rehearsal (`19`).
+- **Still in flight after week 1 (by design):** Meta verification clears (week 2-3) then the Verify WhatsApp sender takes ~1 hour; NG sender ID approval (week 3-4); WhatsApp broadcast display-name review + tier ramp (month 1+). SMS OTP to UK/DE/NL needs no registration, so Phase 2 auth is never blocked; only NG SMS and WhatsApp delivery are.

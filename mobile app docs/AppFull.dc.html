@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="height:100%; --bg:{{ bg }}; --card:{{ card }}; --text:{{ text }}; --sub:{{ sub }}; --muted:{{ muted }}; --border:{{ border }}; --alt:{{ alt }}; --band:{{ band }}; --bandText:{{ bandText }}; --bandSub:{{ bandSub }}; --btnBg:{{ btnBg }}; --btnText:{{ btnText }}; display:flex; flex-direction:column; background:var(--bg); color:var(--text); font-family:'Hanken Grotesk',system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow:hidden">
+
+  <div style="flex:1; overflow:auto; position:relative">
+
+    <!-- SPLASH -->
+    <sc-if value="{{ is.splash }}" hint-placeholder-val="{{ true }}">
+      <div style="height:100%; min-height:760px; background:#0e1420; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px">
+        <div style="width:76px; height:76px; border-radius:22px; background:#ffcf4a; display:grid; place-items:center; margin-bottom:24px"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:38px; color:#14213d">A</span></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; letter-spacing:-0.02em">Amazing Grace</div>
+        <div style="font-size:14px; letter-spacing:0.24em; text-transform:uppercase; color:#ffcf4a; margin-top:8px">Bible Church</div>
+        <div style="font-size:14.5px; color:#9aa6bd; margin-top:26px; max-width:240px; line-height:1.5">One family, many nations</div>
+        <button onClick="{{ go_welcome }}" style="margin-top:40px; background:#ffcf4a; color:#14213d; border:none; border-radius:14px; padding:15px 40px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer">Get started</button>
+      </div>
+    </sc-if>
+
+    <!-- WELCOME -->
+    <sc-if value="{{ is.welcome }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%; min-height:760px; display:flex; flex-direction:column; background:var(--bg)">
+        <div style="flex:1; position:relative; overflow:hidden">
+          <img src="assets/hero.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(14,20,32,0.15),rgba(14,20,32,0.9))"></div>
+          <div style="position:absolute; left:0; right:0; bottom:0; padding:32px 28px; color:#fff">
+            <div style="font-size:11.5px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; color:#ffcf4a">One family, many nations</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:28px; letter-spacing:-0.02em; margin-top:10px; line-height:1.08">A church that feels like home &mdash; wherever you are</div>
+            <div style="font-size:15px; color:#dbe1ec; margin-top:10px; line-height:1.55">Glasgow, Berlin, Emmen and Ogbomosho, united as one family.</div>
+          </div>
+        </div>
+        <div style="padding:22px 28px 34px; background:var(--bg)">
+          <button onClick="{{ go_branch }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer">Get started</button>
+          <button onClick="{{ finishOnboard }}" style="width:100%; background:none; border:none; color:var(--muted); font-weight:700; font-size:13.5px; margin-top:12px; cursor:pointer">I&rsquo;m just looking</button>
+          <div style="text-align:center; font-size:11.5px; color:var(--muted); margin-top:10px">By continuing you accept our <span style="color:#2f6fed; font-weight:700">Terms</span> &middot; <span style="color:#2f6fed; font-weight:700">Privacy Policy</span></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- BRANCH -->
+    <sc-if value="{{ is.branch }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:64px 22px 30px; min-height:760px">
+        <div style="font-size:11.5px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted)">Step 1 of 2</div>
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:28px; letter-spacing:-0.02em; margin:10px 0 4px">Where do you call home?</h1>
+        <p style="font-size:14.5px; color:var(--sub); margin:0 0 22px; line-height:1.5">We&rsquo;ll show your branch&rsquo;s times, events and giving &mdash; you can still explore the whole family.</p>
+        <sc-for list="{{ branches }}" as="b" hint-placeholder-count="4">
+          <button onClick="{{ b.pick }}" style="{{ b.style }}">
+            <div style="display:flex; align-items:center; gap:13px">
+              <div style="width:44px; height:44px; border-radius:12px; background:#14213d; color:#fff; display:grid; place-items:center; flex-shrink:0"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px">{{ b.initial }}</span></div>
+              <div style="text-align:left"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16.5px">{{ b.city }}</div><div style="font-size:13px; color:var(--muted)">{{ b.country }}</div></div>
+            </div>
+            <div style="{{ b.check }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L20 7"></path></svg></div>
+          </button>
+        </sc-for>
+        <button onClick="{{ go_lang }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer; margin-top:8px">Continue</button>
+      </div>
+    </sc-if>
+
+    <!-- LANGUAGE -->
+    <sc-if value="{{ is.lang }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:64px 22px 30px; min-height:760px">
+        <div style="font-size:11.5px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted)">Step 2 of 2</div>
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:28px; letter-spacing:-0.02em; margin:10px 0 22px">Choose your language</h1>
+        <sc-for list="{{ languages }}" as="l" hint-placeholder-count="3">
+          <button onClick="{{ l.pick }}" style="{{ l.style }}"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px">{{ l.label }}</span><div style="{{ l.check }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L20 7"></path></svg></div></button>
+        </sc-for>
+        <button onClick="{{ finishOnboard }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer; margin-top:14px">Continue</button>
+      </div>
+    </sc-if>
+
+    <!-- Onboarding ends here by design (docs 06): no blocking privacy screen (layered notice
+         lives on the welcome screen + Settings) and NO notification permission step. The OS
+         notification prompt fires in context at the first value moment (first "I'm here",
+         first RSVP, or Settings), never during onboarding. -->
+
+    <!-- HOME -->
+    <sc-if value="{{ is.home }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 20px 14px">
+          <div><div style="font-size:13px; color:var(--sub); font-weight:500">{{ greeting }}</div><div style="display:flex; align-items:center; gap:6px"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px; letter-spacing:-0.02em">AGBC {{ branchName }}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="2.4"><path d="M6 9l6 6 6-6"></path></svg></div></div>
+          <div style="display:flex; align-items:center; gap:10px">
+            <button onClick="{{ go_notifcenter }}" style="position:relative; width:40px; height:40px; border-radius:50%; background:var(--alt); border:none; cursor:pointer; display:grid; place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg><span style="position:absolute; top:7px; right:8px; width:8px; height:8px; border-radius:50%; background:#e0342c; border:2px solid var(--card)"></span></button>
+            <button onClick="{{ go_profile }}" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#2f6fed,#14213d); border:none; cursor:pointer; display:grid; place-items:center; color:#fff; font-weight:700">{{ avatarLetter }}</button>
+          </div>
+        </div>
+
+        <div style="margin:0 16px; border-radius:22px; overflow:hidden; position:relative; background:#14213d; color:#fff">
+          <img src="assets/hero.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.32">
+          <div style="position:relative; padding:20px">
+            <div style="font-size:11px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; color:#ffcf4a">This Sunday</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:24px; margin-top:6px">Sunday Service</div>
+            <div style="font-size:14px; color:#dfe6f2; margin-top:6px">10:30am &middot; {{ branchName }}</div>
+            <div style="display:flex; gap:10px; margin-top:16px">
+              <button onClick="{{ tab_more }}" style="flex:1; background:#ffcf4a; color:#14213d; border:none; border-radius:11px; padding:11px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer">Plan a visit</button>
+              <button onClick="{{ tab_watch }}" style="flex:1; background:rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.28); border-radius:11px; padding:11px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer">Watch live</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:16px 16px 4px">
+          <button onClick="{{ tab_give }}" style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:15px 8px; cursor:pointer; font-family:inherit"><div style="width:40px; height:40px; margin:0 auto 7px; border-radius:11px; background:var(--alt); display:grid; place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.9"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg></div><div style="font-size:12.5px; font-weight:700; color:var(--text)">Give</div></button>
+          <button onClick="{{ tab_watch }}" style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:15px 8px; cursor:pointer; font-family:inherit"><div style="width:40px; height:40px; margin:0 auto 7px; border-radius:11px; background:var(--alt); display:grid; place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="1.9"><path d="M8 5v14l11-7z"></path></svg></div><div style="font-size:12.5px; font-weight:700; color:var(--text)">Watch</div></button>
+          <button onClick="{{ tab_family }}" style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:15px 8px; cursor:pointer; font-family:inherit"><div style="width:40px; height:40px; margin:0 auto 7px; border-radius:11px; background:var(--alt); display:grid; place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="#1f8a5b"><path d="M7.5 5C5 6.5 3.5 9 3.5 12.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5z"></path></svg></div><div style="font-size:12.5px; font-weight:700; color:var(--text)">Testify</div></button>
+        </div>
+
+        <div style="margin:16px 16px 0; border-radius:18px; padding:17px 18px; background:linear-gradient(135deg,#fbf3dd,#f5e8ce); border:1px solid #eeddb5">
+          <div style="display:flex; align-items:center; gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"></path><path d="M4 5.5V20"></path></svg><span style="font-size:10.5px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#b98600">Verse of the day</span></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:17px; line-height:1.45; color:#2b2517; margin-top:9px">&ldquo;For I know the plans I have for you, declares the Lord.&rdquo;</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px"><div style="font-size:13px; font-weight:800; color:#7a5b12">Jeremiah 29:11</div><button onClick="{{ toggleVerse }}" style="{{ verseSaveStyle }}">{{ verseSaveLabel }}</button></div>
+        </div>
+
+        <div style="padding:20px 20px 8px; display:flex; align-items:baseline; justify-content:space-between"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:18px">Latest message</div><span onClick="{{ tab_watch }}" style="font-size:13px; font-weight:700; color:#2f6fed; cursor:pointer">See all</span></div>
+        <div onClick="{{ openSermon }}" style="margin:0 16px; background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; cursor:pointer">
+          <div style="position:relative; aspect-ratio:16/9"><img src="assets/hero2.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover"></div>
+          <div style="padding:14px 15px"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">Rooted in Grace</div><div style="font-size:13px; color:var(--sub); margin-top:2px">Pastor Olayinka Ademiluka</div></div>
+        </div>
+        <div style="height:12px"></div>
+      </div>
+    </sc-if>
+
+    <!-- WATCH -->
+    <sc-if value="{{ is.watch }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px">
+        <div style="padding:8px 20px 12px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em">Watch</div>
+        <div onClick="{{ openSermon }}" style="margin:0 16px 8px; border-radius:20px; overflow:hidden; position:relative; aspect-ratio:16/10; cursor:pointer">
+          <img src="assets/hero3.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(14,20,32,0.05) 40%,rgba(14,20,32,0.92))"></div>
+          <div style="position:absolute; top:14px; left:14px; display:flex; align-items:center; gap:6px; background:#e0342c; color:#fff; padding:5px 11px; border-radius:100px; font-size:11.5px; font-weight:800">● LIVE</div>
+          <div style="position:absolute; left:0; right:0; bottom:0; padding:16px 18px; color:#fff"><div style="font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#ffcf4a">HQ &middot; Glasgow</div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px; margin-top:4px">Sunday Service &mdash; Live now</div></div>
+        </div>
+        <div onClick="{{ openSermon }}" style="margin:12px 16px 4px; background:#14213d; color:#fff; border-radius:16px; padding:14px 15px; display:flex; align-items:center; gap:13px; cursor:pointer">
+          <div style="width:44px; height:44px; border-radius:11px; background:#ffcf4a; display:grid; place-items:center; flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="#14213d"><path d="M8 5v14l11-7z"></path></svg></div>
+          <div style="flex:1"><div style="font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#ffcf4a">Continue listening</div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15px; margin-top:2px">Rooted in Grace</div><div style="height:4px; border-radius:2px; background:rgba(255,255,255,0.2); margin-top:8px"><div style="width:42%; height:100%; border-radius:2px; background:#ffcf4a"></div></div></div>
+        </div>
+        <div style="padding:18px 20px 8px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">Recent messages</div>
+        <sc-for list="{{ sermons }}" as="s" hint-placeholder-count="3">
+          <div onClick="{{ openSermon }}" style="margin:0 16px 10px; display:flex; gap:12px; align-items:center; cursor:pointer">
+            <div style="width:120px; aspect-ratio:16/10; border-radius:12px; overflow:hidden; flex-shrink:0; position:relative"><img src="{{ s.img }}" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover"></div>
+            <div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15px; line-height:1.2">{{ s.title }}</div><div style="font-size:12.5px; color:var(--sub); margin-top:4px">{{ s.meta }}</div></div>
+          </div>
+        </sc-for>
+        <div style="height:12px"></div>
+      </div>
+    </sc-if>
+
+    <!-- PLAYER -->
+    <sc-if value="{{ is.player }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; background:#0e1420; color:#fff; padding:52px 0 20px; display:flex; flex-direction:column">
+        <div style="padding:6px 18px 4px"><button onClick="{{ tab_watch }}" style="background:rgba(255,255,255,0.1); border:none; color:#fff; width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button></div>
+        <div style="margin:14px 18px 0; border-radius:20px; overflow:hidden; position:relative; aspect-ratio:16/9"><img src="assets/hero2.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover"><div style="position:absolute; inset:0; background:rgba(14,20,32,0.3); display:grid; place-items:center"><div style="width:64px; height:64px; border-radius:50%; background:#ffcf4a; display:grid; place-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="#14213d"><path d="M8 5v14l11-7z"></path></svg></div></div></div>
+        <div style="padding:22px 20px 0"><div style="font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#ffcf4a">HQ &middot; Glasgow</div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:23px; margin-top:8px">Rooted in Grace</div><div style="font-size:13.5px; color:#9aa6bd; margin-top:4px">Pastor Olayinka Ademiluka &middot; Sun 6 Jul</div></div>
+        <div style="padding:22px 20px 0"><div style="height:5px; border-radius:3px; background:rgba(255,255,255,0.16)"><div style="width:42%; height:100%; border-radius:3px; background:#ffcf4a"></div></div><div style="display:flex; justify-content:space-between; font-size:11.5px; color:#9aa6bd; margin-top:7px"><span>21:40</span><span>-16:20</span></div></div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:26px; padding:18px 0 6px"><span style="font-size:13px; font-weight:700; color:#9aa6bd">15</span><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M6 6h3v12H6zM11 12l9-6v12z"></path></svg><div style="width:64px; height:64px; border-radius:50%; background:#ffcf4a; display:grid; place-items:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg></div><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M18 6h-3v12h3zM13 12L4 6v12z"></path></svg><span style="font-size:13px; font-weight:700; color:#9aa6bd">15</span></div>
+        <div style="display:flex; gap:10px; padding:16px 20px 0"><div style="flex:1; background:rgba(255,255,255,0.1); border-radius:12px; padding:12px; text-align:center; font-size:13px; font-weight:700">🎧 Audio</div><div style="flex:1; background:rgba(255,255,255,0.1); border-radius:12px; padding:12px; text-align:center; font-size:13px; font-weight:700">⤓ Download</div><div style="flex:1; background:rgba(255,255,255,0.1); border-radius:12px; padding:12px; text-align:center; font-size:13px; font-weight:700">Notes</div></div>
+        <div style="margin:16px 20px 0; font-size:12.5px; color:#9aa6bd; text-align:center; line-height:1.5">Plays in the background &amp; on your lock screen.</div>
+      </div>
+    </sc-if>
+
+    <!-- GIVE -->
+    <sc-if value="{{ is.give }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 22px 20px; min-height:760px">
+        <div style="padding:6px 0 12px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em">Give</div>
+        <div style="border-radius:20px; overflow:hidden; position:relative; aspect-ratio:16/9; margin-bottom:18px"><img src="assets/generosity.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover"><div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(14,20,32,0.1),rgba(14,20,32,0.8))"></div><div style="position:absolute; left:0; right:0; bottom:0; padding:18px; color:#fff"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px">Cheerful giving</div></div></div>
+        <p style="font-size:14.5px; color:var(--sub); line-height:1.55; margin:0 0 18px">Thank you for partnering with the ministry. Giving opens in our secure page &mdash; card, PayPal or bank transfer.</p>
+        <button onClick="{{ giveNow }}" style="width:100%; background:#ffcf4a; color:#14213d; border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer">Give now</button>
+        <div style="text-align:center; font-size:12px; color:var(--muted); margin-top:12px">Opens agbc.org/give &middot; secured checkout</div>
+      </div>
+    </sc-if>
+
+    <!-- GIVE THANKS -->
+    <sc-if value="{{ is.givethanks }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:64px 30px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center">
+        <div style="width:88px; height:88px; border-radius:50%; background:#fff4d6; display:grid; place-items:center; margin-bottom:24px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:25px; letter-spacing:-0.02em">Thank you for giving</div>
+        <div style="font-size:15px; color:var(--sub); margin-top:12px; line-height:1.55; max-width:270px">Your gift opens in our secure checkout. Every seed blesses the whole family.</div>
+        <button onClick="{{ tab_home }}" style="margin-top:30px; background:#ffcf4a; color:#14213d; border:none; border-radius:14px; padding:15px 36px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Back to home</button>
+      </div>
+    </sc-if>
+
+    <!-- FAMILY -->
+    <sc-if value="{{ is.family }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px">
+        <div style="padding:6px 20px 4px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em">The Family</div>
+        <div style="font-size:13.5px; color:var(--sub); padding:0 20px 14px">What God is doing across every nation</div>
+        <div style="margin:0 16px 16px; background:var(--alt); border-radius:13px; padding:4px; display:flex">
+          <button onClick="{{ fam_feed }}" style="{{ segFeed }}">Testimonies</button>
+          <button onClick="{{ fam_prayer }}" style="{{ segPrayer }}">Prayer</button>
+          <button onClick="{{ fam_map }}" style="{{ segMap }}">Map</button>
+        </div>
+        <sc-if value="{{ fam.feed }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0 16px 12px"><div style="display:inline-flex; background:var(--alt); border-radius:100px; padding:3px"><button onClick="{{ scope_all }}" style="{{ scopeAll }}">Everywhere</button><button onClick="{{ scope_branch }}" style="{{ scopeBranch }}">My branch</button></div></div>
+            <sc-for list="{{ feedItems }}" as="t" hint-placeholder-count="2">
+              <div style="margin:0 16px 12px; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px">
+                <div onClick="{{ t.onOpen }}" style="display:flex; align-items:center; gap:10px; margin-bottom:10px; cursor:pointer"><div style="{{ t.avatarStyle }}">{{ t.avatar }}</div><div><div style="font-weight:700; font-size:14px">{{ t.name }}</div><div style="font-size:11.5px; color:var(--muted)">{{ t.place }} &middot; {{ t.ago }}</div></div></div>
+                <div onClick="{{ t.onOpen }}" style="font-size:15px; line-height:1.5; color:var(--text); cursor:pointer">{{ t.text }}</div>
+                <div style="display:flex; align-items:center; gap:14px; margin-top:14px"><button onClick="{{ t.onGlory }}" style="{{ t.gloryStyle }}">{{ t.gloryLabel }}</button><span onClick="{{ t.onShare }}" style="font-size:13px; font-weight:700; color:var(--sub); cursor:pointer">Share</span></div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ feedEmpty }}" hint-placeholder-val="{{ false }}"><div style="margin:0 16px; background:var(--card); border:1px dashed var(--border); border-radius:18px; padding:28px 20px; text-align:center"><div style="font-size:26px; margin-bottom:6px">🙌</div><div style="font-size:14px; line-height:1.55; color:var(--muted)">No testimonies from AGBC {{ branchName }} yet. Be the first to share.</div></div></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ fam.prayer }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div onClick="{{ openPrayer }}" style="margin:0 16px 12px; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; cursor:pointer"><div style="font-size:15px; line-height:1.5; color:var(--text)">Please pray for my mother&rsquo;s health &mdash; surgery this Friday in Emmen.</div><div style="font-size:12px; color:var(--muted); margin-top:8px">Grace &middot; AGBC Emmen</div><div style="display:flex; align-items:center; gap:12px; margin-top:14px"><button onClick="{{ toggleStand }}" style="{{ standBtn }}">🙏 {{ standLabel }} &middot; {{ standCount }}</button></div></div>
+            <div style="margin:0 16px 12px; background:#eaf3ec; border:1px solid #cfe6d6; border-radius:18px; padding:18px"><div style="display:flex; align-items:center; gap:7px; margin-bottom:6px"><span style="font-size:10.5px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#1f8a5b; background:#d6efdd; padding:3px 8px; border-radius:100px">Answered 🎉</span></div><div style="font-size:15px; line-height:1.5; color:#22402f">&ldquo;You prayed with me for a job &mdash; I start Monday!&rdquo;</div><div style="font-size:12px; color:#3f7256; margin-top:12px">Samuel &middot; Ogbomosho</div></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ fam.map }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:0 16px"><div style="border-radius:18px; overflow:hidden; position:relative; background:#0e1420; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center"><div style="position:absolute; inset:0; opacity:0.28; background:radial-gradient(circle at 30% 34%, #2f6fed 0 2px, transparent 3px), radial-gradient(circle at 52% 30%, #ffcf4a 0 2px, transparent 3px), radial-gradient(circle at 55% 62%, #1f8a5b 0 2px, transparent 3px)"></div><div style="position:relative; text-align:center; color:#fff; padding:28px"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px">4 nations</div><div style="font-size:13.5px; color:#9aa6bd; margin-top:6px">Glasgow &middot; Berlin &middot; Emmen &middot; Ogbomosho</div><div style="margin-top:16px; display:inline-block; background:#ffcf4a; color:#14213d; font-weight:700; font-size:12.5px; padding:8px 16px; border-radius:100px">312 testimonies this year</div></div></div></div>
+        </sc-if>
+        <div style="padding:18px 16px 8px"><button onClick="{{ famFabTap }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:15px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">＋ {{ famFabLabel }}</button></div>
+      </div>
+    </sc-if>
+
+    <!-- TESTIMONY DETAIL -->
+    <sc-if value="{{ is.testimony }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 18px 4px"><button onClick="{{ tab_family }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button></div>
+        <div style="padding:16px 22px 0">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px"><div style="width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#2f6fed,#14213d); color:#fff; display:grid; place-items:center; font-weight:700; font-size:17px">A</div><div><div style="font-weight:700; font-size:15.5px">Ada N.</div><div style="font-size:12.5px; color:var(--muted)">AGBC Berlin &middot; 2 hours ago</div></div></div>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="#ffcf4a"><path d="M7.5 5C5 6.5 3.5 9 3.5 12.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5zM17 5c-2.5 1.5-4 4-4 7.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5z"></path></svg>
+          <div style="font-size:18px; line-height:1.55; color:var(--text); margin-top:10px; font-weight:500">I came to AGBC as a stranger, far from home. Within weeks this family surrounded me with prayer. God restored my marriage and gave me hope I thought was gone.</div>
+          <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px"><button onClick="{{ toggleGlory }}" style="{{ gloryBtnLg }}">🙌 Glory to God</button><div style="font-size:14px; font-weight:700; color:var(--sub)">{{ gloryCount }} across 4 nations</div></div>
+          <button onClick="{{ shareWa }}" style="width:100%; margin-top:14px; background:#eaf3ec; color:#1f8a5b; border:none; border-radius:13px; padding:14px; font-weight:800; font-size:14.5px; font-family:inherit; cursor:pointer">Share to WhatsApp</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- PRAYER DETAIL -->
+    <sc-if value="{{ is.prayer }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 18px 4px"><button onClick="{{ tab_family }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button></div>
+        <div style="padding:16px 22px 0">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px"><div style="width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#1f8a5b,#0e1420); color:#fff; display:grid; place-items:center; font-weight:700; font-size:17px">G</div><div><div style="font-weight:700; font-size:15.5px">Grace</div><div style="font-size:12.5px; color:var(--muted)">AGBC Emmen &middot; 4 hours ago</div></div></div>
+          <div style="font-size:18px; line-height:1.55; color:var(--text); font-weight:500">Please pray for my mother&rsquo;s health &mdash; she has surgery this Friday in Emmen. Believing God for a full recovery.</div>
+          <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px"><button onClick="{{ toggleStand }}" style="{{ standBtnLg }}">🙏 {{ standLabel }}</button><div style="font-size:14px; font-weight:700; color:var(--sub)">{{ standCount }} standing with Grace</div></div>
+          <button onClick="{{ shareWa }}" style="width:100%; margin-top:14px; background:#eaf3ec; color:#1f8a5b; border:none; border-radius:13px; padding:14px; font-weight:800; font-size:14.5px; font-family:inherit; cursor:pointer">Share to WhatsApp</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- COMPOSE -->
+    <sc-if value="{{ is.compose }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 20px; display:flex; flex-direction:column">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_family }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">{{ composeTitle }}</div></div>
+        <div style="padding:16px 20px 0; flex:1; display:flex; flex-direction:column">
+          <div style="font-size:13.5px; color:var(--sub); line-height:1.5; margin-bottom:12px">{{ composePrompt }}</div>
+          <textarea onInput="{{ onComposeInput }}" placeholder="{{ composePh }}" style="width:100%; min-height:170px; resize:none; border:1px solid var(--border); border-radius:16px; padding:16px; font-family:inherit; font-size:15.5px; line-height:1.55; color:var(--text); background:var(--card); box-sizing:border-box; outline:none"></textarea>
+          <div style="flex:1; min-height:14px"></div>
+          <!-- Docs 09: mandatory consent before submission (Art. 9 explicit consent) + moderation notice. -->
+          <div style="display:flex; gap:11px; align-items:flex-start; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:13px 15px; margin-bottom:12px">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1f8a5b" stroke-width="2" style="flex-shrink:0; margin-top:1px"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"></path><path d="M9 12l2 2 4-4"></path></svg>
+            <div style="font-size:12.5px; color:var(--sub); line-height:1.5">By sharing, you agree this is shown <b>publicly to the church family worldwide</b>. A leader reviews it before it appears.</div>
+          </div>
+          <button onClick="{{ submitCompose }}" style="{{ composeSubmitStyle }}">{{ composeCta }}</button>
+          <div style="text-align:center; font-size:12px; color:var(--muted); margin-top:12px">{{ composeFoot }}</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- POSTED -->
+    <sc-if value="{{ is.posted }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:64px 30px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center">
+        <div style="width:88px; height:88px; border-radius:50%; background:#eaf3ec; display:grid; place-items:center; margin-bottom:24px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1f8a5b" stroke-width="2.4"><path d="M5 12l5 5L20 7"></path></svg></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:25px; letter-spacing:-0.02em">{{ postedTitle }}</div>
+        <div style="font-size:15px; color:var(--sub); margin-top:12px; line-height:1.55; max-width:260px">{{ postedBody }}</div>
+        <button onClick="{{ tab_family }}" style="margin-top:30px; background:#ffcf4a; color:#14213d; border:none; border-radius:14px; padding:15px 36px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Back to the family</button>
+      </div>
+    </sc-if>
+
+    <!-- AUTH GATE -->
+    <sc-if value="{{ is.gate }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; background:#0e1420; color:#fff; padding:64px 24px 30px; display:flex; flex-direction:column">
+        <button onClick="{{ tab_family }}" style="background:rgba(255,255,255,0.1); border:none; color:#fff; width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px; align-self:flex-start">&times;</button>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center">
+          <div style="width:64px; height:64px; border-radius:18px; background:#ffcf4a; display:grid; place-items:center; margin-bottom:22px"><svg width="30" height="30" viewBox="0 0 24 24" fill="#14213d"><path d="M7.5 5C5 6.5 3.5 9 3.5 12.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5zM17 5c-2.5 1.5-4 4-4 7.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5z"></path></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em; line-height:1.1">Join the family to share &amp; react</div>
+          <div style="font-size:14.5px; color:#9aa6bd; margin-top:12px; line-height:1.55">Browsing is open to everyone. To post or give glory, sign in &mdash; it takes seconds.</div>
+          <div style="margin-top:28px; display:flex; flex-direction:column; gap:11px">
+            <button onClick="{{ go_otp }}" style="width:100%; background:#ffcf4a; color:#14213d; border:none; border-radius:13px; padding:15px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Continue with phone</button>
+            <!-- Docs 03: phone-OTP is the only v1 sign-in; Google/Apple are post-v1 options. -->
+            <div style="text-align:center; font-size:12px; color:#9aa6bd">Phone number + one-time code. No passwords.</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- OTP -->
+    <sc-if value="{{ is.otp }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:64px 24px 30px; display:flex; flex-direction:column">
+        <button onClick="{{ go_gate }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px; align-self:flex-start">&larr;</button>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em; margin-top:24px">Enter the code</div>
+        <div style="font-size:14.5px; color:var(--sub); margin-top:8px">Code sent via <b>WhatsApp</b> to your number.</div>
+        <div style="display:flex; gap:9px; margin-top:26px; justify-content:space-between"><div style="{{ otpBox }}">4</div><div style="{{ otpBox }}">2</div><div style="{{ otpBox }}">9</div><div style="{{ otpBoxEmpty }}"></div><div style="{{ otpBoxEmpty }}"></div><div style="{{ otpBoxEmpty }}"></div></div>
+        <button onClick="{{ verify }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer; margin-top:28px">Verify &amp; continue</button>
+        <div style="text-align:center; font-size:13px; color:var(--muted); margin-top:16px">Resend in 0:24 &middot; <span style="color:#2f6fed; font-weight:700">Send by SMS instead</span> &middot; <span style="color:#2f6fed; font-weight:700">Change number</span></div>
+      </div>
+    </sc-if>
+
+    <!-- NOTIFICATION CENTER -->
+    <sc-if value="{{ is.notifcenter }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_home }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Notifications</div></div>
+        <sc-for list="{{ notices }}" as="n" hint-placeholder-count="4">
+          <div onClick="{{ n.tap }}" style="margin:12px 16px 0; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:15px 16px; display:flex; gap:13px; align-items:flex-start; cursor:pointer">
+            <div style="width:40px; height:40px; border-radius:11px; background:var(--alt); display:grid; place-items:center; font-size:18px; flex-shrink:0">{{ n.icon }}</div>
+            <div style="flex:1"><div style="font-weight:700; font-size:14px; color:var(--text)">{{ n.title }}</div><div style="font-size:12.5px; color:var(--sub); margin-top:2px; line-height:1.4">{{ n.body }}</div><div style="font-size:11.5px; color:var(--muted); margin-top:5px">{{ n.ago }}</div></div>
+          </div>
+        </sc-for>
+        <div style="height:16px"></div>
+      </div>
+    </sc-if>
+
+    <!-- MORE -->
+    <sc-if value="{{ is.more }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 20px 14px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px; letter-spacing:-0.02em">More</div>
+        <div style="margin:0 16px 16px; background:#0e1420; color:#fff; border-radius:18px; padding:20px">
+          <div style="display:flex; align-items:center; justify-content:space-between"><div style="font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#ffcf4a">Your rhythm</div><span style="font-size:12.5px; color:#9aa6bd">this season</span></div>
+          <div style="display:flex; align-items:baseline; gap:8px; margin-top:10px"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:34px">12</span><span style="font-size:14px; color:#c7d0e0">Sundays &middot; 30 days in the Word</span></div>
+        </div>
+        <sc-for list="{{ moreItems }}" as="m" hint-placeholder-count="8">
+          <div onClick="{{ m.tap }}" style="margin:0 16px; padding:15px 4px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; cursor:pointer"><div style="width:38px; height:38px; border-radius:11px; background:var(--alt); display:grid; place-items:center; font-size:17px">{{ m.icon }}</div><div style="flex:1; font-weight:600; font-size:15px">{{ m.label }}</div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- PROFILE -->
+    <sc-if value="{{ is.profile }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_home }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Profile</div></div>
+        <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex; flex-direction:column; align-items:center; padding:24px 20px 10px"><div style="width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg,#2f6fed,#14213d); color:#fff; display:grid; place-items:center; font-weight:700; font-size:34px; font-family:'Bricolage Grotesque',sans-serif">J</div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px; margin-top:12px">Joshua A.</div><div style="font-size:13px; color:var(--muted)">AGBC Glasgow &middot; Member since 2024</div></div>
+            <div style="margin:14px 16px 0; background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden">
+              <div onClick="{{ go_myposts }}" style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border); cursor:pointer"><span style="font-weight:600; font-size:14.5px">My posts</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></div>
+              <div onClick="{{ tab_give }}" style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border); cursor:pointer"><span style="font-weight:600; font-size:14.5px">Giving history</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></div>
+              <div onClick="{{ go_settings }}" style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; cursor:pointer"><span style="font-weight:600; font-size:14.5px">Settings</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:40px 24px; text-align:center"><div style="width:72px; height:72px; border-radius:50%; background:var(--alt); display:grid; place-items:center; margin:0 auto 18px"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px">You&rsquo;re browsing as a guest</div><div style="font-size:14px; color:var(--sub); margin-top:8px; line-height:1.5">Sign in to post, give glory and track your rhythm.</div><button onClick="{{ go_gate }}" style="margin-top:22px; background:var(--btnBg); color:var(--btnText); border:none; border-radius:13px; padding:14px 32px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Sign in</button></div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- SETTINGS -->
+    <sc-if value="{{ is.settings }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 30px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Settings</div></div>
+
+        <div style="padding:22px 20px 10px"><div style="font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted)">Appearance</div></div>
+        <div style="margin:0 16px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px"><div style="display:flex; align-items:center; gap:11px"><div style="width:38px; height:38px; border-radius:11px; background:var(--alt); display:grid; place-items:center">{{ themeIcon }}</div><div><div style="font-weight:600; font-size:14.5px">Theme</div><div style="font-size:12px; color:var(--muted); margin-top:2px">{{ themeLabel }}</div></div></div></div>
+          <div style="display:flex; gap:8px; background:var(--alt); border-radius:12px; padding:4px">
+            <button onClick="{{ setLight }}" style="{{ lightSeg }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"></path></svg> Light</button>
+            <button onClick="{{ setDark }}" style="{{ darkSeg }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg> Dark</button>
+          </div>
+        </div>
+
+        <div style="padding:22px 20px 10px"><div style="font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted)">Preferences</div></div>
+        <div style="margin:0 16px; background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden">
+          <div onClick="{{ go_language }}" style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border); cursor:pointer"><span style="font-weight:600; font-size:14.5px">Language</span><span style="font-size:13px; color:var(--muted); display:flex; align-items:center; gap:6px">{{ langLabel }} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+          <div onClick="{{ go_notifset }}" style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border); cursor:pointer"><span style="font-weight:600; font-size:14.5px">Notifications</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></div>
+          <div onClick="{{ go_privacy }}" style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; cursor:pointer"><span style="font-weight:600; font-size:14.5px">Privacy</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg></div>
+        </div>
+
+        <div style="padding:22px 20px 10px"><div style="font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted)">Account</div></div>
+        <div style="margin:0 16px; display:flex; flex-direction:column; gap:10px">
+          <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}"><button onClick="{{ signOut }}" style="width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:14px; padding:15px; font-weight:700; font-size:15px; font-family:inherit; cursor:pointer">Sign out</button></sc-if>
+          <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}"><button onClick="{{ go_gate }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:15px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Sign in</button></sc-if>
+          <button onClick="{{ go_delete }}" style="width:100%; background:none; border:none; color:#c0392b; font-weight:700; font-size:14px; padding:8px; cursor:pointer; font-family:inherit">Delete account</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- LANGUAGE SETTINGS -->
+    <sc-if value="{{ is.langset }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 22px 20px; min-height:760px">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px"><button onClick="{{ go_settings }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Language</div></div>
+        <sc-for list="{{ languages }}" as="l" hint-placeholder-count="3"><button onClick="{{ l.pickStay }}" style="{{ l.style }}"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px">{{ l.label }}</span><div style="{{ l.check }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L20 7"></path></svg></div></button></sc-for>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:8px">App language changes now. Devotional &amp; Bible plan are English in v1.</div>
+      </div>
+    </sc-if>
+
+    <!-- NOTIF SETTINGS -->
+    <sc-if value="{{ is.notifset }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 30px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ go_settings }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Notifications</div></div>
+        <div style="padding:22px 20px 10px"><div style="font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted)">Your branch &middot; AGBC {{ branchName }}</div></div>
+        <div style="margin:0 16px; background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border)"><div><div style="font-weight:600; font-size:14.5px">Service reminders</div><div style="font-size:12px; color:var(--muted); margin-top:2px">Sunday &amp; midweek</div></div><button onClick="{{ toggleService }}" style="{{ swService }}"><span style="{{ swServiceKnob }}"></span></button></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border)"><div><div style="font-weight:600; font-size:14.5px">Local events</div><div style="font-size:12px; color:var(--muted); margin-top:2px">What&rsquo;s on at your branch</div></div><button onClick="{{ toggleEvents }}" style="{{ swEvents }}"><span style="{{ swEventsKnob }}"></span></button></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px"><div><div style="font-weight:600; font-size:14.5px">New testimonies</div><div style="font-size:12px; color:var(--muted); margin-top:2px">When your branch shares</div></div><button onClick="{{ toggleTest }}" style="{{ swTest }}"><span style="{{ swTestKnob }}"></span></button></div>
+        </div>
+        <div style="padding:26px 20px 10px"><div style="font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#b98600">Whole ministry</div></div>
+        <div style="margin:0 16px; background:linear-gradient(135deg,#fff6de,#ffedc2); border:1px solid #f2dfa8; border-radius:18px; padding:16px; display:flex; align-items:center; gap:13px"><div style="flex:1"><div style="font-weight:700; font-size:14.5px; color:#2b2517">Global gatherings &amp; all-family prayer</div><div style="font-size:12.5px; color:#7a5b12; margin-top:3px; line-height:1.45">Everyone across all four nations.</div></div><div style="background:#1f8a5b; color:#fff; font-size:10.5px; font-weight:800; padding:6px 11px; border-radius:100px; flex-shrink:0">ALWAYS ON</div></div>
+      </div>
+    </sc-if>
+
+    <!-- PRIVACY -->
+    <sc-if value="{{ is.privacy }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 22px 20px; min-height:760px">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px"><button onClick="{{ go_settings }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Privacy</div></div>
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--border)"><div style="max-width:70%"><div style="font-weight:600; font-size:14.5px">Show my name on testimonies</div><div style="font-size:12px; color:var(--muted); margin-top:2px">Off = posted as &ldquo;Anonymous&rdquo;</div></div><button onClick="{{ togglePrivName }}" style="{{ swName }}"><span style="{{ swNameKnob }}"></span></button></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 16px"><div style="max-width:70%"><div style="font-weight:600; font-size:14.5px">Analytics</div><div style="font-size:12px; color:var(--muted); margin-top:2px">Help us improve the app</div></div><button onClick="{{ togglePrivAnalytics }}" style="{{ swAnalytics }}"><span style="{{ swAnalyticsKnob }}"></span></button></div>
+        </div>
+        <button onClick="{{ noop }}" style="width:100%; margin-top:14px; background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:14px; padding:15px; font-weight:700; font-size:14.5px; font-family:inherit; cursor:pointer">Export my data</button>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:14px">Read our full Privacy Policy &amp; Terms in the ministry&rsquo;s website.</div>
+      </div>
+    </sc-if>
+
+    <!-- DELETE ACCOUNT -->
+    <sc-if value="{{ is.delete }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 24px 20px; min-height:760px; display:flex; flex-direction:column">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px"><button onClick="{{ go_settings }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Delete account</div></div>
+        <div style="width:80px; height:80px; border-radius:24px; background:#fdecea; display:grid; place-items:center; margin:12px auto 20px"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="1.8"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px; text-align:center">This can&rsquo;t be undone</div>
+        <p style="font-size:14.5px; color:var(--sub); line-height:1.6; text-align:center; margin:12px 0 0">Your profile, saved items and posts will be permanently removed. Testimonies already shared stay, but are anonymised.</p>
+        <div style="flex:1"></div>
+        <button onClick="{{ confirmDelete }}" style="width:100%; background:#c0392b; color:#fff; border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Delete my account</button>
+        <button onClick="{{ go_settings }}" style="width:100%; background:none; border:none; color:var(--muted); font-weight:700; font-size:14px; margin-top:12px; cursor:pointer; font-family:inherit">Keep my account</button>
+      </div>
+    </sc-if>
+
+    <!-- COMING SOON -->
+    <sc-if value="{{ is.soon }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 20px; display:flex; flex-direction:column">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">{{ soonLabel }}</div></div>
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px"><div style="width:80px; height:80px; border-radius:24px; background:var(--alt); display:grid; place-items:center; margin-bottom:20px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px">Coming next</div><div style="font-size:14px; color:var(--muted); margin-top:10px; max-width:250px; line-height:1.55">{{ soonLabel }} is fully mapped &mdash; building it in the next pass.</div></div>
+      </div>
+    </sc-if>
+
+    <!-- ACADEMY LIST -->
+    <sc-if value="{{ is.academy }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Grace Academy</div></div>
+        <div style="padding:14px 20px 4px; font-size:13.5px; color:var(--sub); line-height:1.5">A discipleship pathway &mdash; from foundations to deeper training.</div>
+        <sc-for list="{{ courses }}" as="co" hint-placeholder-count="3">
+          <div onClick="{{ co.open }}" style="margin:14px 16px 0; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; cursor:pointer; display:flex; align-items:center; gap:14px">
+            <div style="width:52px; height:52px; border-radius:14px; background:#14213d; color:#ffcf4a; display:grid; place-items:center; flex-shrink:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:20px">{{ co.level }}</div>
+            <div style="flex:1"><div style="font-size:10.5px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#b98600">{{ co.tag }}</div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16.5px; margin-top:2px">{{ co.name }}</div><div style="font-size:12.5px; color:var(--muted); margin-top:2px">{{ co.meta }}</div></div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><path d="M9 6l6 6-6 6"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- COURSE DETAIL -->
+    <sc-if value="{{ is.course }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 20px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ go_academy }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button></div>
+        <div style="padding:16px 22px 0">
+          <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#b98600">Level {{ courseLevel }} &middot; {{ courseTag }}</div>
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:27px; letter-spacing:-0.02em; margin:8px 0 0">{{ courseName }}</h1>
+          <div style="display:flex; gap:16px; margin-top:14px; font-size:12.5px; color:var(--sub)"><span>📅 6 weeks</span><span>🎥 In person &amp; online</span><span>🎁 Free</span></div>
+          <p style="font-size:15px; line-height:1.65; color:var(--text); margin:18px 0 0">A guided journey into the heart of grace. Weekly teaching, discussion and practice &mdash; walk it out with others on the same road.</p>
+          <div style="margin-top:22px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">What you&rsquo;ll cover</div>
+          <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; gap:12px; align-items:center"><div style="width:28px; height:28px; border-radius:8px; background:var(--alt); display:grid; place-items:center; font-weight:800; font-size:13px; color:#b98600; flex-shrink:0">1</div><span style="font-size:14.5px">Grace vs. performance</span></div>
+            <div style="display:flex; gap:12px; align-items:center"><div style="width:28px; height:28px; border-radius:8px; background:var(--alt); display:grid; place-items:center; font-weight:800; font-size:13px; color:#b98600; flex-shrink:0">2</div><span style="font-size:14.5px">Identity in Christ</span></div>
+            <div style="display:flex; gap:12px; align-items:center"><div style="width:28px; height:28px; border-radius:8px; background:var(--alt); display:grid; place-items:center; font-weight:800; font-size:13px; color:#b98600; flex-shrink:0">3</div><span style="font-size:14.5px">Living from rest</span></div>
+          </div>
+          <button onClick="{{ go_register }}" style="width:100%; margin-top:26px; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer">Register for {{ courseName }}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- REGISTER -->
+    <sc-if value="{{ is.register }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 20px; display:flex; flex-direction:column">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ go_course }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Register</div></div>
+        <div style="padding:16px 20px 0; flex:1; display:flex; flex-direction:column">
+          <div style="font-size:14px; color:var(--sub); margin-bottom:16px">Reserve your place in <b style="color:var(--text)">{{ courseName }}</b>.</div>
+          <div style="font-size:12.5px; font-weight:700; color:var(--muted); margin-bottom:8px">Which format?</div>
+          <div style="display:flex; gap:10px; margin-bottom:18px">
+            <button onClick="{{ pickInPerson }}" style="{{ segInPerson }}">In person</button>
+            <button onClick="{{ pickOnline }}" style="{{ segOnline }}">Online</button>
+          </div>
+          <input placeholder="Full name" style="width:100%; box-sizing:border-box; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:13px; padding:15px; font-size:15px; font-family:inherit; margin-bottom:11px; outline:none">
+          <input placeholder="Email" style="width:100%; box-sizing:border-box; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:13px; padding:15px; font-size:15px; font-family:inherit; margin-bottom:11px; outline:none">
+          <div style="flex:1; min-height:12px"></div>
+          <button onClick="{{ submitRegister }}" style="width:100%; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:pointer">Confirm registration</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- REGISTER DONE -->
+    <sc-if value="{{ is.regdone }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:64px 30px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center">
+        <div style="width:88px; height:88px; border-radius:50%; background:#eaf3ec; display:grid; place-items:center; margin-bottom:24px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1f8a5b" stroke-width="2.4"><path d="M5 12l5 5L20 7"></path></svg></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:25px; letter-spacing:-0.02em">You&rsquo;re registered!</div>
+        <div style="font-size:15px; color:var(--sub); margin-top:12px; line-height:1.55; max-width:260px">We&rsquo;ll email the schedule for {{ courseName }}. See you there.</div>
+        <button onClick="{{ go_academy }}" style="margin-top:30px; background:#ffcf4a; color:#14213d; border:none; border-radius:14px; padding:15px 36px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Back to Academy</button>
+      </div>
+    </sc-if>
+
+    <!-- EVENTS -->
+    <sc-if value="{{ is.events }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 20px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Events</div></div>
+        <sc-for list="{{ eventsList }}" as="e" hint-placeholder-count="3">
+          <div onClick="{{ e.open }}" style="margin:14px 16px 0; background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; cursor:pointer">
+            <div style="position:relative; aspect-ratio:16/9"><img src="{{ e.img }}" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover"><div style="position:absolute; left:12px; top:12px; background:rgba(20,33,61,0.78); color:#fff; padding:6px 12px; border-radius:100px; font-size:12px; font-weight:800">{{ e.date }}</div></div>
+            <div style="padding:15px 16px"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">{{ e.title }}</div><div style="font-size:13px; color:var(--sub); margin-top:3px">{{ e.meta }}</div></div>
+          </div>
+        </sc-for>
+        <div style="height:16px"></div>
+      </div>
+    </sc-if>
+
+    <!-- EVENT DETAIL -->
+    <sc-if value="{{ is.eventdetail }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:0 0 20px">
+        <div style="position:relative; aspect-ratio:16/11"><img src="{{ evImg }}" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover"><div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(14,20,32,0.25),rgba(14,20,32,0.55))"></div><button onClick="{{ go_events }}" style="position:absolute; top:50px; left:18px; background:rgba(0,0,0,0.4); border:none; color:#fff; width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="position:absolute; left:0; right:0; bottom:0; padding:18px 20px; color:#fff"><div style="font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#ffcf4a">{{ evDate }}</div><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:24px; margin-top:4px">{{ evTitle }}</div></div></div>
+        <div style="padding:20px 22px 0">
+          <div style="display:flex; gap:16px; font-size:13px; color:var(--sub); margin-bottom:16px"><span>🕗 {{ evMeta }}</span></div>
+          <p style="font-size:15px; line-height:1.65; color:var(--text); margin:0">Come as you are. Whether in the building or joining online, there&rsquo;s a place for you and your whole household. Invite a friend.</p>
+          <div style="display:flex; gap:10px; margin-top:22px">
+            <button onClick="{{ go_rsvp }}" style="flex:1; background:var(--btnBg); color:var(--btnText); border:none; border-radius:13px; padding:15px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">RSVP</button>
+            <button onClick="{{ shareWa }}" style="flex:1; background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:13px; padding:15px; font-weight:700; font-size:15px; font-family:inherit; cursor:pointer">Share</button>
+          </div>
+          <button onClick="{{ noop }}" style="width:100%; margin-top:10px; background:none; border:none; color:#2f6fed; font-weight:700; font-size:14px; padding:8px; cursor:pointer; font-family:inherit">Add to calendar &middot; Get directions</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- RSVP DONE -->
+    <sc-if value="{{ is.rsvpdone }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:64px 30px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center">
+        <div style="width:88px; height:88px; border-radius:50%; background:#eaf3ec; display:grid; place-items:center; margin-bottom:24px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1f8a5b" stroke-width="2.4"><path d="M5 12l5 5L20 7"></path></svg></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:25px; letter-spacing:-0.02em">You&rsquo;re going!</div>
+        <div style="font-size:15px; color:var(--sub); margin-top:12px; line-height:1.55; max-width:260px">We&rsquo;ve saved your RSVP for {{ evTitle }}. A reminder will land the day before.</div>
+        <button onClick="{{ go_events }}" style="margin-top:30px; background:#ffcf4a; color:#14213d; border:none; border-radius:14px; padding:15px 36px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">Back to Events</button>
+      </div>
+    </sc-if>
+
+    <!-- DEVOTIONAL -->
+    <sc-if value="{{ is.devotional }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 30px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Devotional</div></div>
+        <div style="padding:18px 22px 0">
+          <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#b98600">Today &middot; Day 30</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:25px; letter-spacing:-0.02em; margin-top:8px; line-height:1.12">Grace that carries you</div>
+          <div style="margin-top:16px; background:linear-gradient(135deg,#fbf3dd,#f5e8ce); border:1px solid #eeddb5; border-radius:16px; padding:16px"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px; line-height:1.45; color:#2b2517">&ldquo;My grace is sufficient for you, for my power is made perfect in weakness.&rdquo;</div><div style="font-size:12.5px; font-weight:800; color:#7a5b12; margin-top:10px">2 Corinthians 12:9</div></div>
+          <div style="font-size:15.5px; line-height:1.7; color:var(--text); margin-top:18px">There are seasons when your own strength runs out &mdash; and that is exactly where grace begins. Paul did not pray for a lighter load; he discovered a greater supply.</div>
+          <div style="font-size:15.5px; line-height:1.7; color:var(--text); margin-top:14px">Today, name the thing you cannot carry. Then hand it over. Grace is not a reward for the strong; it is a gift for the honest.</div>
+          <button onClick="{{ markRead }}" style="width:100%; margin-top:22px; background:var(--btnBg); color:var(--btnText); border:none; border-radius:14px; padding:15px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer">{{ devReadLabel }}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- LIBRARY -->
+    <sc-if value="{{ is.library }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:52px 0 30px; min-height:760px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">Library &amp; Bookstore</div></div>
+        <div style="padding:16px 20px 6px; font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted)">Saved verses</div>
+        <sc-if value="{{ verseSaved }}" hint-placeholder-val="{{ false }}"><div style="margin:0 16px; border-radius:16px; padding:16px 18px; background:linear-gradient(135deg,#fbf3dd,#f5e8ce); border:1px solid #eeddb5"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:16px; line-height:1.45; color:#2b2517">&ldquo;For I know the plans I have for you, declares the Lord.&rdquo;</div><div style="font-size:12.5px; font-weight:800; color:#7a5b12; margin-top:9px">Jeremiah 29:11</div></div></sc-if>
+        <sc-if value="{{ noSavedVerse }}" hint-placeholder-val="{{ true }}"><div style="margin:0 16px; background:var(--card); border:1px dashed var(--border); border-radius:16px; padding:24px 20px; text-align:center; color:var(--muted); font-size:14px; line-height:1.55">No saved verses yet. Tap <strong>Save</strong> on the verse of the day.</div></sc-if>
+        <div style="padding:24px 20px 6px; font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted)">Bookstore</div>
+        <div onClick="{{ go_bookreader }}" style="margin:0 16px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; align-items:center; gap:13px; cursor:pointer"><div style="width:46px; height:60px; border-radius:6px; background:linear-gradient(135deg,#14213d,#2f6fed); flex-shrink:0"></div><div style="flex:1"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px">Word Devotional</div><div style="font-size:12.5px; color:var(--muted); margin-top:2px">Pastor Olayinka Ademiluka &middot; Owned</div></div><span style="font-size:12.5px; font-weight:800; color:#1f8a5b">Read &rarr;</span></div>
+      </div>
+    </sc-if>
+
+    <!-- BOOK READER -->
+    <sc-if value="{{ is.bookreader }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 30px; background:var(--card)">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ go_library }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-size:12.5px; color:var(--muted); font-weight:700">Word Devotional &middot; Ch. 1</div></div>
+        <div style="padding:24px 26px 0"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:24px; letter-spacing:-0.02em">The Root of Grace</div><div style="font-size:16px; line-height:1.8; color:var(--text); margin-top:18px">Grace is not merely unmerited favour &mdash; it is the very power of God at work in the willing heart. Before you did anything right, you were already loved.</div><div style="font-size:16px; line-height:1.8; color:var(--text); margin-top:16px">This book is an invitation to stop striving and start receiving. Each chapter closes with a short reflection and a prayer.</div></div>
+      </div>
+    </sc-if>
+
+    <!-- MY RHYTHM -->
+    <sc-if value="{{ is.rhythm }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 30px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ tab_more }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">My Rhythm</div></div>
+        <div style="margin:14px 16px 0; background:#0e1420; color:#fff; border-radius:20px; padding:22px; text-align:center">
+          <div style="font-size:44px">🔥</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:34px; margin-top:6px">30-day streak</div>
+          <div style="font-size:13.5px; color:#9aa6bd; margin-top:4px">Longest yet &mdash; keep it going!</div>
+          <button onClick="{{ checkIn }}" style="margin-top:16px; background:#ffcf4a; color:#14213d; border:none; border-radius:12px; padding:12px 28px; font-weight:800; font-size:14px; font-family:inherit; cursor:pointer">{{ checkInLabel }}</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 16px 0">
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px">12</div><div style="font-size:12.5px; color:var(--muted); margin-top:2px">Sundays attended</div></div>
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px"><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:26px">30</div><div style="font-size:12.5px; color:var(--muted); margin-top:2px">Days in the Word</div></div>
+        </div>
+        <div style="padding:22px 20px 8px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">Milestones</div>
+        <div style="display:flex; gap:12px; padding:0 16px; overflow-x:auto">
+          <div style="flex:none; width:96px; text-align:center; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 8px"><div style="font-size:30px">🌱</div><div style="font-size:11.5px; font-weight:700; margin-top:6px">First month</div></div>
+          <div style="flex:none; width:96px; text-align:center; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 8px"><div style="font-size:30px">🙌</div><div style="font-size:11.5px; font-weight:700; margin-top:6px">First testimony</div></div>
+          <div style="flex:none; width:96px; text-align:center; background:var(--card); border:1px dashed var(--border); border-radius:16px; padding:16px 8px; opacity:0.55"><div style="font-size:30px">🏆</div><div style="font-size:11.5px; font-weight:700; margin-top:6px">100 days</div></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- MY POSTS -->
+    <sc-if value="{{ is.myposts }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:760px; padding:52px 0 20px">
+        <div style="padding:6px 18px 4px; display:flex; align-items:center; gap:12px"><button onClick="{{ go_profile }}" style="background:var(--alt); border:none; color:var(--text); width:38px; height:38px; border-radius:11px; cursor:pointer; font-size:18px">&larr;</button><div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.02em">My posts</div></div>
+        <sc-if value="{{ postDeleted }}" hint-placeholder-val="{{ false }}"><div style="margin:16px; background:var(--card); border:1px dashed var(--border); border-radius:16px; padding:28px 20px; text-align:center; color:var(--muted); font-size:14px; line-height:1.55">You have no posts yet.<br>Share a testimony from the Family tab.</div></sc-if>
+        <sc-if value="{{ postLive }}" hint-placeholder-val="{{ true }}">
+          <div style="margin:14px 16px 0; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px"><span style="font-size:10.5px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:#1f8a5b; background:#eaf3ec; padding:3px 9px; border-radius:100px">Live</span><span style="font-size:11.5px; color:var(--muted)">2 days ago</span></div>
+            <div style="font-size:15px; line-height:1.5; color:var(--text)">&ldquo;God restored my family and gave me a peace I can&rsquo;t explain. To Him be the glory.&rdquo;</div>
+            <div style="display:flex; gap:10px; margin-top:14px"><button onClick="{{ editPost }}" style="flex:1; background:var(--alt); border:none; color:var(--text); border-radius:11px; padding:11px; font-weight:700; font-size:13.5px; font-family:inherit; cursor:pointer">Edit</button><button onClick="{{ deletePost }}" style="flex:1; background:none; border:1px solid #e6b8b2; color:#c0392b; border-radius:11px; padding:11px; font-weight:700; font-size:13.5px; font-family:inherit; cursor:pointer">Delete</button></div>
+          </div>
+          <div style="margin:12px 16px 0; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px"><div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px"><span style="font-size:10.5px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:#b98600; background:#fdf0cf; padding:3px 9px; border-radius:100px">In review</span><span style="font-size:11.5px; color:var(--muted)">3 hours ago</span></div><div style="font-size:15px; line-height:1.5; color:var(--text)">&ldquo;Believing God for my studies this year &mdash; thank you for standing with me.&rdquo;</div></div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <!-- TAB BAR -->
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+    <div style="background:var(--card); border-top:1px solid var(--border); padding:9px 8px 30px; display:grid; grid-template-columns:repeat(5,1fr)">
+      <button onClick="{{ tab_home }}" style="{{ tabHome }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path></svg><span style="font-size:10.5px; font-weight:700; margin-top:3px">Home</span></button>
+      <button onClick="{{ tab_watch }}" style="{{ tabWatch }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="15" rx="3"></rect><path d="M10 9l5 2.5-5 2.5z" fill="currentColor" stroke="none"></path></svg><span style="font-size:10.5px; font-weight:700; margin-top:3px">Watch</span></button>
+      <button onClick="{{ tab_give }}" style="{{ tabGive }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg><span style="font-size:10.5px; font-weight:700; margin-top:3px">Give</span></button>
+      <button onClick="{{ tab_family }}" style="{{ tabFamily }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 5.2a3.2 3.2 0 0 1 0 5.6M21.5 20a6.5 6.5 0 0 0-4-6"></path></svg><span style="font-size:10.5px; font-weight:700; margin-top:3px">Family</span></button>
+      <button onClick="{{ tab_more }}" style="{{ tabMore }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg><span style="font-size:10.5px; font-weight:700; margin-top:3px">More</span></button>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:402,&quot;height&quot;:874}}">
+class Component extends DCLogic {
+  seed(props) {
+    const base = { screen:'splash', ob:0, branch:'glasgow', lang:'en', theme:'light',
+      signedIn:false, tab:'home', fam:'feed', gloried:false, stood:false, scope:'everywhere',
+      verseSaved:false, composeKind:'testimony', composeText:'', soonLabel:'',
+      notifs:{ service:true, events:true, testimonies:false }, priv:{ name:true, analytics:true },
+      regFormat:'inperson', devRead:false, checkedIn:false, postDeleted:false, courseId:'reset' };
+    if (props && props.member) return { ...base, screen:'home', signedIn:true, verseSaved:true };
+    if (props && props.start === 'home') return { ...base, screen:'home' };
+    if (props && props.theme) return { ...base, theme: props.theme };
+    return base;
+  }
+  constructor(props) { super(props); this.state = this.seed(props); }
+  go(s) { this.setState({ screen: s }); }
+  componentDidUpdate(prev) {
+    if (prev && prev.resetToken !== this.props.resetToken) this.setState(this.seed(this.props));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const T = {
+      light: { bg:'#fbf8f3', card:'#ffffff', text:'#14213d', sub:'#546077', muted:'#8a7f6a', border:'#e8e0d0', alt:'#f0ece3', band:'#0e1420', bandText:'#ffffff', bandSub:'#9aa6bd', btnBg:'#14213d', btnText:'#ffffff' },
+      dark:  { bg:'#0e1420', card:'#18212f', text:'#eef2f8', sub:'#aab4c6', muted:'#7c8698', border:'#28323f', alt:'#141d2a', band:'#1c2739', bandText:'#ffffff', bandSub:'#9aa6bd', btnBg:'#ffcf4a', btnText:'#14213d' }
+    };
+    const c = T[s.theme] || T.light;
+
+    const branchNames = { glasgow:'Glasgow', berlin:'Berlin', emmen:'Emmen', ogbomosho:'Ogbomosho' };
+    const branchName = branchNames[s.branch] || 'Glasgow';
+    const langNames = { en:'English', de:'Deutsch', nl:'Nederlands' };
+    const mainScreens = ['home','watch','give','family','more'];
+    const showTabs = mainScreens.includes(s.screen);
+
+    const gloryCount = 312 + (s.gloried ? 1 : 0);
+    const standCount = 47 + (s.stood ? 1 : 0);
+
+    const allT = [
+      { name:'Grace M.', bid:'glasgow', place:'AGBC Glasgow', ago:'1d ago', avatar:'G', grad:'#b98600,#14213d', text:'God broke ten years of anxiety off my life. For the first time I sleep in peace.', glory:64, i:false },
+      { name:'Ada N.', bid:'berlin', place:'AGBC Berlin', ago:'2h ago', avatar:'A', grad:'#2f6fed,#14213d', text:'I came as a stranger and left with a family. God restored my marriage and my hope.', i:true },
+      { name:'Samuel O.', bid:'ogbomosho', place:'Miracle Center Ogbomosho', ago:'5h ago', avatar:'S', grad:'#1f8a5b,#0e1420', text:'After months without work, God opened a door I never expected. He is faithful!', glory:128, i:false }
+    ];
+    const shownT = s.scope==='branch' ? allT.filter(t=>t.bid===s.branch) : allT;
+    const feedItems = shownT.map(t => {
+      const g = t.i ? gloryCount : t.glory; const on = t.i && s.gloried;
+      return { name:t.name, place:t.place, ago:t.ago, avatar:t.avatar, text:'\u201c'+t.text+'\u201d',
+        avatarStyle:'width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,'+t.grad+'); color:#fff; display:grid; place-items:center; font-weight:700; font-size:14px',
+        gloryLabel:'\uD83D\uDE4C Glory to God \u00b7 '+g,
+        gloryStyle:'background:'+(on?'#fff4d6':c.alt)+'; border:1px solid '+(on?'#ffcf4a':c.border)+'; border-radius:100px; padding:8px 14px; font-weight:700; font-size:12.5px; font-family:inherit; cursor:pointer; color:'+(on?'#8a6a12':c.sub),
+        onGlory:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); if(t.i){ if(!s.signedIn){this.go('gate');return;} this.setState({gloried:!s.gloried}); } },
+        onOpen:()=>this.go('testimony'), onShare:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); } };
+    });
+    const feedEmpty = shownT.length===0;
+    const scopePill = (a)=>'background:'+(a?c.btnBg:'transparent')+'; color:'+(a?c.btnText:c.muted)+'; border:none; border-radius:100px; padding:7px 15px; font-weight:700; font-size:12.5px; font-family:inherit; cursor:pointer';
+
+    const nz = s.notifs;
+    const sw = (on)=>'width:46px; height:27px; border-radius:100px; border:none; cursor:pointer; padding:0; position:relative; flex-shrink:0; background:'+(on?'#1f8a5b':'#c9c0ac');
+    const knob = (on)=>'position:absolute; top:3px; left:'+(on?'22px':'3px')+'; width:21px; height:21px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.25)';
+    const pv = s.priv;
+
+    const verseSaveStyle = 'background:'+(s.verseSaved?'#14213d':'rgba(255,255,255,0.72)')+'; color:'+(s.verseSaved?'#fff':'#7a5b12')+'; border:1px solid '+(s.verseSaved?'#14213d':'#e6d3a4')+'; border-radius:100px; padding:6px 15px; font-weight:700; font-size:12px; font-family:inherit; cursor:pointer';
+
+    const isPrayer = s.composeKind === 'prayer';
+    const composeReady = (s.composeText||'').trim().length >= 8;
+    const composeSubmitStyle = 'width:100%; background:'+(composeReady?c.btnBg:c.border)+'; color:'+(composeReady?c.btnText:c.muted)+'; border:none; border-radius:14px; padding:16px; font-weight:800; font-size:15.5px; font-family:inherit; cursor:'+(composeReady?'pointer':'default');
+
+    const initials = { glasgow:'GL', berlin:'BE', emmen:'EM', ogbomosho:'OG' };
+    const countries = { glasgow:'Scotland, UK', berlin:'Germany', emmen:'Netherlands', ogbomosho:'Nigeria' };
+    const branches = Object.keys(branchNames).map(id => ({
+      id, city: branchNames[id]==='Ogbomosho'?'Miracle Center':'AGBC '+branchNames[id], country:countries[id], initial:initials[id],
+      pick:()=>this.setState({branch:id}),
+      style:'width:100%; display:flex; align-items:center; justify-content:space-between; background:'+c.card+'; border:2px solid '+(s.branch===id?'#14213d':c.border)+'; border-radius:15px; padding:13px 15px; margin-bottom:11px; cursor:pointer; font-family:inherit; color:'+c.text,
+      check:'width:26px; height:26px; border-radius:50%; background:'+(s.branch===id?'#14213d':c.border)+'; display:grid; place-items:center' }));
+    const languages = [{id:'en',label:'English'},{id:'de',label:'Deutsch'},{id:'nl',label:'Nederlands'}].map(l=>({
+      ...l, pick:()=>this.setState({lang:l.id}), pickStay:()=>this.setState({lang:l.id}),
+      style:'width:100%; display:flex; align-items:center; justify-content:space-between; background:'+c.card+'; border:2px solid '+(s.lang===l.id?'#14213d':c.border)+'; border-radius:15px; padding:16px; margin-bottom:11px; cursor:pointer; font-family:inherit; color:'+c.text,
+      check:'width:26px; height:26px; border-radius:50%; background:'+(s.lang===l.id?'#14213d':c.border)+'; display:grid; place-items:center' }));
+
+    const sermons = [
+      { title:'The God Who Sees', meta:'29 Jun \u00b7 41 min', img:'assets/hero3.jpg' },
+      { title:'Faith Over Fear', meta:'22 Jun \u00b7 37 min', img:'assets/hero4.jpg' },
+      { title:'Sent Into Every Sector', meta:'15 Jun \u00b7 44 min', img:'assets/hero5.jpg' }
+    ];
+    const notices = [
+      { icon:'\uD83D\uDD34', title:'AGBC HQ is live now', body:'Sunday Service has started \u2014 join the stream.', ago:'2 min ago', tap:()=>this.go('player') },
+      { icon:'\uD83D\uDE4C', title:'New testimony from Berlin', body:'Ada N. shared what God has done.', ago:'2 hours ago', tap:()=>this.go('testimony') },
+      { icon:'\uD83D\uDE4F', title:'A prayer needs you', body:'Grace asked the family to stand with her.', ago:'4 hours ago', tap:()=>this.go('prayer') },
+      { icon:'\u2728', title:'All-Family Prayer Night', body:'Friday 8pm \u2014 every branch, online.', ago:'Yesterday', tap:()=>this.setState({soonLabel:'Events',screen:'soon'}) }
+    ];
+    const moreItems = [
+      { icon:'\uD83D\uDD25', label:'My rhythm & milestones', tap:()=>this.go('rhythm') },
+      { icon:'\uD83C\uDF93', label:'Grace Academy', tap:()=>this.go('academy') },
+      { icon:'\uD83D\uDCD6', label:'Daily devotional', tap:()=>this.go('devotional') },
+      { icon:'\uD83D\uDCC5', label:'Events', tap:()=>this.go('events') },
+      { icon:'\uD83D\uDCDA', label:'My Library & Bookstore', tap:()=>this.go('library') },
+      { icon:'\uD83D\uDCCD', label:'Branch info & service times', tap:()=>this.setState({soonLabel:'Branch info',screen:'soon'}) },
+      { icon:'\uD83D\uDC64', label:'Profile', tap:()=>this.go('profile') },
+      { icon:'\u2699\uFE0F', label:'Settings', tap:()=>this.go('settings') }
+    ];
+    const courseNames = { reset:'Grace Reset', masterclass:'Grace Masterclass', further:'Further Levels' };
+    const courseMeta = { reset:{level:'01',tag:'Foundations'}, masterclass:{level:'02',tag:'Deeper training'}, further:{level:'+',tag:'The journey continues'} };
+    const courses = [
+      { id:'reset', level:'01', tag:'Foundations', name:'Grace Reset', meta:'6 weeks \u00b7 Start here', open:()=>this.setState({courseId:'reset',screen:'course'}) },
+      { id:'masterclass', level:'02', tag:'Deeper training', name:'Grace Masterclass', meta:'8 weeks \u00b7 Prerequisite: Reset', open:()=>this.setState({courseId:'masterclass',screen:'course'}) },
+      { id:'further', level:'+', tag:'Coming', name:'Further Levels', meta:'The journey continues', open:()=>this.setState({courseId:'further',screen:'course'}) }
+    ];
+    const evData = [
+      { id:'prayer', title:'All-Family Prayer Night', date:'FRI 12 JUL', meta:'8:00pm \u00b7 Online \u00b7 every branch', img:'assets/hero4.jpg' },
+      { id:'conf', title:'Grace Conference 2026', date:'SAT 20 SEP', meta:'Glasgow HQ \u00b7 in person & streamed', img:'assets/hero.jpg' },
+      { id:'baptism', title:'Baptism Sunday', date:'SUN 05 OCT', meta:'Your branch \u00b7 register with a leader', img:'assets/hero5.jpg' }
+    ];
+    const eventsList = evData.map(e => ({ ...e, open:()=>this.setState({eventId:e.id,screen:'eventdetail'}) }));
+    const ev = evData.find(e=>e.id===s.eventId) || evData[0];
+    const regSeg = (a)=>'flex:1; background:'+(a?c.btnBg:c.card)+'; color:'+(a?c.btnText:c.text)+'; border:1px solid '+(a?c.btnBg:c.border)+'; border-radius:12px; padding:13px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer';
+
+    const tabStyle = (a)=>'display:flex; flex-direction:column; align-items:center; background:none; border:none; cursor:pointer; font-family:inherit; padding:2px 0; color:'+(a?'#2f6fed':c.muted);
+    const seg = (a)=>'flex:1; background:'+(a?c.card:'transparent')+'; border:none; border-radius:10px; padding:9px; font-weight:700; font-size:13px; font-family:inherit; cursor:pointer; color:'+(a?c.text:c.muted)+'; box-shadow:'+(a?'0 1px 3px rgba(0,0,0,0.08)':'none');
+    const otpBox = (f)=>'flex:1; aspect-ratio:1; max-width:48px; border-radius:12px; border:2px solid '+(f?'#2f6fed':c.border)+'; display:grid; place-items:center; font-family:\'Bricolage Grotesque\',sans-serif; font-weight:800; font-size:22px; color:'+c.text;
+    const themeSeg = (a)=>'flex:1; display:flex; align-items:center; justify-content:center; gap:7px; background:'+(a?c.card:'transparent')+'; border:none; border-radius:9px; padding:10px; font-weight:700; font-size:13.5px; font-family:inherit; cursor:pointer; color:'+(a?c.text:c.muted)+'; box-shadow:'+(a?'0 1px 3px rgba(0,0,0,0.10)':'none');
+
+    return {
+      ...c,
+      is: { splash:s.screen==='splash', welcome:s.screen==='welcome', branch:s.screen==='branch', lang:s.screen==='lang',
+        consent:s.screen==='consent', notif:s.screen==='notif', home:s.screen==='home', watch:s.screen==='watch',
+        player:s.screen==='player', give:s.screen==='give', givethanks:s.screen==='givethanks', family:s.screen==='family',
+        testimony:s.screen==='testimony', prayer:s.screen==='prayer', compose:s.screen==='compose', posted:s.screen==='posted',
+        gate:s.screen==='gate', otp:s.screen==='otp', notifcenter:s.screen==='notifcenter', more:s.screen==='more',
+        profile:s.screen==='profile', settings:s.screen==='settings', langset:s.screen==='langset', notifset:s.screen==='notifset',
+        privacy:s.screen==='privacy', delete:s.screen==='delete', soon:s.screen==='soon',
+        academy:s.screen==='academy', course:s.screen==='course', register:s.screen==='register', regdone:s.screen==='regdone',
+        events:s.screen==='events', eventdetail:s.screen==='eventdetail', rsvpdone:s.screen==='rsvpdone',
+        devotional:s.screen==='devotional', library:s.screen==='library', bookreader:s.screen==='bookreader',
+        rhythm:s.screen==='rhythm', myposts:s.screen==='myposts' },
+      fam: { feed:s.fam==='feed', prayer:s.fam==='prayer', map:s.fam==='map' },
+      showTabs, branchName, langLabel: langNames[s.lang] || 'English',
+      avatarLetter: s.signedIn ? 'J' : 'A', isMember: s.signedIn, isGuest: !s.signedIn,
+      greeting: s.signedIn ? 'Good morning, Joshua' : 'Good morning',
+      branches, languages, sermons, notices, moreItems, soonLabel: s.soonLabel,
+      gloryCount, standCount, standLabel: s.stood ? 'Standing' : 'Stand with you',
+      feedItems, feedEmpty, scopeAll: scopePill(s.scope==='everywhere'), scopeBranch: scopePill(s.scope==='branch'),
+      scope_all:()=>this.setState({scope:'everywhere'}), scope_branch:()=>this.setState({scope:'branch'}),
+      segFeed:seg(s.fam==='feed'), segPrayer:seg(s.fam==='prayer'), segMap:seg(s.fam==='map'),
+      gloryBtnLg:'background:'+(s.gloried?'#ffcf4a':c.btnBg)+'; color:'+(s.gloried?'#14213d':c.btnText)+'; border:none; border-radius:100px; padding:12px 20px; font-weight:800; font-size:14px; font-family:inherit; cursor:pointer',
+      standBtn:'background:'+(s.stood?'#eaf3ec':c.alt)+'; border:1px solid '+(s.stood?'#1f8a5b':c.border)+'; border-radius:100px; padding:9px 16px; font-weight:700; font-size:13px; font-family:inherit; cursor:pointer; color:'+(s.stood?'#1f8a5b':c.sub),
+      standBtnLg:'background:'+(s.stood?'#1f8a5b':c.btnBg)+'; color:'+(s.stood?'#fff':c.btnText)+'; border:none; border-radius:100px; padding:12px 20px; font-weight:800; font-size:14px; font-family:inherit; cursor:pointer',
+      tabHome:tabStyle(s.tab==='home'), tabWatch:tabStyle(s.tab==='watch'), tabGive:tabStyle(s.tab==='give'), tabFamily:tabStyle(s.tab==='family'), tabMore:tabStyle(s.tab==='more'),
+      otpBox:otpBox(true), otpBoxEmpty:otpBox(false),
+      verseSaveStyle, verseSaveLabel: s.verseSaved?'Saved \u2713':'Save', toggleVerse:()=>this.setState({verseSaved:!s.verseSaved}),
+      composeTitle:isPrayer?'Share a prayer request':'Share your testimony',
+      composePrompt:isPrayer?'The family will stand with you in prayer.':'Tell the family what God has done. A leader reviews it first.',
+      composePh:isPrayer?'What can we pray with you for?\u2026':'Write what God has done\u2026',
+      composeCta:isPrayer?'Agree & send request':'Agree & share testimony', composeSubmitStyle,
+      composeFoot:'Nothing appears publicly until a leader approves it.',
+      postedTitle:isPrayer?'Request received':'Thank you!',
+      postedBody:isPrayer?'Your prayer request was sent to a leader for review. Once approved, the family will stand with you.':'Your testimony was sent to a leader for review. Once approved, it\u2019ll be shared with the family.',
+      famFabLabel:s.fam==='prayer'?'Share a prayer request':'Share your testimony',
+      famFabTap:()=>{ const k=s.fam==='prayer'?'prayer':'testimony'; this.setState({composeKind:k, composeText:''}); if(s.signedIn)this.go('compose'); else this.go('gate'); },
+      onComposeInput:(e)=>this.setState({composeText:(e&&e.target)?e.target.value:''}),
+      submitCompose:()=>{ if((s.composeText||'').trim().length>=8) this.go('posted'); },
+      openSermon:()=>this.go('player'), openPrayer:()=>this.go('prayer'),
+      toggleGlory:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); if(!s.signedIn){this.go('gate');return;} this.setState({gloried:!s.gloried}); },
+      toggleStand:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); if(!s.signedIn){this.go('gate');return;} this.setState({stood:!s.stood}); },
+      shareWa:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); }, noop:()=>{}, giveNow:()=>this.go('givethanks'),
+      // content data
+      courses, eventsList, verseSaved:s.verseSaved, noSavedVerse:!s.verseSaved,
+      courseName: courseNames[s.courseId]||'Grace Reset', courseLevel:(courseMeta[s.courseId]||courseMeta.reset).level, courseTag:(courseMeta[s.courseId]||courseMeta.reset).tag,
+      evImg:ev.img, evTitle:ev.title, evDate:ev.date, evMeta:ev.meta,
+      segInPerson:regSeg(s.regFormat==='inperson'), segOnline:regSeg(s.regFormat==='online'),
+      pickInPerson:()=>this.setState({regFormat:'inperson'}), pickOnline:()=>this.setState({regFormat:'online'}),
+      devReadLabel:s.devRead?'Read \u2713 \u00b7 streak +1':'Mark as read', markRead:()=>this.setState({devRead:true}),
+      checkInLabel:s.checkedIn?'Checked in \u2713':'I\u2019m here today', checkIn:()=>this.setState({checkedIn:true}),
+      postLive:!s.postDeleted, postDeleted:s.postDeleted,
+      editPost:()=>this.setState({composeKind:'testimony',composeText:'God restored my family and gave me a peace I can\u2019t explain.',screen:'compose'}),
+      deletePost:()=>this.setState({postDeleted:true}),
+      // content nav
+      go_academy:()=>this.go('academy'), go_course:()=>this.go('course'), go_register:()=>this.go('register'), submitRegister:()=>this.go('regdone'),
+      go_events:()=>this.go('events'), go_rsvp:()=>this.go('rsvpdone'), go_rhythm:()=>this.go('rhythm'),
+      go_library:()=>this.go('library'), go_bookreader:()=>this.go('bookreader'),
+      // theme
+      themeIcon: s.theme==='dark' ? '\uD83C\uDF19' : '\u2600\uFE0F', themeLabel: s.theme==='dark' ? 'Dark mode' : 'Light mode',
+      lightSeg: themeSeg(s.theme==='light'), darkSeg: themeSeg(s.theme==='dark'),
+      setLight:()=>this.setState({theme:'light'}), setDark:()=>this.setState({theme:'dark'}),
+      // notif switches
+      swService:sw(nz.service), swServiceKnob:knob(nz.service), swEvents:sw(nz.events), swEventsKnob:knob(nz.events), swTest:sw(nz.testimonies), swTestKnob:knob(nz.testimonies),
+      toggleService:()=>this.setState({notifs:{...nz,service:!nz.service}}), toggleEvents:()=>this.setState({notifs:{...nz,events:!nz.events}}), toggleTest:()=>this.setState({notifs:{...nz,testimonies:!nz.testimonies}}),
+      // privacy switches
+      swName:sw(pv.name), swNameKnob:knob(pv.name), swAnalytics:sw(pv.analytics), swAnalyticsKnob:knob(pv.analytics),
+      togglePrivName:()=>this.setState({priv:{...pv,name:!pv.name}}), togglePrivAnalytics:()=>this.setState({priv:{...pv,analytics:!pv.analytics}}),
+      // nav
+      go_welcome:()=>this.go('welcome'), go_branch:()=>this.go('branch'), go_lang:()=>this.go('lang'),
+      finishOnboard:()=>this.setState({screen:'home',tab:'home'}),
+      tab_home:()=>this.setState({screen:'home',tab:'home'}), tab_watch:()=>this.setState({screen:'watch',tab:'watch'}), tab_give:()=>this.setState({screen:'give',tab:'give'}), tab_family:()=>this.setState({screen:'family',tab:'family'}), tab_more:()=>this.setState({screen:'more',tab:'more'}),
+      fam_feed:()=>this.setState({fam:'feed'}), fam_prayer:()=>this.setState({fam:'prayer'}), fam_map:()=>this.setState({fam:'map'}),
+      go_notifcenter:()=>this.go('notifcenter'), go_profile:()=>this.go('profile'), go_settings:()=>this.go('settings'), go_language:()=>this.go('langset'), go_notifset:()=>this.go('notifset'), go_privacy:()=>this.go('privacy'), go_delete:()=>this.go('delete'), go_myposts:()=>this.setState({soonLabel:'My posts',screen:'soon'}),
+      go_gate:()=>this.go('gate'), go_otp:()=>this.go('otp'), verify:()=>this.setState({signedIn:true,screen:s.composeKind?'compose':'home'}),
+      signOut:()=>this.setState({signedIn:false,screen:'home',tab:'home'}),
+      confirmDelete:()=>this.setState(this.seed({}))
+    };
+  }
+}
+</script>
+</body>
+</html>

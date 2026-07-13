@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+</helmet>
+<div style="min-height:100%; background:#e9e4da; font-family:'Hanken Grotesk',system-ui,sans-serif; color:#14213d; padding:70px 80px 120px">
+
+  <!-- MASTHEAD -->
+  <div style="max-width:1100px; margin:0 auto 64px">
+    <div style="font-size:12px; font-weight:800; letter-spacing:0.26em; text-transform:uppercase; color:#8a7f6a">AGBC App &middot; System Blueprint</div>
+    <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:56px; letter-spacing:-0.035em; line-height:0.98; margin:16px 0 0">The app, top to bottom</h1>
+    <p style="font-size:17.5px; line-height:1.62; color:#5f5747; margin:20px 0 0; max-width:720px">Before we design screens, here is the whole machine: how a person moves through the app, how accounts &amp; sign-in work, what triggers a notification, and how it all plugs into the systems you already run. <strong>Gold cards are decisions</strong> &mdash; my recommendation is written in, tell me where to change it.</p>
+    <div style="display:flex; gap:10px; margin-top:22px; flex-wrap:wrap">
+      <span style="font-size:12.5px; font-weight:700; background:#14213d; color:#fff; padding:7px 14px; border-radius:100px">Wedge: belonging, made visible</span>
+      <span style="font-size:12.5px; font-weight:700; background:#fff; color:#14213d; border:1px solid #d8cfbc; padding:7px 14px; border-radius:100px">Tabs: Home &middot; Watch &middot; Give &middot; Family &middot; More</span>
+      <span style="font-size:12.5px; font-weight:700; background:#fff; color:#14213d; border:1px solid #d8cfbc; padding:7px 14px; border-radius:100px">Guest-first</span>
+    </div>
+  </div>
+
+  <!-- ============ SECTION A: WORKFLOW ============ -->
+  <div style="max-width:1240px; margin:0 auto 72px">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:26px">
+      <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; background:#ffcf4a; color:#14213d; width:44px; height:44px; border-radius:12px; display:grid; place-items:center">A</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; letter-spacing:-0.02em; margin:0">The journey, first launch to habit</h2>
+    </div>
+
+    <!-- linear flow -->
+    <div style="display:flex; align-items:stretch; gap:0; flex-wrap:wrap">
+      <div style="flex:1; min-width:180px; background:#14213d; color:#fff; border-radius:18px 4px 4px 18px; padding:20px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#ffcf4a">01 &middot; OPEN</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:18px; margin-top:8px">Splash</div>
+        <div style="font-size:13.5px; color:#c7d0e0; margin-top:6px; line-height:1.5">Brand moment. Restores session if already signed in.</div>
+      </div>
+      <div style="display:flex; align-items:center; color:#8a7f6a; font-size:22px; padding:0 6px">&rarr;</div>
+      <div style="flex:1.4; min-width:220px; background:#fff; border:1px solid #d8cfbc; border-radius:4px; padding:20px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#2f6fed">02 &middot; ONBOARD (no account)</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:18px; margin-top:8px">Welcome &rarr; Home branch &rarr; Language &rarr; Notifications</div>
+        <div style="font-size:13.5px; color:#5f5747; margin-top:6px; line-height:1.5">3 quick slides on the vision, then pick <strong>home branch</strong> (Glasgow/Berlin/Emmen/Ogbomosho), <strong>language</strong> (EN/DE/NL), and allow push. Stored on device &mdash; no sign-up yet.</div>
+      </div>
+      <div style="display:flex; align-items:center; color:#8a7f6a; font-size:22px; padding:0 6px">&rarr;</div>
+      <div style="flex:1.6; min-width:240px; background:#fff; border:1px solid #d8cfbc; border-radius:4px 18px 18px 4px; padding:20px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#1f8a5b">03 &middot; ENTER APP AS GUEST</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:18px; margin-top:8px">Full browse, zero friction</div>
+        <div style="font-size:13.5px; color:#5f5747; margin-top:6px; line-height:1.5">Home feed, watch any branch, read testimonies &amp; the map, see events, service times, <strong>and give</strong> &mdash; all without an account.</div>
+      </div>
+    </div>
+
+    <!-- the account gate -->
+    <div style="display:flex; gap:22px; margin-top:22px; flex-wrap:wrap">
+      <div style="flex:1; min-width:300px; background:#0e1420; color:#fff; border-radius:18px; padding:26px; position:relative; overflow:hidden">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.18em; color:#ffcf4a">04 &middot; THE ACCOUNT GATE</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:21px; margin-top:10px; line-height:1.1">Sign in only when you go from watching to <span style="color:#ffcf4a">participating</span></div>
+        <div style="font-size:14px; color:#c7d0e0; margin-top:14px; line-height:1.55">A soft prompt appears the first time you try to:</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px">
+          <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:100px">Post a testimony</span>
+          <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:100px">Submit / stand with a prayer</span>
+          <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:100px">Give glory 🙌</span>
+          <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:100px">Track your rhythm</span>
+          <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:100px">RSVP</span>
+          <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:100px">Manage recurring gift</span>
+        </div>
+      </div>
+      <div style="flex:1; min-width:300px; background:#fff8e6; border:2px solid #ffcf4a; border-radius:18px; padding:26px">
+        <div style="display:flex; align-items:center; gap:8px"><span style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#b98600">◆ DECISION 1 &middot; AUTH METHOD</span></div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px; margin-top:10px; line-height:1.15">Phone OTP only &middot; WhatsApp-first delivery</div>
+        <div style="font-size:14px; color:#6b5b32; margin-top:12px; line-height:1.55"><strong>Decided (docs 03):</strong> phone number + one-time code is the ONLY v1 sign-in; the code arrives via WhatsApp first with SMS fallback (reliable and familiar in Nigeria). No passwords. Google/Apple are post-v1 options. Profile after: name, photo, confirm home branch + language, 16+ confirmation.</div>
+        <div style="font-size:13px; color:#9a7c3a; margin-top:12px; font-style:italic">Settled 2026-07-12; revisit secondary sign-ins post-v1 only.</div>
+      </div>
+    </div>
+
+    <!-- the three loops -->
+    <div style="margin-top:34px">
+      <div style="font-size:13px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#8a7f6a; margin-bottom:16px">05 &middot; The loops that bring people back</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px">
+        <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:22px">
+          <div style="width:44px;height:44px;border-radius:12px;background:#e6efff;display:grid;place-items:center;margin-bottom:14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="1.9"><path d="M8 5v14l11-7z"></path></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">The Sunday loop</div>
+          <div style="font-size:13.5px; color:#5f5747; margin-top:8px; line-height:1.55">Notify before service &rarr; attend or watch live &rarr; tap <em>I'm here</em> &rarr; rhythm +1 &rarr; milestone celebrated &amp; shareable.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:22px">
+          <div style="width:44px;height:44px;border-radius:12px;background:#fff4d6;display:grid;place-items:center;margin-bottom:14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="#ffcf4a"><path d="M7.5 5C5 6.5 3.5 9 3.5 12.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5zM17 5c-2.5 1.5-4 4-4 7.5V19h6v-6.5h-3c0-2 1-3.5 3-4.5z"></path></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">The testimony loop</div>
+          <div style="font-size:13.5px; color:#5f5747; margin-top:8px; line-height:1.55">Read a testimony &rarr; give glory 🙌 &rarr; share to WhatsApp &rarr; inspired to post your own &rarr; moderated &rarr; published to the family &amp; the map.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:22px">
+          <div style="width:44px;height:44px;border-radius:12px;background:#eaf3ec;display:grid;place-items:center;margin-bottom:14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f8a5b" stroke-width="1.9"><path d="M12 21s-7-4-7-10a7 7 0 0 1 14 0c0 6-7 10-7 10z"></path></svg></div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">The prayer &rarr; testimony loop</div>
+          <div style="font-size:13.5px; color:#5f5747; margin-top:8px; line-height:1.55">Post a request &rarr; others <em>stand with you</em> (live count) &rarr; mark <strong>Answered</strong> &rarr; one tap turns it into a testimony. Prayer feeds the wall.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION B: SCREEN MAP ============ -->
+  <div style="max-width:1240px; margin:0 auto 72px">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:26px">
+      <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; background:#ffcf4a; color:#14213d; width:44px; height:44px; border-radius:12px; display:grid; place-items:center">B</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; letter-spacing:-0.02em; margin:0">Every screen, by tab</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:16px">
+
+      <div style="background:#0e1420; color:#fff; border-radius:18px; padding:20px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px; color:#ffcf4a">Onboarding &amp; Auth</div>
+        <div style="font-size:13.5px; color:#c7d0e0; margin-top:12px; line-height:2">Splash<br>Welcome carousel (3)<br>Choose home branch<br>Choose language<br>Notifications opt-in<br>Sign in / Sign up<br>Verify code (OTP)<br>Profile setup</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:20px">
+        <div style="display:flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="2.1"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path></svg><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">Home</span></div>
+        <div style="font-size:13.5px; color:#5f5747; margin-top:12px; line-height:2">Personalized feed<br>Notification center<br>Search</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:20px">
+        <div style="display:flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="2"><rect x="2" y="4" width="20" height="15" rx="3"></rect><path d="M10 9l5 2.5-5 2.5z" fill="#2f6fed" stroke="none"></path></svg><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">Watch</span></div>
+        <div style="font-size:13.5px; color:#5f5747; margin-top:12px; line-height:2">Library (rails)<br>Sermon detail<br>Video player<br>Audio / mini-player<br>Live service</div>
+        <div style="font-size:11.5px; color:#1f8a5b; font-weight:700; margin-top:10px; line-height:1.5">audio-only &middot; background &middot; resume</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:20px">
+        <div style="display:flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">Give</span></div>
+        <div style="font-size:13.5px; color:#5f5747; margin-top:12px; line-height:2">Amount + fund<br>One-time / recurring<br>Payment (branch-aware)<br>Confirmation<br>Giving history</div>
+        <div style="font-size:11.5px; color:#b98600; font-weight:700; margin-top:10px; line-height:1.5">Stripe UK/EU &middot; Paystack NG</div>
+      </div>
+
+      <div style="background:#fff; border:2px solid #ffcf4a; border-radius:18px; padding:20px">
+        <div style="display:flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="2"><circle cx="9" cy="8" r="3.2"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 5.2a3.2 3.2 0 0 1 0 5.6M21.5 20a6.5 6.5 0 0 0-4-6"></path></svg><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px; color:#8a6a12">Family ★</span></div>
+        <div style="font-size:13.5px; color:#6b5b32; margin-top:12px; line-height:2">Testimony feed<br>Testimony detail (glory)<br>Post testimony<br>Global map<br>Prayer wall<br>Prayer detail<br>Post prayer<br>Answered &rarr; testimony</div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:20px">
+        <div style="display:flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6fed" stroke-width="2.4"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">More</span></div>
+        <div style="font-size:13.5px; color:#5f5747; margin-top:12px; line-height:2">My profile &amp; rhythm<br>Milestones<br>Grace Academy<br>Events<br>Groups<br>Branch info<br>Bookstore<br>Settings<br>About &middot; Sign out</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ SECTION C: AUTH ARCHITECTURE ============ -->
+  <div style="max-width:1240px; margin:0 auto 72px">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:26px">
+      <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; background:#ffcf4a; color:#14213d; width:44px; height:44px; border-radius:12px; display:grid; place-items:center">C</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; letter-spacing:-0.02em; margin:0">Authentication &amp; accounts</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:18px">
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:24px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">Three states</div>
+        <div style="margin-top:14px; display:flex; flex-direction:column; gap:12px">
+          <div style="display:flex; gap:12px; align-items:flex-start"><span style="width:26px;height:26px;border-radius:8px;background:#eaf3ec;color:#1f8a5b;font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0">G</span><div style="font-size:13.5px; line-height:1.5; color:#5f5747"><strong style="color:#14213d">Guest</strong> — browse, watch, give. Prefs on device.</div></div>
+          <div style="display:flex; gap:12px; align-items:flex-start"><span style="width:26px;height:26px;border-radius:8px;background:#e6efff;color:#2f6fed;font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0">M</span><div style="font-size:13.5px; line-height:1.5; color:#5f5747"><strong style="color:#14213d">Member</strong> — posts, prayer, glory, rhythm, RSVP, recurring giving.</div></div>
+          <div style="display:flex; gap:12px; align-items:flex-start"><span style="width:26px;height:26px;border-radius:8px;background:#fff4d6;color:#b98600;font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0">L</span><div style="font-size:13.5px; line-height:1.5; color:#5f5747"><strong style="color:#14213d">Leader/Admin</strong> — moderates testimonies/prayer, posts events, sends notices (via web dashboard).</div></div>
+        </div>
+      </div>
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:24px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">Sign-in options</div>
+        <div style="margin-top:14px; display:flex; flex-direction:column; gap:9px">
+          <div style="font-size:13.5px; padding:10px 12px; background:#f4efe6; border-radius:10px; font-weight:600">📱 Phone number + OTP (WhatsApp-first, SMS fallback) <span style="color:#1f8a5b; font-weight:700">· the only v1 sign-in</span></div>
+          <div style="font-size:13.5px; padding:10px 12px; background:#f4efe6; border-radius:10px; font-weight:600; opacity:0.55">Continue with Google <span style="font-weight:700">· post-v1</span></div>
+          <div style="font-size:13.5px; padding:10px 12px; background:#f4efe6; border-radius:10px; font-weight:600; opacity:0.55">Continue with Apple <span style="font-weight:700">· post-v1</span></div>
+        </div>
+      </div>
+      <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:24px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px">Profile record</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#3a4256; margin-top:14px; line-height:1.85; background:#f4efe6; padding:14px 16px; border-radius:12px">name<br>phone / email<br>avatar<br>homeBranch<br>language<br>rhythm { count, lastAttended }<br>notifPrefs { ... }<br>role</div>
+      </div>
+      <div style="background:#fff8e6; border:2px solid #ffcf4a; border-radius:18px; padding:24px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#b98600">◆ DECISION 2 &middot; MODERATION</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px; margin-top:10px; line-height:1.15">Testimonies &amp; prayers are public — who approves?</div>
+        <div style="font-size:13.5px; color:#6b5b32; margin-top:12px; line-height:1.55"><strong>My rec:</strong> new posts go to a <strong>pending queue</strong>; a branch leader approves before it's public. Anonymous posting allowed. Report button on everything.</div>
+        <div style="font-size:12.5px; color:#9a7c3a; margin-top:10px; font-style:italic">Or: auto-publish + report-only (faster, riskier)?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION D: NOTIFICATIONS ============ -->
+  <div style="max-width:1240px; margin:0 auto 72px">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:26px">
+      <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; background:#ffcf4a; color:#14213d; width:44px; height:44px; border-radius:12px; display:grid; place-items:center">D</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; letter-spacing:-0.02em; margin:0">Notification system</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:18px">
+      <div style="background:#0e1420; color:#fff; border-radius:18px; padding:26px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px; color:#ffcf4a">What fires a notification</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px">
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">⛪ <strong>Sunday reminder</strong><br><span style="color:#9aa6bd">before your branch's service</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">🔴 <strong>We're live now</strong><br><span style="color:#9aa6bd">your branch starts streaming</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">🙌 <strong>Glory on your testimony</strong><br><span style="color:#9aa6bd">someone reacted</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">🙏 <strong>Standing with you</strong><br><span style="color:#9aa6bd">people prayed for your request</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">✨ <strong>Milestone reached</strong><br><span style="color:#9aa6bd">rhythm / plan complete</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">📅 <strong>Event reminder</strong><br><span style="color:#9aa6bd">something you RSVP'd to</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">💛 <strong>Giving receipt</strong><br><span style="color:#9aa6bd">gift / recurring processed</span></div>
+          <div style="font-size:13px; background:rgba(255,255,255,0.07); padding:11px 13px; border-radius:11px; line-height:1.4">📣 <strong>Leader broadcast</strong><br><span style="color:#9aa6bd">branch or whole-family notice</span></div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:18px">
+        <div style="background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:22px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px">Controls</div>
+          <div style="font-size:13.5px; color:#5f5747; margin-top:10px; line-height:1.7">Per-category opt-in &middot; targeted by <strong>home branch</strong> &amp; <strong>language</strong> &middot; quiet hours &middot; whole-family vs my-branch.</div>
+        </div>
+        <div style="background:#fff8e6; border:2px solid #ffcf4a; border-radius:18px; padding:22px">
+          <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#b98600">◆ DECISION 3 &middot; DELIVERY</div>
+          <div style="font-size:13.5px; color:#6b5b32; margin-top:10px; line-height:1.55"><strong>My rec:</strong> push as primary (one provider across iOS+Android), <strong>+ share-to-WhatsApp</strong> for anything a member wants to pass on. No SMS in v1.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION E: DATA & INTEGRATIONS ============ -->
+  <div style="max-width:1240px; margin:0 auto 40px">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:26px">
+      <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:22px; background:#ffcf4a; color:#14213d; width:44px; height:44px; border-radius:12px; display:grid; place-items:center">E</span>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; letter-spacing:-0.02em; margin:0">How it wires together</h2>
+    </div>
+    <p style="font-size:15.5px; color:#5f5747; margin:0 0 24px; max-width:760px; line-height:1.6">The app <strong>reuses everything the website already runs</strong> (right column) and adds one new backend for the things that are genuinely new — accounts, testimonies, prayer, rhythm, notifications (middle).</p>
+
+    <div style="display:flex; align-items:stretch; gap:0; flex-wrap:wrap">
+      <!-- client -->
+      <div style="flex:1; min-width:200px; background:#14213d; color:#fff; border-radius:18px; padding:24px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#ffcf4a">CLIENT</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px; margin-top:8px">iOS &amp; Android app</div>
+        <div style="font-size:13px; color:#c7d0e0; margin-top:10px; line-height:1.6">One codebase, native feel. Local: session, prefs, resume position, cached media.</div>
+      </div>
+      <div style="display:flex; align-items:center; color:#8a7f6a; font-size:24px; padding:0 10px">&harr;</div>
+      <!-- backend -->
+      <div style="flex:1.2; min-width:240px; background:#2f6fed; color:#fff; border-radius:18px; padding:24px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#ffe08a">NEW &middot; APP BACKEND</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px; margin-top:8px">API · Auth · Database</div>
+        <div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:12px">
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">accounts</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">testimonies</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">prayers + reactions</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">rhythm</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">RSVPs</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">groups</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">moderation queue</span>
+          <span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.16); padding:5px 10px; border-radius:8px">push service</span>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; color:#8a7f6a; font-size:24px; padding:0 10px">&harr;</div>
+      <!-- existing -->
+      <div style="flex:1; min-width:220px; background:#fff; border:1px solid #d8cfbc; border-radius:18px; padding:24px">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.16em; color:#1f8a5b">REUSED &middot; ALREADY LIVE</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px; margin-top:8px; color:#14213d">Your current stack</div>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px">
+          <div style="font-size:13px; font-weight:600; color:#3a4256"><strong>Stripe</strong> — giving (UK/EU)</div>
+          <div style="font-size:13px; font-weight:600; color:#3a4256"><strong>Paystack</strong> — giving (Nigeria)</div>
+          <div style="font-size:13px; font-weight:600; color:#3a4256"><strong>Sanity</strong> — events</div>
+          <div style="font-size:13px; font-weight:600; color:#3a4256"><strong>YouTube</strong> — sermons</div>
+          <div style="font-size:13px; font-weight:600; color:#3a4256"><strong>Resend</strong> — email</div>
+          <div style="font-size:13px; font-weight:600; color:#3a4256"><strong>Payhip</strong> — books</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#eef1f0; border:1px dashed #b7ae9c; border-radius:14px; padding:16px 20px; margin-top:18px; font-size:13.5px; color:#5f5747; line-height:1.55">🔗 <strong>One source of truth:</strong> the app and the redesigned website read the same branches config, the same Sanity events, and the same sermon library — so nothing is maintained twice, and a change on the site shows up in the app.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

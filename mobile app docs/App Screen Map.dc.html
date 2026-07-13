@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+</helmet>
+<div data-screen-label="Screen Map" style="min-width:1720px; background:#e9e4da; font-family:'Hanken Grotesk',system-ui,sans-serif; color:#14213d; padding:46px 44px 90px">
+
+  <!-- MASTHEAD -->
+  <div style="max-width:1000px; margin:0 0 26px">
+    <div style="font-size:12px; font-weight:800; letter-spacing:0.24em; text-transform:uppercase; color:#8a7f6a">AGBC App &middot; Complete screen &amp; flow map</div>
+    <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:40px; letter-spacing:-0.03em; margin:12px 0 12px">Every screen, every action, every destination</h1>
+    <p style="font-size:15.5px; line-height:1.62; color:#5f5747; margin:0; max-width:860px">This is the blueprint &mdash; not the build. Each card is a <strong>screen</strong> with an ID. Under it, every button/action shows <strong>where it goes</strong> (a bold <b style="font-family:'JetBrains Mono',monospace">ID</b> is a jump to that screen). Any action that needs sign-in is marked <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:1px 7px; border-radius:5px; font-size:12.5px">gate</span> &mdash; guests get routed to Auth first, then bounced back. Nothing dead-ends.</p>
+  </div>
+
+  <!-- LEGEND + GLOBAL RULES -->
+  <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:34px">
+    <div style="background:#fff; border:1px solid #ddd4c4; border-radius:16px; padding:16px 18px; width:430px">
+      <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px; margin-bottom:11px">Legend</div>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:12.5px; color:#3a3226">
+        <div style="display:flex; align-items:center; gap:9px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">ID</span> screen identifier &mdash; referenced as a jump target</div>
+        <div style="display:flex; align-items:center; gap:9px"><span style="font-size:11px; font-weight:800; color:#546077; background:#e6efff; padding:2px 9px; border-radius:100px">Member</span><span style="font-size:11px; font-weight:800; color:#8a6a12; background:#fdf0cf; padding:2px 9px; border-radius:100px">Guest</span><span style="font-size:11px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 9px; border-radius:100px">Both</span> who reaches it</div>
+        <div style="display:flex; align-items:center; gap:9px"><span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:1px 7px; border-radius:5px; font-size:11.5px">gate</span> requires sign-in &rarr; routes through <b style="font-family:'JetBrains Mono',monospace">A1</b>, returns to origin</div>
+        <div style="display:flex; align-items:center; gap:9px"><span style="font-size:14px">↩</span> back / close target &middot; <span style="font-size:13px">⌂</span> = active bottom tab</div>
+      </div>
+    </div>
+    <div style="background:#0e1420; color:#fff; border-radius:16px; padding:16px 18px; flex:1; min-width:640px">
+      <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px; margin-bottom:11px; color:#ffcf4a">Global rules &mdash; how we guarantee no dead ends</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; font-size:12.5px; color:#dbe1ec; line-height:1.5">
+        <div><b style="color:#fff">Back everywhere.</b> Every non-tab screen has a ↩ back/close to its parent. Tab roots can&rsquo;t go &ldquo;back&rdquo; &mdash; the tab bar is always the escape.</div>
+        <div><b style="color:#fff">Gated actions never fail silently.</b> A guest tapping a <span style="color:#ffcf4a">gate</span> action always lands on <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">A1</b>, and on success returns to exactly where they were.</div>
+        <div><b style="color:#fff">Every list has an empty state.</b> No blank screens &mdash; each shows a prompt + a next action (see <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">SYS</b>).</div>
+        <div><b style="color:#fff">Offline / error / loading.</b> Global banners + retry; skeletons while loading; a toast confirms every save/reaction.</div>
+        <div><b style="color:#fff">External hops return.</b> Web checkout &amp; book buy open a browser and route back to an in-app confirmation.</div>
+        <div><b style="color:#fff">Push deep-links.</b> Every notification opens the exact relevant screen, not just Home (see <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">SYS·PN</b>).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW COLUMNS -->
+  <div style="display:flex; gap:22px; align-items:flex-start; flex-wrap:nowrap">
+
+    <!-- ===== COLUMN 1: ENTRY + AUTH ===== -->
+    <div style="display:flex; flex-direction:column; gap:22px; width:340px; flex:none">
+
+      <section style="background:#eef1f6; border:1px solid #d3dae6; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#14213d"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">Entry &amp; onboarding</h2></div>
+
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">E0</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Splash</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Logo + tagline. Auto-advance (1.5s) or tap &rarr; <b style="font-family:'JetBrains Mono',monospace">E1</b>. Returning member with session &rarr; <b style="font-family:'JetBrains Mono',monospace">H1</b>.</div>
+        </div>
+
+        <div style="text-align:center"><span style="font-size:15px; color:#aeb6c4">↓</span></div>
+
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">E1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Welcome carousel</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">3 slides. Next &rarr; next slide; last slide Next &rarr; <b style="font-family:'JetBrains Mono',monospace">E2</b>. Skip &rarr; <b style="font-family:'JetBrains Mono',monospace">E2</b>.</div>
+        </div>
+
+        <div style="text-align:center"><span style="font-size:15px; color:#aeb6c4">↓</span></div>
+
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">E2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Choose branch</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Step 1/2. Pick 1 of 4 branches. Continue &rarr; <b style="font-family:'JetBrains Mono',monospace">E3</b>. Stored locally (no account yet).</div>
+        </div>
+
+        <div style="text-align:center"><span style="font-size:15px; color:#aeb6c4">↓</span></div>
+
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">E3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Choose language</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Step 2/2. EN / DE / NL. Continue &rarr; <b style="font-family:'JetBrains Mono',monospace">H1</b> (enters app as <b>Guest</b>). <span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">E2</b>.</div>
+        </div>
+
+        <div style="text-align:center"><span style="font-size:15px; color:#aeb6c4">↓</span></div>
+
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin:6px 0 0">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">E4</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Notifications</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">in context</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5"><b>Not an onboarding step</b> (docs 06). The OS prompt fires at the first value moment (first &ldquo;I&rsquo;m here&rdquo;, first RSVP, or Settings &rarr; <b style="font-family:'JetBrains Mono',monospace">N1</b>), preceded by a pre-permission explainer. Onboarding goes <b style="font-family:'JetBrains Mono',monospace">E3</b> &rarr; <b style="font-family:'JetBrains Mono',monospace">H1</b> directly.</div>
+        </div>
+      </section>
+
+      <section style="background:#fdf6e3; border:1px solid #f0e2b8; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px"><span style="width:9px; height:9px; border-radius:50%; background:#b98600"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">Auth</h2></div>
+        <div style="font-size:11.5px; color:#7a5b12; line-height:1.45; margin-bottom:12px">A modal stack triggered by any <span style="background:#fdf0cf; padding:0 5px; border-radius:4px">gate</span> action. On success it returns to the screen that triggered it.</div>
+
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">A1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Join gate</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#8a6a12; background:#fdf0cf; padding:2px 8px; border-radius:100px">Guest</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.55">Phone &rarr; <b style="font-family:'JetBrains Mono',monospace">A2</b> (phone-OTP is the only v1 sign-in, docs 03). <span style="font-size:14px">✕</span> close &rarr; back to origin (stays Guest).</div>
+        </div>
+        <div style="text-align:center"><span style="font-size:15px; color:#d8c48a">↓</span></div>
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">A2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Phone entry</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.55">Country + number. Send code &rarr; <b style="font-family:'JetBrains Mono',monospace">A3</b>. <span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">A1</b>.</div>
+        </div>
+        <div style="text-align:center"><span style="font-size:15px; color:#d8c48a">↓</span></div>
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">A3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">OTP verify</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.55">6-digit code. Verify &rarr; first time <b style="font-family:'JetBrains Mono',monospace">A4</b>, returning &rarr; origin (now Member). Resend timer. <span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">A2</b>.</div>
+        </div>
+        <div style="text-align:center"><span style="font-size:15px; color:#d8c48a">↓</span></div>
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">A4</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Profile setup</span><span style="margin-left:auto; font-size:9.5px; font-weight:800; color:#8a7f6a">first login only</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.55">Name, photo (optional), confirm branch + language. Done &rarr; origin (now <b>Member</b>).</div>
+        </div>
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">A5</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Google / Apple</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#8a7f6a">post-v1</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.55"><b>Not in v1</b> (docs 03: phone-OTP only; with no other social login, Apple Sign In is not required). If added later: native OAuth sheet &rarr; <b style="font-family:'JetBrains Mono',monospace">A4</b>.</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== COLUMN 2: HOME + WATCH + GIVE ===== -->
+    <div style="display:flex; flex-direction:column; gap:22px; width:340px; flex:none">
+
+      <section style="background:#eaf1ff; border:1px solid #cfe0fb; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#2f6fed"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">Home <span style="font-size:12px; color:#2f6fed">⌂ tab</span></h2></div>
+        <div style="background:#fff; border:1px solid #d9e3f5; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#2f6fed; color:#fff; padding:2px 7px; border-radius:6px">H1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Home</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:#3a3226; line-height:1.4">
+            <div>Branch chip &rarr; <b style="font-family:'JetBrains Mono',monospace">H2</b></div>
+            <div>Avatar &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC1</b></div>
+            <div>This Sunday · Plan visit &rarr; <b style="font-family:'JetBrains Mono',monospace">MB1</b> · Watch live &rarr; <b style="font-family:'JetBrains Mono',monospace">W2</b></div>
+            <div>Quick: Give &rarr; <b style="font-family:'JetBrains Mono',monospace">G1</b> · Watch &rarr; <b style="font-family:'JetBrains Mono',monospace">W1</b> · Testify &rarr; <b style="font-family:'JetBrains Mono',monospace">FC1</b> <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span></div>
+            <div>Verse · Save &rarr; toast + <b style="font-family:'JetBrains Mono',monospace">LB1</b> · Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b></div>
+            <div>Latest message &rarr; <b style="font-family:'JetBrains Mono',monospace">WP1</b></div>
+            <div>Family card &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b></div>
+            <div><span style="font-size:10px; font-weight:800; color:#546077; background:#e6efff; padding:1px 7px; border-radius:100px">Member</span> Rhythm strip &rarr; <b style="font-family:'JetBrains Mono',monospace">RH1</b></div>
+            <div><span style="font-size:10px; font-weight:800; color:#8a6a12; background:#fdf0cf; padding:1px 7px; border-radius:100px">Guest</span> Join card &rarr; <b style="font-family:'JetBrains Mono',monospace">A1</b></div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid #d9e3f5; border-radius:12px; padding:12px 13px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#2f6fed; color:#fff; padding:2px 7px; border-radius:6px">H2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Branch switcher</span><span style="margin-left:auto; font-size:9.5px; font-weight:800; color:#8a7f6a">sheet</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Pick branch &rarr; updates Home/Give/Events context, close &rarr; <b style="font-family:'JetBrains Mono',monospace">H1</b>.</div>
+        </div>
+      </section>
+
+      <section style="background:#e9f4f6; border:1px solid #c9e6ec; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#1f7a8c"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">Watch <span style="font-size:12px; color:#1f7a8c">⌂ tab</span></h2></div>
+        <div style="background:#fff; border:1px solid #d2e7ec; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f7a8c; color:#fff; padding:2px 7px; border-radius:6px">W1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Watch home</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:#3a3226; line-height:1.4"><div>Live banner &rarr; <b style="font-family:'JetBrains Mono',monospace">W2</b></div><div>Continue listening &rarr; <b style="font-family:'JetBrains Mono',monospace">WP1</b> (resume)</div><div>Recent message &rarr; <b style="font-family:'JetBrains Mono',monospace">WP1</b></div><div>Search &rarr; <b style="font-family:'JetBrains Mono',monospace">W3</b> · Series &rarr; <b style="font-family:'JetBrains Mono',monospace">W4</b></div></div>
+        </div>
+        <div style="background:#fff; border:1px solid #d2e7ec; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f7a8c; color:#fff; padding:2px 7px; border-radius:6px">W2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Live player</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">HQ YouTube stream. Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b> · Give &rarr; <b style="font-family:'JetBrains Mono',monospace">G1</b>. <span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">W1</b>. Offline banner if not live.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #d2e7ec; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f7a8c; color:#fff; padding:2px 7px; border-radius:6px">WP1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Sermon player</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:#3a3226; line-height:1.4"><div>Play/pause · ±15s · audio-only · background/lock-screen</div><div>Resume point saved automatically</div><div>Notes &rarr; <b style="font-family:'JetBrains Mono',monospace">WP2</b> · Download &rarr; toast + <b style="font-family:'JetBrains Mono',monospace">LB1</b> · Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b></div><div><span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">W1</b></div></div>
+        </div>
+        <div style="display:flex; gap:10px">
+          <div style="background:#fff; border:1px solid #d2e7ec; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#1f7a8c; color:#fff; padding:2px 6px; border-radius:6px">WP2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Notes</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">WP1</b></div>
+          </div>
+          <div style="background:#fff; border:1px solid #d2e7ec; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#1f7a8c; color:#fff; padding:2px 6px; border-radius:6px">W3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Search</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Result &rarr; <b style="font-family:'JetBrains Mono',monospace">WP1</b> · empty state · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">W1</b></div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px dashed #bcd9e0; border-radius:12px; padding:10px 12px; margin-top:10px">
+          <div style="display:flex; align-items:center; gap:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#8fb3bb; color:#fff; padding:2px 6px; border-radius:6px">W4</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Series detail</span><span style="margin-left:auto; font-size:9.5px; font-weight:800; color:#8a7f6a">phase 2</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.45; margin-top:4px">Episode &rarr; <b style="font-family:'JetBrains Mono',monospace">WP1</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">W1</b></div>
+        </div>
+      </section>
+
+      <section style="background:#eaf3ec; border:1px solid #cfe6d6; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#1f8a5b"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">Give <span style="font-size:12px; color:#1f8a5b">⌂ tab</span></h2></div>
+        <div style="background:#fff; border:1px solid #d3e6d9; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f8a5b; color:#fff; padding:2px 7px; border-radius:6px">G1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Give landing</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:#3a3226; line-height:1.4"><div>Give now &rarr; <b style="font-family:'JetBrains Mono',monospace">G2</b> (branch currency)</div><div>Bank transfer &rarr; <b style="font-family:'JetBrains Mono',monospace">G3</b> (copyable details, works offline)</div><div>Manage recurring &rarr; <b style="font-family:'JetBrains Mono',monospace">G2</b> (web) / cancellation inbox</div></div>
+        </div>
+        <div style="text-align:center"><span style="font-size:15px; color:#a9cdb6">↓</span></div>
+        <div style="background:#fff; border:1px solid #d3e6d9; border-radius:12px; padding:12px 13px; margin:6px 0 10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f8a5b; color:#fff; padding:2px 7px; border-radius:6px">G2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Web checkout</span><span style="margin-left:auto; font-size:9.5px; font-weight:800; color:#8a7f6a">external</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Opens the web giving flow (Stripe/PayPal) in the in-app browser. Complete or cancel &rarr; returns to <b style="font-family:'JetBrains Mono',monospace">G1</b>; the web flow owns its own confirmation (docs 12: no native receipt in v1).</div>
+        </div>
+        <div style="display:flex; gap:10px">
+          <div style="background:#fff; border:1px solid #d3e6d9; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#1f8a5b; color:#fff; padding:2px 6px; border-radius:6px">G3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Bank details</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">GBP · EUR · USD · HUF · NGN, copy buttons, fully offline (docs 12) · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">G1</b></div>
+          </div>
+          <div style="background:#fff; border:1px solid #d3e6d9; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#1f8a5b; color:#fff; padding:2px 6px; border-radius:6px">G4</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">History</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#8a7f6a">post-v1</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Native giving history is post-v1 (docs 12) · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">G1</b></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== COLUMN 3: FAMILY ===== -->
+    <div style="display:flex; flex-direction:column; gap:22px; width:340px; flex:none">
+      <section style="background:#fff6de; border:1px solid #f2dfa8; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px"><span style="width:9px; height:9px; border-radius:50%; background:#b98600"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">The Family <span style="font-size:12px; color:#b98600">⌂ tab</span></h2></div>
+        <div style="font-size:11.5px; color:#7a5b12; line-height:1.45; margin-bottom:12px">The signature wedge: belonging made visible. Testimonies, prayer, and a nations map &mdash; with an <b>Everywhere / My branch</b> scope on the feeds.</div>
+
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">F1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Testimonies feed</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:#3a3226; line-height:1.4"><div>Segments: Testimonies · Prayer &rarr; <b style="font-family:'JetBrains Mono',monospace">F2</b> · Map &rarr; <b style="font-family:'JetBrains Mono',monospace">F5</b></div><div>Scope: Everywhere / My branch (+ empty state)</div><div>Card &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b></div><div>🙌 Glory <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span> · Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b></div><div>FAB Share testimony &rarr; <b style="font-family:'JetBrains Mono',monospace">FC1</b> <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span></div></div>
+        </div>
+
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">F2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Prayer wall</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; color:#3a3226; line-height:1.4"><div>🙏 Stand with <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span></div><div>Request card &rarr; <b style="font-family:'JetBrains Mono',monospace">FD2</b></div><div>Owner: Mark answered &rarr; becomes <b style="font-family:'JetBrains Mono',monospace">FD1</b> (the prayer→answered→testimony loop)</div><div>FAB Share prayer &rarr; <b style="font-family:'JetBrains Mono',monospace">FC2</b> <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span></div></div>
+        </div>
+
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">FD1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Testimony detail</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">🙌 Glory <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span> · Share to WhatsApp &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b> · Report &rarr; <b style="font-family:'JetBrains Mono',monospace">FR1</b> · <span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">F1</b></div>
+        </div>
+        <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">FD2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Prayer detail</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">🙏 Stand <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:11px">gate</span> · Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b> · owner Mark answered &rarr; <b style="font-family:'JetBrains Mono',monospace">FC1</b> · Report &rarr; <b style="font-family:'JetBrains Mono',monospace">FR1</b> · <span style="font-size:14px">↩</span> <b style="font-family:'JetBrains Mono',monospace">F2</b></div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:10px">
+          <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#b98600; color:#fff; padding:2px 6px; border-radius:6px">FC1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Compose testimony</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Submit &rarr; <b style="font-family:'JetBrains Mono',monospace">FS1</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">F1</b></div>
+          </div>
+          <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#b98600; color:#fff; padding:2px 6px; border-radius:6px">FC2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Compose prayer</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Submit &rarr; <b style="font-family:'JetBrains Mono',monospace">FS2</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">F2</b></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-bottom:10px">
+          <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#b98600; color:#fff; padding:2px 6px; border-radius:6px">FS1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Submitted</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Pending review note · Back &rarr; <b style="font-family:'JetBrains Mono',monospace">F1</b></div>
+          </div>
+          <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#b98600; color:#fff; padding:2px 6px; border-radius:6px">FS2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Posted</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Back &rarr; <b style="font-family:'JetBrains Mono',monospace">F2</b></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px">
+          <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#b98600; color:#fff; padding:2px 6px; border-radius:6px">FR1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Report/flag</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Submit &rarr; toast + <span style="font-size:13px">↩</span> · sends to leader queue</div>
+          </div>
+          <div style="background:#fff; border:1px solid #eeddb5; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#b98600; color:#fff; padding:2px 6px; border-radius:6px">F9</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">My posts</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#546077; background:#e6efff; padding:1px 6px; border-radius:100px">Mbr</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Status pending/live &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">ACC1</b></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px">
+          <div style="background:#fff; border:1px solid #e6d3a4; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#cbb06a; color:#fff; padding:2px 6px; border-radius:6px">F5</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Nations map</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#1f8a5b">v1 · wedge</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45"><b>v1</b> (one third of the wedge, docs 09): branch pins &rarr; <b style="font-family:'JetBrains Mono',monospace">MB1</b>, testimony pins &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b>, scope toggle. Nation detail &rarr; <b style="font-family:'JetBrains Mono',monospace">F6</b> (ph2). <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">F1</b></div>
+          </div>
+          <div style="background:#fff; border:1px dashed #e6d3a4; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#cbb06a; color:#fff; padding:2px 6px; border-radius:6px">F6</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Nation detail</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#8a7f6a">ph2</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Stories &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">F5</b></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== COLUMN 4: MORE + CONTENT ===== -->
+    <div style="display:flex; flex-direction:column; gap:22px; width:340px; flex:none">
+      <section style="background:#f1eef8; border:1px solid #ddd4ee; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#6b4fb0"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">More <span style="font-size:12px; color:#6b4fb0">⌂ tab</span> &amp; content</h2></div>
+
+        <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#6b4fb0; color:#fff; padding:2px 7px; border-radius:6px">MR1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">More menu</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#3a3226; line-height:1.35"><div>Rhythm &rarr; <b style="font-family:'JetBrains Mono',monospace">RH1</b> · Academy &rarr; <b style="font-family:'JetBrains Mono',monospace">AC1</b></div><div>Devotional &rarr; <b style="font-family:'JetBrains Mono',monospace">DV1</b> · Events &rarr; <b style="font-family:'JetBrains Mono',monospace">EV1</b></div><div>Library &rarr; <b style="font-family:'JetBrains Mono',monospace">LB1</b> · My posts &rarr; <b style="font-family:'JetBrains Mono',monospace">F9</b></div><div>Bookstore &rarr; <b style="font-family:'JetBrains Mono',monospace">BK1</b> · Branch info &rarr; <b style="font-family:'JetBrains Mono',monospace">MB1</b></div><div>Notifications &rarr; <b style="font-family:'JetBrains Mono',monospace">N1</b> · Settings &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC2</b></div><div>Help &rarr; <b style="font-family:'JetBrains Mono',monospace">HL1</b> · Profile header &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC1</b></div></div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:10px">
+          <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">RH1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">My Rhythm</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#546077; background:#e6efff; padding:1px 6px; border-radius:100px">Mbr</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Streaks, milestones. &ldquo;I&rsquo;m here&rdquo; check-in &rarr; toast. Badge &rarr; <b style="font-family:'JetBrains Mono',monospace">RH2</b></div>
+          </div>
+          <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">RH2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Badge detail</span></div>
+            <div style="font-size:11.5px; color:#3a3226; line-height:1.45">Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b> · <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">RH1</b></div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">AC1–4</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Grace Academy</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.5"><b style="font-family:'JetBrains Mono',monospace">AC1</b> list &rarr; <b style="font-family:'JetBrains Mono',monospace">AC2</b> course &rarr; Register <b style="font-family:'JetBrains Mono',monospace">AC3</b> &rarr; <b style="font-family:'JetBrains Mono',monospace">AC4</b> confirmed &rarr; <b style="font-family:'JetBrains Mono',monospace">AC1</b>. Each has <span style="font-size:13px">↩</span>.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">DV1–2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Devotional</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.5"><b style="font-family:'JetBrains Mono',monospace">DV1</b> reader (<b>paid</b>: entitled owners only; others &rarr; <b style="font-family:'JetBrains Mono',monospace">BK2</b> devotional store page, docs 10): prev/next day, Mark complete &rarr; progress + milestone, Plan &rarr; <b style="font-family:'JetBrains Mono',monospace">DV2</b> &rarr; day &rarr; <b style="font-family:'JetBrains Mono',monospace">DV1</b>. <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">MR1</b>.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">EV1–3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Events</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.5"><b style="font-family:'JetBrains Mono',monospace">EV1</b> list &rarr; <b style="font-family:'JetBrains Mono',monospace">EV2</b> detail: RSVP/Register &rarr; <b style="font-family:'JetBrains Mono',monospace">EV3</b> <span style="background:#fdf0cf; color:#8a6a12; font-weight:700; padding:0 5px; border-radius:4px; font-size:10.5px">gate</span>, Add to calendar (OS), Directions (maps), Share &rarr; <b style="font-family:'JetBrains Mono',monospace">SS1</b>. Dashboard-managed content (manual v1; Sanity sync post-v1, docs 11).</div>
+        </div>
+        <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">LB1–2 · BK1–3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Library &amp; Bookstore</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.5"><b style="font-family:'JetBrains Mono',monospace">LB1</b>: saved verses, downloaded sermons &rarr; <b style="font-family:'JetBrains Mono',monospace">WP1</b>, owned books &rarr; <b style="font-family:'JetBrains Mono',monospace">LB2</b> reader. <b style="font-family:'JetBrains Mono',monospace">BK1</b> store &rarr; <b style="font-family:'JetBrains Mono',monospace">BK2</b> detail &rarr; Buy <b style="font-family:'JetBrains Mono',monospace">BK3</b> (web Payhip) &rarr; owned &rarr; <b style="font-family:'JetBrains Mono',monospace">LB1</b>.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #e0d8ef; border-radius:12px; padding:11px 12px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#6b4fb0; color:#fff; padding:2px 6px; border-radius:6px">MB1–3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12.5px">Branch info &amp; plan a visit</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.5"><b style="font-family:'JetBrains Mono',monospace">MB1</b>: service times, team, Directions (maps). Plan to come &rarr; <b style="font-family:'JetBrains Mono',monospace">MB2</b> form &rarr; <b style="font-family:'JetBrains Mono',monospace">MB3</b> confirmed &rarr; <b style="font-family:'JetBrains Mono',monospace">H1</b>.</div>
+        </div>
+        <div style="background:#fff; border:1px dashed #d3c8ec; border-radius:12px; padding:11px 12px">
+          <div style="display:flex; align-items:center; gap:7px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10.5px; background:#a892d6; color:#fff; padding:2px 6px; border-radius:6px">GR1–2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12px">Groups</span><span style="margin-left:auto; font-size:9px; font-weight:800; color:#8a7f6a">phase 2</span></div>
+          <div style="font-size:11.5px; color:#3a3226; line-height:1.45"><b>Post-v1 concept; not in the v1 More menu</b> (docs 04). Community sharing goes out via WhatsApp in v1. ph2: <b style="font-family:'JetBrains Mono',monospace">GR1</b> list &rarr; <b style="font-family:'JetBrains Mono',monospace">GR2</b> join.</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== COLUMN 5: ACCOUNT + SYSTEM ===== -->
+    <div style="display:flex; flex-direction:column; gap:22px; width:340px; flex:none">
+      <section style="background:#f2efe9; border:1px solid #e0d8c8; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#3a3226"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">Account &amp; settings</h2></div>
+
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#3a3226; color:#fff; padding:2px 7px; border-radius:6px">ACC1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Profile</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#546077; background:#e6efff; padding:2px 8px; border-radius:100px">Member</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Edit name/photo · My posts &rarr; <b style="font-family:'JetBrains Mono',monospace">F9</b> · Giving &rarr; <b style="font-family:'JetBrains Mono',monospace">G1</b> · Settings &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC2</b> · <span style="font-size:14px">↩</span> back. Guest here &rarr; prompt <b style="font-family:'JetBrains Mono',monospace">A1</b>.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#3a3226; color:#fff; padding:2px 7px; border-radius:6px">ACC2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Settings</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+          <div style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#3a3226; line-height:1.35"><div>Language &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC3</b> · Theme dark/light (toggle)</div><div>Notifications &rarr; <b style="font-family:'JetBrains Mono',monospace">N1</b> · Privacy &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC4</b></div><div>Help &rarr; <b style="font-family:'JetBrains Mono',monospace">HL1</b> · Legal &rarr; <b style="font-family:'JetBrains Mono',monospace">LG1</b></div><div>Sign out &rarr; confirm &rarr; Guest <b style="font-family:'JetBrains Mono',monospace">H1</b></div><div>Delete account &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC5</b></div></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-bottom:10px">
+          <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; background:#3a3226; color:#fff; padding:2px 6px; border-radius:6px">ACC3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:11.5px">Language</span></div>
+            <div style="font-size:11px; color:#3a3226; line-height:1.4">Apply · <span style="font-size:12px">↩</span> <b style="font-family:'JetBrains Mono',monospace">ACC2</b></div>
+          </div>
+          <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; background:#3a3226; color:#fff; padding:2px 6px; border-radius:6px">ACC4</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:11.5px">Privacy</span></div>
+            <div style="font-size:11px; color:#3a3226; line-height:1.4">Toggles · <span style="font-size:12px">↩</span> <b style="font-family:'JetBrains Mono',monospace">ACC2</b></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px">
+          <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; background:#b0455f; color:#fff; padding:2px 6px; border-radius:6px">ACC5</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:11.5px">Delete account</span></div>
+            <div style="font-size:11px; color:#3a3226; line-height:1.4">Confirm &rarr; erase &rarr; <b style="font-family:'JetBrains Mono',monospace">E0</b> · Cancel &rarr; <b style="font-family:'JetBrains Mono',monospace">ACC2</b>. (App-store required.)</div>
+          </div>
+          <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; background:#3a3226; color:#fff; padding:2px 6px; border-radius:6px">N1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:11.5px">Notifications</span></div>
+            <div style="font-size:11px; color:#3a3226; line-height:1.4">Per-type toggles (ministry, branch, reminders, prayer, testimony) + WhatsApp opt-in (docs 15) · <span style="font-size:12px">↩</span></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px">
+          <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; background:#3a3226; color:#fff; padding:2px 6px; border-radius:6px">HL1–2</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:11.5px">About / Contact</span></div>
+            <div style="font-size:11px; color:#3a3226; line-height:1.4">About the church + contact form &rarr; <b style="font-family:'JetBrains Mono',monospace">HL2</b> sent &rarr; <span style="font-size:12px">↩</span> (docs 04: About &amp; Contact)</div>
+          </div>
+          <div style="background:#fff; border:1px solid #e4ddcf; border-radius:12px; padding:11px 12px; flex:1">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:10px; background:#3a3226; color:#fff; padding:2px 6px; border-radius:6px">LG1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:11.5px">Legal</span></div>
+            <div style="font-size:11px; color:#3a3226; line-height:1.4">Privacy + terms · <span style="font-size:12px">↩</span> <b style="font-family:'JetBrains Mono',monospace">ACC2</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section style="background:#f6eef0; border:1px solid #e6cdd4; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px"><span style="width:9px; height:9px; border-radius:50%; background:#b0455f"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0">System &amp; cross-cutting <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0455f">SYS</span></h2></div>
+        <div style="background:#fff; border:1px solid #ecd6dc; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b0455f; color:#fff; padding:2px 7px; border-radius:6px">SS1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Share sheet</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Native OS sheet (WhatsApp-first, copy link, more). Returns to caller. Used by verse, sermon, testimony, event, badge.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #ecd6dc; border-radius:12px; padding:12px 13px; margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b0455f; color:#fff; padding:2px 7px; border-radius:6px">PN</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Push notifications</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Deep-link: Live &rarr; <b style="font-family:'JetBrains Mono',monospace">W2</b> · New testimony &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b> · Prayer &rarr; <b style="font-family:'JetBrains Mono',monospace">FD2</b> · Event &rarr; <b style="font-family:'JetBrains Mono',monospace">EV2</b> · Glory on your post &rarr; <b style="font-family:'JetBrains Mono',monospace">FD1</b> · Global word &rarr; <b style="font-family:'JetBrains Mono',monospace">H1</b>.</div>
+        </div>
+        <div style="background:#fff; border:1px solid #ecd6dc; border-radius:12px; padding:12px 13px">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b0455f; color:#fff; padding:2px 7px; border-radius:6px">STATES</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14px">Shared states</span></div>
+          <div style="font-size:12px; color:#3a3226; line-height:1.5">Every list/detail carries: <b>Empty</b> (prompt + CTA), <b>Loading</b> (skeleton), <b>Error</b> (message + Retry), <b>Offline</b> (banner; cached content still readable). Toasts confirm saves/reactions/check-ins.</div>
+        </div>
+      </section>
+
+      <section style="background:#0e1420; color:#fff; border-radius:18px; padding:15px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px"><span style="width:9px; height:9px; border-radius:50%; background:#ffcf4a"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15px; margin:0; color:#fff">Out of app scope</h2></div>
+        <div style="font-size:12px; color:#dbe1ec; line-height:1.55">The <b style="color:#ffcf4a">Leader dashboard</b> (moderate testimonies/prayers, broadcast push, post events, view giving) is a <b>separate web app</b> &mdash; not a mobile screen. It feeds <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">FS1</b> review, <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">FR1</b> reports, <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">EV1</b> events, and <b style="font-family:'JetBrains Mono',monospace; color:#ffcf4a">PN</b> broadcasts.</div>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- ADDENDUM: newly accounted-for screens -->
+  <section style="margin-top:26px; background:#fff; border:2px solid #ffcf4a; border-radius:18px; padding:18px 20px">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px"><span style="width:9px; height:9px; border-radius:50%; background:#b98600"></span><h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px; margin:0">Added &mdash; closing the last gaps</h2></div>
+    <div style="font-size:12.5px; color:#5f5747; line-height:1.5; margin-bottom:14px; max-width:900px">The five items that weren&rsquo;t explicitly mapped. With these in, v1 is complete. For the two that are behaviour (not just a screen), the recommended method is called out.</div>
+    <div style="display:flex; gap:14px; flex-wrap:wrap">
+
+      <div style="background:#f1eef8; border:1px solid #ddd4ee; border-radius:14px; padding:13px 14px; width:326px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#6b4fb0; color:#fff; padding:2px 7px; border-radius:6px">NC1</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13.5px">Notification center</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+        <div style="font-size:12px; color:#3a3226; line-height:1.5">Bell in the <b style="font-family:'JetBrains Mono',monospace">H1</b> header. In-app list of past pushes; tap an item &rarr; its deep-link (<b style="font-family:'JetBrains Mono',monospace">W2</b>/<b style="font-family:'JetBrains Mono',monospace">FD1</b>/<b style="font-family:'JetBrains Mono',monospace">FD2</b>/<b style="font-family:'JetBrains Mono',monospace">EV2</b>). Empty state + mark-all-read. <span style="font-size:13px">↩</span> <b style="font-family:'JetBrains Mono',monospace">H1</b>.</div>
+      </div>
+
+      <div style="background:#fff6de; border:1px solid #f2dfa8; border-radius:14px; padding:13px 14px; width:326px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#b98600; color:#fff; padding:2px 7px; border-radius:6px">F10</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13.5px">Edit / delete my post</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#546077; background:#e6efff; padding:2px 8px; border-radius:100px">Member</span></div>
+        <div style="font-size:12px; color:#3a3226; line-height:1.5">From <b style="font-family:'JetBrains Mono',monospace">F9</b>: Edit &rarr; re-opens <b style="font-family:'JetBrains Mono',monospace">FC1</b>/<b style="font-family:'JetBrains Mono',monospace">FC2</b> prefilled (edits re-enter review). Delete &rarr; confirm &rarr; removed + toast &rarr; <b style="font-family:'JetBrains Mono',monospace">F9</b>. (App-store requirement: users can remove their content.)</div>
+      </div>
+
+      <div style="background:#eef1f6; border:1px solid #d3dae6; border-radius:14px; padding:13px 14px; width:326px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#14213d; color:#fff; padding:2px 7px; border-radius:6px">E1b</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13.5px">Privacy &amp; consent</span><span style="margin-left:auto; font-size:10px; font-weight:800; color:#5f5747; background:#eee7db; padding:2px 8px; border-radius:100px">Both</span></div>
+        <div style="font-size:12px; color:#3a3226; line-height:1.5"><b>Layered notice, NOT a blocking screen</b> (docs 06/20): a short privacy line on <b style="font-family:'JetBrains Mono',monospace">E1</b> + full policy at <b style="font-family:'JetBrains Mono',monospace">LG1</b>. Explicit consent is captured contextually at compose (<b style="font-family:'JetBrains Mono',monospace">FC1</b>/<b style="font-family:'JetBrains Mono',monospace">FC2</b>) where the Art. 9 sharing actually happens. Policy changes surface as a dismissible notice.</div>
+      </div>
+
+      <div style="background:#fdf6e3; border:1px solid #f0e2b8; border-radius:14px; padding:13px 14px; width:326px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f8a5b; color:#fff; padding:2px 7px; border-radius:6px">✦ #3</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13.5px">Session expiry &mdash; method</span></div>
+        <div style="font-size:12px; color:#3a3226; line-height:1.55"><b>Silent refresh.</b> Short-lived access token (~1h) + long-lived rotating refresh token (~60d), renewed in the background. The user never sees a login unless the refresh token itself fails/revoked &mdash; only then &rarr; <b style="font-family:'JetBrains Mono',monospace">A1</b>, returning to the exact screen after. Signing out or <b style="font-family:'JetBrains Mono',monospace">ACC5</b> revokes it.</div>
+      </div>
+
+      <div style="background:#fdf6e3; border:1px solid #f0e2b8; border-radius:14px; padding:13px 14px; width:326px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; background:#1f8a5b; color:#fff; padding:2px 7px; border-radius:6px">✦ #5</span><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13.5px">Account recovery &mdash; method</span></div>
+        <div style="font-size:12px; color:#3a3226; line-height:1.55"><b>v1: lost number = new profile</b> (documented limitation, docs 03). An admin can merge on request only after OTP-verifying control of <b>both</b> numbers (account-takeover guard, docs 20). Recovery email / passkeys are post-v1 options.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COUNT FOOTER -->
+  <div style="margin-top:36px; display:flex; gap:14px; flex-wrap:wrap; align-items:center">
+    <div style="background:#14213d; color:#fff; border-radius:14px; padding:14px 20px"><span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px">~57</span> <span style="font-size:13px; color:#c7d0e0">screens &amp; states mapped</span></div>
+    <div style="font-size:13px; color:#5f5747; max-width:640px; line-height:1.55">v1 ships everything except the <b>phase 2</b> items (nation detail <b style="font-family:'JetBrains Mono',monospace">F6</b>, series, groups, giving history). The Nations map <b style="font-family:'JetBrains Mono',monospace">F5</b> itself <b>is v1</b>: one third of the wedge (docs 09). On any conflict between this map and the docs, <b>the docs win</b> (see AUDIT-2026-07-12.md Part D).</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

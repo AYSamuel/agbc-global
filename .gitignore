@@ -1,0 +1,28 @@
+node_modules/
+.env
+.env.*
+!.env.example
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+# Expo / builds
+.expo/
+dist/
+web-build/
+*.apk
+*.aab
+*.ipa
+# Signing material: never
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+google-service-account*.json
+# Outputs
+coverage/
+.next/
+.turbo/
+*.tsbuildinfo
+.DS_Store
