@@ -1,7 +1,7 @@
-# 08 · Feature — Watch & Sermon Player
+# 08 · Feature: Watch & Sermon Player
 
 ## Purpose
-Let anyone catch a message they missed — watch or **listen** — on any branch's feed, with the "listen while driving / save data" experience members asked for: **audio-only, background + lock-screen playback, resume where I paused.**
+Let anyone catch a message they missed, watch or **listen**, on any branch's feed, with the "listen while driving / save data" experience members asked for: **audio-only, background + lock-screen playback, resume where I paused.**
 
 ## User stories
 - As a member, I can listen to a sermon in the background while driving and pick up where I left off.
@@ -12,9 +12,9 @@ Let anyone catch a message they missed — watch or **listen** — on any branch
 `WATCH` (tab) · `SERMON` (player) · `LIVE` · `WATCH-SEARCH` · `SERMON-NOTES` · `MY-LIST`
 
 ### `WATCH` (Tab 2)
-- **Featured hero** — latest/pinned message → `SERMON`.
-- **Live state** — if HQ is live now, a live banner → `LIVE`. Otherwise no dead "live" tab; show replays.
-- **Rails** — Recent messages, Series/collections, (later) per-branch.
+- **Featured hero**: latest/pinned message → `SERMON`.
+- **Live state**: if HQ is live now, a live banner → `LIVE`. Otherwise no dead "live" tab; show replays.
+- **Rails**: Recent messages, Series/collections, (later) per-branch.
 - **Search** icon → `WATCH-SEARCH`.
 - Each card: thumbnail, title, speaker, duration, **progress bar** (member resume), **Save** (gate), overflow (Share, audio-only).
 
@@ -27,9 +27,9 @@ Let anyone catch a message they missed — watch or **listen** — on any branch
 ### `LIVE`
 - Live video (HQ channel `/live` or precise stream via YouTube Data API).
 - **"Watching now"** realtime count.
-- **Auto-attendance** for signed-in members watching live (`attendance.source = live_watch`) — counts toward rhythm.
+- **Auto-attendance (precise rule):** opening `LIVE` during an active `branch_services` window of the streaming branch (v1: HQ) writes attendance ONCE, immediately, with `source='live_watch'` and `branch_id` = the streaming branch. The row stands even if the stream never goes live: **credit-on-open IS the failed-stream protection**, no separate grace mechanism needed. Counts toward rhythm.
 - Ends → replay (`SERMON`) or back to `WATCH`.
-- **Scheduled-but-absent state machine (the stream fails on Sunday):** during a `branch_services` window with no live stream, show "We'll be live soon: hold on" with replays below; after 15 minutes degrade to "We couldn't go live today" + the latest message. Never a spinner, never a countdown reaching zero into nothing. Members who opened `LIVE` during the window keep their attendance credit (or the week auto-graces, see `10`); a leader can mark "no stream today" in the dashboard.
+- **Scheduled-but-absent state machine (the stream fails on Sunday):** during a `branch_services` window with no live stream, show "We'll be live soon: hold on" with replays below; after 15 minutes degrade to "We couldn't go live today" + the latest message. Never a spinner, never a countdown reaching zero into nothing. Members who opened `LIVE` during the window already have their attendance row (credit-on-open, above), so a failed stream never breaks a streak.
 
 ### `WATCH-SEARCH`
 - Query title/speaker/series. Empty → recent searches / suggestions. No results → "No messages found" + clear.
@@ -46,7 +46,8 @@ Let anyone catch a message they missed — watch or **listen** — on any branch
 - **Audio:** MP3/AAC in Storage, streamed via signed URL. A sermon row may have `youtube_id` and/or `audio_url`. Audio-only exists **only when `audio_url` is present**. Never extract, proxy, or background-play the audio track of a YouTube video: that violates YouTube's Terms of Service and is an app-review risk. No `audio_url` ⇒ the toggle is disabled with a tooltip.
 - **Operational commitment:** the "listen while driving" promise only exists for sermons whose MP3 was actually uploaded. Uploading the week's audio via the dashboard is a standing weekly task; assign its owner (media team) before launch (`18`).
 - **Sync (job spec, see `21` §5):** nightly edge function (Supabase Cron) pulls the uploads playlist via `playlistItems.list` (1 quota unit per call; never `search.list` at 100 units) and upserts `on conflict (youtube_id) do update` (partial unique index, idempotent retries). Videos that vanish from the channel are marked `status='unavailable'`, never deleted: resume positions, notes, and My List survive. Keyless RSS fallback caps at 15.
-- **Sermon rot handling:** an `unavailable` sermon's player shows "This message is no longer available" and falls back to the self-hosted audio if `audio_url` survives; My List renders it greyed with a remove action; notes stay reachable.
+- **Sermon rot handling:** an `unavailable` sermon's player shows "This message is no longer available" and falls back to the self-hosted audio if `audio_url` survives; My List renders it greyed with a remove action; notes stay reachable. **Restore is symmetric:** the nightly sync sets `status='available'` for any row whose youtube_id reappears in the uploads playlist (`unavailable` is only ever the reflection of the last sync).
+- **Stale live-flag bound:** `sermons` gains `live_checked_at`; clients treat `is_live` as false when `live_checked_at` is older than 15 minutes (a dead detection job can never advertise a live service into dead air), and the nightly sync clears any stale `is_live` it finds.
 
 ## Data
 - Reads: `sermons`, `playback_positions`, `saved_items`, `sermon_notes`.

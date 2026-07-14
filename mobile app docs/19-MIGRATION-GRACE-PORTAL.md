@@ -33,8 +33,8 @@ The existing Supabase project is **shared**: the agbc website uses roughly 3 tab
 3. **Back up + rehearse.** Full backup/export before any destructive change, then **rehearse the entire cleanup once**: restore the prod dump into a short-lived scratch project and run the full Grace Portal drop + new schema apply end to end there. No environment resembles prod (the website tables exist only there) until this rehearsal; do not discover collisions live.
 4. **Remove.** Drop Grace Portal tables/functions/buckets only after the audit confirms nothing else reads them. Every drop is reviewed and explicitly confirmed (destructive, staged behind the backup).
 5. **Clean auth.** Remove stale Grace Portal auth users (nobody active); keep any account the website relies on.
-6. **Migrate (baseline strategy).** After cleanup, run `supabase db pull` against prod to produce a **baseline migration that INCLUDES the website's tables** (so the dev project, created from the same history, is truly schema-identical and RLS behavior matches), marked applied in prod via `supabase migration repair`. All app changes are subsequent numbered migrations that never reference website objects; CI enforces this with a fence-guard check against the fenced-object list, and a pgTAP test asserts the website objects are untouched. **Fence GRANTs too:** the app and website share one anon key, so every anon policy on website tables is reachable from the app and vice versa; the audit covers policies and grants, not just table drops. Prod migrations apply only via the approval-gated CI job (`21` §3). Seed branches/courses/academy/giving config via the versioned seed (with the augmentation map: the JSON lacks lat/lng/slug/timezone, see `02`).
-7. **Region check.** Confirm the project region is EU/UK (see `20`). If it is not, weigh migrating to a fresh EU project BEFORE launch; that decision flips this plan to "new project + copy the website's 3 tables," so make it first.
+6. **Migrate (baseline strategy).** After cleanup, run `supabase db pull` against prod to produce a **baseline migration that INCLUDES the website's tables** (so the dev project, created from the same history, is truly schema-identical and RLS behavior matches), marked applied in prod via `supabase migration repair`. All app changes are subsequent numbered migrations that never reference website objects; CI enforces this with a fence-guard check against the fenced-object list, and a pgTAP test asserts the website objects are untouched. **Fence GRANTs too:** the app and website share one anon key, so every anon policy on website tables is reachable from the app and vice versa; the audit covers policies and grants, not just table drops. Prod migrations apply only via the manually triggered prod deploy workflow (`21` §3, `23` §4). Seed branches/courses/academy/giving config via the versioned seed (with the augmentation map: the JSON lacks lat/lng/slug/timezone, see `02`).
+7. **Region check: DONE (2026-07-13).** Confirmed `eu-central-1` (Frankfurt), EU as required; this plan stands. Note the project is currently on the **Free plan** with the Pro upgrade deferred: the off-provider dump pipeline + verified restore is a hard precondition before any destructive step above (`21` §7, `24`).
 
 **Environments:** existing shared project = **production**; a fresh free-tier project = **dev**. There is no staging environment; the only staging-like environment is the short-lived cleanup-rehearsal project (`21` §2).
 
@@ -56,10 +56,11 @@ Grace Portal used OneSignal; the new app uses Expo Push (APNs/FCM). Nothing to m
 - [ ] EAS credentials: existing Android upload keystore + Apple distribution cert configured
 - [ ] App config uses `com.oami.agbcapp` / `com.olayinkaademiluka.grace-portal`, `versionCode` >= 20
 - [ ] Supabase audit complete; website objects fenced and recorded in project CLAUDE.md
+- [ ] Nightly off-provider `db dump` pipeline live + one verified restore (HARD precondition before ANY destructive step, `21` §7 / `24`)
+- [ ] Cleanup rehearsed end to end on a restored prod dump (scratch project)
 - [ ] Backup taken; Grace Portal objects removed; stale auth users cleaned
 - [ ] `02` schema migrated; seeds loaded; RLS baseline reviewed
-- [ ] Project region confirmed EU/UK, or the new-project decision recorded instead
-- [ ] Cleanup rehearsed end to end on a restored prod dump (scratch project)
+- [x] Project region confirmed EU: `eu-central-1` (2026-07-13; project ref `fotfplvqsnmbzjjhqlwp`)
 - [ ] Baseline migration (incl. website tables) pulled + repaired; fence-guard test green
 - [ ] Shipping on Expo SDK 56+ (Play target API 36 from 2026-08-31)
 - [ ] AASA + assetlinks live on the church site; assetlinks uses the Play App Signing SHA-256

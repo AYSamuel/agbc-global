@@ -1,27 +1,27 @@
-# 17 · Admin — Leader Web Dashboard
+# 17 · Admin: Leader Web Dashboard
 
 ## Purpose
-Give branch leaders and ministry admins the tools to **run the app's content and community** — without shipping admin power into the member app. **Decision: a separate web dashboard** (not in the mobile app) for moderation, broadcasting, and content.
+Give branch leaders and ministry admins the tools to **run the app's content and community**: without shipping admin power into the member app. **Decision: a separate web dashboard** (not in the mobile app) for moderation, broadcasting, and content.
 
 ## Why a separate web dashboard
-- Moderation and broadcasting are desk tasks — easier on a keyboard/large screen.
+- Moderation and broadcasting are desk tasks: easier on a keyboard/large screen.
 - Keeps the mobile app lean and the attack surface small (no admin code in the consumer binary).
 - Faster to iterate (web deploy, no store review).
 
 ## Platform
-- Web app (Next.js/React) on the **same backend** (Supabase) — reads/writes the same Postgres with **admin-scoped RLS / service role** behind server routes. Auth via the same identity (leaders sign in; role checked).
+- Web app (Next.js/React) on the **same backend** (Supabase): reads/writes the same Postgres with **admin-scoped RLS / service role** behind server routes. Auth via the same identity (leaders sign in; role checked).
 - **Authorization rule (service role bypasses RLS entirely, so route code IS the authorization layer):** centralized middleware on EVERY server route derives the caller from their session JWT, loads role + branch server-side, and authorizes the specific action + target BEFORE any service-role call. Client input never supplies authority (no request-body `branch_id` trusted). Prefer the caller's own JWT + RLS where possible; reserve service-role for genuinely admin operations. CI runs IDOR probes (foreign branch ids) against every route (`21` §4).
 - **Staff MFA (per the security standard):** passkeys/WebAuthn on the dashboard, **mandatory for admins**, strongly recommended for leaders (phone OTP alone is SIM-swappable and phishable, unacceptable for accounts that can broadcast to the whole ministry). Step-up re-auth for role assignment, branch management, and ministry-scope broadcasts. Dedicated admin accounts; short idle timeout; every privileged action audit-logged (actor, action, target, timestamp, immutable).
 
 ## Roles
-- **Leader** — scoped to **their branch**: moderate that branch's testimonies/prayers/reports, post branch events, send **branch** broadcasts, manage branch service times/details.
-- **Admin** — **ministry-wide**: everything leaders can do across all branches, plus manage branches, assign roles, post global events, send **ministry** broadcasts, manage global content (daily verses, devotional plans, courses, books, sermon audio).
+- **Leader**: scoped to **their branch**: moderate that branch's testimonies/prayers/reports, post branch events, send **branch** broadcasts, manage branch service times/details.
+- **Admin**: **ministry-wide**: everything leaders can do across all branches, plus manage branches, assign roles, post global events, send **ministry** broadcasts, manage global content (daily verses, devotional plans, courses, books, sermon audio).
 
 ## Modules
 
 ### 1. Moderation queue
 - Pending **testimonies** + **prayers** (per branch for leaders; all for admins).
-- Actions: **Approve / Reject (with reason) / Remove**. Approving flips `status='approved'` → appears in app feed; author notified.
+- Actions: **Approve / Reject (with reason) / Remove**. Approving flips `status='approved'` → appears in app feed; author notified. **Compare-and-set:** every decision carries the `updated_at` of the version reviewed; if the author edited meanwhile, the action fails with "content changed since review" and the item returns to the queue (`02` invariants). Only admins can restore `removed` content (audit-logged).
 - **Reports** inbox (`reports`): review flagged content → action or dismiss.
 - Audit trail (`moderated_by`, `moderated_at`).
 - **Freshness safeguard:** leaders are notified (push/in-app) when new items enter their queue; anything `pending` longer than 48h escalates to admins, who can moderate any branch. A quiet leader must never make a branch's feed look dead.
@@ -31,22 +31,22 @@ Give branch leaders and ministry admins the tools to **run the app's content and
 
 ### 2. Broadcasts
 - Compose a `broadcast`: scope (branch/ministry), title, body (+ optional `body_de`/`body_nl`, see `22` §4), channels (push / WhatsApp / in-app), optional deep link.
-- **Blast-radius controls:** confirmation screen shows the EXACT recipient count, the fully rendered body, and any link's expanded destination before send; outbound links are allowlisted/previewed; per-account daily send caps; **ministry scope requires a second admin's approval (four-eyes)**: the approve route refuses `approver == author` (backed by the DB CHECK in `02`), and a rejection sets `status='rejected'` + `review_note`, returning the broadcast to draft with the note shown to the author; the WhatsApp cap is **enforced server-side** (the send route counts sent ministry-scope WhatsApp broadcasts in the calendar month and refuses beyond 2; override requires a second admin + an audit-log entry); WhatsApp shows the estimated cost pre-send (`21` §9); a **halt control** stops an in-flight fan-out mid-delivery.
+- **Blast-radius controls:** confirmation screen shows the EXACT recipient count, the fully rendered body, and any link's expanded destination before send; outbound links are allowlisted/previewed; per-account daily send caps; **ministry scope requires a second admin's approval (four-eyes)**: the approve route refuses `approver == author` (backed by the DB CHECK in `02`), and a rejection sets `status='rejected'` + `review_note` (shown to the author); the author's next edit moves it back to `draft` for resubmission; the WhatsApp cap is **enforced server-side** (the send route counts sent ministry-scope WhatsApp broadcasts in the calendar month and refuses beyond 2; override requires a second admin + an audit-log entry); WhatsApp shows the estimated cost pre-send (`21` §9); a **halt control** stops an in-flight fan-out mid-delivery.
 - Send → edge function fan-out respecting `notification_prefs` (see `15`), chunked and resumable via `broadcast_deliveries`. History of sent broadcasts with per-channel outcomes.
 
 ### 3. Events
 - CRUD `events`; leave branch empty for ministry-wide (`branch_id IS NULL`, see `02`); enable RSVP; upload image. (Sanity sync is a post-v1 option, see `11`.)
-- **Cancellation/reschedule:** a published event with RSVPs is CANCELLED (`status='cancelled'`), never hard-deleted; cancelling or changing time/venue auto-notifies all non-cancelled RSVPs (`11`).
+- **Cancellation/reschedule/reinstate:** a published event with RSVPs is CANCELLED (`status='cancelled'`), never hard-deleted; cancelling, changing time/venue, or reinstating (future events only) auto-notifies all non-cancelled RSVPs (`11`).
 
 ### 4. Content
-- **Daily verses** — schedule per date/language, with CSV/spreadsheet batch import (quarterly 90-day batches, `22` §1).
-- **Devotional plans** — the structured-import tool: a purchased devotional (Payhip book) gets its day rows (`devotional_days`) imported once per release against the template in `22-CONTENT-OPERATIONS.md`; the plan links to the book (`reading_plans.book_id`) so the entitlement unlocks it. Free plans (if ever) are created the same way without a book link.
-- **Courses** — manage academy courses, registrations list, confirm/cancel registrations.
-- **Sermon audio** — upload self-hosted audio, attach metadata; YouTube video auto-syncs.
-- **Books** — manage catalog, link Payhip, upload files, handle entitlement issues / manual grants, and work the **unmatched-purchases queue** (`02`/`14`) weekly.
+- **Daily verses**: schedule per date/language, with CSV/spreadsheet batch import (quarterly 90-day batches, `22` §1).
+- **Devotional plans**: the structured-import tool: a purchased devotional (Payhip book) gets its day rows (`devotional_days`) imported once per release against the template in `22-CONTENT-OPERATIONS.md`; the plan links to the book (`reading_plans.book_id`) so the entitlement unlocks it. Free plans (if ever) are created the same way without a book link.
+- **Courses**: manage academy courses, registrations list, confirm/cancel registrations. **"Notify interested members"** (offered when a course opens): sends the transactional `course_opened` notification to every `course_interest` row, then deletes them (interest is consumed). Closing a course back to `upcoming=true` is blocked while any registration is `pending`: confirm or cancel each first.
+- **Sermon audio**: upload self-hosted audio, attach metadata; YouTube video auto-syncs.
+- **Books**: manage catalog, link Payhip, upload files, handle entitlement issues / manual grants, and work the **unmatched-purchases queue** (`02`/`14`) weekly.
 
 ### 5. People & branches
-- **Admins:** manage branches (add/edit — service times, lead, leaders, address, lat/lng, YouTube channel), assign **roles** (member→leader→admin), scope leaders to branches.
+- **Admins:** manage branches (add/edit: service times, lead, leaders, address, lat/lng, YouTube channel), assign **roles** (member→leader→admin), scope leaders to branches. **Archive branch** (never delete, `02`): blocked until the branch's leaders are reassigned or demoted; archiving stops its reminders/broadcasts, hides it from all pickers and the map, escalates its residual pending moderation to admins, and triggers the members' "choose your new home branch" prompt.
 - Member directory (basic), with care for privacy.
 
 ### 6. Insights (light)
@@ -64,7 +64,7 @@ Give branch leaders and ministry admins the tools to **run the app's content and
 
 ## Acceptance criteria
 - [ ] No public content goes live without passing the moderation queue.
-- [ ] Leaders are strictly branch-scoped; admins are global — enforced server-side.
+- [ ] Leaders are strictly branch-scoped; admins are global: enforced server-side.
 - [ ] Broadcasts fan out by scope and respect prefs.
 - [ ] Admins can add a branch and it appears in the app (onboarding, Home switch, map) without an app release.
 - [ ] Course registrations and entitlement issues are resolvable here.

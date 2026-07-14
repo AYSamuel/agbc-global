@@ -1,7 +1,7 @@
-# 14 · Feature — Store (Bookstore) & My Library
+# 14 · Feature: Store (Bookstore) & My Library
 
 ## Purpose
-Sell the church's e-books and let owners read them in-app — using the **reader-app model**: **buy on the web (Payhip)**, **read owned books in-app**. This avoids the App Store's in-app-purchase cut on digital goods (books are purchased outside the app; the app is a reader for content the user already owns).
+Sell the church's e-books and let owners read them in-app: using the **reader-app model**: **buy on the web (Payhip)**, **read owned books in-app**. This avoids the App Store's in-app-purchase cut on digital goods (books are purchased outside the app; the app is a reader for content the user already owns).
 
 ## Decision recap
 - **Buy → web (Payhip).** **Read owned → in-app reader.** No in-app store purchase in v1.
@@ -56,6 +56,14 @@ paying member's book); unconfirmable refund events log + alert.
 **What the API confirmation checks:** the webhook payload supplies ONLY the lookup key. Product id (must match `books.payhip_product_id`), buyer email, amount/currency, and refund status are taken exclusively from the Payhip API response; any mismatch routes to `unmatched_purchases` and alerts (a real cheap transaction id replayed against an expensive book must fail).
 
 **Drain mechanism:** when a profile's email becomes verified, a trigger grants matching `unmatched_purchases` rows through the same confirmed-grant path; the 5-minute Payhip job re-sweeps as a safety net (`21` §5).
+
+**Reconciliation for never-arrived webhooks:** a daily job pulls the last 7 days of transactions from the Payhip API and inserts any transaction id missing from `payhip_events` as a synthetic event (unique id: idempotent), so silently dropped webhooks (including refunds) surface within a day, never only when a buyer complains (`21` §5).
+
+**Revocation, client side:** on refund the book leaves LIBRARY and READER refuses to open it (entitlement re-checked on open when online; offline grace until the next successful sync, which then deletes the local file). `reading_state` and `plan_progress` are retained 12 months so a re-purchase restores place and progress; earned milestones are never revoked; a refunded devotional's plan re-locks per `10`.
+
+**Return-from-purchase:** dismissing the in-app browser opened from Buy triggers an entitlement refetch and a banner ("Bought it? It appears in your Library within a few minutes"); entitlement-gated screens (BOOK-DETAIL, PLAN, LIBRARY) refetch on focus; the transactional purchase push remains the completion signal.
+
+**Email-verification failure states:** the email-verify screen mirrors `AUTH-2`'s resend/expiry/failure states; on persistent failure it points at the order-id restore path. Delivery is monitored by the Resend canary (`21` §6).
 
 **Restore purchase ("I bought this"):** grants only against the profile's **verified** email (`profiles.email`, email-OTP verified) or a Payhip order id the claimant provides (proof of receipt). Uniform response either way ("if a matching purchase exists, it will be added": no enumeration signal). Rate-limited per account and per IP.
 

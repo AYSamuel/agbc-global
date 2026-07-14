@@ -98,7 +98,7 @@ coverage/
 7. `supabase init` at root; commit the clean scaffold BEFORE writing any migration.
 8. Scaffold `apps/mobile`, `apps/dashboard`, `packages/shared`; `.env.example` per app; one commit each.
 9. Meta: workflows, templates, `renovate.json`, ADR backfill, `credentials.md` skeleton. Commit.
-10. Push to a new **private** GitHub repo (org recommended over personal account: bus factor). Settings: protect `main` (PRs + required checks, no force-push); create the `production` Environment with a required reviewer and put the prod Supabase token + db password there; add repo secrets; enable Renovate.
+10. Push to the new **private** repo under the **free org `agbc-global`** (decided 2026-07-13; Ayo's personal account is the org's first owner, a church officer the second). Free-plan reality on private repos: enforced branch protection and reviewer-gated environments require a paid tier, so until GitHub Team (~$4/user/month) is justified by a second contributor: prod deploys run via a **manually triggered `workflow_dispatch` job** (the solo-dev equivalent of the approval gate), the prod Supabase token/db password are secrets used ONLY by that workflow, and branch discipline is by convention. Enable Renovate.
 11. Create Milestones (Phase -1..4), the Project board, and the checklist issues.
 
 Every commit and push in this runbook happens only with Ayo's explicit approval per his git rules; branch names and commit messages are proposed first.

@@ -31,7 +31,7 @@ The software can pass every acceptance criterion and still die in month 3 if the
 
 ## 3. Family cold-start seeding (the wedge must not launch empty)
 
-1. **Founding Members program:** 15 to 25 invited members per branch join 3 to 4 weeks pre-launch on the internal/TestFlight track; each is asked to share one testimony and one prayer request.
+1. **Founding Members program:** 15 to 25 invited members per branch join 3 to 4 weeks pre-launch on the internal/TestFlight track; each is asked to share one testimony and one prayer request. **Backend fence:** this phase runs against the DEV project unless prod is already on Pro (`24` §1 traffic fence: Free-tier prod egress is shared with the live website and would be exhausted within days).
 2. **Pre-launch collection at services:** a card or WhatsApp form leaders transcribe (with recorded consent), posted under the member's account at first sign-in or leader-posted with attribution.
 3. **Leaders post first:** each branch leader shares in week 1 (they are members too).
 4. **Launch Sunday choreography:** announced from the pulpit at all 4 branches with a QR code; everyone is asked to tap Glory on one testimony that day.

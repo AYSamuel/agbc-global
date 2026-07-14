@@ -1,14 +1,14 @@
-# 15 · Feature — Notifications (Push + WhatsApp) & Notification Center
+# 15 · Feature: Notifications (Push + WhatsApp) & Notification Center
 
 ## Purpose
 Reach the family where they are, at the right scope, without spamming. Combines **push** (Expo/APNs/FCM) with **WhatsApp** (the audience's native channel) and an **in-app Notification Center**.
 
 ## Channels
-1. **Push** — real-time, primary. Expo Push → APNs (iOS) / FCM (Android).
-2. **WhatsApp** — via WhatsApp Cloud API (or provider). For broadcasts and shares; complements push for a WhatsApp-first audience. **Opt-in** (`notification_prefs.whatsapp_opt_in`).
-3. **In-app Notification Center** (`NC`) — a durable log; every notification also lands here.
+1. **Push**: real-time, primary. Expo Push → APNs (iOS) / FCM (Android).
+2. **WhatsApp**: via WhatsApp Cloud API (or provider). For broadcasts and shares; complements push for a WhatsApp-first audience. **Opt-in** (`notification_prefs.whatsapp_opt_in`).
+3. **In-app Notification Center** (`NC`): a durable log; every notification also lands here.
 
-> **Android channels + permission ordering:** each pref key maps 1:1 to an Android notification channel (ministry, branch, service reminders, prayer activity, testimony activity). Ordering rule: create ALL channels at first app start (Android 13+ will not show the permission prompt until a channel exists), request permission in-context per `06`, THEN fetch the Expo push token. Channel names/importance are immutable after creation; get them right the first time. iOS: consider provisional authorization (quiet delivery) for service reminders before the full prompt.
+> **Android channels + permission ordering:** SIX channels: five map 1:1 to pref keys (ministry, branch, service reminders, prayer activity, testimony activity) plus a `transactional` channel with no pref key (always-on action confirmations). Ordering rule: create ALL SIX channels at first app start (Android 13+ will not show the permission prompt until a channel exists), request permission in-context per `06`, THEN fetch the Expo push token. Channel names/importance are immutable after creation; get them right the first time. iOS: consider provisional authorization (quiet delivery) for service reminders before the full prompt.
 
 > **Payload privacy rule:** push payloads never carry testimony/prayer content (special-category data on lock screens and through Expo/APNs/FCM). Generic title + deep link only ("Someone prayed with you"); the body is fetched in-app after auth. Same rule for edge-function logs (see `20`).
 
@@ -23,20 +23,20 @@ This is the multi-branch answer to "who gets notified":
 | **Branch** | Members of that branch | Branch event, branch update, local service change | `branch_updates` |
 | **Service reminder** | Member's branch service | "Service starts in 1 hour" | `service_reminders` |
 | **Personal: activity** | The individual | Someone prayed for you, Glory reactions on your testimony | `prayer_activity` / `testimony_activity` |
-| **Personal: transactional** | The individual | Post approved / needs changes, RSVP reminder, registration confirmed, purchase added to Library | always on (own "activity" Android channel, no pref key: these answer an action the member took) |
+| **Personal: transactional** | The individual | Post approved / needs changes, RSVP reminder, registration confirmed, purchase added to Library | always on (own `transactional` Android channel, no pref key: these answer an action the member took) |
 
-> **Answer to "global meetings — do all users get notified?"** Yes — a **ministry-wide** notification (or a global event, `branch_id IS NULL`) fans out to **every member across all branches** who has `ministry_announcements` enabled. Branch notifications stay within the branch.
+> **Answer to "global meetings: do all users get notified?"** Yes: a **ministry-wide** notification (or a global event, `branch_id IS NULL`) fans out to **every member across all branches** who has `ministry_announcements` enabled. Branch notifications stay within the branch.
 
 ## Notification Center (`NC`)
 - Reached via the **bell on Home** (unread dot) and More → Notifications.
 - List of `notifications` (rendered per the user's language, time, read state), newest first. **Cursor pagination** (~30 per page); unread badge caps at "99+"; activity batching: "N people said Glory" collapses per post per day; a footer row at the retention boundary: "Older notifications are removed after 12 months."
-- Tap → **deep link** to the target screen (`deep_link` field) — e.g. a "someone prayed for you" opens `PRAYER-DETAIL`; a global event opens `EVENT-DETAIL`.
+- Tap → **deep link** to the target screen (`deep_link` field): e.g. a "someone prayed for you" opens `PRAYER-DETAIL`; a global event opens `EVENT-DETAIL`.
 - Mark read on view/tap; "mark all read."
 - Empty → "You're all caught up."
 
 ## Sending (who triggers what)
-- **Automated (system):** service reminders (scheduled per branch service time), personal activity (prayer/glory/approval/RSVP), verse/devotional reminder (opt-in).
-- **Manual (leaders/admins via dashboard, see `17`):** `broadcasts` — a leader sends **branch** scope; an admin sends **ministry** scope (four-eyes approval required, `17`); channels chosen (push / WhatsApp / in-app; WhatsApp rationed to 2 ministry-wide/month per the cost policy in `21` §9). Fan-out via edge function, chunked through `broadcast_deliveries` rows (cursor resume, dedupe per device, haltable mid-send), batches of 100 per Expo call → `devices` push tokens + WhatsApp API + `notifications` rows (unique per profile+broadcast: re-runs never double-write).
+- **Automated (system):** service reminders (scheduled per branch service time); personal activity (prayer/glory: pref-gated); transactional (post approved/needs changes, RSVP reminder, registration confirmed, purchase added: ALWAYS on, `transactional` channel); verse/devotional reminder (opt-in).
+- **Manual (leaders/admins via dashboard, see `17`):** `broadcasts`: a leader sends **branch** scope; an admin sends **ministry** scope (four-eyes approval required, `17`); channels chosen (push / WhatsApp / in-app; WhatsApp rationed to 2 ministry-wide/month per the cost policy in `21` §9). Fan-out via edge function, chunked through `broadcast_deliveries` rows (cursor resume, dedupe per device, haltable mid-send), batches of 100 per Expo call → `devices` push tokens + WhatsApp API + `notifications` rows (unique per profile+broadcast: re-runs never double-write).
 - **Receipts (delivery truth):** Expo push is two-phase: sends return tickets; real outcomes arrive as receipts fetched ~15 to 30 minutes later. A scheduled function fetches receipts by stored ticket ids and deletes `devices` rows on `DeviceNotRegistered` (ignoring receipts gets senders throttled). This is a launch requirement, not an optimization.
 
 ## Deep-link routes (examples)

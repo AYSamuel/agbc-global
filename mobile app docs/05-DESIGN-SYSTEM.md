@@ -19,8 +19,8 @@ Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.htm
 | `cardline` | `#e8e0d0` | card border |
 | `band` | `#14213d` | dark bands / hero |
 | `bandtext` | `#ffffff` | text on band |
-| `accent` | `#ffcf4a` | **gold** — highlights, key CTAs |
-| `blue` | `#2f6fed` | **hopeful blue** — primary action, links |
+| `accent` | `#ffcf4a` | **gold**: highlights, key CTAs |
+| `blue` | `#2f6fed` | **hopeful blue**: primary action, links |
 | `eye` / `count` | `#2f6fed` | eyebrows, counters |
 
 ### Dark
@@ -75,11 +75,11 @@ Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.htm
 | `Eyebrow` | uppercase label + short rule (color = `eye`) |
 | `Chip` | branch chip, filter chip, scope toggle segment |
 | `SegmentedControl` | scope toggle (My branch/Everywhere), theme picker, format picker |
-| `VerseCard` | daily verse — gold accent, serif-flavored reference |
+| `VerseCard` | daily verse: gold accent, serif-flavored reference |
 | `SermonCard` / `SermonRail` | thumbnail, play overlay, progress bar (resume) |
 | `TestimonyCard` | author, branch, body, **Glory to God** button + count |
 | `PrayerCard` | body, pray count, "I prayed" |
-| `GloryButton` | signature reaction — filled gold state when reacted, count animates |
+| `GloryButton` | signature reaction: filled gold state when reacted, count animates |
 | `StreakStrip` / `MilestoneBadge` | grace-framed, encouraging |
 | `EventRow` | date block + title + branch/global tag |
 | `GateSheet` | bottom sheet for auth gate |
@@ -92,15 +92,15 @@ Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.htm
 - A `ThemeProvider` exposes the active theme object; all components read tokens from context (no hard-coded hex in screens).
 - **Setting:** `theme_pref` = `system` \| `light` \| `dark` (Settings → segmented control). `system` follows OS via `useColorScheme()`.
 - Persist locally in **AsyncStorage** (theme/language/branch are not secrets; SecureStore is reserved for the auth encryption key, see `03`) **and** to `profiles.theme_pref` for members (so it follows across devices).
-- **Status bar + device chrome** must match theme (light content on dark, dark content on light) — set `StatusBar` style per theme. (This was a known follow-up: theme the status bars, not just content.)
+- **Status bar + device chrome** must match theme (light content on dark, dark content on light): set `StatusBar` style per theme. (This was a known follow-up: theme the status bars, not just content.)
 
 ## Iconography
 
-- Stroke-based, `currentColor`, 1.8 stroke — consistent with the website's `Icon` set. Reuse the same glyph vocabulary (play, calendar, globe, heart/flame for reactions, etc.).
+- Stroke-based, `currentColor`, 1.8 stroke: consistent with the website's `Icon` set. Reuse the same glyph vocabulary (play, calendar, globe, heart/flame for reactions, etc.).
 
 ## Imagery
 
-- Real photos (heroes, branches, generosity) from `agbc/src/assets/` — copied into the app assets. Use `expo-image` with blurhash placeholders.
+- Real photos (heroes, branches, generosity) from `agbc/src/assets/`: copied into the app assets. Use `expo-image` with blurhash placeholders.
 - Avoid decorative SVG illustration; the brand is photographic + typographic.
 
 ## Motion

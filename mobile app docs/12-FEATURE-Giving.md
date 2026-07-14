@@ -1,11 +1,11 @@
-# 12 · Feature — Giving
+# 12 · Feature: Giving
 
 ## Purpose
-Make generosity easy and safe. **v1 links out to the existing web giving** (Stripe/PayPal/bank) rather than in-app native payments — this is the **safest path for App Store review** (avoids the 30% cut / IAP requirement debate around donations) and reuses the church's already-built, compliant web flow.
+Make generosity easy and safe. **v1 links out to the existing web giving** (Stripe/PayPal/bank) rather than in-app native payments: this is the **safest path for App Store review** (avoids the 30% cut / IAP requirement debate around donations) and reuses the church's already-built, compliant web flow.
 
 ## Decision recap
 - **v1:** link out to web giving (in-app browser). Bring native in-app giving **later** if warranted.
-- Giving needs **no account** — guests can give (lowest friction for generosity).
+- Giving needs **no account**: guests can give (lowest friction for generosity).
 
 ## User stories
 - As anyone, I can give by card, PayPal, or bank transfer in a few taps.
@@ -14,7 +14,7 @@ Make generosity easy and safe. **v1 links out to the existing web giving** (Stri
 
 ## Screen: `GIVE` (Tab 4)
 - Warm intro (why we give). 
-- **Give by card** → opens web giving page in an in-app browser (`expo-web-browser`). Server derives currency from branch country (GBP/EUR/NGN) — see `donationCurrency()` in `site.ts`.
+- **Give by card** → opens web giving page in an in-app browser (`expo-web-browser`). Server derives currency from branch country (GBP/EUR/NGN): see `donationCurrency()` in `site.ts`.
 - **PayPal** → `https://paypal.me/agbcglobal` (in-app browser).
 - **Bank transfer** → `GIVE-BANK`.
 - Reassurance line: secure, handled on the church's web checkout.
@@ -23,11 +23,11 @@ Make generosity easy and safe. **v1 links out to the existing web giving** (Stri
 - Currency selector (GBP · EUR · USD · HUF · NGN) from `giving.accounts` in `site.ts`.
 - Per account: holder + fields, each with a **copy button** (copies value, shows "Copied" toast). Works fully offline (static details).
 - Real data (from `site.ts`):
-  - **GBP** — Amazing Grace Bible Church Global Ltd · Acct 51672549 · Sort 23-08-01 · IBAN GB81 TRWI 2308 0151 6725 49
-  - **EUR** — IBAN BE53 9051 2105 0953
-  - **USD** — Acct 664108655887707 · ACH/Wire 084009519
-  - **HUF** — Acct 12600016-10798549-03467568
-  - **NGN** — Olayinka Ademiluka Ministries International · Acct 1027814748 · UBA
+  - **GBP**: Amazing Grace Bible Church Global Ltd · Acct 51672549 · Sort 23-08-01 · IBAN GB81 TRWI 2308 0151 6725 49
+  - **EUR**: IBAN BE53 9051 2105 0953
+  - **USD**: Acct 664108655887707 · ACH/Wire 084009519
+  - **HUF**: Acct 12600016-10798549-03467568
+  - **NGN**: Olayinka Ademiluka Ministries International · Acct 1027814748 · UBA
 - Monthly/standing-order guidance + the cancellation inbox (`oami.gospel@gmail.com`) for changing a recurring card gift.
 
 ## Recurring gifts

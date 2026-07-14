@@ -27,7 +27,7 @@ ONB-3 Language ──[select + Continue]──> HOME
 ```
 No account is created in onboarding. Choices persist locally (branch, language, theme). Notification permission is never requested during onboarding; the OS prompt fires in context at the first value moment (see `06`).
 
-## Tab 1 — HOME (`HOME`)
+## Tab 1: HOME (`HOME`)
 
 Content: greeting (+name if member), **branch chip** (tap → `BRANCH-SWITCH`), **daily verse card**, **next service** card, **quick actions** (Plan a visit, Watch, Give, Academy), **latest message**, **testimony highlight**, (member) **rhythm streak** strip, **bell** (→ `NC`).
 
@@ -45,7 +45,7 @@ Content: greeting (+name if member), **branch chip** (tap → `BRANCH-SWITCH`), 
 | Bell | `NC` Notification center |
 | Streak strip (member) | `RHYTHM` |
 
-## Tab 2 — WATCH (`WATCH`)
+## Tab 2: WATCH (`WATCH`)
 
 Content: featured hero, **Live** state (if HQ live now), rails (Recent, Series), **search**, audio-only toggle entry.
 
@@ -71,7 +71,7 @@ Video (YouTube) or audio; **resume** from last position; **audio-only** switch; 
 ### `LIVE`
 Live video + **"watching now"** count (realtime) + auto-attendance (`live_watch`). Ends → falls back to `SERMON` (replay) or WATCH.
 
-## Tab 3 — FAMILY (`FAMILY`) — the wedge
+## Tab 3: FAMILY (`FAMILY`), the wedge
 
 Segmented sub-tabs: **Testimonies · Prayer · Map**. Scope toggle: **My branch · Everywhere**.
 
@@ -110,9 +110,9 @@ Global family map: branches as pins + recent testimony pins across nations.
 | Testimony pin | `TESTIMONY-DETAIL` |
 | Scope | My branch highlights vs all nations |
 
-## Tab 4 — GIVE (`GIVE`)
+## Tab 4: GIVE (`GIVE`)
 
-Explains giving; **links out to web** (Stripe/PayPal/bank) — see `12`. Shows currencies/accounts with copy buttons (works offline for account details).
+Explains giving; **links out to web** (Stripe/PayPal/bank): see `12`. Shows currencies/accounts with copy buttons (works offline for account details).
 | Action | → Destination |
 |--------|---------------|
 | Give by card | opens web giving (in-app browser) |
@@ -120,9 +120,9 @@ Explains giving; **links out to web** (Stripe/PayPal/bank) — see `12`. Shows c
 | Bank transfer | `GIVE-BANK` (copyable account fields) |
 | Copy field | copies value + toast |
 
-## Tab 5 — MORE (`MORE`)
+## Tab 5: MORE (`MORE`)
 
-A menu (hub — never a dead list). Sections:
+A menu (hub: never a dead list). Sections:
 
 - **My life:** Profile, My Rhythm (`RHYTHM`), My List (`MY-LIST`), My posts (`MY-POSTS`), Notifications (`NC`).
 - **Grow:** Academy (`ACADEMY`), Devotional plan (`PLAN`).

@@ -1,7 +1,7 @@
-# 13 · Feature — Grace Academy & Courses
+# 13 · Feature: Grace Academy & Courses
 
 ## Purpose
-Bring the church's discipleship pathway (**Grace Academy**) into the app: browse the levels, view a course, and **register** — mirroring the website's academy but app-native.
+Bring the church's discipleship pathway (**Grace Academy**) into the app: browse the levels, view a course, and **register**: mirroring the website's academy but app-native.
 
 ## User stories
 - As a member, I see the discipleship pathway and where I am in it.
@@ -13,7 +13,7 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 
 ### `ACADEMY`
 - Intro to the pathway ("walk it out"). 
-- **Levels** (from `academy/*.json`): e.g. **01 Grace Reset** (Foundations), **02 Grace Masterclass** (Deeper training), **+ Further levels** (upcoming). Clean cards in a consistent grid — no half-empty splits (design fix already applied in prototype).
+- **Levels** (from `academy/*.json`): e.g. **01 Grace Reset** (Foundations), **02 Grace Masterclass** (Deeper training), **+ Further levels** (upcoming). Clean cards in a consistent grid: no half-empty splits (design fix already applied in prototype).
 - Tap a level/course → `COURSE`. Upcoming levels show "Coming soon / Notify me" (not a dead register).
 
 ### `COURSE`
@@ -37,7 +37,8 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 - **Upcoming course:** "Notify me" instead of Register; records a `course_interest` row (unique per member per course, see `02`) so admins can actually notify interested members when the level opens (`17`).
 - **Fee:** display only in v1 (payment handled offline / on web / in person) unless church specifies in-app payment (then follow giving-style link-out).
 - **Submit fails:** inline error + retry, form state preserved.
-- **Already registered:** show status ("You're registered — pending confirmation").
+- **Already registered:** show status ("You're registered: pending confirmation") plus a **Cancel registration** action (confirm sheet). Member UPDATE on own rows is trigger-limited to the single transition pending/confirmed → cancelled (no other column, no un-cancel; re-registering creates a new row per the partial unique key). The coordinator sees the cancellation in the dashboard; the member gets the transactional confirmation.
+- **"Notify me" delivery:** when a course opens, the dashboard's "Notify interested members" action sends the transactional `course_opened` notification to every `course_interest` row and deletes them (interest is consumed); see `17` §4.
 
 ## Permissions
 - Browse: guest. Register: member.

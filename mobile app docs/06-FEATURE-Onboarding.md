@@ -1,4 +1,4 @@
-# 06 · Feature — Onboarding
+# 06 · Feature: Onboarding
 
 ## Purpose
 Get a first-time user oriented and personalized in under a minute, **without an account**. Capture the two things that shape the whole app experience: **home branch** and **language**. Notification permission is deliberately NOT requested here (see below): a prompt before the app has shown any value is routinely denied, and iOS never re-prompts.
@@ -50,7 +50,7 @@ A short pre-permission sheet explains the value BEFORE the OS dialog fires (the 
 - **Permission denied (whenever asked in context):** the triggering action still completes (the RSVP records, attendance counts); Settings shows "Notifications off: enable in system settings."
 - **First launch offline (no cache exists yet):** `ONB-2` needs branches from the backend; ship a bundled read-only branch snapshot (the same versioned seed data) as fallback, refreshed and reconciled on next connectivity. The server stays authoritative; the bundle is a stale-tolerant day-one cache. Same treatment for one evergreen daily verse.
 - **Returning user, branch removed:** if saved branch no longer exists, fall back to HQ + toast.
-- **Re-run onboarding:** available via Settings ("Change branch/language") — not forced again.
+- **Re-run onboarding:** available via Settings ("Change branch/language"): not forced again.
 
 ## Permissions
 - No auth required. Everything here is guest-level.

@@ -1,7 +1,7 @@
-# 11 · Feature — Events
+# 11 · Feature: Events
 
 ## Purpose
-Keep members aware of what's happening — at **their branch** and **ministry-wide** — and let them RSVP. Global gatherings (the "many nations, one family" moments) reach everyone.
+Keep members aware of what's happening, at **their branch** and **ministry-wide**, and let them RSVP. Global gatherings (the "many nations, one family" moments) reach everyone.
 
 ## User stories
 - As a member, I see events for my branch and ministry-wide events.
@@ -22,7 +22,7 @@ Keep members aware of what's happening — at **their branch** and **ministry-wi
 - **RSVP** (gate): Going / Interested / Cancel → `rsvps` (unique per event+profile). Confirmation toast.
 - **Add to calendar** (device calendar via `expo-calendar`).
 - **Share** (OS/WhatsApp).
-- **Global events** show "Ministry-wide — the whole family" treatment.
+- **Global events** show "Ministry-wide: the whole family" treatment.
 
 ## Data source
 - `events` (+ `rsvps`). **v1 source: manual entries from the dashboard.** A Sanity sync is a post-v1 option if the website's CMS must stay canonical for events. `branch_id IS NULL` ⇒ ministry-wide (notifies all; see `15`).
@@ -34,7 +34,8 @@ Keep members aware of what's happening — at **their branch** and **ministry-wi
 - **Guest:** browse events; RSVP → gate (completes after sign-in).
 - **Past events:** greyed/moved to "Past"; RSVP disabled.
 - **Cancelled event (`status='cancelled'`, see `02`):** EVENT-DETAIL shows a "Cancelled by the organiser" banner, RSVP disabled, "See other events" CTA; all non-cancelled RSVPs are auto-notified on cancellation AND on time/venue changes (`17`); the member's RSVP list keeps the row with a cancelled state; deep links from old notifications land on the cancelled treatment, never "not found."
-- **RSVP full/closed** (if capacity later): show "Full — join waitlist" or closed, not a dead button.
+- **Reinstatement:** a leader/admin may set a cancelled event back to `scheduled` only while its start is in the future; reinstatement auto-notifies every non-cancelled RSVP (distinct "back on" template); RSVPs are retained as-is; the banner clears. Past events cannot be reinstated.
+- **RSVP full/closed** (if capacity later): show "Full: join waitlist" or closed, not a dead button.
 - **No image:** branded placeholder.
 - **Timezone:** events store wall-clock + IANA zone (`starts_at_local` + `timezone`, see `02`), shown in the event's timezone with a clear label; global events show viewer-local + origin.
 - **Offline:** cached list; RSVP queues/retries.

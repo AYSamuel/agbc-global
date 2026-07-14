@@ -20,8 +20,13 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref, email); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
 | Counters are server-maintained | `glory_count`/`pray_count` written only by triggers (below), never by any client policy |
 | The prayer-testimony link cannot be stolen | BEFORE INSERT/UPDATE trigger raises unless `from_prayer_id IS NULL` or the referenced prayer's `author_id = auth.uid()` (admins exempt); the UNIQUE constraint already prevents double-claiming. Without this, anyone could fabricate an "Answered prayer" ribbon on a stranger's prayer and permanently squat the link |
-| Attendance cannot be backdated | trigger forces `profile_id = auth.uid()` and `service_date = (now() at time zone branches.timezone)::date` on insert; client-supplied values ignored |
+| Attendance is honest about WHEN, bounded against backdating | every attendance insert carries `client_taken_at` (device UTC instant captured at tap time). The BEFORE INSERT trigger sets `service_date = (client_taken_at at time zone branches.timezone)::date` when `client_taken_at` is within the past 72 hours and not in the future; otherwise it falls back to `now()`. Offline replays land on the day actually attended (a Saturday tap replayed Monday still records Saturday); fabrication beyond 72 hours stays impossible; `profile_id` remains trigger-forced |
 | Paid state is never client-writable | `entitlements`, `streaks`, `milestones` have NO client write policies at all; writes happen only via service role (edge functions / dashboard) or DB triggers. A member INSERT into `entitlements` would be self-granted paid books |
+| Moderation is compare-and-set | approve/reject/remove carries the `updated_at` of the version the leader reviewed; the moderation UPDATE (trigger-enforced) fails with "content changed since review" when `updated_at` differs, and the item returns to the queue. Closes the race where an author edit lands between review and approval, publishing unreviewed content |
+| Deleted accounts cannot write | every member INSERT/UPDATE policy additionally requires the profile row to have `deleted_at IS NULL`. Closes the second-device replay hole: queued writes from a device that missed the deletion are rejected, never recreating erased Art. 9 data |
+| Mark-answered has preconditions | a trigger refuses setting `answered_at` unless the prayer is `approved` and not deleted; "Mark as not answered" clears it only while no linked testimony exists. The `from_prayer_id` trigger additionally raises when the referenced prayer is `removed` |
+| `removed` is terminal for authors | a trigger refuses author UPDATE on `removed` rows (DELETE stays allowed); only an admin may restore removed content, audit-logged |
+| `is_anonymous` flips without re-moderation but never silently | author changes to `is_anonymous` on an approved prayer are allowed (it is their own identity), fire the same sanitized realtime broadcast so live clients re-render, and anonymous-to-named requires a confirm sheet. All OTHER author-editable content columns (`body`, `language`) reset an approved row to pending |
 
 **Role/branch in policies:** put `role` and `branch_id` into JWT claims via the Supabase Custom Access Token auth hook (server-set, so client role claims stay untrusted). Caveat: a demoted leader keeps stale claims until token refresh, so moderation-plane actions re-check `profiles.role` from the table. Wrap `auth.uid()` as `(select auth.uid())` in policies (per-row re-evaluation footgun), `FORCE ROW LEVEL SECURITY` on every table, per-role statement timeouts.
 
@@ -36,7 +41,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | reading_state / plan_progress / saved_items / playback_positions / sermon_notes | none | SELECT / INSERT / UPDATE / DELETE own rows | own rows | all |
 | attendance | none | SELECT own; INSERT own (trigger-forced values, see invariants) | own | all |
 | entitlements / streaks / milestones | none | SELECT own rows ONLY (no client writes, see invariants) | SELECT own | all (via service role) |
-| testimony_categories / course_fees_regional / giving_config | SELECT | SELECT | SELECT | + write |
+| testimony_categories / course_fees_regional / giving_config / app_config | SELECT | SELECT | SELECT | + write |
 | payhip_events / unmatched_purchases / broadcasts / broadcast_deliveries | none | none | none (leaders act via dashboard service-role routes) | service-role only: RLS forced with ZERO client policies (`unmatched_purchases` holds buyer emails) |
 | rsvps / course_registrations / course_interest | none | own rows | read in-branch | all |
 | branches / branch_services / sermons / events / courses / books / daily_verses / reading_plans | SELECT | SELECT | + manage own branch rows (dashboard) | all |
@@ -46,7 +51,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 
 **Feed indexes:** `(branch_id, status, created_at desc)` on `testimonies` and `prayers` (lead with the scoping column or RLS gets slow).
 
-**Realtime:** do NOT expose `postgres_changes` on content tables (it streams raw base-table rows: views don't apply, DELETE events skip RLS, and anonymous `author_id` would leak). Instead: AFTER INSERT/UPDATE triggers call `realtime.broadcast_changes()` on private channels (`family:branch:<id>`, `family:all`) with a sanitized payload (author fields nulled when `is_anonymous`; only `approved` transitions broadcast). **Removal signal:** any transition OUT of public visibility (status leaves `approved`, `deleted_at` set, or AFTER DELETE using OLD) broadcasts a minimal `{table, id, action:'removed'}` so live clients drop the card immediately; withdrawn Art. 9 content must not linger on screens until refetch. RLS policy on `realtime.messages`; Realtime Authorization on; public channel access off. Counts (Glory / pray / watching-now) also travel via Broadcast; "watching now" itself is Realtime Presence on the live channel (ephemeral, no table).
+**Realtime:** do NOT expose `postgres_changes` on content tables (it streams raw base-table rows: views don't apply, DELETE events skip RLS, and anonymous `author_id` would leak). Instead: AFTER INSERT/UPDATE triggers call `realtime.broadcast_changes()` on private channels (`family:branch:<id>`, `family:all`) with a sanitized payload (author fields nulled when `is_anonymous`; only `approved` transitions broadcast). **Removal signal:** any transition OUT of public visibility (status leaves `approved`, `deleted_at` set, or AFTER DELETE using OLD) broadcasts a minimal `{table, id, action:'removed'}` so live clients drop the card immediately; withdrawn Art. 9 content must not linger on screens until refetch. RLS policy on `realtime.messages`; Realtime Authorization on; public channel access off. Counts (Glory / pray / watching-now) also travel via Broadcast. **"Watching now" is server-aggregated:** clients never subscribe to raw Presence (O(N²) at a Sunday peak breaks the message quota, `21` §10); an edge/DB aggregator tracks presence and broadcasts a single count every 10-15s. **Degradation bound:** clients that lose the family channel refetch the feed on a 60s timer and on focus; the removal guarantee is realtime-first, polling-bounded (worst case 60s).
 
 ## Storage buckets
 
@@ -72,7 +77,8 @@ All uploads: authenticated, size-capped, magic-byte validated (never trust clien
 | city | text | |
 | country | text | |
 | is_hq | bool | Glasgow = true |
-| timezone | text | IANA id: `Europe/London`, `Europe/Berlin`, `Europe/Amsterdam`, `Africa/Lagos`. Drives service_date, reminders, streak weeks |
+| status | enum | `active` \| `archived` (default active). Branches are ARCHIVED, never hard-deleted (attendance, content, audit rows reference them). Archived: hidden from onboarding/BRANCH-SWITCH/BRANCHES/map; `branch_services` deactivated (reminders + live windows stop); content stays readable under Everywhere; members whose home branch is archived are prompted on next launch to pick a new one (HQ preselected) and get no branch-tier notifications meanwhile; residual pending moderation escalates to admins immediately; the dashboard blocks archiving until its leaders are reassigned (`17` §5) |
+| timezone | text | IANA id: `Europe/London`, `Europe/Berlin`, `Europe/Amsterdam`, `Africa/Lagos`. Acts exactly once, at attendance write time |
 | languages | text | "English", "Deutsch / English"… |
 | youtube_channel_id | text null | empty ⇒ use global HQ channel |
 | email | text | |
@@ -96,6 +102,7 @@ Machine-readable service schedule (reminders, service_date, live windows).
 | weekday | smallint | 0–6 |
 | start_time | time | branch-local wall clock |
 | kind | enum | `sunday` \| `midweek` \| `classes` |
+| duration_min | int | default 120. The service WINDOW everywhere it is load-bearing (live detection polling, live-watch attendance credit, the "I'm here" affordance) = [start_time minus 30 min, start_time + duration_min]. DST: nonexistent local start times resolve to the next valid instant; ambiguous (fall-back) times take the earlier UTC offset |
 | label | text | display |
 
 `attendance.service_date` is defined as `(now() at time zone branches.timezone)::date` at write time.
@@ -113,7 +120,8 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 | language | text | `en` \| `de` \| `nl` |
 | role | enum | `member` \| `leader` \| `admin` (default `member`; immutable to owner, see invariants) |
 | theme_pref | enum | `system` \| `light` \| `dark` |
-| onboarded_at | timestamptz | |
+| onboarded_at | timestamptz | set ONLY when `AUTH-3` completes; a session whose profile has `onboarded_at IS NULL` is routed to `AUTH-3` before anything else (abandoned half-created profiles resume there); content/reaction/RSVP/attendance INSERT policies additionally require `onboarded_at IS NOT NULL` |
+| age_confirmed_at | timestamptz | the 16+ self-declaration evidence (`20`), written in the same `AUTH-3` update |
 | deleted_at | timestamptz null | account deletion; `phone`/`email` nulled at the same time (see `16`) |
 
 ### `devices`
@@ -153,6 +161,14 @@ Server-side giving configuration (currencies, accounts) so bank-detail changes N
 | id | uuid PK | singleton row (or one per currency) |
 | accounts | jsonb | the currency/account structures from `12` |
 | updated_by | uuid FK | audit |
+
+### `app_config`
+Remote app configuration read on launch, PRE-AUTH (anon SELECT): the forced-update gate (`21` §8) and similar flags.
+| field | type | notes |
+|-------|------|-------|
+| key | text PK | e.g. `minimum_supported_version` |
+| value | jsonb | |
+| updated_by | uuid FK | audit; writes admin/service-role only |
 
 **Block mechanism (decided): two-way hide, the industry norm.** Approved-content SELECT policies add `NOT EXISTS (select 1 from blocked_users b where (b.blocker_id = (select auth.uid()) and b.blocked_id = author_id) or (b.blocked_id = (select auth.uid()) and b.blocker_id = author_id))`, so neither party sees the other's content. Notification fan-out suppresses activity from either direction of a block (`15`); live-feed clients drop broadcast events whose non-anonymous author is locally blocked.
 
@@ -233,6 +249,9 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | reporter_id | uuid FK | anonymized on reporter's account deletion (`20` retention: 24 months) |
 | reason | text | |
 | status | enum | `open` \| `actioned` \| `dismissed` |
+| - | unique(reporter_id, target_type, target_id) | re-reporting is a no-op ("You've already reported this") |
+
+When target content leaves existence or public visibility via a NON-moderation path (author delete, the account-deletion job), that same job auto-resolves matching `open` reports to `dismissed` with a system note; reports flagged as safeguarding stay open and flagged (removal does not end a safeguarding duty, `17`/`20`).
 
 **Counter triggers (spec):** AFTER INSERT / AFTER DELETE row triggers on the reaction tables do an atomic `update … set glory_count = glory_count + 1` (or −1). Inserts go through `on conflict do nothing` (a skipped conflicting insert fires no trigger, so counts stay correct under the tap-untap-tap toggle and offline replays). A nightly reconciliation job recounts and fixes drift (account-deletion cascades are the known drift source).
 
@@ -291,7 +310,8 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | id | uuid PK | |
 | profile_id | uuid FK | |
 | branch_id | uuid FK | the branch attended (may differ from home branch when visiting; see `07` branch-context model) |
-| service_date | date | `(now() at time zone branches.timezone)::date`; one row per member per date (same-day double services deliberately collapse) |
+| client_taken_at | timestamptz | device UTC instant captured at tap time; basis for `service_date` (see invariants: 72h clamp) so offline replays land on the attended day |
+| service_date | date | derived by trigger from `client_taken_at` in the branch timezone; one row per member per date (same-day double services deliberately collapse) |
 | source | enum | `here_button` \| `live_watch` |
 | - | unique(profile_id, service_date) | idempotent under offline replays |
 
@@ -299,7 +319,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | field | type | notes |
 |-------|------|-------|
 | profile_id | uuid PK/FK | |
-| current_weeks | int | consecutive ISO weeks with attendance, computed in the **home branch** timezone |
+| current_weeks | int | consecutive ISO weeks with attendance. A streak week is **the ISO week of `attendance.service_date`, nothing else** (the timezone acted once, at write time, in the attended branch); `service_date` is immutable, so branch-timezone edits and home-branch changes never re-bucket history |
 | longest_weeks | int | monotonic |
 | last_service_date | date | |
 
@@ -323,6 +343,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 |-------|-----------|
 | `reading_plans` | id, title, description, language (`en` v1), day_count, **book_id FK→books null** (null = free plan, e.g. a future starter plan; non-null = requires an entitlement to that book) |
 | `devotional_days` | id, plan_id FK, day_number, verse_ref, verse_text, verse_translation (default `WEB`), reflection, prayer; readable only if the plan is free OR the reader holds the entitlement (RLS join) |
+| `plan_enrollments` | profile_id, plan_id, started_on date; PK pair. Created on first PLAN open. "Today's day" = the lowest incomplete day_number (missed days shift, never skip); "active plan" = the enrollment with incomplete days and the most recent plan_progress write; Home's CTA routes there (`07`/`10`) |
 | `plan_progress` | profile_id, plan_id, day_number, completed_at; PK(profile_id, plan_id, day_number) |
 
 Structured days are imported once per devotional via the dashboard (`17` content module; pipeline in `22-CONTENT-OPERATIONS.md`).
@@ -365,7 +386,7 @@ Free for everyone (unlike devotionals). Translation: **WEB (World English Bible)
 | event_id | uuid FK | |
 | profile_id | uuid FK | |
 | status | enum | `going` \| `interested` \| `cancelled` |
-| - | unique(event_id, profile_id) | |
+| - | unique(event_id, profile_id) | a trigger refuses INSERT/UPDATE to `going`/`interested` when the event is `cancelled` or has started (setting one's own rsvp to `cancelled` stays allowed); a late offline replay is rejected and the client reconciles quietly (`01` §8) |
 
 ---
 
@@ -390,7 +411,7 @@ Seed courses from `agbc/src/content/courses/*.json` + `academy/*.json` via a con
 |-------|-----------|
 | `books` | id, title, author, **price_minor int, price_currency char(3)**, cover_url, file_url (Storage, private), format enum(`pdf`\|`epub`), payhip_url, payhip_product_id, description |
 | `entitlements` | id, profile_id FK, book_id FK, source enum(`payhip`\|`gift`), **source_ref text unique null** (Payhip transaction/order id: replays no-op), granted_at; unique(profile_id, book_id) |
-| `reading_state` | profile_id, book_id, location text (CFI/page), updated_at — PK(profile_id, book_id) |
+| `reading_state` | profile_id, book_id, location text (CFI/page), updated_at; PK(profile_id, book_id) |
 | `payhip_events` | id, event_id text unique, payload jsonb, received_at, processed_at null; raw webhook inbox; processing is async and idempotent |
 | `unmatched_purchases` | id, buyer_email text (normalized lowercase), book_id FK, source_ref text, payload jsonb, created_at; drained automatically when a profile later verifies that email; visible in the dashboard "unmatched purchases" queue (`17`) |
 
@@ -406,12 +427,12 @@ Localization model: automated notifications store a **template key + params**, r
 |-------|------|-------|
 | id | uuid PK | |
 | profile_id | uuid FK | recipient |
-| type | text | `prayer`, `testimony_glory`, `event`, `ministry`, `branch`, `service_reminder` |
+| type | text | pref-gated: `prayer`, `testimony_glory`, `event`, `ministry`, `branch`, `service_reminder`; transactional (always-on channel, `15`): `moderation`, `rsvp_reminder`, `registration`, `purchase` |
 | template_key | text null | automated notifications (e.g. `prayer.someone_prayed`) |
 | params | jsonb null | template parameters (never special-category content; push payloads stay generic, body fetched in-app: `15`/`20`) |
 | title / body | text null | manual broadcasts only (pre-rendered per recipient language at fan-out) |
 | broadcast_id | uuid FK null | unique(profile_id, broadcast_id): fan-out re-runs never double-write |
-| dedupe_key | text null | partial unique `(profile_id, dedupe_key) where dedupe_key is not null`; automated jobs write deterministic keys (e.g. `service_reminder:<branch_id>:<service_date>`, `rsvp_reminder:<event_id>`) so re-runs never double-send (`21` §5) |
+| dedupe_key | text null | partial unique `(profile_id, dedupe_key) where dedupe_key is not null`; automated jobs write deterministic keys so re-runs never double-send (`21` §5). **Rule: keys for time-bound sends embed the occurrence they announce** (`service_reminder:<branch_id>:<service_date>`, `rsvp_reminder:<event_id>:<starts_at_local>`), so a rescheduled event mints a new key and its reminder is NOT swallowed by the old one |
 | deep_link | text | expo-router path (see `15`) |
 | read_at | timestamptz null | |
 
@@ -428,21 +449,33 @@ Localization model: automated notifications store a **template key + params**, r
 | link | text null | allowlisted + previewed before send (`17`) |
 | channels | text[] | `push`, `whatsapp`, `in_app` (WhatsApp rationed: max 2 ministry-wide/month, `15`) |
 | status | enum | `draft` \| `pending_approval` \| `rejected` \| `sending` \| `sent` \| `halted` \| `failed` |
-| review_note | text null | shown to the author on rejection; reject returns the broadcast to `draft` |
+| review_note | text null | shown to the author on rejection (`status='rejected'`); the author's next edit moves it back to `draft` for resubmission |
 | recipient_count | int null | computed at confirmation |
 | approved_by | uuid null | second admin, ministry scope; DB CHECK `approved_by IS DISTINCT FROM author_id` (self-approval impossible) backed by the dashboard route refusing it |
 | sent_at | timestamptz null | |
+
+**Broadcast state machine:** branch scope: `draft` → `sending` (author sends from the confirmation screen; no approval state). Ministry scope: `draft` → `pending_approval` → `sending` (fired BY the approver's approval action, sending immediately) or → `rejected`. Any author edit while `pending_approval` returns the row to `draft` and clears `approved_by` (server trigger: what the approver reviewed is what sends). Content columns are immutable from `sending` onward. `halted` is terminal for delivery; the dashboard offers "Duplicate as draft" (full approval path again). `failed` is set when fan-out exhausts 3 retries; "Retry delivery" returns it to `sending` and re-runs fan-out for pending/failed deliveries only (deduped by the unique key).
 
 ### `broadcast_deliveries`
 Per-recipient delivery tracking: powers resumable chunked fan-out, Expo receipt processing, token pruning, and the failure-rate alert. Purged 30 days after send (aggregates stay on `broadcasts`).
 | field | type | notes |
 |-------|------|-------|
 | broadcast_id | uuid FK | |
-| device_id | uuid FK | unique(broadcast_id, device_id) |
+| profile_id | uuid FK | one delivery row per (broadcast, recipient, channel): WhatsApp sends are profile-keyed |
+| device_id | uuid FK null | set for push rows only; unique(broadcast_id, profile_id, channel, device_id) |
 | channel | enum | `push` \| `whatsapp` \| `in_app` |
 | status | enum | `pending` \| `sent` \| `failed` |
 | ticket_id | text null | Expo push ticket; receipts fetched ~15 min later (`15`) |
 | error | text null | |
+
+### `push_tickets`
+Delivery truth for AUTOMATED pushes (service reminders, activity, transactional), which are otherwise fire-and-forget: every push send persists its ticket ids here; the receipts job sweeps ALL unprocessed tickets, not per-fan-out (`21` §5). Purged after 7 days.
+| field | type | notes |
+|-------|------|-------|
+| ticket_id | text PK | |
+| device_id | uuid FK | |
+| sent_at | timestamptz | |
+| processed_at | timestamptz null | |
 
 ---
 
