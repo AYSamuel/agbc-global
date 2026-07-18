@@ -82,25 +82,23 @@ Segmented sub-tabs: **Testimonies · Prayer · Map**. Scope toggle: **My branch 
 | Testimony card | `TESTIMONY-DETAIL` |
 | **Glory to God** | reaction write (gate) → count +1 in place |
 | **Share a testimony** (FAB) | `TESTIMONY-COMPOSE` (gate) |
-| … on own post | `POST-ACTIONS` (edit/delete) |
-| … on other post | `REPORT` / **Block this member** (`blocked_users`, see `09`) |
 
 ### `TESTIMONY-COMPOSE` → `CONSENT` → submit
 Body, optional category, optional photo → **consent step** (agree to share publicly, moderation notice) → submit → `status=pending` → **`POST-PENDING`** confirmation ("Sent for a leader to review") → back to feed (shows own pending row with a "Pending" badge).
 
 ### `TESTIMONY-DETAIL`
-Full testimony, Glory reactions, (if from prayer) the **"Answered prayer" ribbon** linking to the origin. Share.
+Full testimony, Glory reactions, (if from prayer) the **"Answered prayer" ribbon** linking to the origin. Share. **`⋯` in the header** (post-actions live on the detail, NOT feed cards, decision `09`): own post → `POST-ACTIONS` (edit/delete); other member's → `REPORT` / **Block this member** (`blocked_users`).
 
 ### Prayer (`FAMILY` → Prayer)
 | Action | → Destination |
 |--------|---------------|
 | Prayer card | `PRAYER-DETAIL` |
-| **I prayed** | intercession write (gate) → count +1 |
+| **I will pray** then **I prayed** | intercession write (gate): "I will pray" commits (`praying_count` +1, starts reminders); "I prayed" fulfils (`prayed_count` +1, reminders stop). See `09` |
 | **Share a request** (FAB) | `PRAYER-COMPOSE` (gate) → consent → pending → confirm |
 | On own answered request | `MARK-ANSWERED` → `TESTIMONY-COMPOSE` (prefilled, linked) |
 
 ### `PRAYER-DETAIL`
-Body, pray count, "I prayed," (own) **Mark as answered** → prompts to write the testimony (the loop). 
+Body, praying + prayed counts, the two-step **"I will pray"** then **"I prayed"**; (own) **Mark as answered** → prompts to write the testimony (the loop). **`⋯` in the header**: own → `POST-ACTIONS`; other member's → `REPORT` / Block. 
 
 ### Map (`FAMILY` → Map)
 Global family map: branches as pins + recent testimony pins across nations.

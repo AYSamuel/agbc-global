@@ -23,6 +23,7 @@ This is the multi-branch answer to "who gets notified":
 | **Branch** | Members of that branch | Branch event, branch update, local service change | `branch_updates` |
 | **Service reminder** | Member's branch service | "Service starts in 1 hour" | `service_reminders` |
 | **Personal: activity** | The individual | Someone prayed for you, Glory reactions on your testimony | `prayer_activity` / `testimony_activity` |
+| **Personal: prayer reminder** | The member who committed ("I will pray") | "You said you'd pray for a request, take a moment now" (deep link to `PRAYER-DETAIL`) | `prayer_reminders` (opt-out); gentle cadence with a hard cap; **stops** when the member marks "I prayed", or the request is answered/deleted. See `09` Prayer commitment. |
 | **Personal: transactional** | The individual | Post approved / needs changes, RSVP reminder, registration confirmed, purchase added to Library | always on (own `transactional` Android channel, no pref key: these answer an action the member took) |
 
 > **Answer to "global meetings: do all users get notified?"** Yes: a **ministry-wide** notification (or a global event, `branch_id IS NULL`) fans out to **every member across all branches** who has `ministry_announcements` enabled. Branch notifications stay within the branch.

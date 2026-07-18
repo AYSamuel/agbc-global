@@ -54,6 +54,6 @@ Tool: PostHog EU cloud, consent-gated (`20`). Event names snake_case; standard p
 **North stars for "belonging made visible":**
 1. Weekly contributing members: % of MAU who posted OR reacted that week.
 2. Prayer-to-testimony conversion within 30 days.
-3. Cross-branch reactions: % of Glory / "I prayed" taps landing on another branch's post (the literal measure of "one family, many nations").
+3. Cross-branch reactions: % of Glory and prayer ("I will pray" / "I prayed") taps landing on another branch's post (the literal measure of "one family, many nations").
 4. Moderation latency p50/p95 (the feed's freshness ceiling).
 5. Week-4 rhythm retention (the retention anchor).
