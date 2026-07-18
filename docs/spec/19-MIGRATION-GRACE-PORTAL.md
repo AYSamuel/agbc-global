@@ -13,7 +13,7 @@ The stores do not care that the framework changes (Flutter to React Native); the
 | Item | Value | Source |
 | ------ | ------- | -------- |
 | Android `applicationId` | `com.oami.agbcapp` | `agbc-app/android/app/build.gradle` |
-| Android `versionCode` | must be **> 19** (start at 20) | pubspec `1.0.0+19`; confirm the highest code actually uploaded in Play Console |
+| Android `versionCode` | must be **> 19** (start at 20) | pubspec `1.0.0+19`; **CONFIRMED 2026-07-18 in Play Console: highest uploaded is 19 (1.0.0)**. Play App Signing key SHA-256 (for assetlinks.json): `E2:43:77:09:F4:A6:3E:66:B0:D5:F2:B4:B2:B7:6D:E2:9D:6D:EE:37:00:F1:84:5C:6E:E4:E9:AC:76:20:F6:5B` |
 | Android signing | existing upload keystore `agbc-app/agbc-new-upload-key.jks`, alias `agbc-key`, uploaded into EAS credentials (never let EAS generate a new one). Password verified with keytool 2026-07-18; credentials live in `agbc-app/android/key.properties` (gitignored, local-only), to be moved into the password manager | |
 | iOS bundle id | `com.olayinkaademiluka.grace-portal` | `agbc-app/ios/Runner.xcodeproj` |
 | iOS build number | above the last build in App Store Connect / TestFlight | App Store Connect |
@@ -52,7 +52,7 @@ Grace Portal used OneSignal; the new app uses Expo Push (APNs/FCM). Nothing to m
 
 ## Checklist
 
-- [ ] Highest uploaded `versionCode` and iOS build number confirmed in Play Console / App Store Connect
+- [x] Highest uploaded `versionCode` and iOS build number confirmed in Play Console / App Store Connect (both 19 on 1.0.0, 2026-07-18)
 - [ ] EAS credentials: existing Android upload keystore + Apple distribution cert configured
 - [ ] App config uses `com.oami.agbcapp` / `com.olayinkaademiluka.grace-portal`, `versionCode` >= 20
 - [ ] Supabase audit complete; website objects fenced and recorded in project CLAUDE.md
