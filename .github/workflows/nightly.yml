@@ -1,0 +1,17 @@
+name: Nightly
+
+# NO schedule yet, deliberately: Actions minutes are a shared pool across all of Ayo's
+# private repos, and a scheduled stub would burn them for nothing. The cron trigger is
+# added when the first real job lands (Maestro at W1.8, migration-history at W0.10,
+# pseudo-localization at W4.6, off-provider prod dump at Track P1; docs/spec/21 §3),
+# and its cadence is a budget decision made then.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "nightly stub; jobs arrive with their work items (docs/spec/21 §3)"

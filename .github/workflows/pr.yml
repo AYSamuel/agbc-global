@@ -1,0 +1,129 @@
+name: PR
+
+# Top-level paths filter: docs-only PRs (the most common kind in this repo) start ZERO
+# jobs and cost zero shared Actions minutes.
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'supabase/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/**'
+
+# Supersede older runs of the same PR (devops standard: CI cost hygiene).
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+# Read-only token by default; no job here needs more.
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      mobile: ${{ steps.filter.outputs.mobile }}
+      dashboard: ${{ steps.filter.outputs.dashboard }}
+      supabase: ${{ steps.filter.outputs.supabase }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+        id: filter
+        with:
+          filters: |
+            mobile:
+              - 'apps/mobile/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/pr.yml'
+            dashboard:
+              - 'apps/dashboard/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/pr.yml'
+            supabase:
+              - 'supabase/**'
+              - '.github/workflows/pr.yml'
+
+  mobile:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter mobile typecheck
+      - run: pnpm --filter mobile lint
+      - run: pnpm --filter mobile test
+      - run: npx expo-doctor
+        working-directory: apps/mobile
+
+  dashboard:
+    needs: changes
+    if: needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter dashboard typecheck
+      - run: pnpm --filter dashboard lint
+      - run: pnpm --filter dashboard test
+      - run: pnpm --filter dashboard build
+
+  supabase:
+    needs: changes
+    if: needs.changes.outputs.supabase == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: latest
+      # db-only start (not the full `supabase start`): pgTAP, drift, and fence checks need
+      # only Postgres, and skipping the auth/storage/studio images saves minutes per run.
+      # Applies the FULL migration history + seeds to a fresh database (docs/spec/23 §3a).
+      - run: supabase db start
+      - run: supabase test db
+      # Types-drift gate: armed automatically when W0.10 commits the first generated file.
+      - name: types drift
+        run: |
+          if [ -f packages/shared/src/database.types.ts ]; then
+            supabase gen types typescript --local > /tmp/database.types.ts
+            diff -u packages/shared/src/database.types.ts /tmp/database.types.ts
+          else
+            echo "no committed database.types.ts yet (arrives at W0.10); skipping"
+          fi
+      # Fence-guard: no migration may touch the website's objects in the shared prod
+      # project (docs/spec/19; list is a placeholder until the Track P2 audit).
+      - name: fence guard
+        run: |
+          FENCED=$(grep -v '^#' supabase/fenced-objects.txt | sed '/^\s*$/d' || true)
+          if [ -z "$FENCED" ]; then
+            echo "fenced-objects list is empty (pre-audit placeholder); nothing to check"
+            exit 0
+          fi
+          FAIL=0
+          while IFS= read -r name; do
+            if grep -rn --include='*.sql' -w "$name" supabase/migrations/ 2>/dev/null; then
+              echo "::error::migration references fenced object: $name"
+              FAIL=1
+            fi
+          done <<< "$FENCED"
+          exit $FAIL
+      # deno test for edge functions joins this job when the first function lands (W1.3).

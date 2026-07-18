@@ -13,6 +13,7 @@
     "test": "pnpm -r test",
     "test:db": "supabase test db",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck"
   }
 }

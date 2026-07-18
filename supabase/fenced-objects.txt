@@ -1,0 +1,6 @@
+# FENCED SUPABASE OBJECTS (one name per line; lines starting with # are ignored).
+# These belong to the agbc WEBSITE living in the shared prod project. No migration,
+# policy, or GRANT may reference or modify them; CI's fence-guard greps migrations
+# against this list. PLACEHOLDER until the docs/spec/19 audit (Track P2) fills it;
+# until then every pre-existing prod object is treated as fenced by convention
+# (see CLAUDE.md), which CI cannot check mechanically.

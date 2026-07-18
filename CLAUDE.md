@@ -29,6 +29,7 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 
 ## Commands (from repo root)
 
+- `pnpm typecheck` · tsc --noEmit across mobile, dashboard, shared
 - `pnpm lint` · ESLint (flat, typescript-eslint strict) across mobile, dashboard, shared
 - `pnpm test` · Jest (mobile) + Vitest (dashboard)
 - `pnpm test:db` · pgTAP via `supabase test db` (local stack must be running)
@@ -63,6 +64,7 @@ The shared prod project contains ~3 tables belonging to the agbc website. Once t
 - Every commit AND push needs Ayo's explicit approval first (message proposed, approval never carries over). After each push, output the pre-filled PR link.
 - No AI attribution anywhere: no Co-Authored-By, no "Generated with" lines, in commits, PRs, or branches.
 - Secrets: see the map in `21` §3 / `23` §2. Never in git; the keystore, FCM key, and APNs key live in EAS credentials only. If a secret ever lands in code or git history, stop and rotate it.
+- CI budget (hard rule): GitHub Actions minutes are a shared pool across ALL of Ayo's private repos. Workflows must be path-filtered, cancel superseded runs, and cost ZERO when idle: no scheduled runs without a real paying job, prefer platform schedulers (pg_cron, Supabase cron) over Actions crons, and docs-only PRs must trigger no jobs.
 
 ## Key references
 
