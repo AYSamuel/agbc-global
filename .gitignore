@@ -26,3 +26,6 @@ coverage/
 .turbo/
 *.tsbuildinfo
 .DS_Store
+# Local tooling / MCP config (machine-specific)
+.mcp.json
+.figma-verify/
