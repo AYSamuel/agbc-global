@@ -27,6 +27,7 @@ Gate 1 runs in parallel (2-week lead). Gates 3 and 4 are the next big workstream
 ### Resolved
 | Decision | Choice | Date |
 |---|---|---|
+| UI languages | **Add French: UI ships EN/DE/NL/FR.** Content (verses/devotionals) stays EN v1. FR strings are net-new (the website has no French); docs, schema (`profiles.language`, `body_fr`), i18n layout, store listings, and the ONB-3 mockup updated. An FR reviewer must be named (see open decisions) | 2026-07-18 |
 | Bible translation (verses/devotionals) | **Public domain: World English Bible (WEB)**. No attribution burden; free to store and put on share images. Add `translation` column; render translation label. | 2026-07-15 |
 | Tablet / iPad stance | **Full bespoke tablet layouts in v1** (not capped-column). Conscious trade-off: more design + build cost; capped-column is the fallback if schedule slips. | 2026-07-15 |
 | WhatsApp broadcast budget | **Push-first; cap ~2 ministry-wide WhatsApp blasts/month.** Broadcasts default to free push + in-app; WhatsApp reserved for high-value moments. Wire spend alerts. | 2026-07-15 |
@@ -42,6 +43,7 @@ Gate 1 runs in parallel (2-week lead). Gates 3 and 4 are the next big workstream
 | Decision | Recommendation | Blocks | Owner |
 |---|---|---|---|
 | Founding-members seeding program | Get each pastor's buy-in: 15-25 members per branch contribute 1 testimony + 1 prayer pre-launch; bar = 10+ approved testimonies across branches before public launch | Family cold-start (empty wedge at launch) | Ayo + pastors |
+| French reviewer (translation + UGC moderation escalation) | Name a fluent French reader: no francophone branch exists, so this cannot default to a branch lead like DE/NL | Phase 4 localization pass; French UGC moderation (`17`/`22`) | Ayo |
 
 ### Decisions already in the specs (verified 2026-07-15)
 All of today's decisions were already documented by the 2026-07-12 remediation pass; verified file-by-file, no edits needed. WEB translation: `07` (Daily Verse), `20` (Content licensing), `02` (`daily_verses.translation` + `devotional_days.verse_translation`). Full tablet layouts: `05` (Tablet & orientation). WhatsApp cap (2 ministry-wide/month, push-first): `15` (Sending) + `21` §9. Devotional = one entitlement unlocks BOTH reader + structured plan: `10`, `14`, `07`, `02`. Today's session ratified these; docs and decisions now agree.
@@ -63,7 +65,7 @@ The spec says the product "dies in month 3" without these. Real names are used w
 | Academy courses / registrations | Course content + confirm registrations | HQ teaching team (Glasgow), name TBC | Phase 2 |
 | Books / store config | Payhip catalog + entitlement config | Lead pastor's Payhip account (Ps Esther); dev wires entitlement | Phase 4 |
 | Giving config | Per-branch giving links + bank details | Each branch treasurer / admin; HQ collates | Phase 1 |
-| DE / NL translation reviewers | Review UI strings + urgent broadcasts | DE: Berlin (Ps AY Samuel) · NL: Emmen (Ps Blossom Anukposi) | Phase 4 |
+| DE / NL / FR translation reviewers | Review UI strings + urgent broadcasts | DE: Berlin (Ps AY Samuel) · NL: Emmen (Ps Blossom Anukposi) · FR: name TBC (no francophone branch) | Phase 4 |
 
 The devotional "author" role is retired (content already written); what remains is the lighter import/curation task above.
 

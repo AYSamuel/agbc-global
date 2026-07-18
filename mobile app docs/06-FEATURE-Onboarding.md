@@ -28,7 +28,7 @@ Get a first-time user oriented and personalized in under a minute, **without an 
 - Default preselect: none (force a conscious choice), but Continue enabled only after select. Optional "Not sure yet" → HQ.
 
 ### `ONB-3` Language
-- English · Deutsch · Nederlands (from supported UI locales).
+- English · Deutsch · Nederlands · Français (from supported UI locales).
 - Preselect from device locale if it matches; else English.
 - **[Continue]** → `HOME`. Applies UI language immediately.
 

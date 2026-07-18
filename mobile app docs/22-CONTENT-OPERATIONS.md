@@ -25,7 +25,7 @@ The software can pass every acceptance criterion and still die in month 3 if the
 - [ ] 2+ upcoming events per branch plus 1 ministry-wide event
 - [ ] All current-season courses with correct dates and fees
 - [ ] Book catalog with working Payhip links (both PDF and EPUB paths tested if both exist)
-- [ ] Welcome broadcast drafted (EN, with DE/NL bodies)
+- [ ] Welcome broadcast drafted (EN, with DE/NL/FR bodies)
 - [ ] 10+ approved testimonies spanning all 4 branches and 5+ active prayers (see §3)
 - [ ] One trained moderator per branch signed off (moderation notifications + 48h escalation verified)
 
@@ -37,13 +37,13 @@ The software can pass every acceptance criterion and still die in month 3 if the
 4. **Launch Sunday choreography:** announced from the pulpit at all 4 branches with a QR code; everyone is asked to tap Glory on one testimony that day.
 5. **Bar to clear before public launch:** at least 10 approved testimonies across all 4 branches and 5 active prayers. An empty map and feed on day 1 is a failure of the product thesis, not a UX edge case.
 
-## 4. Localization workflow (EN/DE/NL)
+## 4. Localization workflow (EN/DE/NL/FR)
 
-- **Owners:** DE = Berlin lead (Pastor AY) + one second reader; NL = Emmen lead (Pastor Blossom) + one second reader. Placeholder until confirmed.
-- **Process:** i18n keys mandatory from Phase 1 (no literal strings in components); string freeze checkpoint per release; new features ship with all three languages or do not ship.
-- **Legal strings** (consent wording, privacy summaries, deletion copy) are reviewed by the data-protection contact in all three languages before release (`20`).
-- **Broadcasts:** composer writes the primary language; optional `body_de`/`body_nl` fields; dashboard warns "sent as written to all recipients" when locale bodies are empty. Automated notifications are template-key based and render per recipient language (`02`/`15`).
-- **Multilingual UGC:** posts carry a language tag; the Everywhere feed labels non-UI-language posts; stale pending items in a language the escalation admin cannot read are escalated to the named reviewer for that language (DE: Berlin, NL: Emmen, Yoruba: Ogbomosho leads); nobody approves content they cannot read (`17`).
+- **Owners:** DE = Berlin lead (Pastor AY) + one second reader; NL = Emmen lead (Pastor Blossom) + one second reader; FR = name TBC (no francophone branch exists: a fluent French reader must be named before the Phase 4 localization pass). Placeholder until confirmed.
+- **Process:** i18n keys mandatory from Phase 1 (no literal strings in components); string freeze checkpoint per release; new features ship with all four languages or do not ship.
+- **Legal strings** (consent wording, privacy summaries, deletion copy) are reviewed by the data-protection contact in all four languages before release (`20`).
+- **Broadcasts:** composer writes the primary language; optional `body_de`/`body_nl`/`body_fr` fields; dashboard warns "sent as written to all recipients" when locale bodies are empty. Automated notifications are template-key based and render per recipient language (`02`/`15`).
+- **Multilingual UGC:** posts carry a language tag; the Everywhere feed labels non-UI-language posts; stale pending items in a language the escalation admin cannot read are escalated to the named reviewer for that language (DE: Berlin, NL: Emmen, FR: named reviewer TBC, Yoruba: Ogbomosho leads); nobody approves content they cannot read (`17`).
 
 ## 5. Analytics: the wedge baseline (instrument in Phase 2, not Phase 4)
 

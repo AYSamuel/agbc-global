@@ -10,7 +10,7 @@ Give members control over identity, appearance, language, notifications, and the
 Rows/sections:
 - **Profile** → edit display name, avatar, home branch.
 - **Appearance → Theme**: segmented **System · Light · Dark** (writes `theme_pref`, applied instantly, persisted locally + to profile). Status bar re-themes too.
-- **Language**: English · Deutsch · Nederlands (writes `profiles.language`; UI relocalizes instantly). Content stays EN in v1.
+- **Language**: English · Deutsch · Nederlands · Français (writes `profiles.language`; UI relocalizes instantly). Content stays EN in v1.
 - **Notifications** → `NOTIF-PREFS`.
 - **Blocked members** → list of blocked users with unblock actions (`blocked_users`, see `02`/`09`; store-required UGC control).
 - **Privacy** → `PRIVACY`.
@@ -52,12 +52,12 @@ Toggles mapping to `notification_prefs`: Ministry announcements · Branch update
 - **Web deletion hardening (it is an unauthenticated endpoint that triggers OTP sends):** one-shot flow (the OTP proves number control and executes the deletion; no session or token is created or persisted); uniform response ("if an account exists, a code was sent": no enumeration signal); the same Twilio Fraud Guard, geo allowlist, and per-number/per-IP limits as `03`; plus bot protection (e.g. Cloudflare Turnstile), because a public form that triggers WhatsApp/SMS sends is an SMS-pumping amplifier.
 
 ## Localization (i18n)
-- **UI:** English, German, Dutch. Use `i18next`/`react-i18next` + `expo-localization` (`getLocales()`), JSON v4 plurals, with `@formatjs/intl-locale` + `@formatjs/intl-pluralrules/polyfill-force` imported at app entry (Hermes ships no `Intl.PluralRules`; DE/NL plural rules break without the polyfill). Reuse/translate strings from `agbc/src/i18n/ui.ts` (EN/DE/NL already exist for the website: port them).
+- **UI:** English, German, Dutch, French. Use `i18next`/`react-i18next` + `expo-localization` (`getLocales()`), JSON v4 plurals, with `@formatjs/intl-locale` + `@formatjs/intl-pluralrules/polyfill-force` imported at app entry (Hermes ships no `Intl.PluralRules`; DE/NL/FR plural rules break without the polyfill). Reuse/translate strings from `agbc/src/i18n/ui.ts` (EN/DE/NL already exist for the website: port them; FR is net-new translation).
 - **Workflow:** i18n keys mandatory from Phase 1 (no literal strings in components); string freeze per release; named translation reviewers and the legal-string review rule live in `22-CONTENT-OPERATIONS.md` §4.
 - **Default:** device locale if supported, else English; overridable in onboarding + Settings.
 - **Content (devotional, plans, verses):** English v1. Data model has `language` fields so DE/NL content can be added without schema change.
 - **Formatting:** dates/times/numbers/currency localized; branch times shown in branch timezone with locale formatting.
-- **RTL:** not needed for EN/DE/NL.
+- **RTL:** not needed for EN/DE/NL/FR.
 
 ## Data
 - `profiles` (name, avatar, branch, language, theme_pref, deleted_at), `notification_prefs`, `devices`.
@@ -74,7 +74,7 @@ Toggles mapping to `notification_prefs`: Ministry announcements · Branch update
 
 ## Acceptance criteria
 - [ ] Theme toggle (System/Light/Dark) applies instantly, persists, and re-themes status bars.
-- [ ] Language switch relocalizes the whole UI live (EN/DE/NL).
+- [ ] Language switch relocalizes the whole UI live (EN/DE/NL/FR).
 - [ ] Account deletion fully removes/anonymizes data and is self-service (store-compliant).
 - [ ] Notification prefs actually gate deliveries (see `15`).
 - [ ] Guests can adjust appearance/language without an account.

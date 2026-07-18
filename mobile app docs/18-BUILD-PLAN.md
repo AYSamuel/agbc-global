@@ -49,7 +49,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 - Bookstore (buy on Payhip) + entitlement pipeline (API-confirmed, see `14`) + **My Library reader** + reading state. Honest sizing: the reader is 2 to 3 weeks (both PDF and EPUB ship in v1 by decision 2026-07-12); the devotional structured-import tool ships with it (`10`/`17`).
 - Devotional plan feature (`PLAN`/`PLAN-DAY`) unlocks here, riding the entitlement pipeline; the daily-verse CTA switches on (`07`/`10`).
 - Content management in dashboard (plans, books) (Phase C of `17`; verse CRUD already shipped in Phase A).
-- Account deletion, privacy, full localization pass (EN/DE/NL), empty/error/offline states audit.
+- Account deletion, privacy, full localization pass (EN/DE/NL/FR), empty/error/offline states audit.
 - Analytics + Sentry; performance pass; accessibility (hit targets, contrast, dynamic type).
 - Store assets, privacy nutrition labels, TestFlight + Play internal testing → **submit**.
 - **Exit:** v1 live on both stores.
@@ -71,7 +71,7 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - **Guest-first**: gates never block browsing (`03`).
 - **Grace-framed**: encouraging copy, never guilt (`10`).
 - **Multi-branch**: nothing hard-codes a single branch (`00`).
-- **Three languages**: UI EN/DE/NL (`16`).
+- **Four languages**: UI EN/DE/NL/FR (`16`).
 - **Server-trusted**: RLS/role checks; never trust the client (`02`,`03`).
 
 ## Launch checklist
