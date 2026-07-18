@@ -41,7 +41,7 @@ Returning users skip `AUTH-3`. "First sign-in" has a concrete marker: `profiles.
 | Resume playback / save to My List / notes | ❌ gate | ✅ | ✅ | ✅ |
 | Read testimonies & prayers | ✅ | ✅ | ✅ | ✅ |
 | **Glory to God** reaction | ❌ gate | ✅ | ✅ | ✅ |
-| **"I prayed"** tap | ❌ gate | ✅ | ✅ | ✅ |
+| **"I will pray"** commit (then "I prayed") | ❌ gate | ✅ | ✅ | ✅ |
 | Post testimony / prayer | ❌ gate | ✅ (→ pending) | ✅ | ✅ |
 | Mark prayer answered → testimony | ❌ | ✅ (own) | ✅ | ✅ |
 | Attendance "I'm here" / streak / milestones | ❌ gate | ✅ | ✅ | ✅ |

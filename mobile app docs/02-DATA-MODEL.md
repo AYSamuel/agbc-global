@@ -18,7 +18,8 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | Authorship cannot be forged | trigger forces `author_id = auth.uid()` and `branch_id` = the author's profile branch on insert |
 | Approved content cannot be edited into abuse | BEFORE UPDATE trigger: any author change to `body`, `image_url`, or `category_id` on an `approved` row resets `status='pending'` and clears `moderated_by/at`; only leader (own branch) / admin policies may set `approved`/`rejected`/`removed` |
 | Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref, email); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
-| Counters are server-maintained | `glory_count`/`pray_count` written only by triggers (below), never by any client policy |
+| Counters are server-maintained | `glory_count` and the prayer counts (`praying_count`/`prayed_count`) written only by triggers (below), never by any client policy; the "I prayed" tap moves an intercession `committed`→`prayed`, decrementing `praying_count` and incrementing `prayed_count` |
+| Prayer commitment cannot be forged or self-scheduled | `prayer_intercessions.profile_id` is trigger-forced = `auth.uid()`; a BEFORE UPDATE trigger allows only the one-way `committed`→`prayed` transition (sets `prayed_at`, never reverts); `committed_at`, `next_reminder_at`, and `reminder_count` are server/trigger-controlled, so a client cannot backdate, self-schedule, or silence reminders (its own or anyone else's) by writing these columns |
 | The prayer-testimony link cannot be stolen | BEFORE INSERT/UPDATE trigger raises unless `from_prayer_id IS NULL` or the referenced prayer's `author_id = auth.uid()` (admins exempt); the UNIQUE constraint already prevents double-claiming. Without this, anyone could fabricate an "Answered prayer" ribbon on a stranger's prayer and permanently squat the link |
 | Attendance is honest about WHEN, bounded against backdating | every attendance insert carries `client_taken_at` (device UTC instant captured at tap time). The BEFORE INSERT trigger sets `service_date = (client_taken_at at time zone branches.timezone)::date` when `client_taken_at` is within the past 72 hours and not in the future; otherwise it falls back to `now()`. Offline replays land on the day actually attended (a Saturday tap replayed Monday still records Saturday); fabrication beyond 72 hours stays impossible; `profile_id` remains trigger-forced |
 | Paid state is never client-writable | `entitlements`, `streaks`, `milestones` have NO client write policies at all; writes happen only via service role (edge functions / dashboard) or DB triggers. A member INSERT into `entitlements` would be self-granted paid books |
@@ -35,7 +36,8 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | Table | anon | member | leader (own branch) | admin |
 |-------|------|--------|---------------------|-------|
 | testimonies / prayers | SELECT approved + not deleted | + SELECT/UPDATE/DELETE own (any status); INSERT (forced pending) | + SELECT any status in branch; UPDATE status | all |
-| glory_reactions / prayer_intercessions | none | INSERT/DELETE own; SELECT | same | all |
+| glory_reactions | none | INSERT/DELETE own; SELECT | same | all |
+| prayer_intercessions | none | INSERT/DELETE own + UPDATE own (state `committed`→`prayed` only); SELECT | same | all |
 | profiles | none | own row (allowlisted columns) | read limited columns in-branch | all incl. role |
 | notifications / devices / notification_prefs | none | own rows only | own rows only | all |
 | reading_state / plan_progress / saved_items / playback_positions / sermon_notes | none | SELECT / INSERT / UPDATE / DELETE own rows | own rows | all |
@@ -143,6 +145,7 @@ Row created by an AFTER INSERT trigger on `profiles`; fan-out treats an absent r
 | branch_updates | bool | default true |
 | service_reminders | bool | default true |
 | prayer_activity | bool | default true (the wedge's reward loop) |
+| prayer_reminders | bool | default true (opt-out; reminders to pray for requests you committed to, stop on "I prayed", see `15`) |
 | testimony_activity | bool | default true |
 | whatsapp_opt_in | bool | default false |
 
@@ -227,17 +230,23 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | consent_version | text | |
 | consented_at | timestamptz | |
 | answered_at | timestamptz null | set when author marks answered |
-| pray_count | int | denormalized |
+| praying_count | int | denormalized: intercessors still committed (not yet fulfilled) |
+| prayed_count | int | denormalized: intercessors who have marked "I prayed" |
 | deleted_at | timestamptz null | |
 
 (The resulting testimony, if converted, is found via `testimonies.from_prayer_id`.)
 
-### `prayer_intercessions`  ("I prayed" taps)
+### `prayer_intercessions`  (two-step commitment: "I will pray" then "I prayed")
 | field | type | notes |
 |-------|------|-------|
 | id | uuid PK | |
 | prayer_id | uuid FK | |
 | profile_id | uuid FK | |
+| state | enum | `committed` ("I will pray" tap) then `prayed` ("I prayed" tap) |
+| committed_at | timestamptz | set on the "I will pray" tap; starts prayer reminders |
+| prayed_at | timestamptz null | set on the "I prayed" tap; stops reminders |
+| next_reminder_at | timestamptz null | next gentle nudge; NULL once fulfilled / answered / deleted / capped / opted-out |
+| reminder_count | int | default 0; hard cap so it never nags (see `15`) |
 | - | unique(prayer_id, profile_id) | |
 
 ### `reports` (moderation queue input)
@@ -482,7 +491,7 @@ Delivery truth for AUTOMATED pushes (service reminders, activity, transactional)
 ## Relationship notes / integrity
 
 - A **testimony born from a prayer** links via `testimonies.from_prayer_id` (unique, `on delete set null`); the prayer's "Answered" state is `answered_at`; the reverse lookup is a join. One FK, one source of truth.
-- Denormalized counters (`glory_count`, `pray_count`) are maintained by the DB triggers specced above; the reaction tables remain the source of truth; nightly reconciliation fixes drift.
+- Denormalized counters (`glory_count`, and the prayer `praying_count`/`prayed_count`) are maintained by the DB triggers specced above; the reaction tables remain the source of truth; nightly reconciliation fixes drift.
 - **"My branch" scoping** uses `testimonies.branch_id` / `prayers.branch_id`. **"Everywhere"** removes the branch filter (approved rows only).
 - All user-generated content (`testimonies`, `prayers`) is **`pending` until a leader approves**: public reads filter `status='approved'`; authors can always see their own pending rows; the Write-path invariants make this unforgeable.
 - **Account deletion** (see `16` for the full deletion-reach table): profile soft-deleted AND `phone`/`email` nulled (unique constraints would otherwise block the number from re-registering); pending content hard-cancelled (never approvable post-consent-withdrawal); reactions removed with counter reconciliation; Storage objects deleted in the same job.

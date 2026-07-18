@@ -2,6 +2,8 @@
 
 The app shares the church's brand with the website but is its own, more personal surface. All values below are the real tokens used across the redesigned site and the app prototypes.
 
+> **Design source of truth (2026-07-18):** the canonical visual and interaction reference is the HTML prototype at `design/mockups/entry-flow.html` (open it in a browser). It holds all screen frames: every phone screen in light AND dark, tablet landscape + portrait (left nav rail + two-pane on landscape; centered max-width column for forms and the reader), and the edge / in-screen states (empty, loading, error, offline, plus per-screen states like prayer commitment, course already-registered, live pre/post, removed post). It is built with the CSS-variable tokens below and inline SVG icons, so it translates directly to React Native / Flutter (flexbox to layout, CSS vars to theme, copy is final). The earlier Figma build (`design/FIGMA-BUILD.md`) is parked and historical; when the two differ, follow the HTML, not Figma.
+
 ## Color tokens
 
 Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.html`) so the two stay in sync.
@@ -78,7 +80,7 @@ Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.htm
 | `VerseCard` | daily verse: gold accent, serif-flavored reference |
 | `SermonCard` / `SermonRail` | thumbnail, play overlay, progress bar (resume) |
 | `TestimonyCard` | author, branch, body, **Glory to God** button + count |
-| `PrayerCard` | body, pray count, "I prayed" |
+| `PrayerCard` | body, praying + prayed counts, "I will pray" then "I prayed", reminder note |
 | `GloryButton` | signature reaction: filled gold state when reacted, count animates |
 | `StreakStrip` / `MilestoneBadge` | grace-framed, encouraging |
 | `EventRow` | date block + title + branch/global tag |
