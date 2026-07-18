@@ -1,0 +1,3 @@
+-- 00-common.sql · seed data that is true in EVERY environment (local, dev, prod-via-reviewed-step).
+-- Branches, branch_services, giving/app config land here from W0.10 (docs/spec/02).
+-- Keep idempotent: written as upserts so a re-run never duplicates rows.
