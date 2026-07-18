@@ -119,7 +119,7 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 | display_name | text | |
 | avatar_url | text null | |
 | branch_id | uuid FK→branches | user's **home branch** (drives attendance timezone, reminders, branch notifications; see `07` branch-context model) |
-| language | text | `en` \| `de` \| `nl` |
+| language | text | `en` \| `de` \| `nl` \| `fr` |
 | role | enum | `member` \| `leader` \| `admin` (default `member`; immutable to owner, see invariants) |
 | theme_pref | enum | `system` \| `light` \| `dark` |
 | onboarded_at | timestamptz | set ONLY when `AUTH-3` completes; a session whose profile has `onboarded_at IS NULL` is routed to `AUTH-3` before anything else (abandoned half-created profiles resume there); content/reaction/RSVP/attendance INSERT policies additionally require `onboarded_at IS NOT NULL` |
@@ -195,7 +195,7 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | author_id | uuid FK→profiles | trigger-forced = auth.uid() |
 | branch_id | uuid FK→branches | trigger-forced = author's branch at post time (scopes "My branch") |
 | body | text | |
-| language | text | declared at compose or detected server-side (`en`/`de`/`nl`/`yo`…); drives the Everywhere-feed label (`09`) and moderation language escalation (`17`/`22`) |
+| language | text | declared at compose or detected server-side (`en`/`de`/`nl`/`fr`/`yo`…); drives the Everywhere-feed label (`09`) and moderation language escalation (`17`/`22`) |
 | category_id | uuid FK→testimony_categories null | |
 | image_url | text null | private bucket; signed URLs only for approved rows (see Storage buckets above) |
 | from_prayer_id | uuid FK→prayers null **unique** | set when born from an answered prayer; `on delete set null`. Single source of truth for the loop; the reverse link is derived by join (no second FK to drift) |
@@ -366,7 +366,7 @@ Free for everyone (unlike devotionals). Translation: **WEB (World English Bible)
 | reference | text | e.g. "Ephesians 2:8" |
 | text | text | |
 | translation | text | default `WEB` |
-| language | text | `en` v1; part of the unique key so DE/NL verses can be added later with no schema change |
+| language | text | `en` v1; part of the unique key so DE/NL/FR verses can be added later with no schema change |
 
 ---
 
@@ -454,7 +454,7 @@ Localization model: automated notifications store a **template key + params**, r
 | branch_id | uuid null | when scope=branch |
 | title | text | |
 | body | text | primary language as written |
-| body_de / body_nl | text null | optional per-locale bodies; fall back to `body` |
+| body_de / body_nl / body_fr | text null | optional per-locale bodies; fall back to `body` |
 | link | text null | allowlisted + previewed before send (`17`) |
 | channels | text[] | `push`, `whatsapp`, `in_app` (WhatsApp rationed: max 2 ministry-wide/month, `15`) |
 | status | enum | `draft` \| `pending_approval` \| `rejected` \| `sending` \| `sent` \| `halted` \| `failed` |

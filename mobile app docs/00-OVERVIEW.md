@@ -33,7 +33,7 @@ Source: `agbc/src/content/branches/*.json`. The app must load branches from the 
 
 ## Languages
 
-- **App UI:** English, German (Deutsch), Dutch (Nederlands): selectable in onboarding and Settings.
+- **App UI:** English, German (Deutsch), Dutch (Nederlands), French (Français): selectable in onboarding and Settings.
 - **Content (devotional, reading plan) v1:** English only. Architecture must not block per-language content later.
 
 ## Scope philosophy

@@ -49,7 +49,7 @@ The church's real data lives in the existing Astro website codebase (`agbc/`). T
 - **Giving accounts & currencies**: `agbc/src/lib/site.ts`
 - **Sermons**: YouTube channel `@Pastorolayinkaademiluka`
 - **Courses / Academy**: `agbc/src/content/courses/*.json`, `agbc/src/content/academy/*.json`
-- **Copy & i18n**: `agbc/src/i18n/ui.ts` (EN / DE / NL)
+- **Copy & i18n**: `agbc/src/i18n/ui.ts` (EN / DE / NL; French is net-new for the app, the website has no FR strings)
 
 Wherever this spec needs a real value (a service time, an account number, a pastor's name), it is taken from those files and cited.
 
@@ -71,5 +71,5 @@ These interactive prototypes demonstrate the intended **look and feel**. On beha
 2. **Guest-first.** The app is fully browsable without an account. Accounts are only required to *contribute* (post, react, RSVP, register, track rhythm).
 3. **Belonging is the wedge.** Testimonies + prayer + the global map are first-class, not buried utilities.
 4. **Grace-framed, never guilt-framed.** Streaks and milestones encourage; they never shame a broken streak.
-5. **Three languages.** UI in English, German, Dutch. Content (devotional/plan) English in v1.
+5. **Four languages.** UI in English, German, Dutch, French. Content (devotional/plan) English in v1.
 6. **Multi-branch by design.** Nothing assumes a single location. Branch context shapes times, events, and feeds.

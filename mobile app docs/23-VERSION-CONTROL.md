@@ -17,7 +17,7 @@ The definitive answer to "what lives in git, what never does, and how we always 
 
 ### apps/mobile (Expo)
 
-`app.config.ts`, `eas.json`, `package.json`, `metro.config.js`, `babel.config.js`, `assets/` (icons, splash, fonts), `src/i18n/locales/{en,de,nl}/*.json`, the design-token file (`packages/shared/src/theme/tokens.ts`), pnpm `patches/`. **`google-services.json`: COMMIT IT.** Expo's official docs state it is safe (only public identifiers); the actual secret is the **FCM V1 service account key** (required for Expo Push on Android even with no Firebase SDK), which lives in EAS credentials, never git. iOS needs no plist for Expo Push; the APNs .p8 lives in EAS credentials.
+`app.config.ts`, `eas.json`, `package.json`, `metro.config.js`, `babel.config.js`, `assets/` (icons, splash, fonts), `src/i18n/locales/{en,de,nl,fr}/*.json`, the design-token file (`packages/shared/src/theme/tokens.ts`), pnpm `patches/`. **`google-services.json`: COMMIT IT.** Expo's official docs state it is safe (only public identifiers); the actual secret is the **FCM V1 service account key** (required for Expo Push on Android even with no Firebase SDK), which lives in EAS credentials, never git. iOS needs no plist for Expo Push; the APNs .p8 lives in EAS credentials.
 
 ### apps/dashboard
 

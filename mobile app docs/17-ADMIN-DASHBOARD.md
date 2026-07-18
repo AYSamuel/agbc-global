@@ -25,12 +25,12 @@ Give branch leaders and ministry admins the tools to **run the app's content and
 - **Reports** inbox (`reports`): review flagged content → action or dismiss.
 - Audit trail (`moderated_by`, `moderated_at`).
 - **Freshness safeguard:** leaders are notified (push/in-app) when new items enter their queue; anything `pending` longer than 48h escalates to admins, who can moderate any branch. A quiet leader must never make a branch's feed look dead.
-- **Language rule:** stale items in a language the escalation admin cannot read escalate to the named reviewer for that language (DE: Berlin lead, NL: Emmen lead, Yoruba: Ogbomosho leads; see `22` §4). Nobody approves content they cannot read: hold + request translation instead.
+- **Language rule:** stale items in a language the escalation admin cannot read escalate to the named reviewer for that language (DE: Berlin lead, NL: Emmen lead, FR: named reviewer TBC, Yoruba: Ogbomosho leads; see `22` §4). Nobody approves content they cannot read: hold + request translation instead.
 - **Rejection flow:** "Reject (with reason)" writes `rejection_reason`; the author sees it in MY-POSTS with an "Edit and resubmit" action (`09`). Any author edit to an approved post automatically re-enters this queue (`02` invariants).
 - **Safeguarding guideline:** posts disclosing abuse or self-harm are NOT approved; they route to the branch lead pastor via the church's existing safeguarding process (see `20`). Photos of identifiable minors without known consent are rejected.
 
 ### 2. Broadcasts
-- Compose a `broadcast`: scope (branch/ministry), title, body (+ optional `body_de`/`body_nl`, see `22` §4), channels (push / WhatsApp / in-app), optional deep link.
+- Compose a `broadcast`: scope (branch/ministry), title, body (+ optional `body_de`/`body_nl`/`body_fr`, see `22` §4), channels (push / WhatsApp / in-app), optional deep link.
 - **Blast-radius controls:** confirmation screen shows the EXACT recipient count, the fully rendered body, and any link's expanded destination before send; outbound links are allowlisted/previewed; per-account daily send caps; **ministry scope requires a second admin's approval (four-eyes)**: the approve route refuses `approver == author` (backed by the DB CHECK in `02`), and a rejection sets `status='rejected'` + `review_note` (shown to the author); the author's next edit moves it back to `draft` for resubmission; the WhatsApp cap is **enforced server-side** (the send route counts sent ministry-scope WhatsApp broadcasts in the calendar month and refuses beyond 2; override requires a second admin + an audit-log entry); WhatsApp shows the estimated cost pre-send (`21` §9); a **halt control** stops an in-flight fan-out mid-delivery.
 - Send → edge function fan-out respecting `notification_prefs` (see `15`), chunked and resumable via `broadcast_deliveries`. History of sent broadcasts with per-channel outcomes.
 
