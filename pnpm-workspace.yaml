@@ -6,3 +6,6 @@ packages:
 # Only vetted packages that genuinely need a build script get allowed here.
 allowBuilds:
   sharp: true
+  # Explicit deny: prebuilt napi binaries ship as optional deps; the install script is a
+  # fallback we don't need (create-next-app's own scaffold denies it too).
+  unrs-resolver: false

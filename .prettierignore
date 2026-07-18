@@ -1,0 +1,13 @@
+# Prettier formats only our own app/package code. The spec docs, mockups, prototypes,
+# and generated/vendor output are never reformatted.
+docs/
+supabase/
+*.md
+apps/mobile/assets/
+node_modules/
+.next/
+.expo/
+dist/
+coverage/
+pnpm-lock.yaml
+*.hbc

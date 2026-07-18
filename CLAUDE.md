@@ -27,6 +27,14 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 - iOS: `bundleIdentifier = com.olayinkaademiluka.grace-portal`, existing App Store Connect record, existing Apple team.
 - This app replaces Grace Portal on the existing store listings. Do not create new app records.
 
+## Commands (from repo root)
+
+- `pnpm lint` · ESLint (flat, typescript-eslint strict) across mobile, dashboard, shared
+- `pnpm test` · Jest (mobile) + Vitest (dashboard)
+- `pnpm test:db` · pgTAP via `supabase test db` (local stack must be running)
+- `pnpm format` / `pnpm format:check` · Prettier (singleQuote); docs/, supabase/, *.md, and assets are excluded
+- `supabase start` / `supabase stop` · local stack (ports remapped to 553xx, see supabase/config.toml)
+
 ## Supabase environments (see `19`, `24` §1)
 
 - **Production = the existing SHARED project** (ref `fotfplvqsnmbzjjhqlwp`, eu-central-1). It also serves the LIVE church website. Currently on the Free plan.
