@@ -37,6 +37,7 @@ Read them in order. The numbered files build on each other.
 | 22 | `22-CONTENT-OPERATIONS.md` | Content pipelines + owners, launch-content checklist, Family cold-start seeding, localization workflow, analytics plan |
 | 23 | `23-VERSION-CONTROL.md` | What lives in git (Supabase config/migrations/functions/seeds, Expo/EAS, docs, ADRs), the never-in-git list, state visibility, repo bootstrap runbook |
 | 24 | `24-PHASE-MINUS-1.md` | Pre-build readiness: accounts, access, verified third-party lead times, blocking decisions, Windows setup, first-week plan |
+| 25 | `25-BUILD-PROCESS.md` | The execution playbook Claude builds from: session protocol, the ordered work-item flow (W0.1-W4.8 + prod track), due process per track, PR gates, dependency map |
 | - | `AUDIT-2026-07-12.md` | The production-readiness audit behind docs 21/22 and the 2026 corrections; Part D lists the prototype deltas |
 
 ---
