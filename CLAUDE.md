@@ -4,14 +4,14 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 
 ## Current state (update as it changes)
 
-- **Docs-only repo.** The complete spec lives in `mobile app docs/` (docs 00-25). No code yet.
-- The monorepo scaffold (apps/mobile, apps/dashboard, packages/shared, supabase/) lands at work item W0.2-W0.4; when the docs move to `docs/spec/`, update the paths in this file.
+- The complete spec lives in `docs/spec/` (docs 00-25; the old `.dc.html` prototypes in `docs/spec/prototypes/`, ADRs in `docs/decisions/`, runbooks in `docs/runbooks/`).
+- W0.2 landed the restructure, pnpm workspace config, ADR backfill, and the GitHub board. No app code yet: `supabase/` arrives at W0.3, `apps/mobile`, `apps/dashboard`, `packages/shared` at W0.4.
 
 ## How to work in this repo
 
-1. **`mobile app docs/25-BUILD-PROCESS.md` is the execution playbook.** Every build session follows its session protocol (§1): derive position from git history + the board, pick the next work item, read its Refs, build the slice BE-first, verify, propose the commit. Do not build outside the work-item flow.
+1. **`docs/spec/25-BUILD-PROCESS.md` is the execution playbook.** Every build session follows its session protocol (§1): derive position from git history + the board, pick the next work item, read its Refs, build the slice BE-first, verify, propose the commit. Do not build outside the work-item flow.
 2. **The numbered specs win every conflict** about behavior, data, or scope. Prototypes and mockups win on look and feel only.
-3. **Design source of truth:** `mobile app docs/design/mockups/entry-flow.html` (all screens, light + dark, tablet, edge states). Figma is parked. `design/SCREENS-CHECKLIST.md` is stale; trust `05` + the HTML.
+3. **Design source of truth:** `docs/spec/design/mockups/entry-flow.html` (all screens, light + dark, tablet, edge states). Figma is parked. `design/SCREENS-CHECKLIST.md` is stale; trust `05` + the HTML.
 4. Read the matching `~/.claude/standards/` file(s) before the first session in a domain (backend, database, security, frontend, mobile, qa-testing, devops).
 
 ## Stack (decided; see `01`)
@@ -58,7 +58,7 @@ The shared prod project contains ~3 tables belonging to the agbc website. Once t
 
 ## Key references
 
-- Build flow + gates: `mobile app docs/25-BUILD-PROCESS.md`
+- Build flow + gates: `docs/spec/25-BUILD-PROCESS.md`
 - Phases + cut lines: `18` · Pre-build accounts/lead times: `24` · Prod migration: `19`
 - Schema + invariants: `02` · Ops/CI/testing/jobs: `21` · Git manifest: `23`
 - Privacy (GDPR Art. 9, this app is higher-stakes than normal): `20`
