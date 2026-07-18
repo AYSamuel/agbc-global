@@ -28,7 +28,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 - **Exit:** a visitor can explore the whole church with no account; no dead ends.
 
 ## Phase 2: Auth + contribution (the wedge live)
-- Phone-OTP auth (`AUTH-1…4`, WhatsApp-first delivery + SMS fallback via Twilio Verify), gate sheet + gate-return.
+- Email-OTP auth (`AUTH-1…4`, typed code delivered by email via Resend SMTP, `03`), gate sheet + gate-return.
 - Family write: post testimony/prayer (consent → pending), **Glory to God**, **I prayed**, prayer→answered→testimony loop, report.
 - Moderation dependency: minimal dashboard moderation queue + **daily-verse CRUD** (Phase A of `17`; verses cannot wait for Phase 4, see `22`).
 - Analytics instrumentation: the v1 event list + north stars from `22-CONTENT-OPERATIONS.md` §5 (launch week is the only chance to baseline the wedge).
@@ -77,9 +77,9 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 ## Launch checklist
 - [ ] Apple: **reuse the existing app record** (bundle id `com.olayinkaademiluka.grace-portal`) under the existing (non-profit) team; listing updated to AGBC Global branding; privacy labels; account-deletion present; screenshots. See `19`.
 - [ ] Google: **existing Play listing** (package `com.oami.agbcapp`), `versionCode` > 19, signed with the existing upload keystore (in EAS credentials); listing assets updated; data-safety form incl. the web deletion link. See `19`.
-- [ ] Store review access: designated test phone number with fixed OTP documented in the review notes (`03`).
+- [ ] Store review access: designated review email address with fixed code documented in the review notes (`03`).
 - [ ] Backend: prod = cleaned shared Supabase project (`19`), backups verified, **Pro plan active** (deferred upgrade, `21` §7: mandatory before launch), RLS reviewed, secrets in EAS/Supabase (never in bundle). EU region confirmed 2026-07-13 (`19`).
-- [ ] Twilio Verify live: WhatsApp channel approved + SMS fallback, sender IDs registered (NG/DE), rate limits configured (`03`).
+- [ ] Email OTP delivery live: Resend custom SMTP on the church domain, SPF + DKIM + DMARC verified, rate limits configured (`03`).
 - [ ] Push (APNs key + FCM) configured in EAS.
 - [ ] WhatsApp broadcast sender approved (if in v1).
 - [ ] Forced-update gate wired: remote minimum-version check (Android in-app updates + config gate on iOS).
@@ -106,4 +106,6 @@ These are the source of truth for **look and feel only**; this doc set is the so
 
 **Prototype patch (landed 2026-07-13):** every contradiction-level delta was fixed. AppFull: onboarding is now 2 steps + welcome (no blocking privacy screen, no notification step; layered privacy note on welcome; "I'm just looking" added), compose has a consent block and pending/moderation copy on both testimony and prayer flows, the gate is phone-OTP only, OTP copy shows WhatsApp-first + SMS switch. Screen Map: Nations map retagged **v1** (nation detail stays ph2), OAuth and recovery-email cards marked post-v1 with the docs' v1 rules, notifications shown as in-context (not a step), GIVE-BANK added (G3), giving history marked post-v1, Groups marked post-v1, events marked dashboard-managed, devotional reader marked paid/entitled, blocking-consent card rewritten as layered notice, footer corrected. Blueprint: auth decision updated to phone-OTP-only, WhatsApp-first. Both wrapper pages now embed **AppFull**; `AppPrototype.dc.html` is deprecated (banner in the file).
 
-What remains in the prototypes are **absences, not contradictions** (screens the docs spec that AppFull doesn't demonstrate: BRANCH-SWITCH, LIVE with watching-now, WATCH-SEARCH, MY-LIST, the I-prayed / mark-answered loop actions, REPORT/POST-ACTIONS, AUTH-1 phone entry and AUTH-3 profile setup, real map pins). The gap list stays in `AUDIT-2026-07-12.md` Part D; build those from the docs.
+What remains in the prototypes are **absences, not contradictions** (screens the docs spec that AppFull doesn't demonstrate: BRANCH-SWITCH, LIVE with watching-now, WATCH-SEARCH, MY-LIST, the I-prayed / mark-answered loop actions, REPORT/POST-ACTIONS, AUTH-1 sign-in entry and AUTH-3 profile setup, real map pins). The gap list stays in `AUDIT-2026-07-12.md` Part D; build those from the docs.
+
+> **Update 2026-07-18:** auth switched from phone-OTP to email-OTP (`03`). Where the `.dc.html` prototypes still show phone entry or WhatsApp/SMS OTP copy, they are superseded on that point by `03` and the patched `design/mockups/entry-flow.html`; the prototypes are historical and are not being re-edited.

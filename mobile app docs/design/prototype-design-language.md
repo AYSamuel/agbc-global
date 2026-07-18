@@ -50,7 +50,7 @@ buttons 14 · small buttons/OTP 11-12 · icon chips 11 · standard cards 18 · s
 - **Gate on action, not on screen**: a guest can browse everything; tapping a member-only action (Glory, I prayed, compose, RSVP, save, notes, I'm here) opens the `GATE` sheet, then completes the action after sign-in.
 - **Give** is guest-allowed (links out to web, no account).
 - **Profile (guest)** = empty state ("You're browsing as a guest" + Sign in); **Settings** shows Sign in vs Sign out.
-- Auth is **phone-OTP only** in v1 (no Google/Apple). No consent screen or notification prompt during onboarding.
+- Auth is **email-OTP only** in v1 (no Google/Apple; decision 2026-07-18, `03`). No consent screen or notification prompt during onboarding.
 
 ## Flow order (build top to bottom)
 `SPLASH → ONB-1 Welcome → ONB-2 Branch → ONB-3 Language → HOME (guest)` → tabs (Watch, Family, Give, More) → gated flows (Auth, compose) → member states.

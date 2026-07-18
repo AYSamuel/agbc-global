@@ -37,7 +37,7 @@ The definitive answer to "what lives in git, what never does, and how we always 
 | Supabase dev access token | GitHub repo secrets |
 | Service-role keys | Vercel env (Production scope for prod) + password manager; never in mobile/EAS |
 | Supabase URL + anon key | Not secret, but per-env: EAS env vars per profile; Vercel per scope |
-| Twilio SID/token, WhatsApp token, YouTube key, Payhip key, Resend key | Supabase function secrets (`supabase secrets set`) per project |
+| WhatsApp token, YouTube key, Payhip key, Resend key | Supabase function secrets (`supabase secrets set`) per project. (Twilio removed 2026-07-18 with the email-OTP decision, `03`) |
 | Sentry DSN / PostHog key | Public-by-design; EAS/Vercel env (kept out of the repo so per-env values stay swappable). The Sentry AUTH token (sourcemaps) IS secret: GitHub secret |
 | `EXPO_TOKEN` | GitHub repo secret |
 | FCM V1 service account JSON, APNs .p8, distribution certs | EAS credentials + password manager |
