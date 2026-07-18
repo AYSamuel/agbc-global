@@ -15,7 +15,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 | Product spec | Complete: docs 00-24, audited (`AUDIT-2026-07-12.md`) and remediated; decisions log current in `BUILD-READINESS-TRACKER.md` |
 | Design | Complete as an HTML prototype: `design/mockups/entry-flow.html` is the canonical visual/interaction reference (every screen, light AND dark, tablet landscape + portrait, edge/in-screen states; see `05`). Figma is parked. `design/SCREENS-CHECKLIST.md` predates the final design sessions and is stale; trust `05` + the HTML file |
 | Repo | `agbc-global` on GitHub, `main` PR-protected, docs committed. Monorepo scaffold NOT yet created (steps 5-11 of the `23` §4 runbook remain) |
-| Code | None. Phase -1 accounts (Meta, Twilio, NG sender ID, Apple invite, FCM, etc.) not started |
+| Code | None. Phase -1 accounts (Meta for broadcasts, Apple invite, FCM, observability, etc.) not started. The Twilio + NG sender-ID rows were dropped with the email-OTP decision (2026-07-18, `03`): Phase -1 now contains no paid item and no auth-blocking fuse |
 | Readiness gates | See `BUILD-READINESS-TRACKER.md`: Gate 1 (wedge interviews) runs in parallel and does not block Phases 0-1; Gate 2 owners must be named before Phase 2; Gate 4 (backup pipeline, NDPA) gates prod work only |
 
 **Conclusion: the build can start now.** Nothing gates Phase 0 or Phase 1 except the scaffold itself and the Phase -1 fuses that must be lit on day 1 (they run in the background for weeks; see `24`).
@@ -48,7 +48,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W0.1 · Phase -1 day-1 sweep** (with Ayo; runs in background for weeks)
 - Refs: `24` §1 + §4.
-- Build: submit Meta business verification; Twilio account + Verify service + Geo Permissions allowlist + Fraud Guard + spend alert; NG sender-ID registration; request Apple Admin invite; look up highest Play versionCode + App Signing SHA-256; Firebase project + FCM V1 key; create PostHog EU, Sentry, healthchecks.io, UptimeRobot accounts; confirm the two WhatsApp numbers receive registration codes.
+- Build: request Apple Admin invite; look up highest Play versionCode + App Signing SHA-256; Firebase project + FCM V1 key; YouTube Data API key; create PostHog EU (EU region), Sentry (EU region at org creation), healthchecks.io, UptimeRobot accounts; start Meta business verification within month 1 (broadcasts-only prerequisite now, `03`/`24`); confirm the broadcast WhatsApp number receives a registration code. Everything here is free: the Twilio cluster and NG registration were dropped with email OTP (2026-07-18).
 - Done: every `24` §1 row has an owner and a status; long fuses submitted; tracked as a checklist issue.
 
 **W0.2 · Repo restructure + workspace bootstrap**
@@ -150,10 +150,10 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 ### Phase 2 · Auth + contribution (the wedge live) + Dashboard Phase A
 
 **W2.1 · Auth BE + OTP screens** (multi-session)
-- Refs: `03`, `02` (profiles gates), `24` §1 rows 2-3.
-- Build BE: Supabase phone auth → Twilio Verify (WhatsApp-first, SMS fallback); rate limits + lockout config; review-bypass flag per `03` (enabled dev/preview, off prod); LargeSecureStore session adapter.
-- Build FE: AUTH-1 (phone entry, "why" copy), AUTH-2 (code, channel indicator, switch channel, resend, all error states incl. total-outage copy), AUTH-3 (profile setup: name, home branch prefilled, language, 16+ declaration → `onboarded_at` + `age_confirmed_at` in one update), AUTH-4 (success + return); half-created-profile routing (session with NULL `onboarded_at` → AUTH-3).
-- Done: `03` flow + edge cases; sign-in works on dev with the fixed-OTP review number; killed-mid-AUTH-3 resume verified.
+- Refs: `03`, `02` (profiles gates), `24` §1 rows 11-12.
+- Build BE: Supabase email OTP (the 6-digit code in the template via `{{ .Token }}`, never a magic link); Resend custom SMTP for preview/prod, local Mailpit for dev; localized templates (EN/DE/NL/FR); rate limits + lockout config; review-bypass flag per `03` (enabled dev/preview, off prod); LargeSecureStore session adapter.
+- Build FE: AUTH-1 (email entry, "why" copy), AUTH-2 (code, sent-to indicator, spam-folder hint, change email, resend, all error states incl. total-outage copy), AUTH-3 (profile setup: name, home branch prefilled, language, 16+ declaration → `onboarded_at` + `age_confirmed_at` in one update), AUTH-4 (success + return); half-created-profile routing (session with NULL `onboarded_at` → AUTH-3).
+- Done: `03` flow + edge cases; sign-in works on dev with the fixed-code review email; killed-mid-AUTH-3 resume verified.
 
 **W2.2 · GATE + gate-return**
 - Refs: `03` (gate + security rules), `04`.
@@ -278,7 +278,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W4.8 · Store submission** (with Ayo)
 - Refs: `18` launch checklist, `19` (store product, listings, age ratings), `03` (review notes).
-- Build: store assets EN/DE/NL/FR + screenshot matrix (incl. iPad/tablet), privacy labels + data-safety form (web deletion link), age-rating answer sheet, review notes (fixed-OTP number, prod bypass window on), release-note copy for Grace Portal installs; TestFlight + Play internal; staged-rollout plan with written halt criteria; submit.
+- Build: store assets EN/DE/NL/FR + screenshot matrix (incl. iPad/tablet), privacy labels + data-safety form (web deletion link), age-rating answer sheet, review notes (fixed-code review email, prod bypass window on), release-note copy for Grace Portal installs; TestFlight + Play internal; staged-rollout plan with written halt criteria; submit.
 - Done: both stores in review; `18` launch checklist items all checked or explicitly waived by Ayo.
 
 ### Track P · Production migration (parallel, gated; interleave after Phase 1)
@@ -352,8 +352,8 @@ Same as §4 minus the device matrix (desktop-first web, but check a narrow windo
 
 | Dependency | Blocks | Lead time / note |
 |------------|--------|------------------|
-| Meta business verification | WhatsApp OTP channel + broadcasts | up to 2 weeks; submit day 1 (W0.1). SMS fallback carries Phase 2 auth regardless |
-| NG sender-ID registration | Nigerian SMS fallback | 2-3 weeks; submit day 1 |
+| Meta business verification | WhatsApp broadcasts (Phase 3) only | up to 2 weeks + display-name review + tier ramp; start within month 1 (W0.1). Auth is email-OTP and never waits on Meta (`03`) |
+| Resend SMTP + SPF/DKIM/DMARC on the domain | real-user sign-ins (Founding Members onward) + Phase 4 restore emails | ~1 day; Ayo holds DNS (`24` §1 rows 11-12). Dev never waits (local Mailpit) |
 | Apple Admin invite + Play lookups | iOS dev builds (W0.11), release config | same day once requested |
 | FCM V1 key + APNs in EAS | Push (W3.3) | same day; do it in W0.1 |
 | Dashboard Phase A (W2.7) | Phase 2 exit (nothing publishes without it) and verification of W2.5/W2.6 | build in parallel with W2.3-2.6 |

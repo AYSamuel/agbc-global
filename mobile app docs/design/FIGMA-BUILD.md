@@ -6,6 +6,8 @@ This is the running record of how the app's design system is structured in Figma
 
 **Goal:** build every screen in `SCREENS-CHECKLIST.md`, iPhone / light / phone first, then the Android-key / dark / tablet passes. **Batch B (Auth cluster) is now done** (GATE, AUTH-1/2/3/4). Next up is **Batch C: Watch** (WATCH, SERMON player, LIVE, WATCH-SEARCH, MY-LIST, SERMON-NOTES), then Batches D through J. Batch A still has two stragglers to slot in when convenient: HOME (member) and BRANCH-SWITCH.
 
+> **Rework note (2026-07-18):** auth switched from phone-OTP to email-OTP (`03`). The built AUTH-1 (phone field + country code) and AUTH-2 (WhatsApp copy, SMS switch) frames need rework to email entry / sent-to-email copy when Figma work resumes; `design/mockups/entry-flow.html` carries the current truth until then. The PhoneInput component master becomes an EmailInput (or generic TextField use).
+
 **At session start, refresh IDs (they are stable but re-fetch to be safe):**
 - `get_pages` (screens live on `📱 Entry & Onboarding`, id `8:86`; Components `8:85`; Foundations `0:1`). Free plan caps the file at **3 pages**, so ALL screens go on `8:86`, laid out in labelled rows by feature.
 - `get_local_components` (76 masters, light + `Dark/` prefixed), `get_styles` (text + effect styles), `get_variable_defs` (`AGBC Tokens` collection).

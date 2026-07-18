@@ -13,7 +13,7 @@ Church membership, testimonies, and prayer requests reveal **religious beliefs**
 
 | Processing | Data | Lawful basis | Art. 9 condition |
 |-----------|------|--------------|------------------|
-| Account (phone, email, name, branch, language) | contact + profile | contract (providing the service) | 9(2)(d) |
+| Account (email, name, branch, language; optional phone only via WhatsApp broadcast opt-in, `15`) | contact + profile | contract (providing the service) | 9(2)(d) |
 | Testimonies / prayers (public sharing) | UGC incl. religious/health | consent | 9(2)(a) explicit, via consent step |
 | Attendance / rhythm / plan progress | religious-practice data | consent (member opts in by using the feature) | 9(2)(a) |
 | Push / WhatsApp notifications | tokens, phone | consent (opt-in prefs, `15`) | n/a |
@@ -24,25 +24,24 @@ Church membership, testimonies, and prayer requests reveal **religious beliefs**
 
 - The compose **consent step** (`09`) is the Art. 9 capture: plain words ("shared publicly with the church family worldwide; a leader reviews it first"), stored with a timestamp and the version of the wording shown.
 - Consent is withdrawable: deleting a post, or the account, withdraws it; the delete paths (`16`) are the mechanism.
-- **Analytics:** nothing non-essential fires before consent. v1: run PostHog in anonymous/cookieless mode OR behind an in-app opt-in (Settings toggle + first-run card). Sentry is configured to scrub PII: no phone numbers, no user content in events or breadcrumbs.
+- **Analytics:** nothing non-essential fires before consent. v1: run PostHog in anonymous/cookieless mode OR behind an in-app opt-in (Settings toggle + first-run card). Sentry is configured to scrub PII: no email addresses or phone numbers, no user content in events or breadcrumbs.
 
 ## Data residency
 
 - The Supabase project must be in an **EU region**; verify the existing shared project as part of the `19` audit. If it is in a non-EU region, decide before launch whether to migrate (see `19`, step 7).
-- Twilio and Meta route messages internationally by nature; that transfer is covered by their DPAs and current transfer mechanisms (DPF/SCCs), not by our region choice.
+- Meta (broadcasts) and Resend route messages internationally by nature; that transfer is covered by their DPAs and current transfer mechanisms (DPF/SCCs), not by our region choice.
 
 ## Processors (a DPA with each)
 
 | Vendor | Purpose | Notes |
 |--------|---------|-------|
 | Supabase | DB / auth / storage | DPA available; pin EU region |
-| Twilio | OTP (WhatsApp + SMS) | DPA; verify current transfer mechanism |
-| Meta (WhatsApp Cloud API) | OTP delivery, broadcasts | business terms + DPA |
+| Meta (WhatsApp Cloud API) | broadcasts (Phase 3) | business terms + DPA. (Twilio was removed from the processor list with the email-OTP decision 2026-07-18, `03`) |
 | Expo | push relay | DPA |
 | Sentry | crash reporting | DPA; PII scrubbing on |
 | PostHog | analytics | EU Cloud option; DPA |
 | Payhip | book purchases | buyer's merchant of record; we receive only buyer email for entitlement (`14`) |
-| Resend (or equivalent) | transactional email (email verification OTP, `02`/`03`) | DPA; SPF + DKIM (+ DMARC) on the church domain; Supabase Auth custom SMTP points at it (the built-in Supabase sender is dev-only: 2 emails/hour). The website already uses Resend, so reuse that account |
+| Resend (or equivalent) | ALL sign-in OTP codes + transactional email (`03`) | DPA; SPF + DKIM aligned and DMARC at enforcement on the church domain; Supabase Auth custom SMTP points at it (the built-in Supabase sender is dev-only: 2 emails/hour). The website already uses Resend, so reuse that account |
 
 Keep the accepted-DPA list with the church's records; re-check when a vendor or their terms change.
 
@@ -63,9 +62,9 @@ Keep the accepted-DPA list with the church's records; re-check when a vendor or 
 
 ## Deletion & data rights
 
-- **In-app deletion** (`16`) plus the **web deletion path** (Play requirement): a page on the agbc website, phone + OTP verified, driving the same server-side flow.
+- **In-app deletion** (`16`) plus the **web deletion path** (Play requirement): a page on the agbc website, email + OTP verified, driving the same server-side flow.
 - Deletion reaches: DB rows, storage objects (avatars, testimony photos), the auth user, push tokens, analytics (deletion API or expiry), and third parties where applicable. Backups age out.
-- Access/export: an admin-run export (JSON) of one member's data; respond within one month of a request. **Identity verification to the same bar as deletion:** the requester proves control of the account's phone via OTP before any export is fulfilled (a phone-only account has no other identity anchor; releasing special-category data to an impostor is itself a breach).
+- Access/export: an admin-run export (JSON) of one member's data; respond within one month of a request. **Identity verification to the same bar as deletion:** the requester proves control of the account's email via OTP before any export is fulfilled (an email-only account has no other identity anchor; releasing special-category data to an impostor is itself a breach).
 
 ## Age policy & safeguarding
 

@@ -15,7 +15,7 @@ Read them in order. The numbered files build on each other.
 | 00 | `00-OVERVIEW.md` | Vision, the wedge, audience, branches, scope, tech stack at a glance |
 | 01 | `01-ARCHITECTURE.md` | System architecture, backend, hosting, cost, dev environment (Windows + iOS) |
 | 02 | `02-DATA-MODEL.md` | Database schema: every table, field, relationship |
-| 03 | `03-AUTHENTICATION.md` | Phone-OTP auth (WhatsApp-first delivery, SMS fallback), guest vs member, account gates, sessions, roles |
+| 03 | `03-AUTHENTICATION.md` | Email-OTP auth (typed 6-digit code by email; decision 2026-07-18), guest vs member, account gates, sessions, roles |
 | 04 | `04-NAVIGATION-MAP.md` | Full screen graph: every screen, every action's destination, zero dead ends |
 | 05 | `05-DESIGN-SYSTEM.md` | Colors, type, tokens, components, light/dark theming |
 | 06 | `06-FEATURE-Onboarding.md` | Splash → branch → language → enter (notification permission is asked in context later, never here) |
@@ -56,7 +56,7 @@ Wherever this spec needs a real value (a service time, an account number, a past
 
 ## Working design references (in this project)
 
-These interactive prototypes demonstrate the intended **look and feel**. On behavior, **the docs win every conflict**. The contradiction-level deltas were patched on 2026-07-13 (onboarding, consent + moderation copy, phone-OTP-only auth, map retagged v1, GIVE-BANK added; both wrappers now embed AppFull; AppPrototype is deprecated). What remains are absences: screens the docs spec that the prototypes don't demonstrate, listed in `AUDIT-2026-07-12.md` Part D and in `18`'s prototype note; build those from the docs.
+These interactive prototypes demonstrate the intended **look and feel**. On behavior, **the docs win every conflict**. The contradiction-level deltas were patched on 2026-07-13 (onboarding, consent + moderation copy, OTP-only auth, map retagged v1, GIVE-BANK added; both wrappers now embed AppFull; AppPrototype is deprecated). Auth then switched from phone-OTP to email-OTP on 2026-07-18 (`03`): where prototypes still show phone entry, `03` + `design/mockups/entry-flow.html` supersede them. What remains are absences: screens the docs spec that the prototypes don't demonstrate, listed in `AUDIT-2026-07-12.md` Part D and in `18`'s prototype note; build those from the docs.
 
 - `App iOS + Android.dc.html`: the full app in both device frames (primary reference)
 - `AppFull.dc.html`: the app component (all screens, theming)

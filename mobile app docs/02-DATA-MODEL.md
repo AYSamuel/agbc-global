@@ -17,7 +17,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | Content is born `pending` | `status default 'pending'`; BEFORE INSERT trigger forces `status='pending'`, `moderated_by/at=NULL` for non-moderators regardless of client-supplied values; member INSERT policy `WITH CHECK (status='pending')` |
 | Authorship cannot be forged | trigger forces `author_id = auth.uid()` and `branch_id` = the author's profile branch on insert |
 | Approved content cannot be edited into abuse | BEFORE UPDATE trigger: any author change to `body`, `image_url`, or `category_id` on an `approved` row resets `status='pending'` and clears `moderated_by/at`; only leader (own branch) / admin policies may set `approved`/`rejected`/`removed` |
-| Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref, email); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
+| Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref, phone); `email` is NOT in the allowlist: it mirrors the auth identity and changes only via the Supabase auth email-change flow (`03`); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
 | Counters are server-maintained | `glory_count` and the prayer counts (`praying_count`/`prayed_count`) written only by triggers (below), never by any client policy; the "I prayed" tap moves an intercession `committed`→`prayed`, decrementing `praying_count` and incrementing `prayed_count` |
 | Prayer commitment cannot be forged or self-scheduled | `prayer_intercessions.profile_id` is trigger-forced = `auth.uid()`; a BEFORE UPDATE trigger allows only the one-way `committed`→`prayed` transition (sets `prayed_at`, never reverts); `committed_at`, `next_reminder_at`, and `reminder_count` are server/trigger-controlled, so a client cannot backdate, self-schedule, or silence reminders (its own or anyone else's) by writing these columns |
 | The prayer-testimony link cannot be stolen | BEFORE INSERT/UPDATE trigger raises unless `from_prayer_id IS NULL` or the referenced prayer's `author_id = auth.uid()` (admins exempt); the UNIQUE constraint already prevents double-claiming. Without this, anyone could fabricate an "Answered prayer" ribbon on a stranger's prayer and permanently squat the link |
@@ -114,8 +114,8 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 | field | type | notes |
 |-------|------|-------|
 | id | uuid PK | = auth user id |
-| phone | text unique | E.164; nulled on account deletion so the number can re-register (see `16`) |
-| email | text unique null | optional, **verified** (email OTP link); backs Payhip entitlement matching (`14`); nulled on deletion |
+| email | text unique | the sign-in identity (mirrors `auth.users.email`, kept in sync server-side; see `03`); **verified by definition** (sign-in IS the verification); backs Payhip entitlement matching (`14`); nulled on account deletion so the address can re-register (see `16`) |
+| phone | text unique null | optional, E.164; collected ONLY at WhatsApp broadcast opt-in (`15`), never at sign-in; nulled on deletion |
 | display_name | text | |
 | avatar_url | text null | |
 | branch_id | uuid FK→branches | user's **home branch** (drives attendance timezone, reminders, branch notifications; see `07` branch-context model) |
@@ -422,9 +422,9 @@ Seed courses from `agbc/src/content/courses/*.json` + `academy/*.json` via a con
 | `entitlements` | id, profile_id FK, book_id FK, source enum(`payhip`\|`gift`), **source_ref text unique null** (Payhip transaction/order id: replays no-op), granted_at; unique(profile_id, book_id) |
 | `reading_state` | profile_id, book_id, location text (CFI/page), updated_at; PK(profile_id, book_id) |
 | `payhip_events` | id, event_id text unique, payload jsonb, received_at, processed_at null; raw webhook inbox; processing is async and idempotent |
-| `unmatched_purchases` | id, buyer_email text (normalized lowercase), book_id FK, source_ref text, payload jsonb, created_at; drained automatically when a profile later verifies that email; visible in the dashboard "unmatched purchases" queue (`17`) |
+| `unmatched_purchases` | id, buyer_email text (normalized lowercase), book_id FK, source_ref text, payload jsonb, created_at; drained automatically when a profile with that email later exists (the identity email is verified by sign-in, `03`); visible in the dashboard "unmatched purchases" queue (`17`) |
 
-**Entitlement trust model (see `14`):** the Payhip webhook is a TRIGGER only (its "signature" is a static hash, forgeable). Grants happen only after server-side confirmation against Payhip's API, keyed by transaction id. Restore-purchase claims grant only against the profile's **verified** email (or Payhip order id), with uniform responses and rate limits. Refund events revoke the entitlement.
+**Entitlement trust model (see `14`):** the Payhip webhook is a TRIGGER only (its "signature" is a static hash, forgeable). Grants happen only after server-side confirmation against Payhip's API, keyed by transaction id. Restore-purchase claims grant only against the profile's identity email (verified by sign-in, `03`) or a Payhip order id, with uniform responses and rate limits. Refund events revoke the entitlement.
 
 ---
 

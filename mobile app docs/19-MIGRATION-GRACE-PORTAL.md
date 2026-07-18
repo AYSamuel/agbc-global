@@ -44,7 +44,7 @@ The existing Supabase project is **shared**: the agbc website uses roughly 3 tab
 - **Listing localization:** the app ships EN/DE/NL/FR, so the store listings do too: name/subtitle/description and screenshots per locale; an owner is named for producing them (see `22` owners table).
 - **Screenshot matrix:** iPhone 6.9" and 6.5", iPad (tablet layouts are claimed in v1), Play phone + 7" + 10" tablet, per locale.
 - **Deep-link files:** the church website hosts `/.well-known/apple-app-site-association` and `assetlinks.json`; the Android fingerprint is the **Play App Signing key SHA-256 from the Play Console**, never the local upload keystore (see `15`).
-- **Release-note copy for existing Grace Portal installs** (the app changes name, icon, and sign-in overnight): "Grace Portal is now AGBC Global: a brand new app for the whole AGBC family. Browse freely, watch and listen to messages, share testimonies and prayers, and see the family across Glasgow, Berlin, Emmen and Ogbomosho. Sign in with your phone number to join in." Old Grace Portal credentials are retired; phone-OTP replaces them.
+- **Release-note copy for existing Grace Portal installs** (the app changes name, icon, and sign-in overnight): "Grace Portal is now AGBC Global: a brand new app for the whole AGBC family. Browse freely, watch and listen to messages, share testimonies and prayers, and see the family across Glasgow, Berlin, Emmen and Ogbomosho. Sign in with your email to join in." Old Grace Portal credentials are retired; email-OTP replaces them.
 
 ## Push: OneSignal is retired
 

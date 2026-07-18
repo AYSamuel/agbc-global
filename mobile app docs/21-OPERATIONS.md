@@ -54,7 +54,7 @@ ADRs to backfill on day one: reuse-shared-supabase-as-prod; replace-grace-portal
 | RLS / authz | pgTAP via `supabase test db` (+ basejump `supabase_test_helpers`) | every table has RLS forced; guest sees only approved; anonymous prayers never expose `author_id`; **each Write-path invariant bypass attempt fails** (insert approved, self-set role, edit approved without re-pend, member INSERT into `entitlements`, backdated `attendance`, foreign-author `from_prayer_id`); blocked-author rows invisible both ways; leader branch-scope; foreign-id IDOR probes on dashboard routes; ministry broadcast refused without a distinct approver; WhatsApp cap refusal; mark-answered on a non-approved prayer fails; author edit of a `removed` row fails; RSVP against a cancelled/started event fails; broadcast edit during `pending_approval` clears `approved_by`; writes from a deleted profile fail; writes without `onboarded_at` fail; `attendance.client_taken_at` clamps (72h/future) |
 | Edge functions | `deno test` unit + `supabase functions serve` integration | Payhip: same signed fixture replayed twice = one entitlement, unknown event = 200; fan-out chunking; OTP funnel logging |
 | Contracts | zod schemas in `packages/shared` + types-drift CI job | app and edge functions cannot disagree silently; consumers tolerate unknown fields (old app versions outlive the backend) |
-| E2E | **Maestro** (2026 Expo consensus; runs on dev/release builds) | journeys only: guest browse Home > Watch > Give bank details; OTP sign-in with the review number (bypass flag is always on in dev/preview, `03`); post testimony > pending; Glory gate-return; RSVP; block a member > their content disappears; devotional day complete |
+| E2E | **Maestro** (2026 Expo consensus; runs on dev/release builds) | journeys only: guest browse Home > Watch > Give bank details; OTP sign-in with the review email (bypass flag is always on in dev/preview, `03`); post testimony > pending; Glory gate-return; RSVP; block a member > their content disappears; devotional day complete |
 | Edge integration extras | `supabase functions serve` | email verify then restore-purchase grants exactly once; a forged refund event does not revoke |
 | Manual matrix | per release | one low-end real Android on the minimum OS + current iPhone, at small phone / large phone / tablet widths, 2x text scale, VoiceOver + TalkBack pass |
 
@@ -82,7 +82,7 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 
 1. **Sentry** (app + dashboard + Deno SDK in edge functions), PII scrubbing on: alert on a new issue hitting > 5 users/hour; crash-free sessions < 99.5% during a rollout = halt criterion.
 2. **healthchecks.io** dead-man pings on every job in §5 (free tier: 20 checks).
-3. **OTP funnel, every served country:** log verification started/succeeded per country (no phone numbers); daily check alerts when any country's success < 70% over 24h; PLUS an absolute alarm: > 20 consecutive failed verifications ministry-wide within 30 minutes pages immediately (catches a Sunday-morning total outage the daily check would miss); Twilio Console triggers on error rate and monthly spend remain as backup.
+3. **OTP funnel:** log verification started/succeeded (no email addresses; country attribution is gone with phone OTP, so the funnel is ministry-wide); daily check alerts when success < 70% over 24h; PLUS an absolute alarm: > 20 consecutive failed verifications ministry-wide within 30 minutes pages immediately (catches a Sunday-morning total outage the daily check would miss); Resend delivery/bounce metrics remain as backup.
 4. **Broadcast health:** alert if > 10% of a broadcast's deliveries fail (push receipts + WhatsApp statuses), AND alert when a broadcast sits in `sending` longer than 15 minutes with zero failures (an edge outage mid-send is otherwise invisible); runbook step: resume (cursor) or halt.
 5. **UptimeRobot** (free): the web giving page (shared external SPOF: card/PayPal giving dies with the website; offline bank details in `12` cover the gap, but only an alert tells you), the church website, the dashboard, the Supabase REST endpoint.
 6. **Supabase usage:** check egress/DB size/realtime connections at 80% of plan; spend cap decision recorded.
@@ -95,7 +95,7 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 - Storage objects (sermon audio, book files, avatars) are NOT in database backups: a nightly Storage sync job copies buckets off-provider.
 - Nightly `supabase db dump` via GitHub Actions to encrypted off-provider storage (survives a Supabase account-level incident).
 - **Restore drill** once before launch and quarterly: restore the latest dump into a scratch project, boot the dashboard against it, record time taken.
-- **Bus factor:** credentials inventory in `docs/runbooks/credentials.md`: every account (Apple, Google Play, Supabase org, Twilio, Meta Business, Payhip, EAS/Expo, GitHub, Vercel, registrar), its owner, second owner, billing card, renewal date. Second owner added to Apple (App Store Connect Admin), Supabase org, and the password-manager vault (church officer). Keystore copies: EAS credentials + encrypted vault entry + offline USB in the church safe (Play App Signing means a lost upload key is recoverable via support, not fatal; note it in the runbook).
+- **Bus factor:** credentials inventory in `docs/runbooks/credentials.md`: every account (Apple, Google Play, Supabase org, Meta Business, Resend, Payhip, EAS/Expo, GitHub, Vercel, registrar), its owner, second owner, billing card, renewal date. Second owner added to Apple (App Store Connect Admin), Supabase org, and the password-manager vault (church officer). Keystore copies: EAS credentials + encrypted vault entry + offline USB in the church safe (Play App Signing means a lost upload key is recoverable via support, not fatal; note it in the runbook).
 - Runbooks: deploy, rollback (OTA republish previous update; store = halt rollout + higher version), restore-from-backup, rotate-each-secret, "the app is down" triage, incident response (roles, contact tree, GDPR 72h step; see `20`).
 
 ## 8. Release engineering
@@ -103,8 +103,8 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 - **Versioning:** semver in `app.config.ts`; `versionCode`/`buildNumber` auto-incremented remotely (Android starts >= 20 per `19`); `runtimeVersion: { policy: "fingerprint" }` so OTA updates only reach compatible binaries.
 - **OTA (EAS Update):** JS/asset/copy/config fixes only, never native changes or review-relevant features; percentage rollout on the `production` channel; rollback = republish the previous update. OTA is NOT the forced-update mechanism.
 - **Forced update:** `app_config.minimum_supported_version` in Supabase, fetched on launch and cached; below minimum = blocking screen with store link; Android additionally uses the in-app updates API (`expo-in-app-updates`). Test by faking the minimum before submission.
-- **Staged rollout:** Play 10 > 25 > 50 > 100% over ~7 days; iOS phased release (pausable). **Written halt criteria:** crash-free < 99.5%, ANR > 0.5% (the Play vitals threshold), OTP success collapse in any country, any moderation or data-integrity bug. Halt, fix, ship a higher version.
-- **Cadence:** fortnightly store train early; OTA between trains; budget day-scale review time. The rebrand release (Grace Portal identity, new app) should expect a full-length review; the fixed-OTP review login is documented in the review notes (`03`).
+- **Staged rollout:** Play 10 > 25 > 50 > 100% over ~7 days; iOS phased release (pausable). **Written halt criteria:** crash-free < 99.5%, ANR > 0.5% (the Play vitals threshold), OTP success collapse, any moderation or data-integrity bug. Halt, fix, ship a higher version.
+- **Cadence:** fortnightly store train early; OTA between trains; budget day-scale review time. The rebrand release (Grace Portal identity, new app) should expect a full-length review; the fixed-code review login is documented in the review notes (`03`).
 - **Platform floors:** ship on Expo SDK 56+ (targets Android API 36, required for all Play updates from 2026-08-31; also satisfies the 16KB page-size requirement). Minimum supported OS: whatever the chosen SDK supports (state it in the store listing and test matrix); reviewed at every SDK upgrade. Yearly calendar entry: Play target-API deadline + Apple Xcode/SDK minimums. Play pre-launch report is a release gate.
 
 ## 9. Cost meters (verified 2026-07-12; every metered dependency, what happens at the cap)
@@ -112,7 +112,7 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 | Meter | Plan/limit | Watch | At the cap |
 |-------|-----------|-------|-----------|
 | Supabase Pro | $25/mo: 8GB DB, 100GB storage, 250GB egress, 500 realtime concurrent | audio egress (1,000 plays of a 50MB MP3 = 50GB); realtime at Sunday-live peak | overage $0.09/GB egress; keep spend cap ON initially, alert at 80% |
-| Twilio Verify | ~$0.05/successful verification + channel fee (WhatsApp auth template cheap; SMS to NG dearer + DND-filtered) | monthly spend trigger + Fraud Guard ON + geo allowlist (`03`) | fraud spike pages someone instead of running a bill |
+| Resend (auth OTP email) | $0 free tier: 3,000 emails/month, 100/day; ~$20/mo on the first paid tier | monthly-volume alert (`03`); per-address/per-IP send caps | sign-in is rare (long sessions), so OTP volume sits far under the tier; a spike pages before quota exhausts |
 | WhatsApp Cloud API | per-message billing (Meta changed models in 2025); marketing-category ~$0.09-0.12+ in UK/DE; one 2,000-member ministry blast ~ $200 | **policy: max 2 ministry-wide WhatsApp blasts/month** (decision 2026-07-12); push + in-app are the defaults; dashboard shows estimated cost before send | monthly budget alert |
 | YouTube Data API | 10,000 units/day | sync uses playlistItems (1 unit); never search.list (100) | job logs quota errors |
 | EAS | Free: 15+15 builds/mo, Update 1,000 MAU. The forgotten meter is Update MAU: a congregation > 1,000 exceeds Free the first OTA month | plan Starter ($19/mo) at launch | builds queue; updates stop serving |
@@ -132,9 +132,8 @@ Concurrent Realtime connections: Free 200 / Pro 500; messages: Free 2M/mo, Pro 5
 | Realtime only | live count falls to 15s polling; feeds poll-bounded 60s (`02`) | #7 websocket probe | self-heals on reconnect |
 | Storage only | audio falls to "Open on YouTube" (`08`); books read offline (`14`) | none needed (loud failures) | wait |
 | Edge functions only | jobs pause then self-heal via dedupe keys (§5); stuck broadcast alert | #2 dead-man + #4 | re-run; resume broadcast |
-| Twilio WhatsApp channel | SMS fallback carries sign-in (`03`) | #3 funnel | automatic |
-| Twilio both channels | guests unaffected; `AUTH-2` outage copy (`03`); sessions survive | #3 absolute alarm | wait; comms via push |
-| Meta (also takes Verify WhatsApp) | broadcasts fall to push + in-app (`15`) | #4 | resume failed legs |
+| Resend / email delivery | guests unaffected; `AUTH-2` outage copy (`03`); sessions survive (refresh needs no OTP) | #3 absolute alarm | wait; comms via push |
+| Meta (WhatsApp) | broadcasts fall to push + in-app (`15`) | #4 | resume failed legs |
 | YouTube embed | "Open on YouTube"; live-fail state machine + credit-on-open (`08`) | Sentry | replays |
 | YouTube Data API | stale-but-working Watch; /live URL fallback (`01` §4) | #2 dead-man | next sync |
 | Payhip site / dropped webhooks | buy fails visibly; reconciliation poll surfaces dropped events daily (`14`) | §5 reconciliation alert | manual grants (`17` §4) |

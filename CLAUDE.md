@@ -17,7 +17,7 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 ## Stack (decided; see `01`)
 
 - **Mobile:** React Native + Expo (SDK 56+, managed, EAS Build), TypeScript strict, **Expo Router only** (never import `@react-navigation/*`), TanStack Query, Zustand, `expo-audio` (never `expo-av`), `react-native-svg` map, i18next (EN/DE/NL/FR), react-hook-form + zod.
-- **Backend:** Supabase (Postgres + Auth phone-OTP via Twilio Verify WhatsApp-first + Storage + Realtime Broadcast + Edge Functions). RLS everywhere, `FORCE ROW LEVEL SECURITY`, write-path invariants per `02`.
+- **Backend:** Supabase (Postgres + Auth email-OTP via Resend custom SMTP, typed code, never magic link + Storage + Realtime Broadcast + Edge Functions). RLS everywhere, `FORCE ROW LEVEL SECURITY`, write-path invariants per `02`.
 - **Dashboard:** Next.js on Vercel, same Supabase; centralized authz middleware on every server route.
 - **Tooling:** pnpm workspaces, ESLint flat + Prettier, Jest/jest-expo + RNTL, Vitest, pgTAP, deno test, Maestro E2E.
 
