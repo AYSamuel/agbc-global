@@ -41,7 +41,7 @@ The definitive answer to "what lives in git, what never does, and how we always 
 | Sentry DSN / PostHog key | Public-by-design; EAS/Vercel env (kept out of the repo so per-env values stay swappable). The Sentry AUTH token (sourcemaps) IS secret: GitHub secret |
 | `EXPO_TOKEN` | GitHub repo secret |
 | FCM V1 service account JSON, APNs .p8, distribution certs | EAS credentials + password manager |
-| **Android upload keystore** (currently a loose file at `agbc-app/agbc-new-upload-key.jks`) | EAS credentials + encrypted password-manager attachment + offline USB in the church safe. **Move it out of any folder that becomes a repo BEFORE `git init`.** |
+| **Android upload keystore** (alias `agbc-key`; moved out of all repo folders 2026-07-18, now at the local non-repo folder `C:\Users\AY\agbc-keystore\`) | EAS credentials + encrypted password-manager attachment + offline USB in the church safe. Never inside any folder that is or becomes a repo. |
 | `.env`, `.env.local`, `supabase/.env` | Local disk only |
 
 Root `.gitignore` draft:

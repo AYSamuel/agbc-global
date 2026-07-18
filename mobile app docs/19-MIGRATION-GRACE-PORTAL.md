@@ -11,10 +11,10 @@
 The stores do not care that the framework changes (Flutter to React Native); they care that identity and signing match.
 
 | Item | Value | Source |
-|------|-------|--------|
+| ------ | ------- | -------- |
 | Android `applicationId` | `com.oami.agbcapp` | `agbc-app/android/app/build.gradle` |
 | Android `versionCode` | must be **> 19** (start at 20) | pubspec `1.0.0+19`; confirm the highest code actually uploaded in Play Console |
-| Android signing | existing upload keystore `agbc-app/agbc-new-upload-key.jks`, uploaded into EAS credentials (never let EAS generate a new one) | |
+| Android signing | existing upload keystore `agbc-app/agbc-new-upload-key.jks`, alias `agbc-key`, uploaded into EAS credentials (never let EAS generate a new one). Password verified with keytool 2026-07-18; credentials live in `agbc-app/android/key.properties` (gitignored, local-only), to be moved into the password manager | |
 | iOS bundle id | `com.olayinkaademiluka.grace-portal` | `agbc-app/ios/Runner.xcodeproj` |
 | iOS build number | above the last build in App Store Connect / TestFlight | App Store Connect |
 | Apple team | the existing non-profit team | |
