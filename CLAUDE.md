@@ -18,7 +18,7 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 
 - **Mobile:** React Native + Expo (SDK 56+, managed, EAS Build), TypeScript strict, **Expo Router only** (never import `@react-navigation/*`), TanStack Query, Zustand, `expo-audio` (never `expo-av`), `react-native-svg` map, i18next (EN/DE/NL/FR), react-hook-form + zod.
 - **Backend:** Supabase (Postgres + Auth email-OTP via Resend custom SMTP, typed code, never magic link + Storage + Realtime Broadcast + Edge Functions). RLS everywhere, `FORCE ROW LEVEL SECURITY`, write-path invariants per `02`.
-- **Dashboard:** Next.js on Vercel, same Supabase; centralized authz middleware on every server route.
+- **Dashboard:** Next.js on Vercel, same Supabase; centralized authz middleware on every server route. Next 16 ships its own current docs at `node_modules/next/dist/docs/`; consult them before dashboard work (its APIs move faster than training data).
 - **Tooling:** pnpm workspaces, ESLint flat + Prettier, Jest/jest-expo + RNTL, Vitest, pgTAP, deno test, Maestro E2E.
 
 ## App identity (NEVER change or regenerate; see `19`)
