@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 
+import { ToastProvider } from '@/components/ui';
 import { ThemeProvider, useTheme } from '@/theme';
 
 function ThemedStack() {
@@ -17,7 +18,9 @@ function ThemedStack() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <ThemedStack />
+      <ToastProvider>
+        <ThemedStack />
+      </ToastProvider>
     </ThemeProvider>
   );
 }
