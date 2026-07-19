@@ -1,0 +1,14 @@
+{
+  "appName": "AGBC Global",
+  "tagline": "One family · many nations · one amazing grace",
+  "languageName": "Deutsch",
+  "tabs": {
+    "home": "Start",
+    "watch": "Ansehen",
+    "family": "Familie",
+    "give": "Geben",
+    "more": "Mehr"
+  },
+  "weeks_one": "{{count}} Woche",
+  "weeks_other": "{{count}} Wochen"
+}

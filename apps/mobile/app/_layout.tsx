@@ -1,3 +1,5 @@
+import '@/i18n';
+
 import { Stack } from 'expo-router';
 
 import { ToastProvider } from '@/components/ui';
