@@ -3,7 +3,21 @@ import { ScrollView, Text, View } from 'react-native';
 
 import { spacing, typeScale } from '@agbc/shared/theme';
 
-import { Button, Card, Chip, Eyebrow, SegmentedControl } from '@/components/ui';
+import {
+  AppHeader,
+  BellIcon,
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  Eyebrow,
+  GateSheet,
+  SegmentedControl,
+  Skeleton,
+  StarIcon,
+  TabBar,
+  useToast,
+} from '@/components/ui';
 import { ThemeScope, useTheme, type ThemeName } from '@/theme';
 
 // DEV-ONLY gallery route (W0.8): every primitive in BOTH themes on one screen for
@@ -76,6 +90,82 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
           Pressable hero card
         </Text>
       </Card>
+      <AppHeader
+        title="App header"
+        onBack={() => {
+          // gallery: press feedback only
+        }}
+        trailing={<BellIcon color={colors.text} />}
+      />
+      <TabBar
+        items={[
+          {
+            key: 'home',
+            label: 'Home',
+            renderIcon: (c, s) => <StarIcon color={c} size={s} />,
+          },
+          {
+            key: 'family',
+            label: 'Family',
+            badge: 3,
+            renderIcon: (c, s) => <BellIcon color={c} size={s} />,
+          },
+        ]}
+        activeKey="home"
+        onPress={() => {
+          // gallery: press feedback only
+        }}
+      />
+      <View style={{ gap: spacing.sm }}>
+        <Skeleton width="60%" height={20} />
+        <Skeleton />
+        <Skeleton width={120} height={120} round />
+      </View>
+      <EmptyState
+        title="No testimonies yet"
+        body="Be the first to share what God has done."
+        actionLabel="Share a testimony"
+        onAction={() => {
+          // gallery: press feedback only
+        }}
+      />
+    </View>
+  );
+}
+
+function InteractiveExtras() {
+  const [gateOpen, setGateOpen] = useState(false);
+  const toast = useToast();
+  return (
+    <View style={{ padding: spacing.gutter, gap: spacing.md }}>
+      <Button
+        label="Show toast"
+        variant="outline"
+        onPress={() => {
+          toast.show('Bank details copied');
+        }}
+      />
+      <Button
+        label="Open gate sheet"
+        variant="outline"
+        onPress={() => {
+          setGateOpen(true);
+        }}
+      />
+      <GateSheet
+        visible={gateOpen}
+        title="Sign in to say Glory to God"
+        body="Join the family to react, share testimonies, RSVP, and track your rhythm."
+        signInLabel="Sign in"
+        dismissLabel="Not now"
+        dismissAnnouncement="Sign in sheet dismissed"
+        onSignIn={() => {
+          setGateOpen(false);
+        }}
+        onDismiss={() => {
+          setGateOpen(false);
+        }}
+      />
     </View>
   );
 }
@@ -89,6 +179,7 @@ export default function Gallery() {
       <ThemeScope name="dark">
         <PrimitiveSet theme="dark" />
       </ThemeScope>
+      <InteractiveExtras />
     </ScrollView>
   );
 }

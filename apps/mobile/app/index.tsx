@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { hitTarget, radius, spacing, typeScale } from '@agbc/shared/theme';
@@ -39,6 +40,13 @@ export default function TokenDemo() {
       <Text style={[typeScale.label, { color: colors.eye }]}>
         Token demo · {name} theme
       </Text>
+
+      <Link
+        href="/gallery"
+        style={[typeScale.bodySemiBold, { color: colors.blue }]}
+      >
+        Open component gallery
+      </Link>
 
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         {PREFS.map((p) => (
