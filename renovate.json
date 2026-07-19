@@ -13,7 +13,13 @@
   "packageRules": [
     {
       "description": "Expo SDK packages move together; group them so partial bumps never break the SDK pairing",
-      "matchPackageNames": ["expo", "expo-*", "jest-expo", "eslint-config-expo", "@expo/*"],
+      "matchPackageNames": [
+        "expo",
+        "expo-*",
+        "jest-expo",
+        "eslint-config-expo",
+        "@expo/*"
+      ],
       "groupName": "expo sdk"
     }
   ]
