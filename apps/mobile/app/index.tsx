@@ -1,8 +1,12 @@
 import { Link } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { hitTarget, radius, spacing, typeScale } from '@agbc/shared/theme';
 
+import { Chip } from '@/components/ui';
+import { LANGUAGE_AUTONYMS, SUPPORTED_LANGUAGES } from '@/i18n';
+import { useLanguagePrefStore } from '@/state/language';
 import { useTheme, type ThemePref } from '@/theme';
 
 // W0.7 demo screen: tokens + fonts + theme toggle, replaced by SPLASH at W1.1.
@@ -24,8 +28,13 @@ const SWATCHES = [
   'blue',
 ] as const;
 
+const PLURAL_DEMO_COUNTS = [0, 1, 2, 5];
+
 export default function TokenDemo() {
   const { colors, name, pref, setPref } = useTheme();
+  const { t, i18n } = useTranslation();
+  const langPref = useLanguagePrefStore((s) => s.pref);
+  const setLangPref = useLanguagePrefStore((s) => s.setPref);
 
   return (
     <ScrollView
@@ -35,10 +44,10 @@ export default function TokenDemo() {
       <Text
         style={[typeScale.hero, { color: colors.text, marginTop: spacing.x4l }]}
       >
-        AGBC Global
+        {t('appName')}
       </Text>
       <Text style={[typeScale.label, { color: colors.eye }]}>
-        Token demo · {name} theme
+        Token demo · {name} theme · {i18n.language}
       </Text>
 
       <Link
@@ -133,6 +142,48 @@ export default function TokenDemo() {
             Glory to God
           </Text>
         </View>
+      </View>
+
+      <View style={{ gap: spacing.sm }}>
+        <Text style={[typeScale.section, { color: colors.text }]}>
+          Language
+        </Text>
+        <View
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}
+        >
+          <Chip
+            label="System"
+            selected={langPref === 'system'}
+            onPress={() => {
+              setLangPref('system');
+            }}
+          />
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <Chip
+              key={lang}
+              label={LANGUAGE_AUTONYMS[lang]}
+              selected={langPref === lang}
+              onPress={() => {
+                setLangPref(lang);
+              }}
+            />
+          ))}
+        </View>
+        <Text style={[typeScale.body, { color: colors.muted }]}>
+          {t('tagline')}
+        </Text>
+        <Text style={[typeScale.bodyMedium, { color: colors.text }]}>
+          {[
+            t('tabs.home'),
+            t('tabs.watch'),
+            t('tabs.family'),
+            t('tabs.give'),
+            t('tabs.more'),
+          ].join(' · ')}
+        </Text>
+        <Text style={[typeScale.body, { color: colors.muted }]}>
+          {PLURAL_DEMO_COUNTS.map((count) => t('weeks', { count })).join(' · ')}
+        </Text>
       </View>
 
       <View style={{ gap: spacing.sm }}>

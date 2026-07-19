@@ -9,5 +9,18 @@ export default defineConfig([
   globalIgnores(['dist/*', '.expo/*']),
   expoConfig,
   ...agbcStrict,
+  {
+    // Keys-only rule (docs/spec/16): product surfaces never carry literal UI strings;
+    // everything goes through i18n. The two dev-only screens (token demo, gallery)
+    // are exempt until they are replaced at W1.1/W1.2.
+    files: ['app/**/*.tsx', 'src/features/**/*.tsx'],
+    ignores: ['app/index.tsx', 'app/gallery.tsx'],
+    rules: {
+      'react/jsx-no-literals': [
+        'error',
+        { noStrings: true, ignoreProps: true, allowedStrings: ['·'] },
+      ],
+    },
+  },
   prettier,
 ]);
