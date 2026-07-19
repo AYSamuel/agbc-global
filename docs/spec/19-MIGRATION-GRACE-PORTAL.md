@@ -14,7 +14,7 @@ The stores do not care that the framework changes (Flutter to React Native); the
 | ------ | ------- | -------- |
 | Android `applicationId` | `com.oami.agbcapp` | `agbc-app/android/app/build.gradle` |
 | Android `versionCode` | must be **> 19** (start at 20) | pubspec `1.0.0+19`; **CONFIRMED 2026-07-18 in Play Console: highest uploaded is 19 (1.0.0)**. Play App Signing key SHA-256 (for assetlinks.json): `E2:43:77:09:F4:A6:3E:66:B0:D5:F2:B4:B2:B7:6D:E2:9D:6D:EE:37:00:F1:84:5C:6E:E4:E9:AC:76:20:F6:5B` |
-| Android signing | existing upload keystore `agbc-app/agbc-new-upload-key.jks`, alias `agbc-key`, uploaded into EAS credentials (never let EAS generate a new one). Password verified with keytool 2026-07-18; credentials live in `agbc-app/android/key.properties` (gitignored, local-only), to be moved into the password manager | |
+| Android signing | existing upload keystore at `C:\Users\AY\agbc-keystore\agbc-new-upload-key.jks` (moved out of the old app folder 2026-07-19), alias `agbc-key`, uploaded into EAS credentials (never let EAS generate a new one). Password verified with keytool 2026-07-18; passwords in `agbc-app/android/key.properties` (gitignored, local-only) AND the password manager | |
 | iOS bundle id | `com.olayinkaademiluka.grace-portal` | `agbc-app/ios/Runner.xcodeproj` |
 | iOS build number | above the last build in App Store Connect / TestFlight | App Store Connect |
 | Apple team | the existing non-profit team | |

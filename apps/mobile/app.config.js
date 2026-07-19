@@ -1,10 +1,13 @@
-import type { ExpoConfig } from 'expo/config';
+// Plain JS on purpose: eas-cli's bundled config reader (21.x) cannot evaluate a
+// TypeScript app.config during the SDK 57 transition; JSDoc keeps editor typing.
+//
+// App identity is FROZEN (docs/spec/19, ADR 0002): this app replaces Grace Portal on
+// the existing store listings. Never change package/bundleIdentifier, never let
+// tooling regenerate credentials, never create new store records. versionCode floor
+// is 20 (highest Grace Portal upload is 19).
 
-// App identity is FROZEN (docs/spec/19, ADR 0002): this app replaces Grace Portal on the
-// existing store listings. Never change package/bundleIdentifier, never let tooling
-// regenerate credentials, never create new store records. versionCode floor is 20
-// (highest Grace Portal upload is 19).
-const config: ExpoConfig = {
+/** @type {import('expo/config').ExpoConfig} */
+const config = {
   name: 'AGBC Global',
   slug: 'agbc-global',
   version: '1.0.0',
@@ -20,6 +23,9 @@ const config: ExpoConfig = {
   android: {
     package: 'com.oami.agbcapp',
     versionCode: 20,
+    // Public Firebase client config (committable); the FCM V1 SECRET key lives only
+    // in EAS credentials (docs/spec/21 §3).
+    googleServicesFile: './google-services.json',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -58,6 +64,11 @@ const config: ExpoConfig = {
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
+  },
+  extra: {
+    eas: {
+      projectId: '16356acf-94dd-4ef1-9871-539270291801',
+    },
   },
 };
 
