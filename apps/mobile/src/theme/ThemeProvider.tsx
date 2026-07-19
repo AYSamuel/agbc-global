@@ -43,4 +43,27 @@ export function useTheme(): ThemeContextValue {
   return ctx;
 }
 
+// Pins a fixed theme for a subtree regardless of the user preference. Exists for the
+// dev gallery (both themes side by side for screenshot checks, W0.8) and for tests;
+// never used in product screens.
+export function ThemeScope({
+  name,
+  children,
+}: PropsWithChildren<{ name: ThemeName }>) {
+  return (
+    <ThemeContext.Provider
+      value={{
+        name,
+        colors: color[name],
+        pref: name,
+        setPref: () => {
+          // fixed scope: preference changes are a no-op by design
+        },
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
 export { tokens };

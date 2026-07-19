@@ -61,7 +61,8 @@ The shared prod project contains ~3 tables belonging to the agbc website. Once t
 ## Git
 
 - Never commit or push to `main`; branch per work item (`feat/w<item>-<slug>`), PR into `main`.
-- Every commit AND push needs Ayo's explicit approval first (message proposed, approval never carries over). After each push, output the pre-filled PR link.
+- Every commit AND push needs Ayo's explicit approval first (message proposed, approval never carries over).
+- PRs: Claude opens them directly with `gh pr create` after the approved push (title, full body, `Closes #N`), overriding the global prefilled-link rule (decided 2026-07-19 after three PRs lost their bodies to the compare-banner path). Ayo reviews and merges ONLY after the checks are green; Claude watches the run and gives the explicit merge signal.
 - No AI attribution anywhere: no Co-Authored-By, no "Generated with" lines, in commits, PRs, or branches.
 - Secrets: see the map in `21` §3 / `23` §2. Never in git; the keystore, FCM key, and APNs key live in EAS credentials only. If a secret ever lands in code or git history, stop and rotate it.
 - CI budget (hard rule): GitHub Actions minutes are a shared pool across ALL of Ayo's private repos. Workflows must be path-filtered, cancel superseded runs, and cost ZERO when idle: no scheduled runs without a real paying job, prefer platform schedulers (pg_cron, Supabase cron) over Actions crons, and docs-only PRs must trigger no jobs.
