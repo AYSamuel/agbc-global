@@ -99,3 +99,10 @@ $$;
 create trigger profiles_create_notification_prefs
   after insert on public.profiles
   for each row execute function public.create_notification_prefs();
+
+-- Explicit privileges. notification_prefs has NO client INSERT grant on purpose:
+-- rows exist only via the SECURITY DEFINER trigger above.
+grant select on public.devices, public.notification_prefs to anon, authenticated;
+grant insert, update, delete on public.devices to authenticated;
+grant update on public.notification_prefs to authenticated;
+grant all on public.devices, public.notification_prefs to service_role;

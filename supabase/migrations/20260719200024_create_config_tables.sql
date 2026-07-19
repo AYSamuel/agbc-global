@@ -56,3 +56,9 @@ create policy "admins manage giving config"
 create trigger giving_config_set_updated_at
   before update on public.giving_config
   for each row execute function public.set_updated_at();
+
+-- Explicit privileges: public read; writes for authenticated exist at the table
+-- boundary but the is_admin() policies zero them for non-admins.
+grant select on public.app_config, public.giving_config to anon, authenticated;
+grant insert, update, delete on public.app_config, public.giving_config to authenticated;
+grant all on public.app_config, public.giving_config to service_role;

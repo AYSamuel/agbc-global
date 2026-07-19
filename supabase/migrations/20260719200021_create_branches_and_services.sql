@@ -82,3 +82,10 @@ $$;
 create trigger branches_set_updated_at
   before update on public.branches
   for each row execute function public.set_updated_at();
+
+-- Explicit privileges: never rely on ambient default-privilege bootstrap (a db-only
+-- environment has none, and explicitness is least-privilege anyway). RLS remains the
+-- row boundary; GRANTs are the table boundary.
+grant usage on schema public to anon, authenticated, service_role;
+grant select on public.branches, public.branch_services to anon, authenticated;
+grant all on public.branches, public.branch_services to service_role;

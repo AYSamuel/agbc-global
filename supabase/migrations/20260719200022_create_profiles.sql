@@ -154,3 +154,10 @@ create trigger profiles_insert_guard
 create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
+
+-- Explicit privileges (RLS is the row boundary; GRANTs the table boundary).
+-- DELETE deliberately absent for clients: account deletion runs through the deletion
+-- job (service role) only, docs/spec/16.
+grant select on public.profiles to anon, authenticated;
+grant insert, update on public.profiles to authenticated;
+grant all on public.profiles to service_role;
