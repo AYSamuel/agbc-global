@@ -16,6 +16,7 @@ web-build/
 # Signing material: never
 *.jks
 *.keystore
+credentials.json
 *.p8
 *.p12
 *.mobileprovision
