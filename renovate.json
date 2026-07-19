@@ -21,6 +21,22 @@
         "@expo/*"
       ],
       "groupName": "expo sdk"
+    },
+    {
+      "description": "SDK-locked or deliberately pinned: majors follow the Expo SDK (jest/TS/react family) or an explicit decision (eslint 9, see W0.5); never bump independently",
+      "matchPackageNames": [
+        "jest",
+        "typescript",
+        "react",
+        "react-dom",
+        "react-native",
+        "@types/react",
+        "@types/jest",
+        "eslint",
+        "node"
+      ],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }

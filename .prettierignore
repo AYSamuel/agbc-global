@@ -4,6 +4,8 @@ docs/
 supabase/
 *.md
 apps/mobile/assets/
+# Generated; must stay byte-identical to `supabase gen types` output (CI drift gate).
+packages/shared/src/database.types.ts
 node_modules/
 .next/
 .expo/
