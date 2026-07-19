@@ -31,6 +31,22 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     [
+      'expo-font',
+      {
+        // Embedded at build time per docs/spec/05 (runtime loading causes a font
+        // flash). Filenames = ttf PostScript names so Android (filename) and iOS
+        // (embedded name) resolve the same fontFamily.
+        fonts: [
+          './assets/fonts/BricolageGrotesque-Bold.ttf',
+          './assets/fonts/BricolageGrotesque-ExtraBold.ttf',
+          './assets/fonts/HankenGrotesk-Regular.ttf',
+          './assets/fonts/HankenGrotesk-Medium.ttf',
+          './assets/fonts/HankenGrotesk-SemiBold.ttf',
+          './assets/fonts/HankenGrotesk-Bold.ttf',
+        ],
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#14213D',
