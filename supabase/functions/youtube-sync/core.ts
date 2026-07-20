@@ -4,6 +4,7 @@
 
 export type SyncMode = 'api' | 'rss';
 export type SermonStatus = 'available' | 'unavailable';
+export type SermonKind = 'video' | 'live_replay';
 
 export interface FetchedVideo {
   youtubeId: string;
@@ -12,6 +13,10 @@ export interface FetchedVideo {
   publishedAt: string;
   thumbnailUrl: string;
   durationSec: number | null;
+  /** Which channel tab (API mode); null in RSS mode (kept server-side). */
+  kind: SermonKind | null;
+  /** A currently running broadcast (API mode only; RSS cannot tell). */
+  isLive: boolean;
 }
 
 export interface ExistingSermonRow {
@@ -27,6 +32,7 @@ export interface UpsertRow {
   published_at: string;
   thumbnail_url: string;
   duration_sec: number | null;
+  kind: SermonKind | null;
 }
 
 export interface SyncPlan {
@@ -52,6 +58,7 @@ export function planSync(
     published_at: v.publishedAt,
     thumbnail_url: v.thumbnailUrl,
     duration_sec: v.durationSec,
+    kind: v.kind,
   }));
 
   // RSS caps at 15 entries (docs/spec/08): absence from the feed proves
@@ -71,17 +78,18 @@ export function planSync(
 }
 
 // ISO 8601 duration (YouTube contentDetails.duration, e.g. PT1H2M3S) → seconds.
-// Unparseable input yields null (duration is display-only; never fail the sync).
+// Unparseable OR non-positive input yields null: running broadcasts report P0D,
+// and duration is display-only (never fail the sync; website rule).
 export function parseIsoDuration(iso: string): number | null {
   const match = /^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
   if (!match || match.slice(1).every((part) => part === undefined)) return null;
   const [, days, hours, minutes, seconds] = match;
-  return (
+  const total =
     Number(days ?? 0) * 86_400 +
     Number(hours ?? 0) * 3_600 +
     Number(minutes ?? 0) * 60 +
-    Number(seconds ?? 0)
-  );
+    Number(seconds ?? 0);
+  return total > 0 ? total : null;
 }
 
 // Minimal Atom parsing for the keyless RSS fallback (docs/spec/01 §5). The feed
@@ -101,6 +109,8 @@ export function parseRssFeed(xml: string): FetchedVideo[] {
       publishedAt,
       thumbnailUrl: `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
       durationSec: null,
+      kind: null,
+      isLive: false,
     });
   }
   return videos;

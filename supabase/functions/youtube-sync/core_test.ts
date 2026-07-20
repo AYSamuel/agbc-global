@@ -16,6 +16,8 @@ function video(id: string, title = `Video ${id}`): FetchedVideo {
     publishedAt: '2026-07-19T10:00:00Z',
     thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     durationSec: 1800,
+    kind: 'video',
+    isLive: false,
   };
 }
 
@@ -26,10 +28,13 @@ function existing(
   return { youtube_id: id, status, is_live: false, live_checked_at: null };
 }
 
-Deno.test('planSync upserts every fetched video', () => {
-  const plan = planSync([], [video('a'), video('b')], 'api');
+Deno.test('planSync upserts every fetched video with its kind', () => {
+  const live = { ...video('b'), kind: 'live_replay' as const };
+  const plan = planSync([], [video('a'), live], 'api');
   assertEquals(plan.upserts.length, 2);
   assertEquals(plan.upserts[0].youtube_id, 'a');
+  assertEquals(plan.upserts[0].kind, 'video');
+  assertEquals(plan.upserts[1].kind, 'live_replay');
   assertEquals(plan.unavailableIds, []);
   assertEquals(plan.restoredCount, 0);
 });
@@ -100,6 +105,10 @@ Deno.test('parseRssFeed extracts entries and decodes entities', () => {
   assertEquals(videos[0].title, "Grace & Truth '26");
   assertEquals(videos[0].thumbnailUrl, 'https://i.ytimg.com/vi/abc123/hqdefault.jpg');
   assertEquals(videos[0].durationSec, null);
+  // RSS cannot tell tabs or premieres apart: kind stays null (server keeps
+  // the stored value) and nothing is marked live.
+  assertEquals(videos[0].kind, null);
+  assertEquals(videos[0].isLive, false);
 });
 
 Deno.test('run summaries satisfy the shared zod contract', () => {

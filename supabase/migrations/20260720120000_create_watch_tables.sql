@@ -5,6 +5,10 @@
 -- member-owned rows per the docs/spec/02 policy matrix.
 
 create type public.sermon_status as enum ('available', 'unavailable');
+-- Which channel tab a row came from (mirrors the website's watch page,
+-- decision 2026-07-20): 'video' = the Videos tab (UULF playlist, long-form
+-- uploads), 'live_replay' = the Live tab (UULV playlist, stream recordings).
+create type public.sermon_kind as enum ('video', 'live_replay');
 
 create table public.sermons (
   id uuid primary key default gen_random_uuid(),
@@ -26,6 +30,7 @@ create table public.sermons (
   -- Stale-live bound (docs/spec/08): clients treat is_live as false when this is
   -- older than 15 minutes; the nightly sync clears stale flags it finds.
   live_checked_at timestamptz,
+  kind public.sermon_kind not null default 'video',
   status public.sermon_status not null default 'available',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -38,9 +43,9 @@ create unique index sermons_youtube_id_key
   on public.sermons (youtube_id)
   where youtube_id is not null;
 create index sermons_branch_id_idx on public.sermons (branch_id);
--- The Watch rails read path: available sermons, newest first.
+-- The Watch rails read path: available sermons per tab section, newest first.
 create index sermons_available_published_idx
-  on public.sermons (published_at desc)
+  on public.sermons (kind, published_at desc)
   where status = 'available';
 
 alter table public.sermons enable row level security;

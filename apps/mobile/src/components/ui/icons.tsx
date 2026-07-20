@@ -120,6 +120,25 @@ export function MoreTabIcon(props: IconProps) {
   );
 }
 
+export function ShareIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <Path d="M16 6l-4-4-4 4" />
+      <Path d="M12 2v14" />
+    </Svg>
+  );
+}
+
+export function SearchIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={11} cy={11} r={7} />
+      <Path d="M21 21l-4-4" />
+    </Svg>
+  );
+}
+
 export function UpdateIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>

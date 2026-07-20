@@ -2,7 +2,7 @@
 -- only, symmetric restore, and a client-execution ban.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(13);
 
 -- Replay idempotence: the same payload twice yields ONE row with updated fields.
 select is(
@@ -40,17 +40,34 @@ select is(
   (select duration_sec from public.sermons where youtube_id = 'tap-yt-1'),
   1200, 'a null source duration keeps the stored duration (RSS mode)');
 
--- Restore is symmetric (docs/spec/08): an unavailable row that reappears in the
--- source flips back to available. Seed row 5 is the unavailable fixture.
+-- Restore is symmetric (docs/spec/08): an unavailable row that reappears in
+-- the source flips back to available (test-owned row; no shared fixtures).
+insert into public.sermons (title, youtube_id, status)
+values ('Rotted Then Restored', 'tap-yt-rot', 'unavailable');
 select is(
-  public.sync_upsert_sermons('[{"youtube_id":"dev-yt-0005","title":"The Testimony Hour",
-    "published_at":"2026-06-20T10:00:00Z","thumbnail_url":"https://i.ytimg.com/vi/dev-yt-0005/hqdefault.jpg",
-    "duration_sec":3060}]'::jsonb),
+  public.sync_upsert_sermons('[{"youtube_id":"tap-yt-rot","title":"Rotted Then Restored",
+    "published_at":"2026-06-20T10:00:00Z","thumbnail_url":"","duration_sec":3060}]'::jsonb),
   1, 'the reappeared row upserts');
 select is(
-  (select status from public.sermons where youtube_id = 'dev-yt-0005'),
+  (select status from public.sermons where youtube_id = 'tap-yt-rot'),
   'available'::public.sermon_status,
   'a reappeared unavailable row restores to available');
+
+-- Kind flows from the API playlists and survives RSS replays (which cannot
+-- tell the tabs apart and send null).
+select is(
+  public.sync_upsert_sermons('[{"youtube_id":"tap-yt-2","title":"Live Sunday",
+    "published_at":"2026-07-05T10:00:00Z","thumbnail_url":"","duration_sec":null,
+    "kind":"live_replay"}]'::jsonb),
+  1, 'an API-mode upsert lands with its kind');
+select is(
+  public.sync_upsert_sermons('[{"youtube_id":"tap-yt-2","title":"Live Sunday",
+    "published_at":"2026-07-05T10:00:00Z","thumbnail_url":"","duration_sec":null}]'::jsonb),
+  1, 'an RSS-mode replay (no kind) still upserts');
+select is(
+  (select kind from public.sermons where youtube_id = 'tap-yt-2'),
+  'live_replay'::public.sermon_kind,
+  'the RSS replay kept the stored live_replay kind');
 
 -- Clients can never call the sync upsert.
 select is(

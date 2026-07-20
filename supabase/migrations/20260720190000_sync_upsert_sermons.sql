@@ -13,6 +13,20 @@ create function public.sync_upsert_sermons(rows jsonb)
 returns integer
 language sql
 as $$
+  -- Kind first, and only when the source KNOWS it (API playlists): RSS mode
+  -- sends null and must never flip a stored live_replay back to 'video'. A
+  -- separate statement because `excluded.*` in DO UPDATE reflects post-coalesce
+  -- insert values, which would erase the null marker.
+  update public.sermons s
+  set kind = i.kind, updated_at = now()
+  from (
+    select *
+    from jsonb_to_recordset(rows) as r(youtube_id text, kind public.sermon_kind)
+  ) i
+  where s.youtube_id = i.youtube_id
+    and i.kind is not null
+    and s.kind is distinct from i.kind;
+
   with input as (
     select *
     from jsonb_to_recordset(rows) as r(
@@ -20,14 +34,16 @@ as $$
       title text,
       published_at timestamptz,
       thumbnail_url text,
-      duration_sec integer
+      duration_sec integer,
+      kind public.sermon_kind
     )
     where youtube_id is not null
   ),
   upserted as (
     insert into public.sermons
-      (youtube_id, title, published_at, thumbnail_url, duration_sec, status)
+      (youtube_id, title, published_at, thumbnail_url, duration_sec, kind, status)
     select youtube_id, title, published_at, thumbnail_url, duration_sec,
+           coalesce(kind, 'video'::public.sermon_kind),
            'available'::public.sermon_status
     from input
     on conflict (youtube_id) where youtube_id is not null

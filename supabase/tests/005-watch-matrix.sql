@@ -31,18 +31,30 @@ select is(
   (select relforcerowsecurity from pg_class where oid = 'public.saved_items'::regclass),
   true, 'saved_items: RLS forced');
 
+-- Test-owned sermon rows (no shared fixtures: the dev DB carries only real
+-- synced data since 2026-07-20): an available video, an available live replay,
+-- and an unavailable (rotted) row.
+insert into public.sermons (id, title, speaker, youtube_id, kind, status)
+values
+  ('20000000-0000-4000-8000-000000000001',
+   'Grace That Carries You', 'Test Speaker', 'tap-watch-1', 'video', 'available'),
+  ('20000000-0000-4000-8000-000000000002',
+   'Sunday Stream', 'Test Speaker', 'tap-watch-2', 'live_replay', 'available'),
+  ('20000000-0000-4000-8000-000000000003',
+   'Rotted Message', 'Test Speaker', 'tap-watch-3', 'video', 'unavailable');
+
 -- Anonymous: sermons are public content; personal tables are invisible.
 set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
 
-select is((select count(*) from public.sermons)::int, 6,
-  'anon reads the seeded sermons (guest-first, incl. unavailable rows)');
+select is((select count(*) from public.sermons)::int, 3,
+  'anon reads all sermon rows (guest-first, incl. unavailable rows)');
 select throws_ok(
   $$insert into public.sermons (title) values ('rogue sermon')$$,
   '42501', null, 'anon cannot insert sermons');
 select is(
-  (select count(*) from public.sermons where status = 'available')::int, 4,
-  'anon reads the four available sermons (the rails read path)');
+  (select count(*) from public.sermons where status = 'available')::int, 2,
+  'anon reads the available sermons (the rails read path)');
 select is((select count(*) from public.playback_positions)::int, 0,
   'anon sees no resume positions');
 select is((select count(*) from public.sermon_notes)::int, 0,
@@ -78,7 +90,7 @@ set local role authenticated;
 set local request.jwt.claims to
   '{"sub": "30000000-0000-4000-8000-00000000aaaa", "role": "authenticated", "user_role": "member", "branch_id": "00000000-0000-4000-8000-000000000001"}';
 
-select is((select count(*) from public.sermons)::int, 6,
+select is((select count(*) from public.sermons)::int, 3,
   'a member reads the full sermon list');
 select throws_ok(
   $$insert into public.sermons (title) values ('member-authored sermon')$$,

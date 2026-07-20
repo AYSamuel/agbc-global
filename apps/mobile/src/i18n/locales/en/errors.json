@@ -1,1 +1,7 @@
-{}
+{
+  "somethingWrong": "Something went wrong",
+  "couldntLoad": "We couldn't load this right now. Check your connection and try again.",
+  "tryAgain": "Try again",
+  "offlineTitle": "You're offline",
+  "offlineBody": "Showing what we saved. Some things update when you're back online."
+}

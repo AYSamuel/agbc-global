@@ -465,6 +465,7 @@ export type Database = {
           duration_sec: number | null
           id: string
           is_live: boolean
+          kind: Database["public"]["Enums"]["sermon_kind"]
           live_checked_at: string | null
           published_at: string
           series: string | null
@@ -482,6 +483,7 @@ export type Database = {
           duration_sec?: number | null
           id?: string
           is_live?: boolean
+          kind?: Database["public"]["Enums"]["sermon_kind"]
           live_checked_at?: string | null
           published_at?: string
           series?: string | null
@@ -499,6 +501,7 @@ export type Database = {
           duration_sec?: number | null
           id?: string
           is_live?: boolean
+          kind?: Database["public"]["Enums"]["sermon_kind"]
           live_checked_at?: string | null
           published_at?: string
           series?: string | null
@@ -535,6 +538,7 @@ export type Database = {
       branch_status: "active" | "archived"
       device_platform: "ios" | "android"
       profile_role: "member" | "leader" | "admin"
+      sermon_kind: "video" | "live_replay"
       sermon_status: "available" | "unavailable"
       service_kind: "sunday" | "midweek" | "classes"
     }
@@ -670,6 +674,7 @@ export const Constants = {
       branch_status: ["active", "archived"],
       device_platform: ["ios", "android"],
       profile_role: ["member", "leader", "admin"],
+      sermon_kind: ["video", "live_replay"],
       sermon_status: ["available", "unavailable"],
       service_kind: ["sunday", "midweek", "classes"],
     },

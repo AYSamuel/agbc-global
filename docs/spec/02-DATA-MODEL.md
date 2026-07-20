@@ -284,6 +284,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | published_at | timestamptz | |
 | is_live | bool | current live flag |
 | live_checked_at | timestamptz null | stale-live bound (`08`): clients treat `is_live` as false when older than 15 min (synced from `08`, 2026-07-20) |
+| kind | enum | `video` \| `live_replay`: which channel tab the sync sourced it from (Videos = UULF playlist, Live = UULV; mirrors the website's watch page, decision 2026-07-20) |
 | status | enum | `available` \| `unavailable` (sync marks vanished YouTube videos unavailable, never deletes rows: saves resume/notes/My List, see `08`) |
 
 ### `playback_positions` (resume)
