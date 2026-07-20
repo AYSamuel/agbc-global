@@ -2,7 +2,8 @@
   "version": "5",
   "specifiers": {
     "jsr:@std/assert@1": "1.0.19",
-    "jsr:@std/internal@^1.0.12": "1.0.14"
+    "jsr:@std/internal@^1.0.12": "1.0.14",
+    "npm:zod@4.4.3": "4.4.3"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -15,11 +16,15 @@
       "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
     }
   },
-  "workspace": {
-    "packageJson": {
-      "dependencies": [
-        "npm:prettier@^3.9.5"
-      ]
+  "npm": {
+    "zod@4.4.3": {
+      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="
     }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:@supabase/supabase-js@2",
+      "npm:zod@4.4.3"
+    ]
   }
 }
