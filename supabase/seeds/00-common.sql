@@ -175,3 +175,19 @@ on conflict (id) do update set accounts = excluded.accounts;
 insert into public.app_config (key, value)
 values ('minimum_supported_version', '"0.0.0"'::jsonb)
 on conflict (key) do nothing;
+
+-- Testimony categories (W1.5, docs/spec/02): a lookup table, not an enum, so the
+-- labels can localize and the set can change without DDL. Doc 09 names the first
+-- four and trails off; the rest were agreed 2026-07-20. Retire one with
+-- active = false, never a delete: existing testimonies reference it.
+insert into public.testimony_categories (id, key, sort)
+values
+  ('40000000-0000-4000-8000-000000000001', 'healing', 1),
+  ('40000000-0000-4000-8000-000000000002', 'provision', 2),
+  ('40000000-0000-4000-8000-000000000003', 'salvation', 3),
+  ('40000000-0000-4000-8000-000000000004', 'breakthrough', 4),
+  ('40000000-0000-4000-8000-000000000005', 'protection', 5),
+  ('40000000-0000-4000-8000-000000000006', 'family', 6),
+  ('40000000-0000-4000-8000-000000000007', 'restoration', 7),
+  ('40000000-0000-4000-8000-000000000008', 'thanksgiving', 8)
+on conflict (key) do update set sort = excluded.sort;
