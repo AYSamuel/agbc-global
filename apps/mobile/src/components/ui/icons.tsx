@@ -1,4 +1,4 @@
-import Svg, { Path, type SvgProps } from 'react-native-svg';
+import Svg, { Circle, Path, type SvgProps } from 'react-native-svg';
 
 // Stroke-based, currentColor-style icons at 1.8 stroke per docs/spec/05, matching the
 // website's glyph vocabulary. Grows as screens need glyphs; never import an icon font.
@@ -59,6 +59,73 @@ export function StarIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>
       <Path d="M12 2l2.9 6.3 6.6.6-5 4.5 1.5 6.6L12 16.9 6 20l1.5-6.6-5-4.5 6.6-.6z" />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M9 6l6 6-6 6" />
+    </Svg>
+  );
+}
+
+// The five tab glyphs, path data verbatim from the mockup's .tabbar SVGs.
+
+export function HomeTabIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M3 11l9-8 9 8" />
+      <Path d="M5 10v10h14V10" />
+    </Svg>
+  );
+}
+
+export function WatchTabIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={12} cy={12} r={9} />
+      <Path d="M10 8.5l6 3.5-6 3.5z" fill={props.color} stroke="none" />
+    </Svg>
+  );
+}
+
+export function FamilyTabIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={9} cy={9} r={3} />
+      <Path d="M15.5 8.5a2.6 2.6 0 1 0 0 4" />
+      <Path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+      <Path d="M15 19a5.2 5.2 0 0 1 5.5-4" />
+    </Svg>
+  );
+}
+
+export function GiveTabIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z" />
+    </Svg>
+  );
+}
+
+export function MoreTabIcon(props: IconProps) {
+  return (
+    <Svg {...base({ ...props, strokeWidth: 2.1 })}>
+      <Circle cx={5} cy={12} r={1.4} fill={props.color} stroke="none" />
+      <Circle cx={12} cy={12} r={1.4} fill={props.color} stroke="none" />
+      <Circle cx={19} cy={12} r={1.4} fill={props.color} stroke="none" />
+    </Svg>
+  );
+}
+
+export function UpdateIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={12} cy={12} r={9} />
+      <Path d="M12 16V8" />
+      <Path d="M8 12l4-4 4 4" />
     </Svg>
   );
 }

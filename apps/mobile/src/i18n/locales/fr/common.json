@@ -2,6 +2,7 @@
   "appName": "AGBC Global",
   "tagline": "One family · many nations · one amazing grace",
   "languageName": "Français",
+  "back": "Retour",
   "brand": {
     "line1": "Amazing Grace",
     "line2": "Bible Church"
@@ -31,6 +32,47 @@
     "languageTitle": "Choisissez votre langue",
     "languageSubtitle": "Modifiable dans les Réglages.",
     "offlineBranches": "Églises enregistrées affichées. Connectez-vous pour actualiser."
+  },
+  "more": {
+    "signinEyebrow": "Rejoignez la famille",
+    "signinTitle": "Publiez, priez et suivez votre rythme",
+    "signinBody": "Connectez-vous pour réagir, partager des témoignages, répondre aux invitations et garder votre élan.",
+    "signin": "Se connecter",
+    "sections": {
+      "grow": "Grandir",
+      "church": "Église",
+      "read": "Lire",
+      "app": "Application"
+    },
+    "rows": {
+      "academy": "Grace Academy",
+      "devotional": "Méditation quotidienne",
+      "branches": "Églises",
+      "events": "Événements",
+      "about": "À propos de l'église",
+      "contact": "Contact",
+      "bookstore": "Librairie",
+      "library": "Ma bibliothèque",
+      "settings": "Réglages"
+    }
+  },
+  "tabStubs": {
+    "watch": "Les messages, les séries et les cultes en direct arrivent bientôt.",
+    "family": "Les témoignages, la prière et la carte mondiale de la famille arrivent bientôt.",
+    "give": "Des moyens simples et sûrs de donner arrivent bientôt."
+  },
+  "comingSoon": {
+    "title": "En chemin",
+    "body": "Nous construisons cette partie de l'application en ce moment. Elle arrivera bientôt dans une mise à jour."
+  },
+  "authStub": {
+    "title": "Rejoignez la famille",
+    "body": "La connexion arrive bientôt. En attendant, explorez tout en tant qu'invité."
+  },
+  "updateGate": {
+    "title": "C'est l'heure d'une mise à jour",
+    "body": "Cette version de l'application n'est plus prise en charge. Mettez-la à jour pour rester en lien avec la famille.",
+    "cta": "Mettre à jour"
   },
   "languages": {
     "en": "Anglais",

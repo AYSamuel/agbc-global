@@ -137,3 +137,17 @@ Reads are cache-first everywhere (TanStack Query with a persisted cache). Writes
 
 - **Queued (idempotent one-tap actions):** attendance "I'm here" (carrying `client_taken_at`, see `02`), plan-day complete, RSVP status, Glory toggle, prayer commit/fulfil ("I will pray" / "I prayed"), playback position. Offline: enqueue locally (persisted), show optimistic UI, replay on reconnect. **The queue stores desired END-STATE per (action, entity), not an op log:** the last tap wins locally and exactly one idempotent write replays per entity (a tap-untap-tap sequence replays as one "reacted" write; ordering races cannot occur). Safety: each write is idempotent server-side via the unique constraints in `02`. Conflict policy: server state wins; a rejected replay reconciles the UI quietly. The queue is small and capped: eviction removes whole entities, oldest first, and REVERTS that entity's optimistic UI on eviction; cleared on sign-out.
 - **Not queued (content + auth):** testimony/prayer composition, course registrations, profile edits, OTP. These need a server response: offline shows a clear error, preserves the draft, and offers retry. Never auto-submit content composed offline without the user seeing it happen.
+
+## 9. Launch warm-up (prefetch inventory)
+
+**Rule:** any data a user can reach within the first two taps of a cold start, or that must be available offline, is prefetched at app launch (during SPLASH, behind the 1.2s brand moment) into the persisted cache; its screen renders from cache instantly and revalidates in the background. A missed prefetch shows up as seconds of user-visible skeleton (found live 2026-07-20 on the onboarding branch picker). The work item that lands one of these surfaces MUST land its prefetch in the same slice; a new first-two-taps or offline-required surface adds a row here first.
+
+| Data | Warmed | Consumed by | Lands with |
+|------|--------|-------------|------------|
+| `app_config.minimum_supported_version` | every launch; cached so the floor blocks offline (`21` §8) | forced-update gate | W1.2 (done) |
+| `branches` | every launch | ONB-3 picker, `BRANCH-SWITCH`, `BRANCHES`, map branch pins | W1.2 (done) |
+| `branch_services` (selected branch) | every launch | Home next-service card, `BRANCH-INFO` | W1.4 |
+| Today's `daily_verses` row | every launch; last N retained for offline (`07`) | Home verse card | W1.4 |
+| `giving_config` | every launch; persisted (bank details must work fully offline, `12`) | `GIVE` / `GIVE-BANK` | W1.6 |
+
+The bundled day-one fallbacks (branch snapshot + one evergreen verse, `06`) cover first-launch-offline before any cache exists; the launch warm-up keeps the cache fresh from then on. Feed/list surfaces deeper than two taps (Watch rails, Family feeds, Store) fetch on screen focus with the normal four-states treatment, not at launch.

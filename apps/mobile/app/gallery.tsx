@@ -11,12 +11,19 @@ import {
   Chip,
   EmptyState,
   Eyebrow,
+  FamilyTabIcon,
   GateSheet,
+  GiveTabIcon,
+  HomeTabIcon,
+  MenuCard,
+  MenuLabel,
+  MenuRow,
+  MoreTabIcon,
   SegmentedControl,
   Skeleton,
-  StarIcon,
   TabBar,
   useToast,
+  WatchTabIcon,
 } from '@/components/ui';
 import { ThemeScope, useTheme, type ThemeName } from '@/theme';
 
@@ -102,13 +109,28 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
           {
             key: 'home',
             label: 'Home',
-            renderIcon: (c, s) => <StarIcon color={c} size={s} />,
+            renderIcon: (c, s) => <HomeTabIcon color={c} size={s} />,
+          },
+          {
+            key: 'watch',
+            label: 'Watch',
+            renderIcon: (c, s) => <WatchTabIcon color={c} size={s} />,
           },
           {
             key: 'family',
             label: 'Family',
             badge: 3,
-            renderIcon: (c, s) => <BellIcon color={c} size={s} />,
+            renderIcon: (c, s) => <FamilyTabIcon color={c} size={s} />,
+          },
+          {
+            key: 'give',
+            label: 'Give',
+            renderIcon: (c, s) => <GiveTabIcon color={c} size={s} />,
+          },
+          {
+            key: 'more',
+            label: 'More',
+            renderIcon: (c, s) => <MoreTabIcon color={c} size={s} />,
           },
         ]}
         activeKey="home"
@@ -116,6 +138,42 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
           // gallery: press feedback only
         }}
       />
+      <View>
+        <MenuLabel label="Menu section" />
+        <MenuCard>
+          <MenuRow
+            icon="📍"
+            label="Chevron row"
+            onPress={() => {
+              // gallery: press feedback only
+            }}
+          />
+          <MenuRow
+            icon="🌐"
+            label="Value row"
+            value="English"
+            onPress={() => {
+              // gallery: press feedback only
+            }}
+          />
+          <MenuRow
+            icon="📚"
+            label="Locked row"
+            badge="Sign in"
+            onPress={() => {
+              // gallery: press feedback only
+            }}
+          />
+          <MenuRow
+            icon="🗑️"
+            label="Danger row"
+            danger
+            onPress={() => {
+              // gallery: press feedback only
+            }}
+          />
+        </MenuCard>
+      </View>
       <View style={{ gap: spacing.sm }}>
         <Skeleton width="60%" height={20} />
         <Skeleton />

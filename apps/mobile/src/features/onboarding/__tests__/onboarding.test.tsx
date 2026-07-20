@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
 import { useBranchStore } from '@/state/branch';
-import { resolveEntryRoute } from '@/state/launch';
+import { resolveEntryRoute, useLaunchStore } from '@/state/launch';
 import { ThemeScope } from '@/theme';
 
 import { resolveBranchList } from '../branchList';
@@ -46,6 +46,9 @@ function inTheme(ui: React.ReactElement) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Deterministic launch state regardless of test order (zustand persists
+  // module state across tests in a file).
+  useLaunchStore.setState({ hasOnboarded: false });
 });
 
 describe('entry routing (docs/spec/06)', () => {
@@ -55,12 +58,11 @@ describe('entry routing (docs/spec/06)', () => {
   });
 });
 
-describe('resolveBranchList four states', () => {
-  test('pending yields no list (skeleton state)', () => {
-    expect(resolveBranchList({ data: undefined, isError: false })).toEqual({
-      branches: null,
-      usingSnapshot: false,
-    });
+describe('resolveBranchList states', () => {
+  test('in flight yields the snapshot instantly, without the offline notice', () => {
+    const r = resolveBranchList({ data: undefined, isError: false });
+    expect(r.usingSnapshot).toBe(false);
+    expect(r.branches).toHaveLength(4);
   });
 
   test('error falls back to the bundled snapshot', () => {
@@ -81,17 +83,32 @@ describe('resolveBranchList four states', () => {
   });
 });
 
-describe('ONB-2 pick branch', () => {
-  test('loading shows skeletons and a disabled Continue', async () => {
+describe('ONB-2 language (first, decision 2026-07-20)', () => {
+  test('choosing a language relocalizes immediately and Continue moves to the branch step', async () => {
+    await i18n.changeLanguage('en');
+    await inTheme(<PickLanguage />);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Deutsch' }));
+    expect(i18n.language).toBe('de');
+    // The screen itself re-rendered in German; onboarding is NOT yet complete.
+    await fireEvent.press(screen.getByRole('button', { name: 'Weiter' }));
+    expect(mockPush).toHaveBeenCalledWith('/onboarding/branch');
+    expect(useLaunchStore.getState().hasOnboarded).toBe(false);
+    await i18n.changeLanguage('en');
+  });
+});
+
+describe('ONB-3 pick branch (final step)', () => {
+  test('in flight paints the snapshot instantly: selectable, no offline notice', async () => {
     mockQuery.mockReturnValue({ data: undefined, isError: false });
     await inTheme(<PickBranch />);
+    expect(screen.getAllByRole('radio')).toHaveLength(4);
     expect(
-      screen.getAllByTestId('skeleton', { includeHiddenElements: true }).length,
-    ).toBeGreaterThan(0);
+      screen.queryByText('Showing saved branches. Connect to refresh.'),
+    ).toBeNull();
     expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
   });
 
-  test('offline fallback renders the snapshot with a notice, fully selectable', async () => {
+  test('offline fallback renders the snapshot with a notice; Continue completes onboarding', async () => {
     mockQuery.mockReturnValue({ data: undefined, isError: true });
     await inTheme(<PickBranch />);
     expect(
@@ -103,28 +120,17 @@ describe('ONB-2 pick branch', () => {
     const cont = screen.getByRole('button', { name: 'Continue' });
     expect(cont).not.toBeDisabled();
     await fireEvent.press(cont);
-    expect(mockPush).toHaveBeenCalledWith('/onboarding/language');
+    expect(mockReplace).toHaveBeenCalledWith('/home');
     expect(useBranchStore.getState().branch?.slug).toBe('berlin');
+    expect(useLaunchStore.getState().hasOnboarded).toBe(true);
   });
 
-  test('Not sure yet selects HQ and proceeds', async () => {
+  test('Not sure yet selects HQ and lands on Home', async () => {
     mockQuery.mockReturnValue({ data: BRANCHES_SNAPSHOT, isError: false });
     await inTheme(<PickBranch />);
     await fireEvent.press(screen.getByRole('button', { name: 'Not sure yet' }));
     expect(useBranchStore.getState().branch?.slug).toBe('glasgow');
-    expect(mockPush).toHaveBeenCalledWith('/onboarding/language');
-  });
-});
-
-describe('ONB-3 language', () => {
-  test('choosing a language relocalizes immediately and Continue completes onboarding', async () => {
-    await i18n.changeLanguage('en');
-    await inTheme(<PickLanguage />);
-    await fireEvent.press(screen.getByRole('radio', { name: 'Deutsch' }));
-    expect(i18n.language).toBe('de');
-    // The screen itself re-rendered in German.
-    await fireEvent.press(screen.getByRole('button', { name: 'Weiter' }));
     expect(mockReplace).toHaveBeenCalledWith('/home');
-    await i18n.changeLanguage('en');
+    expect(useLaunchStore.getState().hasOnboarded).toBe(true);
   });
 });

@@ -50,7 +50,7 @@ The shared prod project contains ~3 tables belonging to the agbc website. Once t
 ## Conventions (enforced in review)
 
 - i18n keys only; no literal UI strings in components (EN/DE/NL/FR namespaces; FR is net-new, the website has no French strings).
-- Every data surface implements all four states: loading, empty, error, offline.
+- Every data surface implements all four states: loading, empty, error, offline. While loading, primary actions that operate on the loading data are hidden, not disabled (no dead buttons under skeletons; decided 2026-07-20).
 - Guest-first: browsing never requires auth; contribution gates via GateSheet + gate-return.
 - Server-trusted: RLS + triggers are the mechanism, never the client or the UI.
 - Design tokens only (from `packages/shared` tokens); no hard-coded hex; both themes always. Token values come from the mockup's CSS variables verbatim (never from 05's prose tables; if they disagree, the mockup wins and 05 gets synced in the same change).

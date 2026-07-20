@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from '@agbc/shared/database';
 
+import { fetchWithTimeout } from './fetchWithTimeout';
+
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_KEY;
 
@@ -24,4 +26,6 @@ export const supabase = createClient<Database>(url, key, {
     persistSession: true,
     detectSessionInUrl: false,
   },
+  // Bounded fetch: hangs become errors so four-states fallbacks fire (docs/spec/04).
+  global: { fetch: fetchWithTimeout },
 });

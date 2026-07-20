@@ -1,7 +1,17 @@
 {
+  "title": "Settings",
+  "appearance": "Appearance",
   "language": "Language",
   "theme": "Theme",
   "themeSystem": "System",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "privacyData": "Privacy & data",
+  "privacy": "Privacy",
+  "aboutSection": "About",
+  "aboutRow": "About",
+  "contact": "Contact",
+  "legal": "Legal",
+  "signin": "Sign in",
+  "appVersion": "AGBC · v{{version}}"
 }

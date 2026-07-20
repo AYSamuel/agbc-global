@@ -105,7 +105,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W1.1 · Onboarding slice**
 - Refs: `06`, `04` entry graph, mockup frames SPLASH/ONB-1/2/3.
-- Build: bundled read-only branch snapshot (same seed data) as offline fallback; SPLASH (1.2s, first-launch routing), ONB-1 (incl. "I'm just looking"), ONB-2 (branches from backend, fallback to bundle), ONB-3 (language, immediate relocalization); local persistence (branch/language/theme); no notification prompt anywhere here.
+- Build: bundled read-only branch snapshot (same seed data) as offline fallback; SPLASH (1.2s, first-launch routing), ONB-1 (incl. "I'm just looking"), ONB-2 (language, immediate relocalization), ONB-3 (branches from backend, fallback to bundle); local persistence (branch/language/theme); no notification prompt anywhere here. (Language-before-branch order decided 2026-07-20, landed with W1.2.)
 - Done: `06` acceptance criteria; guest reaches Home in ≤3 taps; first-launch-offline path works (airplane-mode test).
 
 **W1.2 · App shell + guest settings**

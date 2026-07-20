@@ -5,39 +5,44 @@ import { Text, View } from 'react-native';
 
 import { spacing, typeScale } from '@agbc/shared/theme';
 
-import { Button, Screen, Skeleton } from '@/components/ui';
+import { Button, Screen } from '@/components/ui';
 import { HQ_BRANCH } from '@/features/onboarding/branches-snapshot';
 import { BranchRow } from '@/features/onboarding/BranchRow';
 import { resolveBranchList } from '@/features/onboarding/branchList';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
 import { useBranchStore } from '@/state/branch';
+import { useLaunchStore } from '@/state/launch';
 import { useTheme } from '@/theme';
 
-// ONB-2 (docs/spec/06): conscious branch choice, no preselect; Continue enables only
-// after a selection; "Not sure yet" defaults to HQ. First-launch-offline falls back
-// to the bundled snapshot and stays fully functional.
+// ONB-3 (docs/spec/06): conscious branch choice, no preselect; Continue enables only
+// after a selection; "Not sure yet" defaults to HQ. Final onboarding step (language
+// moved ahead of it, decision 2026-07-20): choosing completes onboarding and lands
+// on Home. The bundled snapshot paints instantly while the fetch resolves (same
+// ids, selection survives the swap); error keeps it with the offline notice.
 export default function PickBranch() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const setBranch = useBranchStore((s) => s.setBranch);
+  const completeOnboarding = useLaunchStore((s) => s.completeOnboarding);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const query = useBranchesQuery();
   const { branches, usingSnapshot } = resolveBranchList(query);
 
   const proceed = (id: string) => {
-    const chosen = branches?.find((b) => b.id === id);
+    const chosen = branches.find((b) => b.id === id);
     if (!chosen) return;
     setBranch({ id: chosen.id, slug: chosen.slug, name: chosen.name });
-    router.push('/onboarding/language');
+    completeOnboarding();
+    router.replace('/home');
   };
 
   return (
     <Screen widthClass="capped">
       <View style={{ gap: spacing.sm, marginTop: spacing.x3l }}>
         <Text style={[typeScale.label, { color: colors.muted }]}>
-          {t('onboarding.step', { current: 1, total: 2 })}
+          {t('onboarding.step', { current: 2, total: 2 })}
         </Text>
         <Text style={[typeScale.section, { fontSize: 26, color: colors.text }]}>
           {t('onboarding.branchTitle')}
@@ -51,25 +56,16 @@ export default function PickBranch() {
         accessibilityRole="radiogroup"
         style={{ gap: spacing.md, marginTop: spacing.x2l }}
       >
-        {branches === null ? (
-          <>
-            <Skeleton height={72} />
-            <Skeleton height={72} />
-            <Skeleton height={72} />
-            <Skeleton height={72} />
-          </>
-        ) : (
-          branches.map((branch) => (
-            <BranchRow
-              key={branch.id}
-              branch={branch}
-              selected={selectedId === branch.id}
-              onSelect={() => {
-                setSelectedId(branch.id);
-              }}
-            />
-          ))
-        )}
+        {branches.map((branch) => (
+          <BranchRow
+            key={branch.id}
+            branch={branch}
+            selected={selectedId === branch.id}
+            onSelect={() => {
+              setSelectedId(branch.id);
+            }}
+          />
+        ))}
         {usingSnapshot ? (
           <Text
             accessibilityLiveRegion="polite"

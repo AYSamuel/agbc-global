@@ -21,12 +21,9 @@ import {
 
 import { Button, GradientFill } from '@/components/ui';
 import { HQ_BRANCH } from '@/features/onboarding/branches-snapshot';
+import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
 import { useBranchStore } from '@/state/branch';
 import { useLaunchStore } from '@/state/launch';
-
-// TODO(W4.6 legal pass): confirm the exact terms/privacy paths on the website.
-const TERMS_URL = 'https://agbcglobal.com/terms';
-const PRIVACY_URL = 'https://agbcglobal.com/privacy';
 
 // Metro's require() of an asset is untyped; the assertion is the RN-standard shape.
 const HERO_IMAGE =
@@ -90,7 +87,9 @@ export default function Welcome() {
             variant="primary"
             fullWidth
             onPress={() => {
-              router.push('/onboarding/branch');
+              // Language first (decision 2026-07-20): the rest of onboarding
+              // then reads in the user's own language.
+              router.push('/onboarding/language');
             }}
           />
           <Pressable
