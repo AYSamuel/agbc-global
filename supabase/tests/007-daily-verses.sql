@@ -58,12 +58,22 @@ select throws_ok(
   $$insert into public.daily_verses (date, reference, text)
     values ('2031-04-01', 'Rogue', 'anon wrote this')$$,
   '42501', null, 'anon cannot insert verses');
--- An UPDATE blocked by RLS matches zero rows rather than raising (unlike
--- INSERT, which always errors): prove the row survives untouched.
+-- An anon UPDATE is contained by two different mechanisms depending on the
+-- environment: CI's bare Postgres denies it at the GRANT (42501), while the
+-- local stack's ambient default privileges let it run and RLS scopes it to
+-- zero rows. Assert the PROPERTY (the verse cannot be changed) rather than the
+-- error shape, so the suite is true in both (CI caught this 2026-07-20).
 select lives_ok(
-  $$update public.daily_verses set text = 'defaced'
-    where date = '2031-03-01'$$,
-  'anon update executes without error (RLS scopes it to zero rows)');
+  $sql$
+    do $attempt$
+      begin
+        update public.daily_verses set text = 'defaced'
+          where date = '2031-03-01';
+      exception when insufficient_privilege then null;
+      end
+    $attempt$
+  $sql$,
+  'an anon write attempt is contained (denied outright or scoped to zero rows)');
 
 reset role;
 select is(
