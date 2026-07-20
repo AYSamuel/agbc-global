@@ -414,3 +414,13 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# Watch background jobs (docs/spec/21 s5; W1.3). verify_jwt admits any project
+# JWT, so each handler additionally requires the service-role key itself.
+[functions.youtube-sync]
+enabled = true
+verify_jwt = true
+
+[functions.live-detection]
+enabled = true
+verify_jwt = true

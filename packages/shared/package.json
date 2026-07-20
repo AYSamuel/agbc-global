@@ -19,5 +19,8 @@
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }
