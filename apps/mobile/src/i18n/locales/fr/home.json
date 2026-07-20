@@ -1,1 +1,39 @@
-{ "welcome": "Bienvenue dans la famille." }
+{
+  "welcome": "Bienvenue dans la famille.",
+  "goodMorning": "Bonjour",
+  "goodAfternoon": "Bon après-midi",
+  "goodEvening": "Bonsoir",
+  "changeBranch": "Église actuelle {{branch}}, changer d'église",
+  "switchBranch": "Changer d'église",
+  "seeAllBranches": "Voir toutes les églises",
+  "notifications": "Notifications",
+  "happeningNow": "En cours",
+  "today": "Aujourd'hui",
+  "tomorrow": "Demain",
+  "thisDay": "Ce {{day}}",
+  "serviceTimes": "Horaires des cultes",
+  "serviceTimesSoonEyebrow": "Nos cultes",
+  "serviceTimesSoon": "Horaires des cultes bientôt disponibles",
+  "serviceKind": {
+    "sunday": "Culte du dimanche",
+    "midweek": "Culte en semaine",
+    "classes": "Cours"
+  },
+  "planVisit": "Planifier une visite",
+  "watchLive": "Regarder",
+  "quick": {
+    "visit": "Visite",
+    "watch": "Regarder",
+    "give": "Donner",
+    "academy": "Academy"
+  },
+  "verseEyebrow": "Verset du jour",
+  "share": "Partager",
+  "shareVerse": "Partager ce verset",
+  "latestMessage": "Dernier message",
+  "fromTheFamily": "De la famille",
+  "familySoonTitle": "Les témoignages arrivent",
+  "familySoonBody": "Bientôt, vous verrez ici ce que Dieu fait dans chaque église.",
+  "joinTitle": "Rejoignez la famille",
+  "joinBody": "Connectez-vous pour réagir, partager des témoignages, répondre aux invitations et garder votre rythme."
+}

@@ -13,6 +13,10 @@ export interface BranchSummary {
   is_hq: boolean;
   /** Public channel id (docs/spec/01 §4); Watch's See-more link reads it. */
   youtube_channel_id: string | null;
+  /** IANA id; Home's next-service math runs in this zone (docs/spec/07). */
+  timezone: string;
+  /** Display address (jsonb in the DB); Home's hero shows line1. */
+  address: { line1?: string; line2?: string } | null;
   order: number;
 }
 
@@ -25,6 +29,11 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     country: 'Scotland, UK',
     is_hq: true,
     youtube_channel_id: 'UCTwx8j2Z0DZPlUhPyqfilfA',
+    timezone: 'Europe/London',
+    address: {
+      line1: 'Summerlee Museum of Scottish Industrial Life',
+      line2: 'Heritage Way, Coatbridge ML5 1QD',
+    },
     order: 1,
   },
   {
@@ -35,6 +44,8 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     country: 'Germany',
     is_hq: false,
     youtube_channel_id: null,
+    timezone: 'Europe/Berlin',
+    address: { line1: 'Oudenarder Str. 16', line2: '13347 Berlin' },
     order: 2,
   },
   {
@@ -45,6 +56,8 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     country: 'Netherlands',
     is_hq: false,
     youtube_channel_id: null,
+    timezone: 'Europe/Amsterdam',
+    address: { line1: 'Flintstraat 29C05', line2: '7815 RE Emmen' },
     order: 3,
   },
   {
@@ -55,6 +68,11 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     country: 'Nigeria',
     is_hq: false,
     youtube_channel_id: null,
+    timezone: 'Africa/Lagos',
+    address: {
+      line1: 'Adjacent Alajikii Mosque, Tarkii',
+      line2: 'Ogbomosho, Oyo State',
+    },
     order: 4,
   },
 ];

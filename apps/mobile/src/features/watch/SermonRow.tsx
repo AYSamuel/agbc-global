@@ -11,14 +11,23 @@ import { durationMinutes, joinMeta } from './format';
 import type { SermonSummary } from './queries';
 
 // Mockup .rrow: 120x72 thumbnail (>= the 120x70 YouTube ToS floor, docs/spec/08)
-// with a play chip, title at 14.5/700, muted meta line.
+// with a play chip, title at 14.5/700, muted meta line. 'featured' is the
+// larger treatment Home's latest-message block uses (2026-07-20).
+const SIZES = {
+  default: { width: 120, height: 72, title: 14.5, lineHeight: 18, meta: 12 },
+  featured: { width: 150, height: 90, title: 16, lineHeight: 21, meta: 12.5 },
+} as const;
+
 export function SermonRow({
   sermon,
   onPress,
+  size = 'default',
 }: {
   sermon: SermonSummary;
   onPress: () => void;
+  size?: keyof typeof SIZES;
 }) {
+  const dims = SIZES[size];
   const { colors } = useTheme();
   const { t } = useTranslation();
   const minutes = durationMinutes(sermon.duration_sec);
@@ -42,8 +51,8 @@ export function SermonRow({
     >
       <View
         style={{
-          width: 120,
-          height: 72,
+          width: dims.width,
+          height: dims.height,
           borderRadius: radius.control,
           overflow: 'hidden',
           flex: 0,
@@ -89,8 +98,8 @@ export function SermonRow({
           numberOfLines={2}
           style={{
             fontFamily: fontFamily.body.bold,
-            fontSize: 14.5,
-            lineHeight: 18,
+            fontSize: dims.title,
+            lineHeight: dims.lineHeight,
             color: colors.text,
           }}
         >
@@ -100,7 +109,7 @@ export function SermonRow({
           <Text
             style={{
               fontFamily: fontFamily.body.regular,
-              fontSize: 12,
+              fontSize: dims.meta,
               color: colors.muted,
             }}
           >

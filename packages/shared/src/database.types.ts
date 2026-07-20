@@ -179,6 +179,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_verses: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          language: string
+          reference: string
+          text: string
+          translation: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          language?: string
+          reference: string
+          text: string
+          translation?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          language?: string
+          reference?: string
+          text?: string
+          translation?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       devices: {
         Row: {
           created_at: string

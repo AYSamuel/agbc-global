@@ -1,1 +1,39 @@
-{ "welcome": "Welcome to the family." }
+{
+  "welcome": "Welcome to the family.",
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "changeBranch": "Current branch {{branch}}, change branch",
+  "switchBranch": "Switch branch",
+  "seeAllBranches": "See all branches",
+  "notifications": "Notifications",
+  "happeningNow": "Happening now",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "thisDay": "This {{day}}",
+  "serviceTimes": "Service times",
+  "serviceTimesSoonEyebrow": "Our services",
+  "serviceTimesSoon": "Service times coming soon",
+  "serviceKind": {
+    "sunday": "Sunday Service",
+    "midweek": "Midweek Service",
+    "classes": "Classes"
+  },
+  "planVisit": "Plan a visit",
+  "watchLive": "Watch",
+  "quick": {
+    "visit": "Visit",
+    "watch": "Watch",
+    "give": "Give",
+    "academy": "Academy"
+  },
+  "verseEyebrow": "Verse of the day",
+  "share": "Share",
+  "shareVerse": "Share this verse",
+  "latestMessage": "Latest message",
+  "fromTheFamily": "From the family",
+  "familySoonTitle": "Testimonies are coming",
+  "familySoonBody": "Soon you'll see what God is doing across every branch, right here.",
+  "joinTitle": "Join the family",
+  "joinBody": "Sign in to react, share testimonies, RSVP, and keep your rhythm."
+}

@@ -1,1 +1,39 @@
-{ "welcome": "Willkommen in der Familie." }
+{
+  "welcome": "Willkommen in der Familie.",
+  "goodMorning": "Guten Morgen",
+  "goodAfternoon": "Guten Tag",
+  "goodEvening": "Guten Abend",
+  "changeBranch": "Aktuelle Gemeinde {{branch}}, Gemeinde wechseln",
+  "switchBranch": "Gemeinde wechseln",
+  "seeAllBranches": "Alle Gemeinden ansehen",
+  "notifications": "Benachrichtigungen",
+  "happeningNow": "Findet gerade statt",
+  "today": "Heute",
+  "tomorrow": "Morgen",
+  "thisDay": "Diesen {{day}}",
+  "serviceTimes": "Gottesdienstzeiten",
+  "serviceTimesSoonEyebrow": "Unsere Gottesdienste",
+  "serviceTimesSoon": "Gottesdienstzeiten folgen in Kürze",
+  "serviceKind": {
+    "sunday": "Sonntagsgottesdienst",
+    "midweek": "Gottesdienst unter der Woche",
+    "classes": "Kurse"
+  },
+  "planVisit": "Besuch planen",
+  "watchLive": "Ansehen",
+  "quick": {
+    "visit": "Besuch",
+    "watch": "Ansehen",
+    "give": "Geben",
+    "academy": "Academy"
+  },
+  "verseEyebrow": "Vers des Tages",
+  "share": "Teilen",
+  "shareVerse": "Diesen Vers teilen",
+  "latestMessage": "Neueste Botschaft",
+  "fromTheFamily": "Aus der Familie",
+  "familySoonTitle": "Zeugnisse kommen bald",
+  "familySoonBody": "Bald siehst du hier, was Gott in allen Gemeinden tut.",
+  "joinTitle": "Werde Teil der Familie",
+  "joinBody": "Melde dich an, um zu reagieren, Zeugnisse zu teilen, zuzusagen und deinen Rhythmus zu halten."
+}

@@ -6,6 +6,8 @@ export interface SelectedBranch {
   id: string;
   slug: string;
   name: string;
+  /** IANA id: Home's next-service math runs in the BRANCH's zone (07/02). */
+  timezone: string;
 }
 
 interface BranchState {

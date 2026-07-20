@@ -1,1 +1,39 @@
-{ "welcome": "Welkom in de familie." }
+{
+  "welcome": "Welkom in de familie.",
+  "goodMorning": "Goedemorgen",
+  "goodAfternoon": "Goedemiddag",
+  "goodEvening": "Goedenavond",
+  "changeBranch": "Huidige gemeente {{branch}}, gemeente wijzigen",
+  "switchBranch": "Gemeente wisselen",
+  "seeAllBranches": "Alle gemeenten bekijken",
+  "notifications": "Meldingen",
+  "happeningNow": "Nu bezig",
+  "today": "Vandaag",
+  "tomorrow": "Morgen",
+  "thisDay": "Deze {{day}}",
+  "serviceTimes": "Diensttijden",
+  "serviceTimesSoonEyebrow": "Onze diensten",
+  "serviceTimesSoon": "Diensttijden komen binnenkort",
+  "serviceKind": {
+    "sunday": "Zondagsdienst",
+    "midweek": "Doordeweekse dienst",
+    "classes": "Cursussen"
+  },
+  "planVisit": "Bezoek plannen",
+  "watchLive": "Kijken",
+  "quick": {
+    "visit": "Bezoek",
+    "watch": "Kijken",
+    "give": "Geven",
+    "academy": "Academy"
+  },
+  "verseEyebrow": "Vers van de dag",
+  "share": "Delen",
+  "shareVerse": "Dit vers delen",
+  "latestMessage": "Nieuwste boodschap",
+  "fromTheFamily": "Uit de familie",
+  "familySoonTitle": "Getuigenissen komen eraan",
+  "familySoonBody": "Binnenkort zie je hier wat God doet in alle gemeenten.",
+  "joinTitle": "Word deel van de familie",
+  "joinBody": "Log in om te reageren, getuigenissen te delen, je aan te melden en je ritme bij te houden."
+}

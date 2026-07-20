@@ -1,12 +1,14 @@
-import '@/i18n';
+import i18n from '@/i18n';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 
 import { ToastProvider } from '@/components/ui';
+import { prefetchHome } from '@/features/home/queries';
 import { prefetchBranches } from '@/features/onboarding/useBranches';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
+import { useBranchStore } from '@/state/branch';
 import { ThemeProvider, useTheme } from '@/theme';
 
 // One data layer for the whole app (frontend standard): stale-while-revalidate by
@@ -34,8 +36,11 @@ function ThemedStack() {
 
 export default function RootLayout() {
   useEffect(() => {
-    // Warm the branch list during SPLASH/ONB-1 so ONB-2 has it on arrival.
+    // Launch warm-up (docs/spec/01 §9): the branch list for onboarding, plus
+    // Home's date-anchored reads so the first tab paints from cache.
     void prefetchBranches(queryClient);
+    const { branch } = useBranchStore.getState();
+    void prefetchHome(queryClient, branch?.id ?? null, i18n.language);
   }, []);
 
   return (

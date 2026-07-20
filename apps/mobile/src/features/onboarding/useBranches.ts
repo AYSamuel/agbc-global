@@ -10,14 +10,27 @@ export const branchesQueryOptions = {
   queryFn: async (): Promise<BranchSummary[]> => {
     const { data, error } = await supabase
       .from('branches')
-      .select('id, slug, name, city, country, is_hq, youtube_channel_id, order')
+      .select(
+        'id, slug, name, city, country, is_hq, youtube_channel_id, timezone, address, order',
+      )
       .eq('status', 'active')
       .order('order');
     if (error) throw new Error(error.message);
-    return data;
+    // address is jsonb (generic Json in the generated types): narrow it here so
+    // screens read a typed shape rather than casting at every call site.
+    return data.map((row) => ({ ...row, address: narrowAddress(row.address) }));
   },
   staleTime: 5 * 60_000,
 };
+
+function narrowAddress(value: unknown): BranchSummary['address'] {
+  if (typeof value !== 'object' || value === null) return null;
+  const { line1, line2 } = value as Record<string, unknown>;
+  return {
+    line1: typeof line1 === 'string' ? line1 : undefined,
+    line2: typeof line2 === 'string' ? line2 : undefined,
+  };
+}
 
 export function useBranchesQuery() {
   return useQuery(branchesQueryOptions);

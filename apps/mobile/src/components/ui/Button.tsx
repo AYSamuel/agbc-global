@@ -8,6 +8,7 @@ import {
 import {
   fontFamily,
   hitTarget,
+  onInk,
   palette,
   radius,
   spacing,
@@ -17,8 +18,11 @@ import { useTheme } from '@/theme';
 
 // Variants per the mockup's .btn classes: 'primary' = btnBg/btnText (navy in light,
 // gold in dark); 'accent' = gold fill with navy text on any theme; 'outline' sits on
-// card; 'ghost' is muted text only.
-export type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost';
+// card; 'ghost' is muted text only; 'glass' is the translucent white button the
+// mockup uses ON ink/photo surfaces (.btn.glass), where 'outline' would paint a
+// light card-colored block.
+export type ButtonVariant =
+  'primary' | 'accent' | 'outline' | 'ghost' | 'glass';
 
 export interface ButtonProps extends Omit<
   PressableProps,
@@ -48,8 +52,11 @@ export function Button({
         ? colors.accent
         : variant === 'outline'
           ? colors.card
-          : 'transparent';
-  // Accent (gold) always carries navy text, both themes (05 contrast rule).
+          : variant === 'glass'
+            ? 'rgba(255,255,255,0.16)'
+            : 'transparent';
+  // Accent (gold) always carries navy text, both themes (05 contrast rule);
+  // glass sits on ink/photo, so its text is always white.
   const foreground =
     variant === 'primary'
       ? colors.btnText
@@ -57,7 +64,9 @@ export function Button({
         ? palette.navy
         : variant === 'outline'
           ? colors.text
-          : colors.muted;
+          : variant === 'glass'
+            ? onInk.text
+            : colors.muted;
 
   return (
     <Pressable
@@ -75,8 +84,9 @@ export function Button({
         flexDirection: 'row',
         gap: spacing.sm,
         backgroundColor: background,
-        borderWidth: variant === 'outline' ? 1 : 0,
-        borderColor: colors.cardline,
+        borderWidth: variant === 'outline' || variant === 'glass' ? 1 : 0,
+        borderColor:
+          variant === 'glass' ? 'rgba(255,255,255,0.28)' : colors.cardline,
         opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
         alignSelf: fullWidth ? 'stretch' : 'auto',
       })}

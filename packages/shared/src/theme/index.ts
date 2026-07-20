@@ -25,6 +25,21 @@ export const onInk = {
   scrimBottom: 'rgba(14,20,32,0.92)',
 } as const;
 
+// The scripture card is a CONSTANT cream/gold surface in both themes: the
+// mockup's .verse carries no dark override, and the design language names the
+// "cream scripture card" as a signature element. Grouped like onInk because the
+// surface never changes; values are the mockup's literals verbatim.
+export const verseCard = {
+  from: '#fbf3dd',
+  to: '#f5e8ce',
+  border: '#eeddb5',
+  text: '#2b2517',
+  eyebrow: '#b98600',
+  reference: '#7a5b12',
+  chipBg: 'rgba(255,255,255,0.72)',
+  chipBorder: '#e6d3a4',
+} as const;
+
 export interface ColorTokens {
   bg: string;
   /** Alt surface: segmented tracks, icon circles, skeleton base (mockup --alt). */
@@ -163,6 +178,7 @@ export const hitTarget = { min: 44, preferred: 48 } as const;
 export const tokens = {
   palette,
   onInk,
+  verseCard,
   color,
   fontFamily,
   typeScale,
