@@ -1,1 +1,7 @@
-{}
+{
+  "somethingWrong": "Etwas ist schiefgelaufen",
+  "couldntLoad": "Das konnte gerade nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+  "tryAgain": "Erneut versuchen",
+  "offlineTitle": "Du bist offline",
+  "offlineBody": "Wir zeigen Gespeichertes. Einiges aktualisiert sich, sobald du wieder online bist."
+}

@@ -126,4 +126,10 @@ jobs:
             fi
           done <<< "$FENCED"
           exit $FAIL
-      # deno test for edge functions joins this job when the first function lands (W1.3).
+      # Edge-function tests (W1.3+): pure logic + shared zod contracts, no network.
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        with:
+          deno-version: v2.x
+      # Explicit --config so the import map also governs the shared contract
+      # imports (bare "zod" from packages/shared) without a node_modules install.
+      - run: deno test --allow-net=none --config supabase/functions/deno.json supabase/functions

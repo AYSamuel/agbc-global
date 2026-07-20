@@ -11,6 +11,8 @@ export interface BranchSummary {
   city: string;
   country: string;
   is_hq: boolean;
+  /** Public channel id (docs/spec/01 §4); Watch's See-more link reads it. */
+  youtube_channel_id: string | null;
   order: number;
 }
 
@@ -22,6 +24,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     city: 'Glasgow',
     country: 'Scotland, UK',
     is_hq: true,
+    youtube_channel_id: 'UCTwx8j2Z0DZPlUhPyqfilfA',
     order: 1,
   },
   {
@@ -31,6 +34,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     city: 'Berlin',
     country: 'Germany',
     is_hq: false,
+    youtube_channel_id: null,
     order: 2,
   },
   {
@@ -40,6 +44,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     city: 'Emmen',
     country: 'Netherlands',
     is_hq: false,
+    youtube_channel_id: null,
     order: 3,
   },
   {
@@ -49,6 +54,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     city: 'Ogbomosho',
     country: 'Nigeria',
     is_hq: false,
+    youtube_channel_id: null,
     order: 4,
   },
 ];

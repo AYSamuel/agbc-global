@@ -1,1 +1,7 @@
-{}
+{
+  "somethingWrong": "Er ging iets mis",
+  "couldntLoad": "Dit kon nu niet laden. Controleer je verbinding en probeer het opnieuw.",
+  "tryAgain": "Opnieuw proberen",
+  "offlineTitle": "Je bent offline",
+  "offlineBody": "We tonen wat we hebben opgeslagen. Sommige dingen worden bijgewerkt zodra je weer online bent."
+}

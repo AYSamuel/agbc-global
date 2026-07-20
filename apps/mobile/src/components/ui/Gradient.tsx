@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { StyleSheet } from 'react-native';
 import Svg, {
   Defs,
@@ -40,15 +41,21 @@ export function GradientFill({
   toOpacity = 1,
 }: GradientFillProps) {
   const vector = DIRECTIONS[direction];
+  // Unique per instance: react-native-svg registers gradient ids globally, so a
+  // shared "fill" id lets one gradient's def hijack another's (found 2026-07-20
+  // when MediaHero's opaque bg def painted over its scrim + thumbnail).
+  // Sanitized: useId emits ":r1:"-style ids, and colons break SVG url(#...)
+  // references (an unresolved fill can paint solid black).
+  const id = `grad${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   return (
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
-        <SvgLinearGradient id="fill" {...vector}>
+        <SvgLinearGradient id={id} {...vector}>
           <Stop offset="0%" stopColor={from} stopOpacity={fromOpacity} />
           <Stop offset="100%" stopColor={to} stopOpacity={toOpacity} />
         </SvgLinearGradient>
       </Defs>
-      <Rect width="100%" height="100%" fill="url(#fill)" />
+      <Rect width="100%" height="100%" fill={`url(#${id})`} />
     </Svg>
   );
 }

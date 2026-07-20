@@ -10,7 +10,7 @@ export const branchesQueryOptions = {
   queryFn: async (): Promise<BranchSummary[]> => {
     const { data, error } = await supabase
       .from('branches')
-      .select('id, slug, name, city, country, is_hq, order')
+      .select('id, slug, name, city, country, is_hq, youtube_channel_id, order')
       .eq('status', 'active')
       .order('order');
     if (error) throw new Error(error.message);

@@ -1,4 +1,8 @@
 -- 10-dev-only.sql · fixture data for local/dev ONLY: never applied to prod.
--- Dev sermons, pre-approved testimonies/prayers, test events land here as their
--- work items arrive (W1.3, W1.5, W1.7). Prod seeding goes through the reviewed
--- step in docs/spec/19 instead.
+-- Prod seeding goes through the reviewed step in docs/spec/19 instead.
+--
+-- No sermon fixtures (removed 2026-07-20 on Ayo's direction): the youtube-sync
+-- function fills real channel data on dev, and fake titles polluted the Watch
+-- surfaces. pgTAP suites create their own rows (qa standard: builders over
+-- shared fixtures). Pre-approved testimonies/prayers and test events land here
+-- as their work items arrive (W1.5, W1.7).
