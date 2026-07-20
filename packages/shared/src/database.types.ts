@@ -529,6 +529,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
     }
     Enums: {
       branch_status: "active" | "archived"
