@@ -13,17 +13,16 @@ import {
   type SupportedLanguage,
 } from '@/i18n';
 import { useLanguagePrefStore } from '@/state/language';
-import { useLaunchStore } from '@/state/launch';
 import { useTheme } from '@/theme';
 
-// ONB-3 (docs/spec/06): language choice, preselected from the device locale when it
+// ONB-2 (docs/spec/06): language choice FIRST (decision 2026-07-20) so the branch
+// step renders in the chosen language; preselected from the device locale when it
 // matches; applying relocalizes the UI immediately (the store drives i18next live).
 export default function PickLanguage() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const setLangPref = useLanguagePrefStore((s) => s.setPref);
-  const completeOnboarding = useLaunchStore((s) => s.completeOnboarding);
   const [selected, setSelected] = useState(deviceLanguage());
 
   const choose = (lang: SupportedLanguage) => {
@@ -37,7 +36,7 @@ export default function PickLanguage() {
     <Screen widthClass="capped">
       <View style={{ gap: spacing.sm, marginTop: spacing.x3l }}>
         <Text style={[typeScale.label, { color: colors.muted }]}>
-          {t('onboarding.step', { current: 2, total: 2 })}
+          {t('onboarding.step', { current: 1, total: 2 })}
         </Text>
         <Text style={[typeScale.section, { fontSize: 26, color: colors.text }]}>
           {t('onboarding.languageTitle')}
@@ -81,8 +80,7 @@ export default function PickLanguage() {
           variant="primary"
           fullWidth
           onPress={() => {
-            completeOnboarding();
-            router.replace('/home');
+            router.push('/onboarding/branch');
           }}
         />
       </View>

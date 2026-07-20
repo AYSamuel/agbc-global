@@ -101,7 +101,7 @@ Plus the `onInk` group for content on ink/photo surfaces (same in both themes): 
 | `EventRow` | date block + title + branch/global tag |
 | `GateSheet` | bottom sheet for auth gate |
 | `EmptyState` | icon + copy + primary action (never a bare empty list) |
-| `Skeleton` | loading placeholders per layout |
+| `Skeleton` | loading placeholders per layout; while a surface shows skeletons, primary actions that operate on the loading data are HIDDEN, not disabled (no dead buttons under a skeleton; decision 2026-07-20) |
 | `Toast` | copy-confirm, action feedback |
 
 ## Theming implementation

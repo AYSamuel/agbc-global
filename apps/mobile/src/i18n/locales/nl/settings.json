@@ -1,7 +1,17 @@
 {
+  "title": "Instellingen",
+  "appearance": "Weergave",
   "language": "Taal",
-  "theme": "Weergave",
+  "theme": "Thema",
   "themeSystem": "Systeem",
   "themeLight": "Licht",
-  "themeDark": "Donker"
+  "themeDark": "Donker",
+  "privacyData": "Privacy & gegevens",
+  "privacy": "Privacy",
+  "aboutSection": "Over",
+  "aboutRow": "Over",
+  "contact": "Contact",
+  "legal": "Juridisch",
+  "signin": "Inloggen",
+  "appVersion": "AGBC · v{{version}}"
 }

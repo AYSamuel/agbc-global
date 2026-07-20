@@ -1,7 +1,17 @@
 {
+  "title": "Einstellungen",
+  "appearance": "Darstellung",
   "language": "Sprache",
-  "theme": "Darstellung",
+  "theme": "Design",
   "themeSystem": "System",
   "themeLight": "Hell",
-  "themeDark": "Dunkel"
+  "themeDark": "Dunkel",
+  "privacyData": "Datenschutz & Daten",
+  "privacy": "Datenschutz",
+  "aboutSection": "Über",
+  "aboutRow": "Über",
+  "contact": "Kontakt",
+  "legal": "Rechtliches",
+  "signin": "Anmelden",
+  "appVersion": "AGBC · v{{version}}"
 }

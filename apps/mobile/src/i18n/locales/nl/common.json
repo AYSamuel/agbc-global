@@ -2,6 +2,7 @@
   "appName": "AGBC Global",
   "tagline": "One family · many nations · one amazing grace",
   "languageName": "Nederlands",
+  "back": "Terug",
   "brand": {
     "line1": "Amazing Grace",
     "line2": "Bible Church"
@@ -31,6 +32,47 @@
     "languageTitle": "Kies je taal",
     "languageSubtitle": "Je kunt dit wijzigen in Instellingen.",
     "offlineBranches": "Opgeslagen gemeenten worden getoond. Maak verbinding om te vernieuwen."
+  },
+  "more": {
+    "signinEyebrow": "Word deel van de familie",
+    "signinTitle": "Post, bid en volg je ritme",
+    "signinBody": "Log in om te reageren, getuigenissen te delen, je aan te melden en je reeks bij te houden.",
+    "signin": "Inloggen",
+    "sections": {
+      "grow": "Groeien",
+      "church": "Kerk",
+      "read": "Lezen",
+      "app": "App"
+    },
+    "rows": {
+      "academy": "Grace Academy",
+      "devotional": "Dagelijkse overdenking",
+      "branches": "Gemeenten",
+      "events": "Evenementen",
+      "about": "Over de kerk",
+      "contact": "Contact",
+      "bookstore": "Boekwinkel",
+      "library": "Mijn bibliotheek",
+      "settings": "Instellingen"
+    }
+  },
+  "tabStubs": {
+    "watch": "Boodschappen, series en livediensten zijn onderweg.",
+    "family": "Getuigenissen, gebed en de wereldwijde familiekaart zijn onderweg.",
+    "give": "Eenvoudige, veilige manieren om te geven zijn onderweg."
+  },
+  "comingSoon": {
+    "title": "Onderweg",
+    "body": "We bouwen nu aan dit deel van de app. Het komt binnenkort met een update."
+  },
+  "authStub": {
+    "title": "Word deel van de familie",
+    "body": "Inloggen komt binnenkort. Tot die tijd kun je alles als gast verkennen."
+  },
+  "updateGate": {
+    "title": "Tijd voor een update",
+    "body": "Deze versie van de app wordt niet meer ondersteund. Werk nu bij om verbonden te blijven met de familie.",
+    "cta": "Nu bijwerken"
   },
   "languages": {
     "en": "Engels",

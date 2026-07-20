@@ -11,6 +11,7 @@ export {
   type GradientFillProps,
 } from './Gradient';
 export * from './icons';
+export { MenuCard, MenuLabel, MenuRow, type MenuRowProps } from './Menu';
 export { SelectRow, type SelectRowProps } from './SelectRow';
 export { Screen, type ScreenProps } from './Screen';
 export {

@@ -754,14 +754,36 @@
       </div>
     </div>
 
-    <!-- BRANCH -->
+    <!-- LANGUAGE (first, decision 2026-07-20: the branch step then reads in the user's language) -->
     <div class="device">
-      <p class="name"><b>ONB-2 Pick branch</b></p>
+      <p class="name"><b>ONB-2 Language</b></p>
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
           <div class="obhead">
             <span class="kbd step" style="color:var(--muted)">Step 1 of 2</span>
+            <h1>Choose your language</h1>
+            <p>You can change this in Settings.</p>
+          </div>
+          <div class="list">
+            <div class="sel on"><span class="tile">EN</span><span class="grow"><span class="t">English</span></span><span class="ck"></span></div>
+            <div class="sel"><span class="tile">DE</span><span class="grow"><span class="t">Deutsch</span><span class="s">German</span></span><span class="ck"></span></div>
+            <div class="sel"><span class="tile">NL</span><span class="grow"><span class="t">Nederlands</span><span class="s">Dutch</span></span><span class="ck"></span></div>
+            <div class="sel"><span class="tile">FR</span><span class="grow"><span class="t">Fran&ccedil;ais</span><span class="s">French</span></span><span class="ck"></span></div>
+          </div>
+          <div class="obfoot"><button class="btn primary">Continue</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANCH (final step: Continue lands on Home) -->
+    <div class="device">
+      <p class="name"><b>ONB-3 Pick branch</b></p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="obhead">
+            <span class="kbd step" style="color:var(--muted)">Step 2 of 2</span>
             <h1>Which family are you part of?</h1>
             <p>You can change this anytime.</p>
           </div>
@@ -775,28 +797,6 @@
             <button class="btn primary">Continue</button>
             <button class="btn ghost">Not sure yet</button>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- LANGUAGE -->
-    <div class="device">
-      <p class="name"><b>ONB-3 Language</b></p>
-      <div class="phone">
-        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
-        <div class="screen">
-          <div class="obhead">
-            <span class="kbd step" style="color:var(--muted)">Step 2 of 2</span>
-            <h1>Choose your language</h1>
-            <p>You can change this in Settings.</p>
-          </div>
-          <div class="list">
-            <div class="sel on"><span class="tile">EN</span><span class="grow"><span class="t">English</span></span><span class="ck"></span></div>
-            <div class="sel"><span class="tile">DE</span><span class="grow"><span class="t">Deutsch</span><span class="s">German</span></span><span class="ck"></span></div>
-            <div class="sel"><span class="tile">NL</span><span class="grow"><span class="t">Nederlands</span><span class="s">Dutch</span></span><span class="ck"></span></div>
-            <div class="sel"><span class="tile">FR</span><span class="grow"><span class="t">Fran&ccedil;ais</span><span class="s">French</span></span><span class="ck"></span></div>
-          </div>
-          <div class="obfoot"><button class="btn primary">Continue</button></div>
         </div>
       </div>
     </div>

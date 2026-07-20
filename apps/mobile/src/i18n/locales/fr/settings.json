@@ -1,7 +1,17 @@
 {
+  "title": "Réglages",
+  "appearance": "Apparence",
   "language": "Langue",
-  "theme": "Apparence",
+  "theme": "Thème",
   "themeSystem": "Système",
   "themeLight": "Clair",
-  "themeDark": "Sombre"
+  "themeDark": "Sombre",
+  "privacyData": "Confidentialité et données",
+  "privacy": "Confidentialité",
+  "aboutSection": "À propos",
+  "aboutRow": "À propos",
+  "contact": "Contact",
+  "legal": "Mentions légales",
+  "signin": "Se connecter",
+  "appVersion": "AGBC · v{{version}}"
 }

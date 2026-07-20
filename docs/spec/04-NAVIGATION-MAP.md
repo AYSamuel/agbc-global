@@ -19,11 +19,11 @@ SPLASH (auto 1.2s)
   └─> first launch?  yes ─> ONB-1 Welcome
                      no  ─> HOME (restore last branch/lang/theme)
 
-ONB-1 Welcome ──[Get started]──> ONB-2 Pick branch
+ONB-1 Welcome ──[Get started]──> ONB-2 Language
               └─[I'm just looking]─> HOME (guest, default HQ branch)
 
-ONB-2 Pick branch ──[select + Continue]──> ONB-3 Language
-ONB-3 Language ──[select + Continue]──> HOME
+ONB-2 Language ──[select + Continue]──> ONB-3 Pick branch
+ONB-3 Pick branch ──[select + Continue]──> HOME
 ```
 No account is created in onboarding. Choices persist locally (branch, language, theme). Notification permission is never requested during onboarding; the OS prompt fires in context at the first value moment (see `06`).
 

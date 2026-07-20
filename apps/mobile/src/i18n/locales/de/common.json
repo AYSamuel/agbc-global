@@ -2,6 +2,7 @@
   "appName": "AGBC Global",
   "tagline": "One family · many nations · one amazing grace",
   "languageName": "Deutsch",
+  "back": "Zurück",
   "brand": {
     "line1": "Amazing Grace",
     "line2": "Bible Church"
@@ -31,6 +32,47 @@
     "languageTitle": "Wähle deine Sprache",
     "languageSubtitle": "Du kannst das in den Einstellungen ändern.",
     "offlineBranches": "Gespeicherte Gemeinden werden angezeigt. Verbinde dich, um zu aktualisieren."
+  },
+  "more": {
+    "signinEyebrow": "Werde Teil der Familie",
+    "signinTitle": "Posten, beten und deinen Rhythmus verfolgen",
+    "signinBody": "Melde dich an, um zu reagieren, Zeugnisse zu teilen, zuzusagen und deine Serie zu halten.",
+    "signin": "Anmelden",
+    "sections": {
+      "grow": "Wachsen",
+      "church": "Gemeinde",
+      "read": "Lesen",
+      "app": "App"
+    },
+    "rows": {
+      "academy": "Grace Academy",
+      "devotional": "Tägliche Andacht",
+      "branches": "Gemeinden",
+      "events": "Veranstaltungen",
+      "about": "Über die Gemeinde",
+      "contact": "Kontakt",
+      "bookstore": "Buchladen",
+      "library": "Meine Bibliothek",
+      "settings": "Einstellungen"
+    }
+  },
+  "tabStubs": {
+    "watch": "Botschaften, Serien und Live-Gottesdienste sind auf dem Weg.",
+    "family": "Zeugnisse, Gebet und die weltweite Familienkarte sind auf dem Weg.",
+    "give": "Einfache, sichere Wege zu geben sind auf dem Weg."
+  },
+  "comingSoon": {
+    "title": "Bald verfügbar",
+    "body": "Wir bauen gerade an diesem Teil der App. Er kommt bald mit einem Update."
+  },
+  "authStub": {
+    "title": "Werde Teil der Familie",
+    "body": "Die Anmeldung kommt bald. Bis dahin kannst du alles als Gast erkunden."
+  },
+  "updateGate": {
+    "title": "Zeit für ein Update",
+    "body": "Diese Version der App wird nicht mehr unterstützt. Aktualisiere jetzt, um mit der Familie verbunden zu bleiben.",
+    "cta": "Jetzt aktualisieren"
   },
   "languages": {
     "en": "Englisch",

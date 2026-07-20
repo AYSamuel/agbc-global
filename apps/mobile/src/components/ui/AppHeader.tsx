@@ -1,11 +1,16 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { hitTarget, spacing, typeScale } from '@agbc/shared/theme';
+import { fontFamily, radius, spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
 import { ChevronLeftIcon } from './icons';
+
+// The mockup's .chead pattern (SETTINGS, compose, detail screens): a 40px circle
+// back button on the alt surface, centered display title, and a balancing slot on
+// the right so the title stays optically centered.
+const CONTROL_SIZE = 40;
 
 export interface AppHeaderProps {
   title: string;
@@ -30,9 +35,11 @@ export function AppHeader({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: spacing.sm,
-        minHeight: hitTarget.preferred,
-        paddingHorizontal: spacing.md,
+        paddingHorizontal: spacing.gutter,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.md,
       }}
     >
       {onBack ? (
@@ -42,8 +49,10 @@ export function AppHeader({
           onPress={onBack}
           hitSlop={spacing.sm}
           style={({ pressed }) => ({
-            minWidth: hitTarget.min,
-            minHeight: hitTarget.min,
+            width: CONTROL_SIZE,
+            height: CONTROL_SIZE,
+            borderRadius: radius.full,
+            backgroundColor: colors.alt,
             alignItems: 'center',
             justifyContent: 'center',
             opacity: pressed ? 0.7 : 1,
@@ -52,16 +61,23 @@ export function AppHeader({
           <ChevronLeftIcon color={colors.text} />
         </Pressable>
       ) : (
-        <View style={{ width: spacing.sm }} />
+        <View style={{ width: CONTROL_SIZE }} />
       )}
       <Text
         accessibilityRole="header"
         numberOfLines={1}
-        style={[typeScale.cardTitle, { color: colors.text, flex: 1 }]}
+        style={{
+          fontFamily: fontFamily.display.extraBold,
+          fontSize: 18,
+          letterSpacing: -0.36,
+          color: colors.text,
+          flex: 1,
+          textAlign: 'center',
+        }}
       >
         {title}
       </Text>
-      {trailing}
+      {trailing ?? <View style={{ width: CONTROL_SIZE }} />}
     </View>
   );
 }
