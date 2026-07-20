@@ -32,6 +32,12 @@
     "languageSubtitle": "Modifiable dans les Réglages.",
     "offlineBranches": "Églises enregistrées affichées. Connectez-vous pour actualiser."
   },
+  "languages": {
+    "en": "Anglais",
+    "de": "Allemand",
+    "nl": "Néerlandais",
+    "fr": "Français"
+  },
   "weeks_one": "{{count}} semaine",
   "weeks_many": "{{count}} semaines",
   "weeks_other": "{{count}} semaines"

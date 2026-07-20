@@ -32,6 +32,12 @@
     "languageSubtitle": "Du kannst das in den Einstellungen ändern.",
     "offlineBranches": "Gespeicherte Gemeinden werden angezeigt. Verbinde dich, um zu aktualisieren."
   },
+  "languages": {
+    "en": "Englisch",
+    "de": "Deutsch",
+    "nl": "Niederländisch",
+    "fr": "Französisch"
+  },
   "weeks_one": "{{count}} Woche",
   "weeks_other": "{{count}} Wochen"
 }

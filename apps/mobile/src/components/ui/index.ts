@@ -5,7 +5,13 @@ export { Chip, type ChipProps } from './Chip';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { Eyebrow } from './Eyebrow';
 export { GateSheet, type GateSheetProps } from './GateSheet';
+export {
+  GradientFill,
+  type GradientDirection,
+  type GradientFillProps,
+} from './Gradient';
 export * from './icons';
+export { SelectRow, type SelectRowProps } from './SelectRow';
 export { Screen, type ScreenProps } from './Screen';
 export {
   SegmentedControl,

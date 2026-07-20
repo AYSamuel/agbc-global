@@ -5,12 +5,19 @@ import {
   type PressableProps,
 } from 'react-native';
 
-import { hitTarget, radius, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  hitTarget,
+  palette,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
-// The four 05 variants. Contrast rule: gold ('accent') carries navy text and is meant
-// for dark/navy surroundings or emphasis moments; 'primary' (blue) is the default CTA.
+// Variants per the mockup's .btn classes: 'primary' = btnBg/btnText (navy in light,
+// gold in dark); 'accent' = gold fill with navy text on any theme; 'outline' sits on
+// card; 'ghost' is muted text only.
 export type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost';
 
 export interface ButtonProps extends Omit<
@@ -36,19 +43,21 @@ export function Button({
 
   const background =
     variant === 'primary'
-      ? colors.blue
+      ? colors.btnBg
       : variant === 'accent'
         ? colors.accent
-        : 'transparent';
+        : variant === 'outline'
+          ? colors.card
+          : 'transparent';
   // Accent (gold) always carries navy text, both themes (05 contrast rule).
   const foreground =
     variant === 'primary'
-      ? colors.bandtext
+      ? colors.btnText
       : variant === 'accent'
-        ? '#14213d'
+        ? palette.navy
         : variant === 'outline'
           ? colors.text
-          : colors.blue;
+          : colors.muted;
 
   return (
     <Pressable
@@ -73,7 +82,14 @@ export function Button({
       })}
     >
       {loading ? <ActivityIndicator size="small" color={foreground} /> : null}
-      <Text style={[typeScale.bodySemiBold, { color: foreground }]}>
+      {/* Mockup .btn: weight 800 at 15.5 (ghost: 700 at 13.5). */}
+      <Text
+        style={{
+          fontFamily: fontFamily.body.bold,
+          fontSize: variant === 'ghost' ? 13.5 : 15.5,
+          color: foreground,
+        }}
+      >
         {label}
       </Text>
     </Pressable>

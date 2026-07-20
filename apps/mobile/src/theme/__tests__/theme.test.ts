@@ -19,15 +19,19 @@ describe('resolveTheme', () => {
   });
 });
 
-// Drift guards: a handful of load-bearing 05 values. If one of these fails, someone
-// edited the token scale away from docs/spec/05; change the spec first, then the token.
+// Drift guards: a handful of load-bearing values from the mockup CSS variables
+// (entry-flow.html, mirrored in 05's tables). If one of these fails, someone edited
+// the token scale away from the design source of truth; change the spec first.
 describe('tokens match docs/spec/05', () => {
   test('anchor colors', () => {
     expect(color.light.bg).toBe('#fbf8f3');
     expect(color.light.text).toBe('#14213d');
     expect(color.light.accent).toBe('#ffcf4a');
+    expect(color.light.eye).toBe('#b98600');
+    expect(color.light.btnBg).toBe('#14213d');
     expect(color.dark.blue).toBe('#5a9bff');
-    expect(color.dark.card).toBe('#17202f');
+    expect(color.dark.card).toBe('#18212f');
+    expect(color.dark.btnBg).toBe('#ffcf4a');
   });
 
   test('gold holds across both themes', () => {

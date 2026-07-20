@@ -16,15 +16,17 @@ const PREFS: ThemePref[] = ['system', 'light', 'dark'];
 const SWATCHES = [
   'bg',
   'alt',
-  'util',
-  'line',
   'text',
+  'sub',
   'muted',
   'card',
   'cardline',
   'band',
   'accent',
   'blue',
+  'eye',
+  'btnBg',
+  'btnText',
 ] as const;
 
 const PLURAL_DEMO_COUNTS = [0, 1, 2, 5];

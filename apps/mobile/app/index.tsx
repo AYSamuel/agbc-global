@@ -3,7 +3,14 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
-import { radius, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  onInk,
+  palette,
+  radius,
+  spacing,
+  typeScale,
+} from '@agbc/shared/theme';
 
 import { resolveEntryRoute, useLaunchStore } from '@/state/launch';
 import { useTheme } from '@/theme';
@@ -37,37 +44,53 @@ export default function Splash() {
         backgroundColor: colors.band,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: spacing.sm,
-        padding: spacing.gutter,
+        gap: spacing.lg,
+        paddingHorizontal: spacing.x4l,
       }}
     >
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         style={{
-          width: 64,
-          height: 64,
-          borderRadius: radius.card,
-          backgroundColor: colors.accent,
+          width: 76,
+          height: 76,
+          borderRadius: radius.cardHero,
+          backgroundColor: palette.gold,
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: spacing.md,
         }}
       >
-        <Text style={[typeScale.hero, { color: '#14213d' }]}>
+        <Text
+          style={{
+            fontFamily: fontFamily.display.extraBold,
+            fontSize: 40,
+            color: palette.navy,
+          }}
+        >
           {t('brand.line1').charAt(0)}
         </Text>
       </View>
-      <Text style={[typeScale.hero, { color: colors.bandtext }]}>
+      <Text style={[typeScale.hero, { fontSize: 30, color: onInk.text }]}>
         {t('brand.line1')}
       </Text>
-      <Text style={[typeScale.label, { color: colors.accent }]}>
+      <Text
+        style={[
+          typeScale.label,
+          { fontSize: 11, letterSpacing: 2.6, color: palette.gold },
+        ]}
+      >
         {t('brand.line2')}
       </Text>
       <Text
         style={[
           typeScale.body,
-          { color: colors.bandtext, opacity: 0.75, marginTop: spacing.md },
+          {
+            fontSize: 14,
+            lineHeight: 21,
+            color: onInk.sub,
+            textAlign: 'center',
+            maxWidth: 240,
+          },
         ]}
       >
         {t('tagline')}

@@ -8,37 +8,52 @@ The app shares the church's brand with the website but is its own, more personal
 
 Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.html`) so the two stay in sync.
 
+> **Values below = the mockup's `t-light` / `t-dark` CSS variables verbatim** (updated 2026-07-20; earlier tables lagged the final mockup CSS and the implemented tokens had followed them). `packages/shared/src/theme` mirrors these exactly. Naming map: mockup `--sub` → `sub`, `--border` → `cardline`, `--btnBg`/`--btnText` → `btnBg`/`btnText`.
+
+### Brand constants (theme-independent, mockup `:root`)
+| Name | Value | Use |
+|------|-------|-----|
+| `ink` | `#0e1420` | splash/hero bands, scrim base |
+| `gold` | `#ffcf4a` | brand gold |
+| `navy` | `#14213d` | brand navy |
+| `blue` | `#2f6fed` | brand blue (tile gradients) |
+| `green` | `#1f8a5b` | success |
+| `red` | `#e0342c` | danger |
+
+Plus the `onInk` group for content on ink/photo surfaces (same in both themes): text `#ffffff`, sub `#9aa6bd`, link `#8db4ff`, scrim `rgba(14,20,32,0.15) → rgba(14,20,32,0.92)` (vertical).
+
 ### Light
 | Token | Value | Use |
 |-------|-------|-----|
 | `bg` | `#fbf8f3` | app background (warm cream) |
-| `alt` | `#ffffff` | cards / raised surfaces |
-| `util` | `#f0ebe1` | utility bars |
-| `line` | `#e5ddcf` | hairlines |
+| `alt` | `#f0ece3` | alt surface: segmented tracks, icon circles, skeleton base |
 | `text` | `#14213d` | primary text (navy) |
-| `muted` | `#546077` | secondary text |
+| `sub` | `#546077` | secondary text |
+| `muted` | `#8a7f6a` | tertiary/meta: steps, timestamps, city lines |
 | `card` | `#ffffff` | card surface |
 | `cardline` | `#e8e0d0` | card border |
-| `band` | `#14213d` | dark bands / hero |
+| `band` | `#0e1420` | ink bands / hero (constant across themes) |
 | `bandtext` | `#ffffff` | text on band |
 | `accent` | `#ffcf4a` | **gold**: highlights, key CTAs |
-| `blue` | `#2f6fed` | **hopeful blue**: primary action, links |
-| `eye` / `count` | `#2f6fed` | eyebrows, counters |
+| `blue` | `#2f6fed` | **hopeful blue**: links, active tabs |
+| `eye` / `count` | `#b98600` | eyebrows, counters (burnished gold on cream) |
+| `btnBg` / `btnText` | `#14213d` / `#ffffff` | primary buttons, selected states |
 
 ### Dark
 | Token | Value |
 |-------|-------|
-| `bg` / `alt` | `#0e1420` |
-| `util` | `#0a0f18` |
-| `line` | `rgba(255,255,255,0.06)` |
-| `text` | `#ffffff` |
-| `muted` | `#98a1b2` |
-| `card` | `#17202f` |
-| `cardline` | `rgba(255,255,255,0.08)` |
-| `band` | `#0a0f18` |
+| `bg` | `#0e1420` |
+| `alt` | `#141d2a` |
+| `text` | `#eef2f8` |
+| `sub` | `#aab4c6` |
+| `muted` | `#7c8698` |
+| `card` | `#18212f` |
+| `cardline` | `#28323f` (solid; borders carry separation in dark) |
+| `band` | `#0e1420` |
 | `accent` | `#ffcf4a` (gold holds in both themes) |
-| `blue` | `#5a9bff` (lightened for contrast) |
+| `blue` | `#5a9bff` (deliberate deviation: the mockup keeps `#2f6fed` in dark, lightened here for contrast on dark cards) |
 | `eye` / `count` | `#ffcf4a` |
+| `btnBg` / `btnText` | `#ffcf4a` / `#14213d` |
 
 > **Contrast rule learned during design:** in **light mode**, selected/active states and hero titles must **not** be gold-on-light (fails contrast). Use **navy or blue** for active nav/text in light; gold is for fills and accents on dark or navy surfaces. In dark mode, gold-on-navy is the accent.
 

@@ -53,7 +53,8 @@ The shared prod project contains ~3 tables belonging to the agbc website. Once t
 - Every data surface implements all four states: loading, empty, error, offline.
 - Guest-first: browsing never requires auth; contribution gates via GateSheet + gate-return.
 - Server-trusted: RLS + triggers are the mechanism, never the client or the UI.
-- Design tokens only (from `packages/shared` tokens); no hard-coded hex; both themes always.
+- Design tokens only (from `packages/shared` tokens); no hard-coded hex; both themes always. Token values come from the mockup's CSS variables verbatim (never from 05's prose tables; if they disagree, the mockup wins and 05 gets synced in the same change).
+- Every screen is diffed element-by-element against its mockup frame's actual CSS (colors, type sizes, gradients, selected/edge states) before it counts as done; a behavioral walkthrough is not visual verification. If a surface has no mockup frame (Figma is parked), compose it from the mockup's existing classes/patterns and flag it to Ayo before building.
 - Grace-framed copy: encourage, never shame (especially streaks).
 - Multi-branch: nothing assumes a single branch or hard-codes Glasgow.
 - No em-dashes in any output, file, or message.

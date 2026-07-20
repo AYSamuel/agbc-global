@@ -39,10 +39,10 @@ export default function PickBranch() {
         <Text style={[typeScale.label, { color: colors.muted }]}>
           {t('onboarding.step', { current: 1, total: 2 })}
         </Text>
-        <Text style={[typeScale.hero, { color: colors.text }]}>
+        <Text style={[typeScale.section, { fontSize: 26, color: colors.text }]}>
           {t('onboarding.branchTitle')}
         </Text>
-        <Text style={[typeScale.body, { color: colors.muted }]}>
+        <Text style={[typeScale.body, { fontSize: 13.5, color: colors.sub }]}>
           {t('onboarding.branchSubtitle')}
         </Text>
       </View>
@@ -73,7 +73,7 @@ export default function PickBranch() {
         {usingSnapshot ? (
           <Text
             accessibilityLiveRegion="polite"
-            style={[typeScale.body, { color: colors.muted }]}
+            style={[typeScale.body, { color: colors.sub }]}
           >
             {t('onboarding.offlineBranches')}
           </Text>

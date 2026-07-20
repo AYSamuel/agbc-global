@@ -10,9 +10,16 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
 
-import { hitTarget, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  hitTarget,
+  onInk,
+  palette,
+  spacing,
+  typeScale,
+} from '@agbc/shared/theme';
 
-import { Button } from '@/components/ui';
+import { Button, GradientFill } from '@/components/ui';
 import { HQ_BRANCH } from '@/features/onboarding/branches-snapshot';
 import { useBranchStore } from '@/state/branch';
 import { useLaunchStore } from '@/state/launch';
@@ -42,24 +49,42 @@ export default function Welcome() {
 
   return (
     <ImageBackground source={HERO_IMAGE} style={{ flex: 1 }} resizeMode="cover">
-      {/* Legibility scrim; the mockup's photo hero carries light text. */}
+      {/* Mockup scrim: ink gradient, light at the top, heavy behind the copy. */}
+      <GradientFill
+        direction="vertical"
+        from={onInk.scrimTop}
+        to={onInk.scrimBottom}
+      />
       <View
         style={{
           flex: 1,
-          backgroundColor: 'rgba(10,15,24,0.55)',
           justifyContent: 'flex-end',
-          padding: spacing.gutter,
+          paddingHorizontal: spacing.x2l,
           paddingBottom: insets.bottom + spacing.x2l,
-          gap: spacing.md,
         }}
       >
-        <Text style={[typeScale.label, { color: '#ffcf4a' }]}>
+        <Text
+          style={[
+            typeScale.label,
+            {
+              fontSize: 11,
+              letterSpacing: 2.6,
+              color: palette.gold,
+              marginBottom: spacing.md,
+            },
+          ]}
+        >
           {t('onboarding.welcomeEyebrow')}
         </Text>
-        <Text style={[typeScale.hero, { color: '#ffffff' }]}>
+        <Text
+          style={[
+            typeScale.hero,
+            { fontSize: 30, color: onInk.text, marginBottom: spacing.xl },
+          ]}
+        >
           {t('onboarding.welcomeTitle')}
         </Text>
-        <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+        <View style={{ gap: spacing.md }}>
           <Button
             label={t('onboarding.getStarted')}
             variant="primary"
@@ -80,10 +105,11 @@ export default function Welcome() {
             })}
           >
             <Text
-              style={[
-                typeScale.bodySemiBold,
-                { color: 'rgba(255,255,255,0.85)' },
-              ]}
+              style={{
+                fontFamily: fontFamily.body.bold,
+                fontSize: 13.5,
+                color: 'rgba(255,255,255,0.85)',
+              }}
             >
               {t('onboarding.justLooking')}
             </Text>
@@ -93,16 +119,18 @@ export default function Welcome() {
           style={[
             typeScale.body,
             {
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: 12,
+              fontSize: 11.5,
+              lineHeight: 17,
+              color: 'rgba(255,255,255,0.7)',
               textAlign: 'center',
+              marginTop: spacing.lg,
             },
           ]}
         >
           {t('onboarding.legalPrefix')}{' '}
           <Text
             accessibilityRole="link"
-            style={{ textDecorationLine: 'underline' }}
+            style={{ color: onInk.link }}
             onPress={() => {
               void WebBrowser.openBrowserAsync(TERMS_URL);
             }}
@@ -112,7 +140,7 @@ export default function Welcome() {
           {t('onboarding.legalAnd')}{' '}
           <Text
             accessibilityRole="link"
-            style={{ textDecorationLine: 'underline' }}
+            style={{ color: onInk.link }}
             onPress={() => {
               void WebBrowser.openBrowserAsync(PRIVACY_URL);
             }}

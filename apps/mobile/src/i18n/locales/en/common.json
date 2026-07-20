@@ -32,6 +32,12 @@
     "languageSubtitle": "You can change this in Settings.",
     "offlineBranches": "Showing saved branches. Connect to refresh."
   },
+  "languages": {
+    "en": "English",
+    "de": "German",
+    "nl": "Dutch",
+    "fr": "French"
+  },
   "weeks_one": "{{count}} week",
   "weeks_other": "{{count}} weeks"
 }

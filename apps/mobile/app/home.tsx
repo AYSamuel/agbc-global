@@ -22,7 +22,7 @@ export default function Home() {
         <Text style={[typeScale.hero, { color: colors.text }]}>
           {t('home:welcome')}
         </Text>
-        <Text style={[typeScale.body, { color: colors.muted }]}>
+        <Text style={[typeScale.body, { color: colors.sub }]}>
           {t('tagline')}
         </Text>
       </View>
