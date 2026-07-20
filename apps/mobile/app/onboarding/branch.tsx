@@ -33,7 +33,12 @@ export default function PickBranch() {
   const proceed = (id: string) => {
     const chosen = branches.find((b) => b.id === id);
     if (!chosen) return;
-    setBranch({ id: chosen.id, slug: chosen.slug, name: chosen.name });
+    setBranch({
+      id: chosen.id,
+      slug: chosen.slug,
+      name: chosen.name,
+      timezone: chosen.timezone,
+    });
     completeOnboarding();
     router.replace('/home');
   };

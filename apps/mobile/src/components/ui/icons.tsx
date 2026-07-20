@@ -120,6 +120,50 @@ export function MoreTabIcon(props: IconProps) {
   );
 }
 
+export function PersonIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={12} cy={8} r={4} />
+      <Path d="M4 20a8 8 0 0 1 16 0" />
+    </Svg>
+  );
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <Svg {...base({ ...props, strokeWidth: 2.4 })}>
+      <Path d="M6 9l6 6 6-6" />
+    </Svg>
+  );
+}
+
+export function PinIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z" />
+      <Circle cx={12} cy={10} r={2.5} />
+    </Svg>
+  );
+}
+
+export function StudyIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M3 7l9-4 9 4-9 4-9-4z" />
+      <Path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5" />
+    </Svg>
+  );
+}
+
+export function BookIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
+      <Path d="M4 5v16" />
+    </Svg>
+  );
+}
+
 export function ShareIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>

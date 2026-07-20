@@ -20,7 +20,7 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 
 ### `SERMON` (player)
 - **Video** (YouTube embed) or **audio** (self-hosted). Toggle **Audio-only** to switch to the self-hosted audio stream (data-saving); available only when the sermon has an `audio_url`.
-- **Resume:** on open, seek to `playback_positions.position_sec`; write position every ~10s and on pause/exit.
+- **Resume (two layers, decision 2026-07-20):** positions are saved **locally on the device for everyone, guests included** (a phone call must never cost you your place), and members ADDITIONALLY sync `playback_positions` server-side so the position follows across devices. On open, seek to the server position when signed in, else the local one; write every ~10s, on pause/exit, and on backgrounding. A position within 30s of the end is treated as finished (start over), and under 15s is not worth restoring. The local layer shipped with the Watch slice (W1.3/W1.4 window); the server-synced layer lands with the audio slice (W3.1).
 - **Background + lock-screen (self-hosted audio only):** engine = **`expo-audio`** (SDK 55+). Config plugin `["expo-audio", { "enableBackgroundPlayback": true }]` (adds iOS `UIBackgroundModes: audio` and Android `FOREGROUND_SERVICE_MEDIA_PLAYBACK` + controls service); `setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: 'doNotMix' })`; `player.setActiveForLockScreen(true, { title, artist, artwork })` is mandatory on Android (without lock-screen controls, background audio stops after ~3 minutes). Declare the mediaPlayback foreground-service type in the Play Console app-content form. `expo-av` is removed from Expo (SDK 55); `react-native-track-player` is a fallback only, evaluated if expo-audio gaps emerge (v5 `@rntp/player` is commercially licensed: check before any use). YouTube video pauses when backgrounded; background YouTube playback is a Premium feature we must not replicate.
 - Actions: play/pause/seek, ±15s, speed (1x/1.25x/1.5x), **Add note** → `SERMON-NOTES` (gate), **Save** (gate), **Share** (OS/WhatsApp), **Open on YouTube** (fallback).
 
@@ -54,11 +54,11 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 - Writes: `playback_positions` (throttled), `saved_items`, `sermon_notes`, `attendance` (live watch).
 
 ## States / edge cases
-- **Guest:** watch/listen freely; Save/notes/resume gate. (Resume is a member perk; guests always start at 0.)
+- **Guest:** watch/listen freely; Save/notes gate. **Resume works for guests too**, from the device-local position (decision 2026-07-20, superseding the earlier "guests always start at 0" rule); only the cross-device sync of that position is a member perk.
 - **No network:** show cached list; player shows retry + "open on YouTube."
 - **Live not running:** live banner hidden; `/live` handled gracefully.
 - **Audio missing for a sermon:** audio-only disabled with tooltip.
-- **Playback interrupted (call/route change):** pause + preserve position.
+- **Playback interrupted (call/route change):** pause + preserve position. The YouTube embed lives in a WebView that Android may tear down while backgrounded, so the position is captured on the AppState transition rather than trusted to survive inside the player.
 - **Backgrounded then killed:** position already persisted server-side (throttled writes) so resume survives app death.
 
 ## Permissions

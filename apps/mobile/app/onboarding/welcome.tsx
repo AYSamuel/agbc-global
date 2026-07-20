@@ -39,7 +39,12 @@ export default function Welcome() {
   const completeOnboarding = useLaunchStore((s) => s.completeOnboarding);
 
   const justLooking = () => {
-    setBranch({ id: HQ_BRANCH.id, slug: HQ_BRANCH.slug, name: HQ_BRANCH.name });
+    setBranch({
+      id: HQ_BRANCH.id,
+      slug: HQ_BRANCH.slug,
+      name: HQ_BRANCH.name,
+      timezone: HQ_BRANCH.timezone,
+    });
     completeOnboarding();
     router.replace('/home');
   };

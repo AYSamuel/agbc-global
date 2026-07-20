@@ -5,6 +5,7 @@ import { palette, radius, spacing, typeScale } from '@agbc/shared/theme';
 
 import { SelectRow } from '@/components/ui';
 
+import { branchInitial } from './branchInitial';
 import type { BranchSummary } from './branches-snapshot';
 
 // ONB-2 row: the shared .sel pattern with the branch initial tile, city/country sub
@@ -22,7 +23,7 @@ export function BranchRow({
 
   return (
     <SelectRow
-      tileLabel={branch.name.charAt(0)}
+      tileLabel={branchInitial(branch.name)}
       title={branch.name}
       subtitle={`${branch.city}, ${branch.country}`}
       badge={

@@ -47,14 +47,19 @@ values
 set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
 
-select is((select count(*) from public.sermons)::int, 3,
-  'anon reads all sermon rows (guest-first, incl. unavailable rows)');
+-- Counts are scoped to this suite's own rows: the dev database also carries
+-- real synced sermons, so absolute counts would be hostage to the last sync
+-- (broke 2026-07-20 after a channel sync).
+select is(
+  (select count(*) from public.sermons where youtube_id like 'tap-watch-%')::int,
+  3, 'anon reads all sermon rows (guest-first, incl. unavailable rows)');
 select throws_ok(
   $$insert into public.sermons (title) values ('rogue sermon')$$,
   '42501', null, 'anon cannot insert sermons');
 select is(
-  (select count(*) from public.sermons where status = 'available')::int, 2,
-  'anon reads the available sermons (the rails read path)');
+  (select count(*) from public.sermons
+    where status = 'available' and youtube_id like 'tap-watch-%')::int,
+  2, 'anon reads the available sermons (the rails read path)');
 select is((select count(*) from public.playback_positions)::int, 0,
   'anon sees no resume positions');
 select is((select count(*) from public.sermon_notes)::int, 0,
@@ -90,8 +95,9 @@ set local role authenticated;
 set local request.jwt.claims to
   '{"sub": "30000000-0000-4000-8000-00000000aaaa", "role": "authenticated", "user_role": "member", "branch_id": "00000000-0000-4000-8000-000000000001"}';
 
-select is((select count(*) from public.sermons)::int, 3,
-  'a member reads the full sermon list');
+select is(
+  (select count(*) from public.sermons where youtube_id like 'tap-watch-%')::int,
+  3, 'a member reads the full sermon list');
 select throws_ok(
   $$insert into public.sermons (title) values ('member-authored sermon')$$,
   '42501', null, 'a member cannot insert sermons (sync/dashboard only)');
