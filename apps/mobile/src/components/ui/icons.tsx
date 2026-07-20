@@ -22,6 +22,14 @@ function base({ size = 20, color, ...rest }: IconProps) {
   };
 }
 
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M20 6L9 17l-5-5" />
+    </Svg>
+  );
+}
+
 export function ChevronLeftIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>

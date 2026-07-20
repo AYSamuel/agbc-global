@@ -24,9 +24,11 @@ export function SegmentedControl<K extends string>({
   onChange,
   accessibilityLabel,
 }: SegmentedControlProps<K>) {
-  const { colors, name } = useTheme();
-  const activeBg = name === 'light' ? colors.blue : colors.accent;
-  const activeFg = name === 'light' ? colors.bandtext : '#14213d';
+  const { colors } = useTheme();
+  // Mockup .seg: alt track; the active segment is a raised card chip, not a color
+  // fill; inactive labels are muted.
+  const activeBg = colors.card;
+  const activeFg = colors.text;
 
   return (
     <View
@@ -34,7 +36,7 @@ export function SegmentedControl<K extends string>({
       accessibilityLabel={accessibilityLabel}
       style={{
         flexDirection: 'row',
-        backgroundColor: colors.util,
+        backgroundColor: colors.alt,
         borderRadius: radius.button,
         padding: spacing.xs,
         gap: spacing.xs,

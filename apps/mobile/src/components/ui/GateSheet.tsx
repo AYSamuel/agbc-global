@@ -75,7 +75,7 @@ export function GateSheet({
               width: spacing.x4l,
               height: 4,
               borderRadius: radius.full,
-              backgroundColor: colors.line,
+              backgroundColor: colors.cardline,
             }}
           />
           <Text
@@ -84,7 +84,7 @@ export function GateSheet({
           >
             {title}
           </Text>
-          <Text style={[typeScale.body, { color: colors.muted }]}>{body}</Text>
+          <Text style={[typeScale.body, { color: colors.sub }]}>{body}</Text>
           <Button
             label={signInLabel}
             variant="primary"

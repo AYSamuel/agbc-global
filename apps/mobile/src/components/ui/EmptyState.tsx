@@ -52,7 +52,7 @@ export function EmptyState({
       </Text>
       {body ? (
         <Text
-          style={[typeScale.body, { color: colors.muted, textAlign: 'center' }]}
+          style={[typeScale.body, { color: colors.sub, textAlign: 'center' }]}
         >
           {body}
         </Text>

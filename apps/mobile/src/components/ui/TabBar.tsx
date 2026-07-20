@@ -20,17 +20,17 @@ export interface TabBarProps<K extends string> {
   onPress: (key: K) => void;
 }
 
-// Presentational 5-tab bar (05): active = blue in light / gold in dark; role tab with
-// selected state; the accessible label includes the badge count where present. Route
-// wiring happens at W1.2.
+// Presentational 5-tab bar (mockup .tabbar): active = blue in BOTH themes (the dark
+// blue token is pre-lightened for contrast); role tab with selected state; the
+// accessible label includes the badge count where present. Route wiring at W1.2.
 export function TabBar<K extends string>({
   items,
   activeKey,
   onPress,
 }: TabBarProps<K>) {
-  const { colors, name } = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const activeColor = name === 'light' ? colors.blue : colors.accent;
+  const activeColor = colors.blue;
 
   return (
     <View

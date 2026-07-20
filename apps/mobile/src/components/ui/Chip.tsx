@@ -21,11 +21,12 @@ export function Chip({
   selected = false,
   accessibilityLabel,
 }: ChipProps) {
-  const { colors, name } = useTheme();
+  const { colors } = useTheme();
 
-  // Light mode: active = blue (never gold-on-light); dark mode: gold accent (05).
-  const activeBg = name === 'light' ? colors.blue : colors.accent;
-  const activeFg = name === 'light' ? colors.bandtext : '#14213d';
+  // Selected fill follows btnBg/btnText (navy in light, gold in dark), the mockup's
+  // selection color pair; never gold-on-light (05 contrast rule).
+  const activeBg = colors.btnBg;
+  const activeFg = colors.btnText;
 
   return (
     <Pressable

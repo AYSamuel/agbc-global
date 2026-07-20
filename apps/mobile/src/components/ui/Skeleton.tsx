@@ -77,7 +77,7 @@ export function Skeleton({
         width,
         height,
         borderRadius: round ? radius.full : radius.control,
-        backgroundColor: colors.util,
+        backgroundColor: colors.alt,
         opacity: reduceMotion ? 0.6 : opacity,
       }}
     />
