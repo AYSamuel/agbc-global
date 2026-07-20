@@ -208,7 +208,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 **W3.1 · Audio slice** (multi-session)
 - Refs: `08` (expo-audio spec), `02` (storage buckets), `17` §4 (upload).
 - Build BE: `sermon-audio` bucket + posture decision from `08`; dashboard sermon-audio upload + metadata attach.
-- Build FE: expo-audio engine (background config plugin, `setActiveForLockScreen`, interruption handling), audio-only toggle (only when `audio_url`, tooltip otherwise), ±15s, speed, throttled `playback_positions` writes + resume, SERMON-NOTES + MY-LIST + Save (now gated member features live).
+- Build FE: expo-audio engine (background config plugin, `setActiveForLockScreen`, interruption handling), audio-only toggle (only when `audio_url`, tooltip otherwise), ±15s, speed, throttled `playback_positions` writes + resume, SERMON-NOTES + MY-LIST + Save (now gated member features live). NOTE: the DEVICE-LOCAL half of resume (guests included) shipped early during the Watch/Home window (decision 2026-07-20, `08`); what remains here is the server-synced member layer that carries the position across devices.
 - Done: `08` acceptance criteria: background + lock-screen playback survives 10+ minutes on both physical devices; resume within seconds; Play Console mediaPlayback declaration noted for release.
 
 **W3.2 · LIVE slice**

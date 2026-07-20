@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  AppState,
   Pressable,
   Share,
   Text,
@@ -9,7 +10,9 @@ import {
   View,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import YoutubePlayer from 'react-native-youtube-iframe';
+import YoutubePlayer, {
+  type YoutubeIframeRef,
+} from 'react-native-youtube-iframe';
 
 import { fontFamily, radius, spacing, typeScale } from '@agbc/shared/theme';
 
@@ -27,11 +30,90 @@ import {
   formatPublishedDate,
   joinMeta,
 } from '@/features/watch/format';
+import {
+  resumeTarget,
+  shouldSave,
+  usePlaybackStore,
+} from '@/features/watch/playback';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
 import { useTheme } from '@/theme';
 
 function youtubeUrl(youtubeId: string): string {
   return `https://www.youtube.com/watch?v=${youtubeId}`;
+}
+
+// The embed plus its local-resume wiring (decision 2026-07-20, docs/spec/08).
+// Its own component so the start position is computed exactly once, when the
+// video mounts and the duration is known.
+function SermonVideo({
+  sermon,
+  youtubeId,
+  width,
+  height,
+  onError,
+}: {
+  sermon: SermonSummary;
+  youtubeId: string;
+  width: number;
+  height: number;
+  onError: () => void;
+}) {
+  const playerRef = useRef<YoutubeIframeRef>(null);
+  const savedEntry = usePlaybackStore((s) => s.positions[sermon.id]);
+  const savePosition = usePlaybackStore((s) => s.save);
+  const clearPosition = usePlaybackStore((s) => s.clear);
+  // Lazy initial state: read once on mount, so a save mid-session can never
+  // re-seek the player mid-playback.
+  const [startAt] = useState(
+    () => resumeTarget(savedEntry, sermon.duration_sec) ?? 0,
+  );
+
+  const capturePosition = useCallback(async () => {
+    try {
+      const current = await playerRef.current?.getCurrentTime();
+      if (typeof current === 'number' && shouldSave(current)) {
+        savePosition(sermon.id, current);
+      }
+    } catch {
+      // The webview can be torn down mid-call: losing one sample is fine.
+    }
+  }, [sermon.id, savePosition]);
+
+  // Save when the app backgrounds (the phone-call case), on a ~10s cadence
+  // while open (docs/spec/08: survives the app being killed), and on exit.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') void capturePosition();
+    });
+    const ticker = setInterval(() => {
+      void capturePosition();
+    }, 10_000);
+    return () => {
+      void capturePosition();
+      clearInterval(ticker);
+      subscription.remove();
+    };
+  }, [capturePosition]);
+
+  return (
+    <YoutubePlayer
+      ref={playerRef}
+      width={width}
+      height={height}
+      videoId={youtubeId}
+      initialPlayerParams={{ start: startAt }}
+      onChangeState={(state: string) => {
+        // Sample on every transition (pause, buffer, end) so a position exists
+        // even when playback stops without the screen unmounting.
+        if (state === 'ended') {
+          clearPosition(sermon.id);
+        } else {
+          void capturePosition();
+        }
+      }}
+      onError={onError}
+    />
+  );
 }
 
 // SERMON player (docs/spec/08, W1.3 scope): YouTube playback via the pinned
@@ -190,11 +272,12 @@ export default function Sermon() {
                   />
                 </View>
               ) : (
-                <YoutubePlayer
+                <SermonVideo
                   key={playerKey}
+                  sermon={sermon}
+                  youtubeId={sermon.youtube_id}
                   width={videoWidth}
                   height={videoHeight}
-                  videoId={sermon.youtube_id}
                   onError={() => {
                     setPlayerError(true);
                   }}
