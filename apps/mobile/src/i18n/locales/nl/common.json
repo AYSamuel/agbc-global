@@ -2,12 +2,35 @@
   "appName": "AGBC Global",
   "tagline": "One family · many nations · one amazing grace",
   "languageName": "Nederlands",
+  "brand": {
+    "line1": "Amazing Grace",
+    "line2": "Bible Church"
+  },
   "tabs": {
     "home": "Home",
     "watch": "Kijken",
     "family": "Familie",
     "give": "Geven",
     "more": "Meer"
+  },
+  "onboarding": {
+    "welcomeEyebrow": "Eén familie, vele naties",
+    "welcomeTitle": "Een familie die als thuis voelt, waar je ook bent.",
+    "getStarted": "Aan de slag",
+    "justLooking": "Ik kijk alleen even",
+    "legalPrefix": "Door verder te gaan, ga je akkoord met onze",
+    "terms": "Voorwaarden",
+    "legalAnd": "en",
+    "privacy": "Privacyverklaring",
+    "step": "Stap {{current}} van {{total}}",
+    "branchTitle": "Bij welke familie hoor jij?",
+    "branchSubtitle": "Je kunt dit altijd wijzigen.",
+    "hqBadge": "HQ",
+    "continue": "Doorgaan",
+    "notSure": "Nog niet zeker",
+    "languageTitle": "Kies je taal",
+    "languageSubtitle": "Je kunt dit wijzigen in Instellingen.",
+    "offlineBranches": "Opgeslagen gemeenten worden getoond. Maak verbinding om te vernieuwen."
   },
   "weeks_one": "{{count}} week",
   "weeks_other": "{{count}} weken"

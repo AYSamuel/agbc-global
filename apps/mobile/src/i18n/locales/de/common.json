@@ -2,12 +2,35 @@
   "appName": "AGBC Global",
   "tagline": "One family · many nations · one amazing grace",
   "languageName": "Deutsch",
+  "brand": {
+    "line1": "Amazing Grace",
+    "line2": "Bible Church"
+  },
   "tabs": {
     "home": "Start",
     "watch": "Ansehen",
     "family": "Familie",
     "give": "Geben",
     "more": "Mehr"
+  },
+  "onboarding": {
+    "welcomeEyebrow": "Eine Familie, viele Nationen",
+    "welcomeTitle": "Eine Familie, die sich wie Zuhause anfühlt, wo immer du bist.",
+    "getStarted": "Los geht's",
+    "justLooking": "Ich schaue mich nur um",
+    "legalPrefix": "Wenn du fortfährst, akzeptierst du unsere",
+    "terms": "Nutzungsbedingungen",
+    "legalAnd": "und",
+    "privacy": "Datenschutzerklärung",
+    "step": "Schritt {{current}} von {{total}}",
+    "branchTitle": "Zu welcher Familie gehörst du?",
+    "branchSubtitle": "Du kannst das jederzeit ändern.",
+    "hqBadge": "HQ",
+    "continue": "Weiter",
+    "notSure": "Noch unsicher",
+    "languageTitle": "Wähle deine Sprache",
+    "languageSubtitle": "Du kannst das in den Einstellungen ändern.",
+    "offlineBranches": "Gespeicherte Gemeinden werden angezeigt. Verbinde dich, um zu aktualisieren."
   },
   "weeks_one": "{{count}} Woche",
   "weeks_other": "{{count}} Wochen"

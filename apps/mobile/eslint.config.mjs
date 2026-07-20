@@ -14,7 +14,7 @@ export default defineConfig([
     // everything goes through i18n. The two dev-only screens (token demo, gallery)
     // are exempt until they are replaced at W1.1/W1.2.
     files: ['app/**/*.tsx', 'src/features/**/*.tsx'],
-    ignores: ['app/index.tsx', 'app/gallery.tsx'],
+    ignores: ['app/dev-tokens.tsx', 'app/gallery.tsx'],
     rules: {
       'react/jsx-no-literals': [
         'error',
