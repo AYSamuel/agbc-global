@@ -287,6 +287,42 @@ export type Database = {
           },
         ]
       }
+      playback_positions: {
+        Row: {
+          position_sec: number
+          profile_id: string
+          sermon_id: string
+          updated_at: string
+        }
+        Insert: {
+          position_sec?: number
+          profile_id: string
+          sermon_id: string
+          updated_at?: string
+        }
+        Update: {
+          position_sec?: number
+          profile_id?: string
+          sermon_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playback_positions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playback_positions_sermon_id_fkey"
+            columns: ["sermon_id"]
+            isOneToOne: false
+            referencedRelation: "sermons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age_confirmed_at: string | null
@@ -346,6 +382,143 @@ export type Database = {
           },
         ]
       }
+      saved_items: {
+        Row: {
+          created_at: string
+          profile_id: string
+          sermon_id: string
+        }
+        Insert: {
+          created_at?: string
+          profile_id: string
+          sermon_id: string
+        }
+        Update: {
+          created_at?: string
+          profile_id?: string
+          sermon_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_items_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_items_sermon_id_fkey"
+            columns: ["sermon_id"]
+            isOneToOne: false
+            referencedRelation: "sermons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sermon_notes: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          profile_id: string
+          sermon_id: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          profile_id: string
+          sermon_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+          sermon_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sermon_notes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sermon_notes_sermon_id_fkey"
+            columns: ["sermon_id"]
+            isOneToOne: false
+            referencedRelation: "sermons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sermons: {
+        Row: {
+          audio_url: string | null
+          branch_id: string | null
+          created_at: string
+          duration_sec: number | null
+          id: string
+          is_live: boolean
+          live_checked_at: string | null
+          published_at: string
+          series: string | null
+          speaker: string
+          status: Database["public"]["Enums"]["sermon_status"]
+          thumbnail_url: string
+          title: string
+          updated_at: string
+          youtube_id: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          branch_id?: string | null
+          created_at?: string
+          duration_sec?: number | null
+          id?: string
+          is_live?: boolean
+          live_checked_at?: string | null
+          published_at?: string
+          series?: string | null
+          speaker?: string
+          status?: Database["public"]["Enums"]["sermon_status"]
+          thumbnail_url?: string
+          title: string
+          updated_at?: string
+          youtube_id?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          branch_id?: string | null
+          created_at?: string
+          duration_sec?: number | null
+          id?: string
+          is_live?: boolean
+          live_checked_at?: string | null
+          published_at?: string
+          series?: string | null
+          speaker?: string
+          status?: Database["public"]["Enums"]["sermon_status"]
+          thumbnail_url?: string
+          title?: string
+          updated_at?: string
+          youtube_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sermons_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -361,6 +534,7 @@ export type Database = {
       branch_status: "active" | "archived"
       device_platform: "ios" | "android"
       profile_role: "member" | "leader" | "admin"
+      sermon_status: "available" | "unavailable"
       service_kind: "sunday" | "midweek" | "classes"
     }
     CompositeTypes: {
@@ -495,6 +669,7 @@ export const Constants = {
       branch_status: ["active", "archived"],
       device_platform: ["ios", "android"],
       profile_role: ["member", "leader", "admin"],
+      sermon_status: ["available", "unavailable"],
       service_kind: ["sunday", "midweek", "classes"],
     },
   },
