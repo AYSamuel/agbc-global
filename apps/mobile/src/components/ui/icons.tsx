@@ -102,10 +102,26 @@ export function FamilyTabIcon(props: IconProps) {
   );
 }
 
+// The mockup draws the same heart for the Give tab and for prayer commitment.
+// Kept as two named exports over one shared glyph because they mean different
+// things: renaming or restyling the Give tab must not silently change what
+// "I will pray" looks like.
+const HEART_PATH =
+  'M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z';
+
 export function GiveTabIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>
-      <Path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z" />
+      <Path d={HEART_PATH} />
+    </Svg>
+  );
+}
+
+/** Prayer commitment glyph (mockup .praybtn / .praystats .pi.praying). */
+export function HeartIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d={HEART_PATH} />
     </Svg>
   );
 }

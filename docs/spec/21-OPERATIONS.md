@@ -35,7 +35,7 @@ ADRs to backfill on day one: reuse-shared-supabase-as-prod; replace-grace-portal
 ## 3. CI/CD
 
 - **pr.yml** (path-filtered, cancel superseded runs):
-  - mobile: typecheck, ESLint, Jest + React Native Testing Library, `expo-doctor`
+  - mobile: typecheck, ESLint, Jest + React Native Testing Library, `expo-doctor` (advisory / `continue-on-error`, not a hard gate: its version-match check fails whenever Expo ships a release, which would red-block PRs on the calendar rather than their diff; Renovate owns version freshness on its cooldown, decided 2026-07-23)
   - dashboard: typecheck, ESLint, Vitest, build
   - supabase: `supabase start` on the runner, apply full migration history, `supabase test db` (pgTAP), `deno test` for functions, types-drift check (`supabase gen types typescript --local` diffed against the committed file), fence-guard grep (no migration references the website's fenced objects). CI time budget: cache the Supabase Docker images in Actions and run pgTAP files in parallel; the supabase job exceeding 10 minutes is treated as a regression
 - **supabase-deploy.yml:** merge to `main` auto-applies migrations + functions to DEV. Prod deploy is a **manually triggered `workflow_dispatch` job** (the solo-dev equivalent of an approval gate; reviewer-gated environments need a paid tier on private repos, deferred per `23`/`24`); the prod `SUPABASE_ACCESS_TOKEN` + db password live ONLY in the `production` environment's secrets, consumed exclusively by that workflow. If GitHub Team is ever adopted, upgrade this to a required-reviewer environment gate.

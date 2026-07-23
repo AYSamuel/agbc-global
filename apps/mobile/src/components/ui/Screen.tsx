@@ -56,6 +56,12 @@ export function Screen({
     </View>
   );
 
+  // insets.top alone glues the first row to the status bar; the real inset plus
+  // screenTop reproduces the mockup's frame-top-to-title geometry (see the
+  // token's note). True flush-top screens (splash, photo-hero onboarding) do
+  // not use Screen.
+  const topPadding = insets.top + spacing.screenTop;
+
   if (!scroll) {
     return (
       <View
@@ -63,7 +69,7 @@ export function Screen({
         style={{
           flex: 1,
           backgroundColor: colors.bg,
-          paddingTop: insets.top,
+          paddingTop: topPadding,
           paddingBottom: insets.bottom,
         }}
       >
@@ -77,7 +83,7 @@ export function Screen({
       testID={testID}
       style={{ flex: 1, backgroundColor: colors.bg }}
       contentContainerStyle={{
-        paddingTop: insets.top,
+        paddingTop: topPadding,
         paddingBottom: insets.bottom + spacing.x2l,
       }}
       refreshControl={

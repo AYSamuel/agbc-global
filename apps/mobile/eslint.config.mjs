@@ -18,7 +18,10 @@ export default defineConfig([
     rules: {
       'react/jsx-no-literals': [
         'error',
-        { noStrings: true, ignoreProps: true, allowedStrings: ['·'] },
+        // Decorative brand glyphs, not translatable copy: the interpunct in meta
+        // lines and the Glory star (mockup .glory .st, U+2726). Real UI strings
+        // still must go through i18n.
+        { noStrings: true, ignoreProps: true, allowedStrings: ['·', '✦'] },
       ],
     },
   },

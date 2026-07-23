@@ -63,6 +63,39 @@ export type Database = {
           },
         ]
       }
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_users_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocked_users_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branch_services: {
         Row: {
           branch_id: string
@@ -276,6 +309,49 @@ export type Database = {
           },
         ]
       }
+      glory_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          testimony_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          testimony_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          testimony_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "glory_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "glory_reactions_testimony_id_fkey"
+            columns: ["testimony_id"]
+            isOneToOne: false
+            referencedRelation: "testimonies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "glory_reactions_testimony_id_fkey"
+            columns: ["testimony_id"]
+            isOneToOne: false
+            referencedRelation: "testimony_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_prefs: {
         Row: {
           branch_updates: boolean
@@ -356,6 +432,152 @@ export type Database = {
           },
         ]
       }
+      prayer_intercessions: {
+        Row: {
+          committed_at: string
+          created_at: string
+          id: string
+          next_reminder_at: string | null
+          prayed_at: string | null
+          prayer_id: string
+          profile_id: string
+          reminder_count: number
+          state: Database["public"]["Enums"]["intercession_state"]
+          updated_at: string
+        }
+        Insert: {
+          committed_at?: string
+          created_at?: string
+          id?: string
+          next_reminder_at?: string | null
+          prayed_at?: string | null
+          prayer_id: string
+          profile_id: string
+          reminder_count?: number
+          state?: Database["public"]["Enums"]["intercession_state"]
+          updated_at?: string
+        }
+        Update: {
+          committed_at?: string
+          created_at?: string
+          id?: string
+          next_reminder_at?: string | null
+          prayed_at?: string | null
+          prayer_id?: string
+          profile_id?: string
+          reminder_count?: number
+          state?: Database["public"]["Enums"]["intercession_state"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_intercessions_prayer_id_fkey"
+            columns: ["prayer_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayer_intercessions_prayer_id_fkey"
+            columns: ["prayer_id"]
+            isOneToOne: false
+            referencedRelation: "prayers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayer_intercessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prayers: {
+        Row: {
+          answered_at: string | null
+          author_id: string
+          body: string
+          branch_id: string
+          consent_version: string
+          consented_at: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_anonymous: boolean
+          language: string
+          moderated_at: string | null
+          moderated_by: string | null
+          prayed_count: number
+          praying_count: number
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          updated_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          author_id: string
+          body: string
+          branch_id: string
+          consent_version: string
+          consented_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_anonymous?: boolean
+          language?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          prayed_count?: number
+          praying_count?: number
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          author_id?: string
+          body?: string
+          branch_id?: string
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_anonymous?: boolean
+          language?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          prayed_count?: number
+          praying_count?: number
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayers_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayers_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayers_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age_confirmed_at: string | null
@@ -411,6 +633,81 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          is_safeguarding: boolean
+          prayer_id: string | null
+          reason: string
+          reporter_id: string | null
+          resolution_note: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          testimony_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_safeguarding?: boolean
+          prayer_id?: string | null
+          reason: string
+          reporter_id?: string | null
+          resolution_note?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          testimony_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_safeguarding?: boolean
+          prayer_id?: string | null
+          reason?: string
+          reporter_id?: string | null
+          resolution_note?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          testimony_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_prayer_id_fkey"
+            columns: ["prayer_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_prayer_id_fkey"
+            columns: ["prayer_id"]
+            isOneToOne: false
+            referencedRelation: "prayers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_testimony_id_fkey"
+            columns: ["testimony_id"]
+            isOneToOne: false
+            referencedRelation: "testimonies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_testimony_id_fkey"
+            columns: ["testimony_id"]
+            isOneToOne: false
+            referencedRelation: "testimony_feed"
             referencedColumns: ["id"]
           },
         ]
@@ -555,22 +852,259 @@ export type Database = {
           },
         ]
       }
+      testimonies: {
+        Row: {
+          author_id: string
+          body: string
+          branch_id: string
+          category_id: string | null
+          consent_version: string
+          consented_at: string
+          created_at: string
+          deleted_at: string | null
+          from_prayer_id: string | null
+          glory_count: number
+          id: string
+          image_url: string | null
+          language: string
+          moderated_at: string | null
+          moderated_by: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          branch_id: string
+          category_id?: string | null
+          consent_version: string
+          consented_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          from_prayer_id?: string | null
+          glory_count?: number
+          id?: string
+          image_url?: string | null
+          language?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          branch_id?: string
+          category_id?: string | null
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          from_prayer_id?: string | null
+          glory_count?: number
+          id?: string
+          image_url?: string | null
+          language?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonies_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "testimony_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_from_prayer_id_fkey"
+            columns: ["from_prayer_id"]
+            isOneToOne: true
+            referencedRelation: "prayer_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_from_prayer_id_fkey"
+            columns: ["from_prayer_id"]
+            isOneToOne: true
+            referencedRelation: "prayers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      testimony_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          key: string
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key: string
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key?: string
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      prayer_feed: {
+        Row: {
+          answer_testimony_id: string | null
+          answered_at: string | null
+          author_avatar_url: string | null
+          author_id: string | null
+          author_name: string | null
+          body: string | null
+          branch_id: string | null
+          created_at: string | null
+          id: string | null
+          is_anonymous: boolean | null
+          language: string | null
+          prayed_count: number | null
+          praying_count: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayers_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      testimony_feed: {
+        Row: {
+          author_avatar_url: string | null
+          author_id: string | null
+          author_name: string | null
+          body: string | null
+          branch_id: string | null
+          category_id: string | null
+          category_key: string | null
+          created_at: string | null
+          from_prayer_id: string | null
+          glory_count: number | null
+          id: string | null
+          image_url: string | null
+          language: string | null
+          origin_prayer_id: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonies_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "testimony_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_from_prayer_id_fkey"
+            columns: ["from_prayer_id"]
+            isOneToOne: true
+            referencedRelation: "prayer_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_from_prayer_id_fkey"
+            columns: ["from_prayer_id"]
+            isOneToOne: true
+            referencedRelation: "prayers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      assert_content_quota: { Args: never; Returns: undefined }
+      assert_prayer_link_allowed: {
+        Args: { target_prayer: string }
+        Returns: undefined
+      }
+      caller_is_admin_live: { Args: never; Returns: boolean }
+      caller_is_onboarded: { Args: never; Returns: boolean }
       caller_profile_is_live: { Args: never; Returns: boolean }
+      can_moderate_branch: { Args: { target_branch: string }; Returns: boolean }
       custom_access_token: { Args: { event: Json }; Returns: Json }
+      in_counter_write: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_publicly_visible: {
+        Args: {
+          row_deleted_at: string
+          row_status: Database["public"]["Enums"]["content_status"]
+        }
+        Returns: boolean
+      }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
+      prayer_is_published: { Args: { target: string }; Returns: boolean }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
+      testimony_is_published: { Args: { target: string }; Returns: boolean }
     }
     Enums: {
       branch_status: "active" | "archived"
+      content_status: "pending" | "approved" | "rejected" | "removed"
       device_platform: "ios" | "android"
+      intercession_state: "committed" | "prayed"
       profile_role: "member" | "leader" | "admin"
+      report_status: "open" | "actioned" | "dismissed"
       sermon_kind: "video" | "live_replay"
       sermon_status: "available" | "unavailable"
       service_kind: "sunday" | "midweek" | "classes"
@@ -705,8 +1239,11 @@ export const Constants = {
   public: {
     Enums: {
       branch_status: ["active", "archived"],
+      content_status: ["pending", "approved", "rejected", "removed"],
       device_platform: ["ios", "android"],
+      intercession_state: ["committed", "prayed"],
       profile_role: ["member", "leader", "admin"],
+      report_status: ["open", "actioned", "dismissed"],
       sermon_kind: ["video", "live_replay"],
       sermon_status: ["available", "unavailable"],
       service_kind: ["sunday", "midweek", "classes"],

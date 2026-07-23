@@ -4,6 +4,8 @@ Backend-agnostic relational schema (Postgres). Types are indicative. `id` is UUI
 
 > **RLS summary** (Supabase path): guests = anonymous read of public content; members = write their own rows; leaders = moderate/broadcast within their branch; admins = global. Enforced by policies referencing role/branch claims (see Write-path invariants below). Never trust the client.
 
+> **Public Family reads go through views, not base tables** (ADR 0013, W1.5). RLS filters rows and cannot hide a column, so `prayers` would leak an anonymous author's `author_id` to anyone holding the anon key. `public.testimony_feed` and `public.prayer_feed` are security-definer views whose WHERE clause is the public-visibility boundary (approved, not deleted, not blocked either way) and which null the author fields when `is_anonymous`. The base tables grant `anon` nothing at all.
+
 > **Schema conventions:** every FK column gets an explicit index (Postgres does not index FK columns automatically). Public reads of anonymous prayers must strip `author_id` server-side. UUIDs: prefer UUIDv7 generated in the app/edge layer for index locality; if the project stays on `gen_random_uuid()` (v4), record the deviation in the project CLAUDE.md and rely on the composite feed indexes below for ordering. Product-facing, translatable categories use lookup tables, never enums or freeform text.
 
 ---
@@ -35,7 +37,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 
 | Table | anon | member | leader (own branch) | admin |
 |-------|------|--------|---------------------|-------|
-| testimonies / prayers | SELECT approved + not deleted | + SELECT/UPDATE/DELETE own (any status); INSERT (forced pending) | + SELECT any status in branch; UPDATE status | all |
+| testimonies / prayers | NO base-table access; SELECT the `testimony_feed` / `prayer_feed` views (approved + not deleted + not blocked) | same views, + base-table SELECT/UPDATE/DELETE own (any status); INSERT (forced pending) | + SELECT any status in branch; UPDATE status | all |
 | glory_reactions | none | INSERT/DELETE own; SELECT | same | all |
 | prayer_intercessions | none | INSERT/DELETE own + UPDATE own (state `committed`→`prayed` only); SELECT | same | all |
 | profiles | none | own row (allowlisted columns) | read limited columns in-branch | all incl. role |
@@ -53,7 +55,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 
 **Feed indexes:** `(branch_id, status, created_at desc)` on `testimonies` and `prayers` (lead with the scoping column or RLS gets slow).
 
-**Realtime:** do NOT expose `postgres_changes` on content tables (it streams raw base-table rows: views don't apply, DELETE events skip RLS, and anonymous `author_id` would leak). Instead: AFTER INSERT/UPDATE triggers call `realtime.broadcast_changes()` on private channels (`family:branch:<id>`, `family:all`) with a sanitized payload (author fields nulled when `is_anonymous`; only `approved` transitions broadcast). **Removal signal:** any transition OUT of public visibility (status leaves `approved`, `deleted_at` set, or AFTER DELETE using OLD) broadcasts a minimal `{table, id, action:'removed'}` so live clients drop the card immediately; withdrawn Art. 9 content must not linger on screens until refetch. RLS policy on `realtime.messages`; Realtime Authorization on; public channel access off. Counts (Glory / pray / watching-now) also travel via Broadcast. **"Watching now" is server-aggregated:** clients never subscribe to raw Presence (O(N²) at a Sunday peak breaks the message quota, `21` §10); an edge/DB aggregator tracks presence and broadcasts a single count every 10-15s. **Degradation bound:** clients that lose the family channel refetch the feed on a 60s timer and on focus; the removal guarantee is realtime-first, polling-bounded (worst case 60s).
+**Realtime:** do NOT expose `postgres_changes` on content tables (it streams raw base-table rows: views don't apply, DELETE events skip RLS, and anonymous `author_id` would leak). Instead: AFTER INSERT/UPDATE/DELETE triggers build a sanitized payload and call `realtime.send()` (NOT `realtime.broadcast_changes()`, which takes the raw record and cannot strip a column; corrected W1.5) on private channels (`family:branch:<id>`, `family:all`), author fields nulled when `is_anonymous`; only `approved` transitions broadcast. **Removal signal:** any transition OUT of public visibility (status leaves `approved`, `deleted_at` set, or AFTER DELETE using OLD) broadcasts a minimal `{table, id, action:'removed'}` so live clients drop the card immediately; withdrawn Art. 9 content must not linger on screens until refetch. RLS policy on `realtime.messages`; Realtime Authorization on; public channel access off. Counts (Glory / pray / watching-now) also travel via Broadcast. **"Watching now" is server-aggregated:** clients never subscribe to raw Presence (O(N²) at a Sunday peak breaks the message quota, `21` §10); an edge/DB aggregator tracks presence and broadcasts a single count every 10-15s. **Degradation bound:** clients that lose the family channel refetch the feed on a 60s timer and on focus; the removal guarantee is realtime-first, polling-bounded (worst case 60s).
 
 ## Storage buckets
 
@@ -232,6 +234,8 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | answered_at | timestamptz null | set when author marks answered |
 | praying_count | int | denormalized: intercessors still committed (not yet fulfilled) |
 | prayed_count | int | denormalized: intercessors who have marked "I prayed" |
+| moderated_by | uuid null | leader/admin (as on `testimonies`; added W1.5, the born-pending and compare-and-set invariants apply to both tables) |
+| moderated_at | timestamptz null | |
 | deleted_at | timestamptz null | |
 
 (The resulting testimony, if converted, is found via `testimonies.from_prayer_id`.)
@@ -250,15 +254,19 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | - | unique(prayer_id, profile_id) | |
 
 ### `reports` (moderation queue input)
+**Shape decided W1.5 (2026-07-20):** two real FKs, not the polymorphic `(target_type, target_id)` pair this doc originally specced. A bare `target_id` gets no foreign key, no cascade, and lets a report outlive the content it points at, which the account-deletion auto-resolve below would then have to chase as orphans. Cost of the change: a third reportable type needs a migration.
 | field | type | notes |
 |-------|------|-------|
 | id | uuid PK | |
-| target_type | enum | `testimony` \| `prayer` |
-| target_id | uuid | |
+| testimony_id | uuid FK→testimonies null | `on delete cascade` |
+| prayer_id | uuid FK→prayers null | `on delete cascade` |
+| - | CHECK `num_nonnulls(testimony_id, prayer_id) = 1` | exactly one target |
 | reporter_id | uuid FK | anonymized on reporter's account deletion (`20` retention: 24 months) |
 | reason | text | |
 | status | enum | `open` \| `actioned` \| `dismissed` |
-| - | unique(reporter_id, target_type, target_id) | re-reporting is a no-op ("You've already reported this") |
+| is_safeguarding | bool | default false; leader-set, never reporter-set. Flagged reports survive the auto-resolve sweep below |
+| resolution_note | text null | the system note written when a report is auto-dismissed |
+| - | partial unique (reporter_id, testimony_id) and (reporter_id, prayer_id) | re-reporting is a no-op ("You've already reported this") |
 
 When target content leaves existence or public visibility via a NON-moderation path (author delete, the account-deletion job), that same job auto-resolves matching `open` reports to `dismissed` with a system note; reports flagged as safeguarding stay open and flagged (removal does not end a safeguarding duty, `17`/`20`).
 

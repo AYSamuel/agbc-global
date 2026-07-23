@@ -32,6 +32,7 @@ Plus the `onInk` group for content on ink/photo surfaces (same in both themes): 
 | `muted` | `#8a7f6a` | tertiary/meta: steps, timestamps, city lines |
 | `card` | `#ffffff` | card surface |
 | `cardline` | `#e8e0d0` | card border |
+| `raised` | `#ffffff` | elevated chip on an alt track (segmented active state); same as card in light, where white-on-beige reads raised by itself |
 | `band` | `#0e1420` | ink bands / hero (constant across themes) |
 | `bandtext` | `#ffffff` | text on band |
 | `accent` | `#ffcf4a` | **gold**: highlights, key CTAs |
@@ -49,6 +50,7 @@ Plus the `onInk` group for content on ink/photo surfaces (same in both themes): 
 | `muted` | `#7c8698` |
 | `card` | `#18212f` |
 | `cardline` | `#28323f` (solid; borders carry separation in dark) |
+| `raised` | `#28323f` (elevated chip on an alt track: card-on-alt is a 3-point difference in dark and the raised shadow is invisible there, so the active segment gets a genuinely lighter surface; fixed 2026-07-21) |
 | `band` | `#0e1420` |
 | `accent` | `#ffcf4a` (gold holds in both themes) |
 | `blue` | `#5a9bff` (deliberate deviation: the mockup keeps `#2f6fed` in dark, lightened here for contrast on dark cards) |

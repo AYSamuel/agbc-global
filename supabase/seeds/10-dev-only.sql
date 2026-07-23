@@ -48,3 +48,130 @@ select
 from days d
 join pool p on p.idx = (((d.offset_days % 20) + 20) % 20)
 on conflict (date, language) do nothing;
+
+-- Family fixtures (W1.5): pre-approved testimonies and prayers across all four
+-- branches so the feeds, the scope toggle, the map pins, the counts and the
+-- answered-prayer loop all have something real to render on dev. Never prod: the
+-- launch feed is seeded with genuine content by the programme in docs/spec/22 §3.
+--
+-- These rows are written on a direct connection (no auth.uid()), so the write-path
+-- guards pass them through and status can be set to 'approved' outright. That is the
+-- ONLY way to publish without moderation, and it is exactly what the pgTAP suites
+-- prove a client cannot do.
+
+insert into auth.users (id, email)
+values
+  ('50000000-0000-4000-8000-00000000000a', 'dev.grace@example.test'),
+  ('50000000-0000-4000-8000-00000000000b', 'dev.tobi@example.test'),
+  ('50000000-0000-4000-8000-00000000000c', 'dev.anke@example.test'),
+  ('50000000-0000-4000-8000-00000000000d', 'dev.marieke@example.test'),
+  ('50000000-0000-4000-8000-00000000000e', 'dev.folake@example.test')
+on conflict (id) do nothing;
+
+-- Grace is seeded as a leader so the dev dashboard and the moderation-plane checks
+-- have a real branch leader to act as; the rest are members.
+insert into public.profiles
+  (id, email, display_name, branch_id, language, role, onboarded_at, age_confirmed_at)
+values
+  ('50000000-0000-4000-8000-00000000000a', 'dev.grace@example.test', 'Grace Bello',
+   '00000000-0000-4000-8000-000000000001', 'en', 'leader', now(), now()),
+  ('50000000-0000-4000-8000-00000000000b', 'dev.tobi@example.test', 'Tobi Adewale',
+   '00000000-0000-4000-8000-000000000001', 'en', 'member', now(), now()),
+  ('50000000-0000-4000-8000-00000000000c', 'dev.anke@example.test', 'Anke Richter',
+   '00000000-0000-4000-8000-000000000002', 'de', 'member', now(), now()),
+  ('50000000-0000-4000-8000-00000000000d', 'dev.marieke@example.test', 'Marieke de Vries',
+   '00000000-0000-4000-8000-000000000003', 'nl', 'member', now(), now()),
+  ('50000000-0000-4000-8000-00000000000e', 'dev.folake@example.test', 'Folake Ogunleye',
+   '00000000-0000-4000-8000-000000000004', 'en', 'member', now(), now())
+on conflict (id) do nothing;
+
+-- One request is answered and carries a linked testimony (the loop, docs/spec/09);
+-- one is anonymous, so the feed's "A member" path and the author_id stripping are
+-- both exercised on dev without waiting for a real anonymous post.
+insert into public.prayers
+  (id, author_id, branch_id, body, language, is_anonymous, status, consent_version,
+   answered_at, moderated_by, moderated_at, created_at)
+values
+  ('60000000-0000-4000-8000-000000000001',
+   '50000000-0000-4000-8000-00000000000b', '00000000-0000-4000-8000-000000000001',
+   'Please stand with me for my mother''s surgery on Thursday. She is anxious and so am I.',
+   'en', false, 'approved', 'seed-v0',
+   now() - interval '2 days',
+   '50000000-0000-4000-8000-00000000000a', now() - interval '9 days',
+   now() - interval '10 days'),
+  ('60000000-0000-4000-8000-000000000002',
+   '50000000-0000-4000-8000-00000000000c', '00000000-0000-4000-8000-000000000002',
+   'Bitte betet fuer meine Familie. Wir suchen seit Monaten eine Wohnung in Berlin.',
+   'de', false, 'approved', 'seed-v0',
+   null, '50000000-0000-4000-8000-00000000000a', now() - interval '4 days',
+   now() - interval '5 days'),
+  ('60000000-0000-4000-8000-000000000003',
+   '50000000-0000-4000-8000-00000000000d', '00000000-0000-4000-8000-000000000003',
+   'I am walking through something I cannot name publicly. Please pray for peace.',
+   'en', true, 'approved', 'seed-v0',
+   null, '50000000-0000-4000-8000-00000000000a', now() - interval '1 day',
+   now() - interval '2 days'),
+  -- Pending: visible to its author and to its branch leaders, invisible in the feeds.
+  ('60000000-0000-4000-8000-000000000004',
+   '50000000-0000-4000-8000-00000000000e', '00000000-0000-4000-8000-000000000004',
+   'Pray for our new believers class starting this month in Ogbomosho.',
+   'en', false, 'pending', 'seed-v0', null, null, null, now() - interval '3 hours')
+on conflict (id) do nothing;
+
+insert into public.testimonies
+  (id, author_id, branch_id, body, language, category_id, from_prayer_id, status,
+   consent_version, moderated_by, moderated_at, created_at)
+values
+  ('70000000-0000-4000-8000-000000000001',
+   '50000000-0000-4000-8000-00000000000b', '00000000-0000-4000-8000-000000000001',
+   'The surgery went perfectly and my mother came home on Saturday. Thank you to everyone who prayed. God answered.',
+   'en', '40000000-0000-4000-8000-000000000001',
+   '60000000-0000-4000-8000-000000000001', 'approved', 'seed-v0',
+   '50000000-0000-4000-8000-00000000000a', now() - interval '1 day',
+   now() - interval '1 day'),
+  ('70000000-0000-4000-8000-000000000002',
+   '50000000-0000-4000-8000-00000000000a', '00000000-0000-4000-8000-000000000001',
+   'After eleven months of applying, I start on Monday. He was never late, only thorough.',
+   'en', '40000000-0000-4000-8000-000000000002', null, 'approved', 'seed-v0',
+   '50000000-0000-4000-8000-00000000000a', now() - interval '6 days',
+   now() - interval '6 days'),
+  ('70000000-0000-4000-8000-000000000003',
+   '50000000-0000-4000-8000-00000000000d', '00000000-0000-4000-8000-000000000003',
+   'Mijn broer is voor het eerst in tien jaar meegegaan naar de dienst. Hij wil terugkomen.',
+   'nl', '40000000-0000-4000-8000-000000000003', null, 'approved', 'seed-v0',
+   '50000000-0000-4000-8000-00000000000a', now() - interval '3 days',
+   now() - interval '3 days'),
+  ('70000000-0000-4000-8000-000000000004',
+   '50000000-0000-4000-8000-00000000000e', '00000000-0000-4000-8000-000000000004',
+   'We prayed over the shop for two years. It opened last week and the first customer prayed with me.',
+   'en', '40000000-0000-4000-8000-000000000004', null, 'approved', 'seed-v0',
+   '50000000-0000-4000-8000-00000000000a', now() - interval '8 hours',
+   now() - interval '8 hours')
+on conflict (id) do nothing;
+
+-- Reactions and commitments: the counter triggers derive every count from these, so
+-- the seeded feeds show exactly the numbers the triggers would produce in the app.
+insert into public.glory_reactions (testimony_id, profile_id)
+values
+  ('70000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000a'),
+  ('70000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000c'),
+  ('70000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000d'),
+  ('70000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000e'),
+  ('70000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-00000000000b'),
+  ('70000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-00000000000c'),
+  ('70000000-0000-4000-8000-000000000004', '50000000-0000-4000-8000-00000000000a')
+on conflict (testimony_id, profile_id) do nothing;
+
+-- Two fulfilled ("I prayed") and two still committed, so both counts render.
+insert into public.prayer_intercessions
+  (prayer_id, profile_id, state, prayed_at)
+values
+  ('60000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000a',
+   'prayed', now() - interval '3 days'),
+  ('60000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000c',
+   'prayed', now() - interval '4 days'),
+  ('60000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-00000000000a',
+   'committed', null),
+  ('60000000-0000-4000-8000-000000000003', '50000000-0000-4000-8000-00000000000b',
+   'committed', null)
+on conflict (prayer_id, profile_id) do nothing;
