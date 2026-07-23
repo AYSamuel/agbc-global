@@ -25,9 +25,10 @@ export function SegmentedControl<K extends string>({
   accessibilityLabel,
 }: SegmentedControlProps<K>) {
   const { colors } = useTheme();
-  // Mockup .seg: alt track; the active segment is a raised card chip, not a color
-  // fill; inactive labels are muted.
-  const activeBg = colors.card;
+  // Mockup .seg: alt track; the active segment is a raised chip, not a color
+  // fill; inactive labels are muted. `raised`, not `card`: card-on-alt has no
+  // contrast in dark (see the token's note; fixed 2026-07-21).
+  const activeBg = colors.raised;
   const activeFg = colors.text;
 
   return (

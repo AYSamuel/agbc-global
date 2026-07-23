@@ -1,3 +1,8 @@
+export {
+  ActionPill,
+  type ActionPillProps,
+  type ActionPillTone,
+} from './ActionPill';
 export { AppHeader, type AppHeaderProps } from './AppHeader';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export { Card, type CardProps } from './Card';

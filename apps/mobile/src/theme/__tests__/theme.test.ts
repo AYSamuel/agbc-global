@@ -43,9 +43,11 @@ describe('tokens match docs/spec/05', () => {
     expect(fontFamily.body.regular).toBe('HankenGrotesk-Regular');
   });
 
-  test('spacing scale is the 05 ladder', () => {
+  test('spacing scale is the 05 ladder plus the semantic entries', () => {
+    // 4..56 ladder, then gutter (20) and screenTop (16): with the real status
+    // inset this reproduces the mockup's frame-top-to-title geometry (Screen).
     expect(Object.values(spacing)).toEqual([
-      4, 8, 12, 16, 20, 24, 32, 40, 56, 20,
+      4, 8, 12, 16, 20, 24, 32, 40, 56, 20, 16,
     ]);
   });
 });

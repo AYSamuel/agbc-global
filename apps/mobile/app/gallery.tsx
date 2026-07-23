@@ -4,6 +4,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { spacing, typeScale } from '@agbc/shared/theme';
 
 import {
+  ActionPill,
   AppHeader,
   BellIcon,
   Button,
@@ -14,6 +15,7 @@ import {
   FamilyTabIcon,
   GateSheet,
   GiveTabIcon,
+  HeartIcon,
   HomeTabIcon,
   MenuCard,
   MenuLabel,
@@ -76,6 +78,28 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
         />
         <Chip label="Glasgow" />
         <Chip label="Filter" />
+      </View>
+      {/* ActionPill tones (Family reactions): neutral, committed (gold), fulfilled
+          (green). The Glory pill is the neutral tone with the star icon. */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+        <ActionPill
+          label="Glory to God · 14"
+          icon={
+            <Text style={{ fontSize: 12.5, color: colors.accent }}>{'✦'}</Text>
+          }
+        />
+        <ActionPill
+          label="I will pray"
+          icon={<HeartIcon size={15} color={colors.sub} />}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+        <ActionPill
+          label="I prayed"
+          tone="goldSoft"
+          icon={<HeartIcon size={15} color={colors.eye} />}
+        />
+        <ActionPill label="You prayed" tone="green" />
       </View>
       <ScopePreview />
       <Card>

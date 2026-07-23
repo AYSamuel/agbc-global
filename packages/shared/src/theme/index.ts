@@ -9,10 +9,37 @@ export type ThemeName = 'light' | 'dark';
 export const palette = {
   ink: '#0e1420',
   gold: '#ffcf4a',
+  /** The deeper gold the mockup uses where gold must sit on a light surface
+   * (.av gradient, --eye in light). Distinct from `gold`, which fails contrast
+   * on cream (05 contrast rule). */
+  goldDeep: '#b98600',
   navy: '#14213d',
   blue: '#2f6fed',
   green: '#1f8a5b',
   red: '#e0342c',
+} as const;
+
+// Tonal washes for the action pills (mockup .glory.on, .praybtn.on,
+// .praybtn.committed): a translucent tint plus a matching border, layered over
+// whatever card surface is underneath, so one set works in both themes.
+export const tonal = {
+  gold: {
+    bg: 'rgba(255,207,74,0.20)',
+    border: palette.gold,
+  },
+  goldSoft: {
+    bg: 'rgba(185,134,0,0.14)',
+    border: 'rgba(185,134,0,0.42)',
+  },
+  green: {
+    bg: 'rgba(31,138,91,0.14)',
+    border: 'rgba(31,138,91,0.40)',
+  },
+  /** The answered-prayer card (mockup .answered). */
+  greenCard: {
+    bg: 'rgba(31,138,91,0.10)',
+    border: 'rgba(31,138,91,0.35)',
+  },
 } as const;
 
 // Colors for content sitting on ink or on a photo (splash, photo heroes). Identical
@@ -51,6 +78,12 @@ export interface ColorTokens {
   muted: string;
   card: string;
   cardline: string;
+  /** Elevated chip on an alt track (the segmented control's active state). In
+   * light this IS card (white on beige reads raised by itself); dark needs a
+   * genuinely lighter surface, because card on alt is a 3-point difference and
+   * the mockup's 10%-alpha shadow is invisible there (fixed 2026-07-21, Ayo's
+   * report; mockup + 05 synced in the same change). */
+  raised: string;
   band: string;
   bandtext: string;
   accent: string;
@@ -73,6 +106,7 @@ export const color: Record<ThemeName, ColorTokens> = {
     muted: '#8a7f6a',
     card: '#ffffff',
     cardline: '#e8e0d0',
+    raised: '#ffffff',
     band: palette.ink,
     bandtext: '#ffffff',
     accent: palette.gold,
@@ -90,6 +124,7 @@ export const color: Record<ThemeName, ColorTokens> = {
     muted: '#7c8698',
     card: '#18212f',
     cardline: '#28323f',
+    raised: '#28323f',
     band: palette.ink,
     bandtext: '#ffffff',
     accent: palette.gold,
@@ -151,6 +186,13 @@ export const spacing = {
   x4l: 40,
   x5l: 56,
   gutter: 20,
+  /** Gap between the status bar (safe-area bottom) and a screen's first row.
+   * The mockup's .stitle/.chead sit 88px from the FRAME top (36px stylized
+   * status bar + 52px padding). A real status inset is ~50-60px, so it already
+   * covers most of that: inset + these 16 + the title row's own 12 lands the
+   * title at ~80-88px from the screen top, matching the mockup's geometry.
+   * (Tuned 2026-07-21: 0 felt glued to the bar, a literal +52 doubled it.) */
+  screenTop: 16,
 } as const;
 
 // Radius from 05 (cards 16-22, pills/buttons 12-14, full for chips/avatars); named by
