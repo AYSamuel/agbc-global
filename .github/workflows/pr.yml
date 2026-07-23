@@ -66,8 +66,14 @@ jobs:
       - run: pnpm --filter mobile typecheck
       - run: pnpm --filter mobile lint
       - run: pnpm --filter mobile test
+      # Advisory, not a gate (decided 2026-07-23). expo-doctor's version-match
+      # check fails whenever Expo ships a release, which is outside our control and
+      # would red-block every PR on the calendar rather than on its diff. Renovate
+      # owns version freshness on its cooldown (21 §3), so this runs for visibility
+      # (config/plugin issues still surface as annotations) but never fails the job.
       - run: npx expo-doctor
         working-directory: apps/mobile
+        continue-on-error: true
 
   dashboard:
     needs: changes
