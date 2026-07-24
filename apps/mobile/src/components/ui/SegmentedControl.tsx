@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { hitTarget, radius, spacing, typeScale } from '@agbc/shared/theme';
+import { fontFamily, radius, spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -54,9 +54,12 @@ export function SegmentedControl<K extends string>({
             onPress={() => {
               onChange(segment.key);
             }}
+            // Mockup .seg button height (padding 9), not a 44px minHeight: hitSlop
+            // extends the touch area to the 44px floor without the bulk.
+            hitSlop={{ top: 6, bottom: 6 }}
             style={({ pressed }) => ({
               flex: 1,
-              minHeight: hitTarget.min,
+              paddingVertical: 9,
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: radius.control,
@@ -65,10 +68,12 @@ export function SegmentedControl<K extends string>({
             })}
           >
             <Text
-              style={[
-                typeScale.bodySemiBold,
-                { color: selected ? activeFg : colors.muted },
-              ]}
+              // Mockup .seg button: 13px/700, not the 15/600 body scale.
+              style={{
+                fontFamily: fontFamily.body.bold,
+                fontSize: 13,
+                color: selected ? activeFg : colors.muted,
+              }}
             >
               {segment.label}
             </Text>

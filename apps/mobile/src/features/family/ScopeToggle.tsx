@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, hitTarget, radius, spacing } from '@agbc/shared/theme';
+import { fontFamily, radius, spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -55,10 +55,13 @@ export function ScopeToggle({
             onPress={() => {
               onChange(option.key);
             }}
+            // Mockup .scopep button (padding 7/15), not a 44px minHeight; hitSlop
+            // carries the touch target to the 44px floor.
+            hitSlop={{ top: 7, bottom: 7 }}
             style={({ pressed }) => ({
-              minHeight: hitTarget.min,
-              justifyContent: 'center',
+              paddingVertical: 7,
               paddingHorizontal: spacing.md + 3,
+              justifyContent: 'center',
               borderRadius: radius.full,
               backgroundColor: selected ? colors.btnBg : 'transparent',
               opacity: pressed ? 0.85 : 1,

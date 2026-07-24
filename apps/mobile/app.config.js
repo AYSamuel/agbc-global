@@ -49,6 +49,7 @@ const config = {
           './assets/fonts/HankenGrotesk-Medium.ttf',
           './assets/fonts/HankenGrotesk-SemiBold.ttf',
           './assets/fonts/HankenGrotesk-Bold.ttf',
+          './assets/fonts/HankenGrotesk-ExtraBold.ttf',
         ],
       },
     ],

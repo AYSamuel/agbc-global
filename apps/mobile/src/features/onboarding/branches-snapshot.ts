@@ -17,6 +17,9 @@ export interface BranchSummary {
   timezone: string;
   /** Display address (jsonb in the DB); Home's hero shows line1. */
   address: { line1?: string; line2?: string } | null;
+  /** Venue/city-level coordinates for the Family map (docs/spec/09). */
+  lat: number;
+  lng: number;
   order: number;
 }
 
@@ -34,6 +37,8 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
       line1: 'Summerlee Museum of Scottish Industrial Life',
       line2: 'Heritage Way, Coatbridge ML5 1QD',
     },
+    lat: 55.8622,
+    lng: -4.0245,
     order: 1,
   },
   {
@@ -46,6 +51,8 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     youtube_channel_id: null,
     timezone: 'Europe/Berlin',
     address: { line1: 'Oudenarder Str. 16', line2: '13347 Berlin' },
+    lat: 52.5502,
+    lng: 13.3563,
     order: 2,
   },
   {
@@ -58,6 +65,8 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     youtube_channel_id: null,
     timezone: 'Europe/Amsterdam',
     address: { line1: 'Flintstraat 29C05', line2: '7815 RE Emmen' },
+    lat: 52.7862,
+    lng: 6.8917,
     order: 3,
   },
   {
@@ -73,6 +82,8 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
       line1: 'Adjacent Alajikii Mosque, Tarkii',
       line2: 'Ogbomosho, Oyo State',
     },
+    lat: 8.1335,
+    lng: 4.2407,
     order: 4,
   },
 ];

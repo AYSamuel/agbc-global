@@ -10,6 +10,13 @@ export default defineConfig([
   expoConfig,
   ...agbcStrict,
   {
+    // Build-time Node scripts (e.g. the world-land generator), not app code. They
+    // run under Node; declare the one Node global they use rather than pulling in
+    // the `globals` package as a direct dependency just for this.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { Buffer: 'readonly' } },
+  },
+  {
     // Keys-only rule (docs/spec/16): product surfaces never carry literal UI strings;
     // everything goes through i18n. The two dev-only screens (token demo, gallery)
     // are exempt until they are replaced at W1.1/W1.2.

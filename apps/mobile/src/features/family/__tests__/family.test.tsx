@@ -17,9 +17,10 @@ jest.mock(
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
 const mockPush = jest.fn();
+const mockParams = jest.fn<Record<string, string>, []>(() => ({}));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn() }),
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockParams(),
   useIsFocused: () => true,
 }));
 
@@ -42,8 +43,22 @@ jest.mock('../useFamilyRealtime', () => ({ useFamilyRealtime: jest.fn() }));
 jest.mock('@/features/onboarding/useBranches', () => ({
   useBranchesQuery: () => ({
     data: [
-      { id: 'b-gla', slug: 'glasgow', name: 'AGBC Glasgow', order: 1 },
-      { id: 'b-ber', slug: 'berlin', name: 'AGBC Berlin', order: 2 },
+      {
+        id: 'b-gla',
+        slug: 'glasgow',
+        name: 'AGBC Glasgow',
+        lat: 55.86,
+        lng: -4.02,
+        order: 1,
+      },
+      {
+        id: 'b-ber',
+        slug: 'berlin',
+        name: 'AGBC Berlin',
+        lat: 52.55,
+        lng: 13.36,
+        order: 2,
+      },
     ],
     isError: false,
   }),
@@ -70,6 +85,7 @@ function testimony(
     author_id: 'a1',
     author_name: 'Sarah Okafor',
     author_avatar_url: null,
+    from_prayer_id: null,
     origin_prayer_id: null,
     ...overrides,
   };
@@ -118,6 +134,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockParams.mockReturnValue({});
   mockBranch.mockReturnValue({ id: 'b-gla', name: 'AGBC Glasgow' });
   mockTestimonies.mockReturnValue({
     data: [testimony()],
@@ -249,5 +266,94 @@ describe('FAMILY tab · scope + navigation', () => {
     await renderScreen();
     // t1 is in b-gla; the card meta should read the branch name, not the id.
     expect(screen.getByText(/AGBC Glasgow · /)).toBeTruthy();
+  });
+});
+
+describe('FAMILY tab · share FAB (mockup .fab)', () => {
+  test('the FAB shows on a populated feed and opens the gate', async () => {
+    await renderScreen();
+    const fab = screen.getByText('Share your testimony');
+    expect(fab).toBeTruthy();
+    await fireEvent.press(fab);
+    expect(screen.getByText('Sign in to say Glory to God')).toBeTruthy();
+  });
+
+  test('its label follows the sub-tab', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Prayer'));
+    expect(screen.getByText('Share a prayer request')).toBeTruthy();
+    expect(screen.queryByText('Share your testimony')).toBeNull();
+  });
+
+  test('the FAB is hidden on an empty feed (the empty state carries its own CTA)', async () => {
+    mockTestimonies.mockReturnValue({
+      data: [],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen();
+    // The centred empty-state button is present; the pinned FAB is not.
+    expect(screen.getByText('Be the first to share')).toBeTruthy();
+    expect(screen.queryByText('Share your testimony')).toBeNull();
+  });
+
+  test('the FAB is hidden on the Map sub-tab', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Map'));
+    expect(screen.queryByText('Share your testimony')).toBeNull();
+    expect(screen.queryByText('Share a prayer request')).toBeNull();
+  });
+});
+
+describe('FAMILY tab · map sub-tab', () => {
+  test('switching to Map keeps the scope toggle and shows the zoom controls + sheet', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Map'));
+    // The scope toggle now shows on the map too (docs/spec/09); its branch option
+    // reads the selected branch's name, so "Everywhere" is the stable marker.
+    expect(screen.getByText('Everywhere')).toBeTruthy();
+    // The floating zoom + locate controls.
+    expect(screen.getByLabelText('Zoom in')).toBeTruthy();
+    expect(screen.getByLabelText('Zoom out')).toBeTruthy();
+    expect(screen.getByLabelText('Find my branch')).toBeTruthy();
+    // The "family, lately" bottom sheet.
+    expect(screen.getByText('The family, lately')).toBeTruthy();
+  });
+
+  test('a "family, lately" sheet row opens the testimony detail', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Map'));
+    await fireEvent.press(screen.getByText(/God provided a job/));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/testimony/[id]',
+      params: { id: 't1' },
+    });
+  });
+
+  test('the sheet omits itself when there are no recent testimonies', async () => {
+    mockTestimonies.mockReturnValue({
+      data: [],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Map'));
+    // No sheet, but the map and its controls still render.
+    expect(screen.queryByText('The family, lately')).toBeNull();
+    expect(screen.getByLabelText('Zoom in')).toBeTruthy();
+  });
+});
+
+describe('FAMILY tab · sub-tab from a route param (Home See all)', () => {
+  test('a ?tab=map param opens the Map sub-tab on arrival', async () => {
+    mockParams.mockReturnValue({ tab: 'map', k: '1' });
+    await renderScreen();
+    // The map's zoom control is present without any manual segment press.
+    expect(screen.getByLabelText('Zoom in')).toBeTruthy();
+  });
+
+  test('no param defaults to Testimonies', async () => {
+    await renderScreen();
+    expect(screen.getByText(/God provided a job/)).toBeTruthy();
   });
 });

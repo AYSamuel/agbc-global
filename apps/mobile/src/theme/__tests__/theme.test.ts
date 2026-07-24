@@ -41,6 +41,7 @@ describe('tokens match docs/spec/05', () => {
   test('font families use cross-platform PostScript names', () => {
     expect(fontFamily.display.extraBold).toBe('BricolageGrotesque-ExtraBold');
     expect(fontFamily.body.regular).toBe('HankenGrotesk-Regular');
+    expect(fontFamily.body.extraBold).toBe('HankenGrotesk-ExtraBold');
   });
 
   test('spacing scale is the 05 ladder plus the semantic entries', () => {

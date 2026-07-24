@@ -96,7 +96,8 @@ export function AnsweredPrayerCard({
         borderWidth: 1,
         borderColor: tonal.greenCard.border,
         borderRadius: radius.card,
-        paddingVertical: spacing.md,
+        // Mockup .answered: padding 16px 18px (not the 12 the other cards use).
+        paddingVertical: spacing.lg,
         paddingHorizontal: CARD_PADDING,
         marginBottom: spacing.md,
         opacity: pressed ? 0.9 : 1,
@@ -117,7 +118,7 @@ export function AnsweredPrayerCard({
         <CheckIcon size={12} color={onInk.text} />
         <Text
           style={{
-            fontFamily: fontFamily.body.bold,
+            fontFamily: fontFamily.body.extraBold,
             fontSize: 10.5,
             letterSpacing: 0.84,
             color: onInk.text,

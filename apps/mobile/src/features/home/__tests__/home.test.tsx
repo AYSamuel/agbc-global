@@ -16,7 +16,7 @@ jest.mock(
 );
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
-const mockPush = jest.fn();
+const mockPush = jest.fn<undefined, [unknown]>();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({}),
@@ -38,6 +38,7 @@ const mockServices = jest.fn<
   { data: unknown; isError: boolean; refetch: () => void },
   []
 >();
+const mockLatestTestimony = jest.fn<{ data: unknown; isError: boolean }, []>();
 jest.mock('../queries', () => {
   const actual = jest.requireActual<typeof import('../queries')>('../queries');
   return {
@@ -49,6 +50,16 @@ jest.mock('../queries', () => {
 
 jest.mock('@/features/watch/queries', () => ({
   useSermonsQuery: () => ({ data: [], isError: false, refetch: jest.fn() }),
+}));
+
+// The "From the family" highlight reads the Family domain's latest-testimony
+// query; mock it (and keep prefetchHome's options import resolvable).
+jest.mock('@/features/family/queries', () => ({
+  useLatestTestimonyQuery: () => mockLatestTestimony(),
+  latestTestimonyQueryOptions: () => ({
+    queryKey: ['family', 'latest-testimony'],
+    queryFn: () => Promise.resolve(null),
+  }),
 }));
 
 jest.mock('@/features/onboarding/useBranches', () => ({
@@ -96,6 +107,8 @@ beforeEach(() => {
     isError: false,
     refetch: jest.fn(),
   });
+  // Default: the family has posted nothing, so the highlight shows its fallback.
+  mockLatestTestimony.mockReturnValue({ data: null, isError: false });
 });
 
 describe('localDateKey', () => {
@@ -186,5 +199,52 @@ describe('HOME composition (docs/spec/07)', () => {
     expect(
       screen.getByRole('header', { name: 'Switch branch' }),
     ).toBeOnTheScreen();
+  });
+
+  test('From the family shows the latest testimony and taps through (W1.5 wiring)', async () => {
+    mockLatestTestimony.mockReturnValue({
+      data: {
+        id: 'th1',
+        branch_id: '00000000-0000-4000-8000-000000000001',
+        body: 'God provided a job after months of waiting.',
+        language: 'en',
+        category_key: null,
+        image_url: null,
+        glory_count: 14,
+        created_at: '2026-07-21T10:00:00Z',
+        author_id: 'a1',
+        author_name: 'Sarah Okafor',
+        author_avatar_url: null,
+        from_prayer_id: null,
+        origin_prayer_id: null,
+      },
+      isError: false,
+    });
+    await renderHome();
+    expect(screen.getByText(/God provided a job/)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByText(/God provided a job/));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/testimony/[id]',
+      params: { id: 'th1' },
+    });
+  });
+
+  test('From the family falls back gently when nothing is posted', async () => {
+    // mockLatestTestimony defaults to { data: null }.
+    await renderHome();
+    expect(screen.getByText('Testimonies are coming')).toBeOnTheScreen();
+  });
+
+  test('From the family "See all" targets the Testimonies sub-tab', async () => {
+    await renderHome();
+    await fireEvent.press(
+      screen.getByRole('link', { name: 'See all: From the family' }),
+    );
+    const arg = mockPush.mock.calls.at(-1)?.[0] as {
+      pathname?: string;
+      params?: { tab?: string };
+    };
+    expect(arg.pathname).toBe('/family');
+    expect(arg.params?.tab).toBe('testimonies');
   });
 });

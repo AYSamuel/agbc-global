@@ -30,6 +30,54 @@ export function CheckIcon(props: IconProps) {
   );
 }
 
+// Map zoom controls (mockup .mzoom): drawn as icons rather than "+"/"−" text so
+// they stay crisp and dodge the literal-string lint on product screens.
+export function PlusIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M12 5v14M5 12h14" />
+    </Svg>
+  );
+}
+
+export function MinusIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M5 12h14" />
+    </Svg>
+  );
+}
+
+// Find-my-branch control (mockup .mlocate): a crosshair.
+export function LocateIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={12} cy={12} r={4} />
+      <Path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </Svg>
+  );
+}
+
+// Answered-prayer ribbon glyph (mockup .ribbon): a chain link.
+export function LinkIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M9 15l6-6" />
+      <Path d="M11 6l1-1a4 4 0 0 1 6 6l-1 1" />
+      <Path d="M13 18l-1 1a4 4 0 0 1-6-6l1-1" />
+    </Svg>
+  );
+}
+
+// Share to WhatsApp (mockup .wabtn): the speech-bubble outline.
+export function WhatsAppIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z" />
+    </Svg>
+  );
+}
+
 export function ChevronLeftIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>
