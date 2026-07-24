@@ -7,6 +7,10 @@ export { AppHeader, type AppHeaderProps } from './AppHeader';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export { Card, type CardProps } from './Card';
 export { Chip, type ChipProps } from './Chip';
+export {
+  CircleIconButton,
+  type CircleIconButtonProps,
+} from './CircleIconButton';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { Eyebrow } from './Eyebrow';
 export { Fab, type FabProps } from './Fab';

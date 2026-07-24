@@ -1,1 +1,27 @@
-{}
+{
+  "title": "Événements",
+  "upcoming": "À venir",
+  "past": "Passés",
+  "rangeLabel": "Afficher les événements à venir ou passés",
+  "allBranches": "Toutes les églises",
+  "tagBranch": "Église locale",
+  "tagGlobal": "Toutes les nations",
+  "emptyUpcomingTitle": "Aucun événement prévu pour le moment",
+  "emptyUpcomingBody": "Revenez bientôt.",
+  "emptyPastTitle": "Pas encore d'événements passés",
+  "emptyPastBody": "Les rassemblements apparaîtront ici après avoir eu lieu.",
+  "ministryWide": "Toute l'église · toute la famille",
+  "cancelledBanner": "Annulé par l'organisateur",
+  "seeOtherEvents": "Voir d'autres événements",
+  "rsvpGoing": "Répondre · J'y serai",
+  "rsvpClosed": "Les inscriptions sont closes pour cet événement",
+  "pastNote": "Cet événement a déjà eu lieu.",
+  "share": "Partager",
+  "cityTime": "heure de {{city}}",
+  "yourTime": "{{time}} votre heure",
+  "gateTitle": "Réservez votre place",
+  "gateBody": "Connectez-vous pour répondre, afin que votre famille sache que vous venez.",
+  "gateDismissed": "Vous pouvez continuer à parcourir les événements en tant qu'invité.",
+  "notFoundTitle": "Cet événement n'est pas disponible",
+  "notFoundBody": "Il a peut-être été retiré. Découvrez ce qui arrive d'autre."
+}

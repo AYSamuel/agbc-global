@@ -1,1 +1,27 @@
-{}
+{
+  "title": "Events",
+  "upcoming": "Upcoming",
+  "past": "Past",
+  "rangeLabel": "Show upcoming or past events",
+  "allBranches": "All branches",
+  "tagBranch": "Branch",
+  "tagGlobal": "All nations",
+  "emptyUpcomingTitle": "No events scheduled yet",
+  "emptyUpcomingBody": "Check back soon.",
+  "emptyPastTitle": "No past events yet",
+  "emptyPastBody": "Gatherings will appear here after they happen.",
+  "ministryWide": "Ministry-wide · the whole family",
+  "cancelledBanner": "Cancelled by the organiser",
+  "seeOtherEvents": "See other events",
+  "rsvpGoing": "RSVP · I'm going",
+  "rsvpClosed": "RSVP is closed for this event",
+  "pastNote": "This event has already taken place.",
+  "share": "Share",
+  "cityTime": "{{city}} time",
+  "yourTime": "{{time}} your time",
+  "gateTitle": "Save your spot",
+  "gateBody": "Sign in to RSVP so your family knows you're coming.",
+  "gateDismissed": "You can keep browsing events as a guest.",
+  "notFoundTitle": "This event isn't available",
+  "notFoundBody": "It may have been removed. See what else is coming up."
+}

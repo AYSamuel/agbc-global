@@ -26,6 +26,12 @@ export interface ScreenProps extends PropsWithChildren {
   bottomInset?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
+  /**
+   * Form screens set this so a tap on the submit button lands on the first
+   * try while the keyboard is open (default RN behavior swallows it into a
+   * keyboard dismiss).
+   */
+  keyboardPersistTaps?: boolean;
   testID?: string;
 }
 
@@ -37,6 +43,7 @@ export function Screen({
   bottomInset = true,
   refreshing,
   onRefresh,
+  keyboardPersistTaps = false,
   testID,
 }: ScreenProps) {
   const { colors } = useTheme();
@@ -89,6 +96,7 @@ export function Screen({
   return (
     <ScrollView
       testID={testID}
+      keyboardShouldPersistTaps={keyboardPersistTaps ? 'handled' : undefined}
       style={{ flex: 1, backgroundColor: colors.bg }}
       contentContainerStyle={{
         paddingTop: topPadding,

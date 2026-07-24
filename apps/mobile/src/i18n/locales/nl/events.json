@@ -1,1 +1,27 @@
-{}
+{
+  "title": "Evenementen",
+  "upcoming": "Binnenkort",
+  "past": "Voorbij",
+  "rangeLabel": "Aankomende of voorbije evenementen tonen",
+  "allBranches": "Alle locaties",
+  "tagBranch": "Locatie",
+  "tagGlobal": "Alle naties",
+  "emptyUpcomingTitle": "Nog geen evenementen gepland",
+  "emptyUpcomingBody": "Kom binnenkort terug.",
+  "emptyPastTitle": "Nog geen voorbije evenementen",
+  "emptyPastBody": "Bijeenkomsten verschijnen hier nadat ze hebben plaatsgevonden.",
+  "ministryWide": "Wereldwijd · de hele familie",
+  "cancelledBanner": "Geannuleerd door de organisator",
+  "seeOtherEvents": "Andere evenementen bekijken",
+  "rsvpGoing": "Aanmelden · Ik kom",
+  "rsvpClosed": "Aanmelden is gesloten voor dit evenement",
+  "pastNote": "Dit evenement heeft al plaatsgevonden.",
+  "share": "Delen",
+  "cityTime": "Tijd in {{city}}",
+  "yourTime": "{{time}} jouw tijd",
+  "gateTitle": "Reserveer je plek",
+  "gateBody": "Meld je aan om je aan te melden, zodat je familie weet dat je komt.",
+  "gateDismissed": "Je kunt evenementen als gast blijven bekijken.",
+  "notFoundTitle": "Dit evenement is niet beschikbaar",
+  "notFoundBody": "Het is mogelijk verwijderd. Bekijk wat er verder aankomt."
+}
