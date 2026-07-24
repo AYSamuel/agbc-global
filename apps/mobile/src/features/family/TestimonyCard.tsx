@@ -48,12 +48,16 @@ export function GloryPill({
 export function TestimonyCard({
   testimony,
   branchName,
+  branchColor,
   onPress,
   onGlory,
   onShare,
 }: {
   testimony: TestimonyFeedItem;
   branchName: string | null;
+  /** The author's branch colour (from useBranchColors), so the avatar hue
+   * matches their map pin and their avatar on the detail screen. */
+  branchColor: string;
   onPress: () => void;
   onGlory: () => void;
   onShare: () => void;
@@ -97,8 +101,10 @@ export function TestimonyCard({
             justifyContent: 'center',
           }}
         >
-          {/* Mockup .av: goldDeep-to-navy gradient behind the initials. */}
-          <GradientFill from={palette.goldDeep} to={palette.navy} />
+          {/* Branch-coloured gradient behind the initials: the author's branch
+              hue into navy, so the same person reads the same on feed, detail,
+              and the map (Ayo, 2026-07-24). */}
+          <GradientFill from={branchColor} to={palette.navy} />
           <Text
             style={{
               fontFamily: fontFamily.body.bold,

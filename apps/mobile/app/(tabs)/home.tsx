@@ -10,10 +10,15 @@ import {
   Card,
   ChevronDownIcon,
   EmptyState,
+  GateSheet,
   PersonIcon,
   Screen,
   Skeleton,
 } from '@/components/ui';
+import { useLatestTestimonyQuery } from '@/features/family/queries';
+import { TestimonyCard } from '@/features/family/TestimonyCard';
+import { useBranchColors } from '@/features/family/useBranchColors';
+import { useBranchNames } from '@/features/family/useBranchNames';
 import { resolveAddressLine } from '@/features/home/address';
 import { BranchSwitchSheet } from '@/features/home/BranchSwitchSheet';
 import { NextServiceCard } from '@/features/home/NextServiceCard';
@@ -34,8 +39,9 @@ import { useTheme } from '@/theme';
 
 // HOME (docs/spec/07, mockup "Home · guest"): greeting + branch chip + bell,
 // next-service hero, quick actions, daily verse (no devotional CTA until
-// Phase 4 per 07's phasing), latest message, testimony highlight (placeholder
-// until W1.5), guest Join card. Everything follows the BROWSED branch.
+// Phase 4 per 07's phasing), latest message, the "From the family" testimony
+// highlight (wired to the Family feed at W1.5), guest Join card. Everything
+// follows the BROWSED branch.
 function greetingKey(now: Date): string {
   const hour = now.getHours();
   if (hour < 12) return 'home:goodMorning';
@@ -100,6 +106,7 @@ export default function Home() {
   const branch = useBranchStore((s) => s.branch);
   const setBranch = useBranchStore((s) => s.setBranch);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [gateVisible, setGateVisible] = useState(false);
 
   // Date-anchored reads re-key at local midnight and on foreground.
   const dateKey = useLocalDate();
@@ -107,6 +114,11 @@ export default function Home() {
   const servicesQuery = useBranchServicesQuery(branch?.id ?? null);
   const sermonsQuery = useSermonsQuery();
   const branchesQuery = useBranchesQuery();
+  // The "From the family" highlight (docs/spec/07): the latest approved testimony,
+  // wired now that the Family domain has landed (W1.5).
+  const testimonyHighlight = useLatestTestimonyQuery();
+  const branchNames = useBranchNames();
+  const branchColorFor = useBranchColors();
   const { branches } = resolveBranchList(branchesQuery);
   // The hero's address line comes from the branch row (mockup .hero .where).
   const currentBranch = branches.find((b) => b.id === branch?.id) ?? null;
@@ -283,22 +295,53 @@ export default function Home() {
           </View>
         ) : null}
 
-        {/* Testimony highlight is wired at W1.5 when the Family domain lands;
-            the placeholder keeps the section from being a dead end. */}
+        {/* From the family (docs/spec/07): the latest testimony, the same card the
+            Family feed uses. Its Glory/Share gate for guests; the card taps
+            through to the detail. Empty only if the family has posted nothing. */}
         <View>
           <SectionHeader
             label={t('home:fromTheFamily')}
             actionLabel={t('watch:seeAll')}
             onAction={() => {
-              router.push('/family');
+              // Land on the Testimonies sub-tab specifically (the section is
+              // testimonies); `k` forces it even if Family was left elsewhere.
+              router.push({
+                pathname: '/family',
+                params: { tab: 'testimonies', k: String(Date.now()) },
+              });
             }}
           />
-          <Card>
-            <EmptyState
-              title={t('home:familySoonTitle')}
-              body={t('home:familySoonBody')}
+          {testimonyHighlight.data === undefined &&
+          !testimonyHighlight.isError ? (
+            <Skeleton height={150} />
+          ) : testimonyHighlight.data ? (
+            <TestimonyCard
+              testimony={testimonyHighlight.data}
+              branchName={
+                branchNames[testimonyHighlight.data.branch_id] ?? null
+              }
+              branchColor={branchColorFor(testimonyHighlight.data.branch_id)}
+              onPress={() => {
+                router.push({
+                  pathname: '/testimony/[id]',
+                  params: { id: testimonyHighlight.data?.id ?? '' },
+                });
+              }}
+              onGlory={() => {
+                setGateVisible(true);
+              }}
+              onShare={() => {
+                setGateVisible(true);
+              }}
             />
-          </Card>
+          ) : (
+            <Card>
+              <EmptyState
+                title={t('home:familySoonTitle')}
+                body={t('home:familySoonBody')}
+              />
+            </Card>
+          )}
         </View>
 
         {/* Guest Join card (docs/spec/07 §8); the member rhythm strip replaces
@@ -365,6 +408,22 @@ export default function Home() {
         onSeeAll={() => {
           setSwitcherOpen(false);
           router.push('/branches');
+        }}
+      />
+
+      <GateSheet
+        visible={gateVisible}
+        title={t('family:gateTitle')}
+        body={t('family:gateBody')}
+        signInLabel={t('common:signIn')}
+        dismissLabel={t('common:notNow')}
+        dismissAnnouncement={t('family:gateDismissed')}
+        onSignIn={() => {
+          setGateVisible(false);
+          router.push('/auth');
+        }}
+        onDismiss={() => {
+          setGateVisible(false);
         }}
       />
     </Screen>

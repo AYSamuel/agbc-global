@@ -100,14 +100,16 @@ export default function Watch() {
   const liveRail = liveReplays.slice(0, SECTION_LIMIT);
 
   return (
-    <Screen widthClass="capped">
-      {/* Mockup .stitle with the search .ic-btn. */}
+    <Screen widthClass="capped" padded={false}>
+      {/* Mockup .stitle with the search .ic-btn: the title sits at the 20px
+          gutter, the cards below at 16 (matching Home + Family). */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginTop: spacing.md,
+          paddingHorizontal: spacing.gutter,
         }}
       >
         <Text
@@ -141,130 +143,132 @@ export default function Watch() {
         </Pressable>
       </View>
 
-      {query.data === undefined && !query.isError ? (
-        // STATE loading frame: hero skeleton + three row skeletons.
-        <View style={{ gap: spacing.lg, marginTop: spacing.lg }}>
-          <Skeleton height={200} />
-          {[0, 1, 2].map((i) => (
-            <View key={i} style={{ flexDirection: 'row', gap: spacing.md }}>
-              <Skeleton width={120} height={72} />
-              <View style={{ flex: 1, gap: spacing.sm }}>
-                <Skeleton height={13} width="80%" />
-                <Skeleton height={11} width="50%" />
+      <View style={{ paddingHorizontal: spacing.lg }}>
+        {query.data === undefined && !query.isError ? (
+          // STATE loading frame: hero skeleton + three row skeletons.
+          <View style={{ gap: spacing.lg, marginTop: spacing.lg }}>
+            <Skeleton height={200} />
+            {[0, 1, 2].map((i) => (
+              <View key={i} style={{ flexDirection: 'row', gap: spacing.md }}>
+                <Skeleton width={120} height={72} />
+                <View style={{ flex: 1, gap: spacing.sm }}>
+                  <Skeleton height={13} width="80%" />
+                  <Skeleton height={11} width="50%" />
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
-      ) : query.isError && sermons.length === 0 ? (
-        <EmptyState
-          title={t('errors:somethingWrong')}
-          body={t('errors:couldntLoad')}
-          actionLabel={t('errors:tryAgain')}
-          onAction={() => {
-            void query.refetch();
-          }}
-        />
-      ) : sermons.length === 0 ? (
-        <EmptyState
-          title={t('watch:emptyTitle')}
-          body={t('watch:emptyBody')}
-          icon={<StubIcon Icon={WatchTabIcon} />}
-        />
-      ) : (
-        <>
-          {hero ? (
-            <View style={{ marginTop: spacing.xs + spacing.xs }}>
-              <MediaHero
-                eyebrow={
-                  live
-                    ? t('watch:liveEyebrow')
-                    : (hero.series ?? t('watch:latestMessage'))
-                }
-                title={hero.title}
-                meta={
-                  live
-                    ? t('watch:liveNow')
-                    : joinMeta([
-                        hero.speaker || null,
-                        durationMinutes(hero.duration_sec) === null
-                          ? null
-                          : t('watch:minutes', {
-                              count: durationMinutes(hero.duration_sec) ?? 0,
-                            }),
-                      ])
-                }
-                thumbnailUrl={hero.thumbnail_url || null}
-                liveBadge={live ? t('watch:liveBadge') : undefined}
-                onPress={() => {
-                  openSermon(hero);
-                }}
-                accessibilityLabel={hero.title}
-              />
-            </View>
-          ) : null}
-
-          {rail.length > 0 ? (
-            <>
-              <SectionHeader
-                label={t('watch:recent')}
-                seeAllLabel={t('watch:seeAll')}
-                onSeeAll={() => {
-                  router.push({
-                    pathname: '/watch-search',
-                    params: { list: 'videos' },
-                  });
-                }}
-              />
-              {rail.map((sermon) => (
-                <SermonRow
-                  key={sermon.id}
-                  sermon={sermon}
-                  onPress={() => {
-                    openSermon(sermon);
-                  }}
-                />
-              ))}
-            </>
-          ) : null}
-
-          {liveRail.length > 0 ? (
-            <>
-              <SectionHeader
-                label={t('watch:liveStreams')}
-                seeAllLabel={t('watch:seeAll')}
-                onSeeAll={() => {
-                  router.push({
-                    pathname: '/watch-search',
-                    params: { list: 'live' },
-                  });
-                }}
-              />
-              {liveRail.map((sermon) => (
-                <SermonRow
-                  key={sermon.id}
-                  sermon={sermon}
-                  onPress={() => {
-                    openSermon(sermon);
-                  }}
-                />
-              ))}
-            </>
-          ) : null}
-
-          {/* YouTube attribution on the rails (ToS box, docs/spec/08). */}
-          <Text
-            style={{
-              fontFamily: fontFamily.body.regular,
-              fontSize: 11.5,
-              color: colors.muted,
-              textAlign: 'center',
-              marginTop: spacing.x2l,
+            ))}
+          </View>
+        ) : query.isError && sermons.length === 0 ? (
+          <EmptyState
+            title={t('errors:somethingWrong')}
+            body={t('errors:couldntLoad')}
+            actionLabel={t('errors:tryAgain')}
+            onAction={() => {
+              void query.refetch();
             }}
-          >
-            {t('watch:viaYoutube')}
-          </Text>
-        </>
-      )}
+          />
+        ) : sermons.length === 0 ? (
+          <EmptyState
+            title={t('watch:emptyTitle')}
+            body={t('watch:emptyBody')}
+            icon={<StubIcon Icon={WatchTabIcon} />}
+          />
+        ) : (
+          <>
+            {hero ? (
+              <View style={{ marginTop: spacing.xs + spacing.xs }}>
+                <MediaHero
+                  eyebrow={
+                    live
+                      ? t('watch:liveEyebrow')
+                      : (hero.series ?? t('watch:latestMessage'))
+                  }
+                  title={hero.title}
+                  meta={
+                    live
+                      ? t('watch:liveNow')
+                      : joinMeta([
+                          hero.speaker || null,
+                          durationMinutes(hero.duration_sec) === null
+                            ? null
+                            : t('watch:minutes', {
+                                count: durationMinutes(hero.duration_sec) ?? 0,
+                              }),
+                        ])
+                  }
+                  thumbnailUrl={hero.thumbnail_url || null}
+                  liveBadge={live ? t('watch:liveBadge') : undefined}
+                  onPress={() => {
+                    openSermon(hero);
+                  }}
+                  accessibilityLabel={hero.title}
+                />
+              </View>
+            ) : null}
+
+            {rail.length > 0 ? (
+              <>
+                <SectionHeader
+                  label={t('watch:recent')}
+                  seeAllLabel={t('watch:seeAll')}
+                  onSeeAll={() => {
+                    router.push({
+                      pathname: '/watch-search',
+                      params: { list: 'videos' },
+                    });
+                  }}
+                />
+                {rail.map((sermon) => (
+                  <SermonRow
+                    key={sermon.id}
+                    sermon={sermon}
+                    onPress={() => {
+                      openSermon(sermon);
+                    }}
+                  />
+                ))}
+              </>
+            ) : null}
+
+            {liveRail.length > 0 ? (
+              <>
+                <SectionHeader
+                  label={t('watch:liveStreams')}
+                  seeAllLabel={t('watch:seeAll')}
+                  onSeeAll={() => {
+                    router.push({
+                      pathname: '/watch-search',
+                      params: { list: 'live' },
+                    });
+                  }}
+                />
+                {liveRail.map((sermon) => (
+                  <SermonRow
+                    key={sermon.id}
+                    sermon={sermon}
+                    onPress={() => {
+                      openSermon(sermon);
+                    }}
+                  />
+                ))}
+              </>
+            ) : null}
+
+            {/* YouTube attribution on the rails (ToS box, docs/spec/08). */}
+            <Text
+              style={{
+                fontFamily: fontFamily.body.regular,
+                fontSize: 11.5,
+                color: colors.muted,
+                textAlign: 'center',
+                marginTop: spacing.x2l,
+              }}
+            >
+              {t('watch:viaYoutube')}
+            </Text>
+          </>
+        )}
+      </View>
     </Screen>
   );
 }

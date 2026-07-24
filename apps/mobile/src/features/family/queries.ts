@@ -24,7 +24,10 @@ export interface TestimonyFeedItem {
   author_id: string | null;
   author_name: string | null;
   author_avatar_url: string | null;
-  /** Set only while the origin prayer is itself publicly visible (docs/spec/09). */
+  /** Non-null when this testimony was born from a prayer (drives the ribbon). */
+  from_prayer_id: string | null;
+  /** Set only while the origin prayer is itself publicly visible: the ribbon is a
+   * link when set, a static label when null but from_prayer_id is set (docs/spec/09). */
   origin_prayer_id: string | null;
 }
 
@@ -46,7 +49,7 @@ export interface PrayerFeedItem {
 }
 
 const TESTIMONY_FIELDS =
-  'id, branch_id, body, language, category_key, image_url, glory_count, created_at, author_id, author_name, author_avatar_url, origin_prayer_id';
+  'id, branch_id, body, language, category_key, image_url, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id';
 
 const PRAYER_FIELDS =
   'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id';
@@ -89,6 +92,7 @@ function mapTestimony(row: TestimonyRow): TestimonyFeedItem | null {
     author_id: str(row.author_id),
     author_name: str(row.author_name),
     author_avatar_url: str(row.author_avatar_url),
+    from_prayer_id: str(row.from_prayer_id),
     origin_prayer_id: str(row.origin_prayer_id),
   };
 }
@@ -195,6 +199,30 @@ export function useTestimonyQuery(id: string) {
     },
     staleTime: FEED_STALE_TIME,
   });
+}
+
+// Home's "From the family" highlight (docs/spec/07): the single most recent
+// approved testimony. Its own limit-1 query rather than reusing the 50-row feed,
+// so a cold Home load fetches one row, and it is launch-warmed (docs/spec/01 §9).
+export function latestTestimonyQueryOptions() {
+  return {
+    queryKey: ['family', 'latest-testimony'] as const,
+    queryFn: async (): Promise<TestimonyFeedItem | null> => {
+      const { data, error } = await supabase
+        .from('testimony_feed')
+        .select(TESTIMONY_FIELDS)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data === null ? null : mapTestimony(data);
+    },
+    staleTime: FEED_STALE_TIME,
+  };
+}
+
+export function useLatestTestimonyQuery() {
+  return useQuery(latestTestimonyQueryOptions());
 }
 
 export function usePrayerQuery(id: string) {

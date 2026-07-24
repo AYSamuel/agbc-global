@@ -1,5 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 
+import { latestTestimonyQueryOptions } from '@/features/family/queries';
 import { supabase } from '@/lib/supabase';
 
 import type { ServiceRow } from './nextService';
@@ -79,5 +80,6 @@ export async function prefetchHome(
   await Promise.all([
     queryClient.prefetchQuery(dailyVerseQueryOptions(dateKey, language)),
     queryClient.prefetchQuery(branchServicesQueryOptions(branchId)),
+    queryClient.prefetchQuery(latestTestimonyQueryOptions()),
   ]);
 }

@@ -3,7 +3,6 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
-  hitTarget,
   palette,
   radius,
   spacing,
@@ -59,14 +58,17 @@ export function ActionPill({
       accessibilityState={selected === undefined ? undefined : { selected }}
       onPress={onPress}
       disabled={!onPress}
+      // The pill renders at the mockup's compact height (8px vertical padding,
+      // ~34px tall), but hitSlop extends the TOUCH area past the 44px floor so
+      // the 05 accessibility contract still holds without a bloated-looking pill
+      // (fixed 2026-07-23 after the mockup diff).
+      hitSlop={{ top: 6, bottom: 6 }}
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
         alignSelf: 'flex-start',
         gap: 7,
-        // 05 accessibility contract: every action clears the 44px floor, even
-        // though the mockup's pill is visually shorter.
-        minHeight: hitTarget.min,
+        paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md + 2,
         borderRadius: radius.full,
         backgroundColor: toneStyle.bg,

@@ -18,6 +18,12 @@ export interface ScreenProps extends PropsWithChildren {
   widthClass?: 'full' | 'capped';
   /** Apply the horizontal gutter (05: 18-20). Defaults on. */
   padded?: boolean;
+  /**
+   * Pad the bottom safe-area inset. Defaults on. A screen whose content must
+   * reach the tab bar (the Family map's bottom sheet) sets this false: the tab
+   * bar already owns the home-indicator inset, so padding here just leaves a gap.
+   */
+  bottomInset?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
   testID?: string;
@@ -28,12 +34,14 @@ export function Screen({
   scroll = true,
   widthClass = 'full',
   padded = true,
+  bottomInset = true,
   refreshing,
   onRefresh,
   testID,
 }: ScreenProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const bottomPad = bottomInset ? insets.bottom : 0;
 
   const contentWidth =
     widthClass === 'capped'
@@ -70,7 +78,7 @@ export function Screen({
           flex: 1,
           backgroundColor: colors.bg,
           paddingTop: topPadding,
-          paddingBottom: insets.bottom,
+          paddingBottom: bottomPad,
         }}
       >
         {inner}
@@ -84,7 +92,7 @@ export function Screen({
       style={{ flex: 1, backgroundColor: colors.bg }}
       contentContainerStyle={{
         paddingTop: topPadding,
-        paddingBottom: insets.bottom + spacing.x2l,
+        paddingBottom: bottomPad + spacing.x2l,
       }}
       refreshControl={
         onRefresh ? (

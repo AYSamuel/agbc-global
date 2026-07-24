@@ -19,6 +19,29 @@ export const palette = {
   red: '#e0342c',
 } as const;
 
+// Categorical pin colours for the Family map: one per branch so nations read
+// apart at a glance (docs/spec/09). Chosen to stay distinct on BOTH the cream
+// (light) and near-black (dark) map sea; each pin also carries a stroke for
+// contrast. Cycles if there are ever more branches than colours.
+export const mapPinPalette = [
+  palette.gold,
+  palette.blue,
+  palette.green,
+  '#8b5cf6', // violet: the fourth distinct hue, absent from the brand set
+] as const;
+
+// Avatar gradient top colours, one per branch, in the SAME order as
+// mapPinPalette so a member's avatar hue matches their map pin (belonging made
+// visible, docs/spec/09). The gold slot is the deeper gold, not the bright pin
+// gold: avatars carry white initials, and bright gold fails that contrast (see
+// palette.goldDeep). The other hues are dark enough for white as-is.
+export const branchAvatarPalette = [
+  palette.goldDeep,
+  palette.blue,
+  palette.green,
+  '#8b5cf6',
+] as const;
+
 // Tonal washes for the action pills (mockup .glory.on, .praybtn.on,
 // .praybtn.committed): a translucent tint plus a matching border, layered over
 // whatever card surface is underneath, so one set works in both themes.
@@ -93,6 +116,10 @@ export interface ColorTokens {
   /** Primary button + selected-state fill (mockup --btnBg/--btnText). */
   btnBg: string;
   btnText: string;
+  /** Family map ocean + landmass (mockup --mapsea/--mapland). The land is a
+   * translucent wash over the sea so it reads soft in both themes. */
+  mapSea: string;
+  mapLand: string;
 }
 
 // Values are the mockup's t-light/t-dark CSS variables verbatim (entry-flow.html,
@@ -115,6 +142,8 @@ export const color: Record<ThemeName, ColorTokens> = {
     count: '#b98600',
     btnBg: palette.navy,
     btnText: '#ffffff',
+    mapSea: '#f4efe4',
+    mapLand: 'rgba(20,33,61,0.10)',
   },
   dark: {
     bg: '#0e1420',
@@ -135,6 +164,8 @@ export const color: Record<ThemeName, ColorTokens> = {
     count: palette.gold,
     btnBg: palette.gold,
     btnText: palette.navy,
+    mapSea: '#0b111b',
+    mapLand: 'rgba(255,255,255,0.07)',
   },
 };
 
@@ -153,6 +184,9 @@ export const fontFamily = {
     medium: 'HankenGrotesk-Medium',
     semiBold: 'HankenGrotesk-SemiBold',
     bold: 'HankenGrotesk-Bold',
+    // The mockup's font-weight:800 on body text (tags, the Glory/WhatsApp pills,
+    // primary buttons, map avatars). Body's Bold is 700, so 800 needs its own file.
+    extraBold: 'HankenGrotesk-ExtraBold',
   },
 } as const;
 

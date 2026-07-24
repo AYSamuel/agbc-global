@@ -11,14 +11,21 @@ export const branchesQueryOptions = {
     const { data, error } = await supabase
       .from('branches')
       .select(
-        'id, slug, name, city, country, is_hq, youtube_channel_id, timezone, address, order',
+        'id, slug, name, city, country, is_hq, youtube_channel_id, timezone, address, lat, lng, order',
       )
       .eq('status', 'active')
       .order('order');
     if (error) throw new Error(error.message);
     // address is jsonb (generic Json in the generated types): narrow it here so
-    // screens read a typed shape rather than casting at every call site.
-    return data.map((row) => ({ ...row, address: narrowAddress(row.address) }));
+    // screens read a typed shape rather than casting at every call site. lat/lng
+    // are numeric in the DB; coerce defensively (0/0 is the Gulf of Guinea, an
+    // obviously-wrong fallback rather than a plausible European coordinate).
+    return data.map((row) => ({
+      ...row,
+      address: narrowAddress(row.address),
+      lat: typeof row.lat === 'number' ? row.lat : Number(row.lat) || 0,
+      lng: typeof row.lng === 'number' ? row.lng : Number(row.lng) || 0,
+    }));
   },
   staleTime: 5 * 60_000,
 };

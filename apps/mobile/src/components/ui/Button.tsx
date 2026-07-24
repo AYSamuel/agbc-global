@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   Text,
+  View,
   type PressableProps,
 } from 'react-native';
 
@@ -32,6 +34,8 @@ export interface ButtonProps extends Omit<
   variant?: ButtonVariant;
   loading?: boolean;
   fullWidth?: boolean;
+  /** Leading icon (mockup buttons that carry a glyph, e.g. "I will pray"). */
+  icon?: ReactNode;
 }
 
 export function Button({
@@ -39,6 +43,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   fullWidth = false,
+  icon,
   disabled,
   ...pressableProps
 }: ButtonProps) {
@@ -92,10 +97,14 @@ export function Button({
       })}
     >
       {loading ? <ActivityIndicator size="small" color={foreground} /> : null}
+      {!loading && icon ? <View accessible={false}>{icon}</View> : null}
       {/* Mockup .btn: weight 800 at 15.5 (ghost: 700 at 13.5). */}
       <Text
         style={{
-          fontFamily: fontFamily.body.bold,
+          fontFamily:
+            variant === 'ghost'
+              ? fontFamily.body.bold
+              : fontFamily.body.extraBold,
           fontSize: variant === 'ghost' ? 13.5 : 15.5,
           color: foreground,
         }}
