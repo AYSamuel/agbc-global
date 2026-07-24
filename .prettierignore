@@ -16,3 +16,5 @@ dist/
 coverage/
 pnpm-lock.yaml
 *.hbc
+# Machine-written by Claude Code (permissions cache); never hand-formatted.
+.claude/settings.local.json

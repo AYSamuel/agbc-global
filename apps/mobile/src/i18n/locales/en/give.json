@@ -1,1 +1,26 @@
-{}
+{
+  "heroEyebrow": "Cheerful giving",
+  "heroTitle": "Give with joy",
+  "heroVerse": "“God loves a cheerful giver.” 2 Cor 9:7",
+  "intro": "Your generosity sustains the ministry across every branch and reaches the family in every nation.",
+  "giveNow": "Give now",
+  "giveNowMeta": "Opens {{url}} · secure checkout",
+  "otherWays": "Other ways to give",
+  "paypalTitle": "PayPal",
+  "bankTitle": "Bank transfer",
+  "bankSubtitle": "{{codes}} · copyable details",
+  "currencyLabel": "Currency",
+  "accountHeading": "{{code}} account",
+  "accountName": "Account name",
+  "referenceLabel": "Reference",
+  "referenceValue": "Your name · Tithe or Offering",
+  "copy": "Copy",
+  "copied": "{{field}} copied",
+  "copyFailed": "Couldn't copy. Please try again.",
+  "bankReassurance": "Payments go straight to the church account. Add your name so we can thank you.",
+  "recurringNote": "Giving monthly? To change or cancel a standing card gift, email",
+  "bankEmptyTitle": "Bank details are on their way",
+  "bankEmptyBody": "We couldn't find bank details right now. Please try again soon.",
+  "emptyTitle": "Giving is being set up",
+  "emptyBody": "Ways to give will appear here soon. Thank you for your heart to give."
+}

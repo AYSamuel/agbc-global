@@ -247,6 +247,37 @@ export function SearchIcon(props: IconProps) {
   );
 }
 
+// GIVE "Other ways to give" rows (mockup .giverow .gic). The card glyph fronts the
+// PayPal row; the bank building fronts the bank-transfer row.
+export function CardIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+      <Path d="M3 10h18" />
+    </Svg>
+  );
+}
+
+export function BankIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M3 10l9-6 9 6" />
+      <Path d="M5 10v8M19 10v8M9 10v8M15 10v8" />
+      <Path d="M3 20h18" />
+    </Svg>
+  );
+}
+
+// GIVE-BANK copy affordance (mockup .copyrow .copy): the classic copy-rectangles.
+export function CopyIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M11 9h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" />
+      <Path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </Svg>
+  );
+}
+
 export function UpdateIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>
