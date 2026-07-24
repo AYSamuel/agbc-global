@@ -1,1 +1,26 @@
-{}
+{
+  "heroEyebrow": "Freudiges Geben",
+  "heroTitle": "Mit Freude geben",
+  "heroVerse": "„Gott liebt einen fröhlichen Geber.“ 2. Kor 9,7",
+  "intro": "Deine Großzügigkeit trägt den Dienst in jeder Gemeinde und erreicht die Familie in jeder Nation.",
+  "giveNow": "Jetzt geben",
+  "giveNowMeta": "Öffnet {{url}} · sichere Zahlung",
+  "otherWays": "Weitere Wege zu geben",
+  "paypalTitle": "PayPal",
+  "bankTitle": "Banküberweisung",
+  "bankSubtitle": "{{codes}} · kopierbare Daten",
+  "currencyLabel": "Währung",
+  "accountHeading": "{{code}}-Konto",
+  "accountName": "Kontoinhaber",
+  "referenceLabel": "Verwendungszweck",
+  "referenceValue": "Dein Name · Zehnter oder Opfergabe",
+  "copy": "Kopieren",
+  "copied": "{{field}} kopiert",
+  "copyFailed": "Kopieren nicht möglich. Bitte versuche es erneut.",
+  "bankReassurance": "Zahlungen gehen direkt an das Konto der Gemeinde. Füge deinen Namen hinzu, damit wir dir danken können.",
+  "recurringNote": "Gibst du monatlich? Um eine laufende Kartenspende zu ändern oder zu kündigen, schreibe an",
+  "bankEmptyTitle": "Bankdaten sind unterwegs",
+  "bankEmptyBody": "Wir konnten gerade keine Bankdaten finden. Bitte versuche es bald erneut.",
+  "emptyTitle": "Das Geben wird eingerichtet",
+  "emptyBody": "Wege zum Geben erscheinen hier bald. Danke für dein gebefreudiges Herz."
+}

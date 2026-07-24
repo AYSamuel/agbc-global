@@ -138,6 +138,7 @@ insert into public.giving_config (id, accounts)
 values (
   '00000000-0000-4000-8000-000000000201',
   '{
+    "giveUrl": "https://www.agbcglobal.com/give",
     "paypalUrl": "https://paypal.me/agbcglobal",
     "cancellationEmail": "oami.gospel@gmail.com",
     "currencies": {

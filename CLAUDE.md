@@ -35,6 +35,7 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 - `pnpm test:db` · pgTAP via `supabase test db` (local stack must be running)
 - `pnpm format` / `pnpm format:check` · Prettier (singleQuote); docs/, supabase/, *.md, and assets are excluded
 - `supabase start` / `supabase stop` · local stack (ports remapped to 553xx, see supabase/config.toml)
+- `pnpm db:reset` · ALWAYS use this instead of bare `supabase db reset`: it resets local AND re-runs the YouTube sync (sermons are synced, never seeded; a bare reset leaves Watch empty and the app half-featured on device). `pnpm db:sync-sermons` runs just the sync.
 
 ## Supabase environments (see `19`, `24` §1)
 
@@ -54,9 +55,10 @@ The shared prod project contains ~3 tables belonging to the agbc website. Once t
 - Guest-first: browsing never requires auth; contribution gates via GateSheet + gate-return.
 - Server-trusted: RLS + triggers are the mechanism, never the client or the UI.
 - Design tokens only (from `packages/shared` tokens); no hard-coded hex; both themes always. Token values come from the mockup's CSS variables verbatim (never from 05's prose tables; if they disagree, the mockup wins and 05 gets synced in the same change).
-- Every screen is diffed element-by-element against its mockup frame's actual CSS (colors, type sizes, gradients, selected/edge states) before it counts as done; a behavioral walkthrough is not visual verification. If a surface has no mockup frame (Figma is parked), compose it from the mockup's existing classes/patterns and flag it to Ayo before building.
+- Mockup-first, first-hand: before writing any screen's code, read that screen's frame (HTML + CSS) directly from `docs/spec/design/mockups/entry-flow.html` in the build session. Summaries of the mockup, in ANY form (a subagent's report, 05's prose, memory of the frame), are research input, never the build reference; W1.1, W1.5, and W1.6 all drifted exactly this way. Every screen is then diffed element-by-element against the frame's actual CSS (colors, type sizes, gradients, static vs data-driven regions, selected/edge states) before it counts as done; a behavioral walkthrough is not visual verification. If a surface has no mockup frame (Figma is parked), compose it from the mockup's existing classes/patterns and flag it to Ayo before building.
 - Grace-framed copy: encourage, never shame (especially streaks).
 - Multi-branch: nothing assumes a single branch or hard-codes Glasgow.
+- Dev-client native fence: the dev builds on the physical devices contain only the native modules linked at their last EAS build (W0.11 as of W1.6). Importing a newly added native module (e.g. expo-clipboard) crashes the route on those clients. When adding one: guard the import so screens degrade until a rebuild (Gradient.tsx and CopyRow.tsx are the patterns), state in the PR that new dev builds are needed, and get Ayo's go-ahead for the EAS builds.
 - No em-dashes in any output, file, or message.
 
 ## Git

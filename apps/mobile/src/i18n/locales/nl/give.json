@@ -1,1 +1,26 @@
-{}
+{
+  "heroEyebrow": "Blijmoedig geven",
+  "heroTitle": "Geef met vreugde",
+  "heroVerse": "„God heeft een blijmoedige gever lief.” 2 Kor. 9:7",
+  "intro": "Jouw vrijgevigheid draagt de bediening in elke gemeente en bereikt de familie in elke natie.",
+  "giveNow": "Nu geven",
+  "giveNowMeta": "Opent {{url}} · veilig betalen",
+  "otherWays": "Andere manieren om te geven",
+  "paypalTitle": "PayPal",
+  "bankTitle": "Bankoverschrijving",
+  "bankSubtitle": "{{codes}} · kopieerbare gegevens",
+  "currencyLabel": "Valuta",
+  "accountHeading": "{{code}}-rekening",
+  "accountName": "Rekeninghouder",
+  "referenceLabel": "Omschrijving",
+  "referenceValue": "Je naam · Tienden of offergave",
+  "copy": "Kopiëren",
+  "copied": "{{field}} gekopieerd",
+  "copyFailed": "Kopiëren niet gelukt. Probeer het opnieuw.",
+  "bankReassurance": "Betalingen gaan rechtstreeks naar de rekening van de kerk. Voeg je naam toe zodat we je kunnen bedanken.",
+  "recurringNote": "Geef je maandelijks? Om een doorlopende kaartgift te wijzigen of te stoppen, mail naar",
+  "bankEmptyTitle": "Bankgegevens zijn onderweg",
+  "bankEmptyBody": "We konden nu geen bankgegevens vinden. Probeer het binnenkort opnieuw.",
+  "emptyTitle": "Geven wordt ingesteld",
+  "emptyBody": "Manieren om te geven verschijnen hier binnenkort. Bedankt voor je gulle hart."
+}

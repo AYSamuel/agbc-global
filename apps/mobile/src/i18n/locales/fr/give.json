@@ -1,1 +1,26 @@
-{}
+{
+  "heroEyebrow": "Le don joyeux",
+  "heroTitle": "Donnez avec joie",
+  "heroVerse": "« Dieu aime celui qui donne avec joie. » 2 Co 9:7",
+  "intro": "Votre générosité soutient le ministère dans chaque église et rejoint la famille dans chaque nation.",
+  "giveNow": "Donner maintenant",
+  "giveNowMeta": "Ouvre {{url}} · paiement sécurisé",
+  "otherWays": "Autres façons de donner",
+  "paypalTitle": "PayPal",
+  "bankTitle": "Virement bancaire",
+  "bankSubtitle": "{{codes}} · coordonnées à copier",
+  "currencyLabel": "Devise",
+  "accountHeading": "Compte {{code}}",
+  "accountName": "Titulaire du compte",
+  "referenceLabel": "Référence",
+  "referenceValue": "Votre nom · Dîme ou offrande",
+  "copy": "Copier",
+  "copied": "{{field}} copié",
+  "copyFailed": "Copie impossible. Veuillez réessayer.",
+  "bankReassurance": "Les paiements vont directement sur le compte de l'église. Ajoutez votre nom pour que nous puissions vous remercier.",
+  "recurringNote": "Vous donnez chaque mois ? Pour modifier ou annuler un don par carte récurrent, écrivez à",
+  "bankEmptyTitle": "Les coordonnées bancaires arrivent",
+  "bankEmptyBody": "Nous n'avons pas trouvé de coordonnées bancaires pour le moment. Veuillez réessayer bientôt.",
+  "emptyTitle": "Le don est en cours de configuration",
+  "emptyBody": "Les façons de donner apparaîtront ici bientôt. Merci pour votre cœur généreux."
+}

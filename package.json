@@ -12,6 +12,8 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "test:db": "supabase test db",
+    "db:reset": "supabase db reset && node scripts/sync-local-sermons.mjs",
+    "db:sync-sermons": "node scripts/sync-local-sermons.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck"
