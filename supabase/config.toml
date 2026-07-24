@@ -424,3 +424,9 @@ verify_jwt = true
 [functions.live-detection]
 enabled = true
 verify_jwt = true
+
+# Contact form (docs/spec/04 CONTACT; W1.7). Client-called: verify_jwt admits
+# the anon key, which is exactly the audience (guests can write to the church).
+[functions.contact-form]
+enabled = true
+verify_jwt = true

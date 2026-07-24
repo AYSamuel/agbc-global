@@ -280,6 +280,65 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          description: string
+          ends_at_local: string | null
+          id: string
+          image_url: string | null
+          location: string
+          rsvp_enabled: boolean
+          source: string
+          starts_at_local: string
+          status: Database["public"]["Enums"]["event_status"]
+          timezone: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          description?: string
+          ends_at_local?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          rsvp_enabled?: boolean
+          source?: string
+          starts_at_local: string
+          status?: Database["public"]["Enums"]["event_status"]
+          timezone: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          description?: string
+          ends_at_local?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          rsvp_enabled?: boolean
+          source?: string
+          starts_at_local?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          timezone?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       giving_config: {
         Row: {
           accounts: Json
@@ -712,6 +771,48 @@ export type Database = {
           },
         ]
       }
+      rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          profile_id: string
+          status: Database["public"]["Enums"]["rsvp_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          profile_id: string
+          status: Database["public"]["Enums"]["rsvp_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          profile_id?: string
+          status?: Database["public"]["Enums"]["rsvp_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvps_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_items: {
         Row: {
           created_at: string
@@ -1073,6 +1174,10 @@ export type Database = {
     }
     Functions: {
       assert_content_quota: { Args: never; Returns: undefined }
+      assert_event_accepts_rsvps: {
+        Args: { target_event: string }
+        Returns: undefined
+      }
       assert_prayer_link_allowed: {
         Args: { target_prayer: string }
         Returns: undefined
@@ -1082,6 +1187,10 @@ export type Database = {
       caller_profile_is_live: { Args: never; Returns: boolean }
       can_moderate_branch: { Args: { target_branch: string }; Returns: boolean }
       custom_access_token: { Args: { event: Json }; Returns: Json }
+      event_start_instant: {
+        Args: { starts_at_local: string; tz: string }
+        Returns: string
+      }
       in_counter_write: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_publicly_visible: {
@@ -1102,9 +1211,11 @@ export type Database = {
       branch_status: "active" | "archived"
       content_status: "pending" | "approved" | "rejected" | "removed"
       device_platform: "ios" | "android"
+      event_status: "scheduled" | "cancelled"
       intercession_state: "committed" | "prayed"
       profile_role: "member" | "leader" | "admin"
       report_status: "open" | "actioned" | "dismissed"
+      rsvp_status: "going" | "interested" | "cancelled"
       sermon_kind: "video" | "live_replay"
       sermon_status: "available" | "unavailable"
       service_kind: "sunday" | "midweek" | "classes"
@@ -1241,9 +1352,11 @@ export const Constants = {
       branch_status: ["active", "archived"],
       content_status: ["pending", "approved", "rejected", "removed"],
       device_platform: ["ios", "android"],
+      event_status: ["scheduled", "cancelled"],
       intercession_state: ["committed", "prayed"],
       profile_role: ["member", "leader", "admin"],
       report_status: ["open", "actioned", "dismissed"],
+      rsvp_status: ["going", "interested", "cancelled"],
       sermon_kind: ["video", "live_replay"],
       sermon_status: ["available", "unavailable"],
       service_kind: ["sunday", "midweek", "classes"],
