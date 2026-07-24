@@ -240,7 +240,16 @@ export default function Home() {
               branch?.name ?? '',
             )}
             onPlanVisit={() => {
-              router.push('/branches');
+              // BRANCH-INFO is the 04 destination; the list is the fallback
+              // when no browsing branch is set.
+              if (branch) {
+                router.push({
+                  pathname: '/branch/[id]',
+                  params: { id: branch.id },
+                });
+              } else {
+                router.push('/branches');
+              }
             }}
             onWatchLive={() => {
               router.push('/watch');

@@ -175,3 +175,49 @@ values
   ('60000000-0000-4000-8000-000000000003', '50000000-0000-4000-8000-00000000000b',
    'committed', null)
 on conflict (prayer_id, profile_id) do nothing;
+
+-- Events fixtures (W1.7): date-relative so a reset always leaves upcoming rows.
+-- One per branch plus a ministry-wide gathering, a cancelled event (the banner
+-- treatment) and a past one (the Past section). Real events come from the
+-- dashboard (W3.5); never prod. Branch events omit `timezone` on purpose: the
+-- insert guard fills it from the branch, exactly as the dashboard will rely on.
+insert into public.events
+  (id, branch_id, title, description, starts_at_local, location, status, rsvp_enabled)
+values
+  ('83000000-0000-4000-8000-000000000001',
+   (select id from public.branches where slug = 'berlin'),
+   'Night of Worship',
+   'An evening of worship and prayer as the Berlin family gathers to seek God together. All are welcome, so bring a friend.',
+   (current_date + 9) + time '19:00', 'Prinzenstr. 84, 10969 Berlin', 'scheduled', true),
+  ('83000000-0000-4000-8000-000000000002',
+   null,
+   'Global Family Sunday',
+   'One family, many nations: every branch worships together on the same Sunday, joined across Glasgow, Berlin, Emmen and Ogbomosho.',
+   (current_date + 16) + time '10:00', 'Every branch', 'scheduled', true),
+  ('83000000-0000-4000-8000-000000000003',
+   (select id from public.branches where slug = 'glasgow'),
+   'Youth Conference',
+   'A day for the young people of the family: teaching, worship and honest conversation about following Jesus where you are.',
+   (current_date + 23) + time '10:00', 'Glasgow', 'scheduled', true),
+  ('83000000-0000-4000-8000-000000000004',
+   (select id from public.branches where slug = 'ogbomosho'),
+   'Harvest Thanksgiving',
+   'A service of thanksgiving for what God has done in the Ogbomosho family this season.',
+   (current_date + 30) + time '09:00', 'Ogbomosho', 'scheduled', true),
+  ('83000000-0000-4000-8000-000000000005',
+   (select id from public.branches where slug = 'emmen'),
+   'Community Picnic',
+   'Food, games and family time with the Emmen branch.',
+   (current_date + 12) + time '12:00', 'Emmen', 'cancelled', true),
+  ('83000000-0000-4000-8000-000000000006',
+   (select id from public.branches where slug = 'glasgow'),
+   'Night of Prayer',
+   'The Glasgow family gathered to pray through the night for the nations.',
+   (current_date - 6) + time '18:00', 'Glasgow', 'scheduled', true)
+on conflict (id) do update set
+  title = excluded.title,
+  description = excluded.description,
+  starts_at_local = excluded.starts_at_local,
+  location = excluded.location,
+  status = excluded.status,
+  rsvp_enabled = excluded.rsvp_enabled;

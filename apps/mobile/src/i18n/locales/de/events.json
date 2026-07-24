@@ -1,1 +1,27 @@
-{}
+{
+  "title": "Veranstaltungen",
+  "upcoming": "Demnächst",
+  "past": "Vergangen",
+  "rangeLabel": "Kommende oder vergangene Veranstaltungen anzeigen",
+  "allBranches": "Alle Standorte",
+  "tagBranch": "Standort",
+  "tagGlobal": "Alle Nationen",
+  "emptyUpcomingTitle": "Noch keine Veranstaltungen geplant",
+  "emptyUpcomingBody": "Schau bald wieder vorbei.",
+  "emptyPastTitle": "Noch keine vergangenen Veranstaltungen",
+  "emptyPastBody": "Treffen erscheinen hier, nachdem sie stattgefunden haben.",
+  "ministryWide": "Weltweit · die ganze Familie",
+  "cancelledBanner": "Vom Veranstalter abgesagt",
+  "seeOtherEvents": "Andere Veranstaltungen ansehen",
+  "rsvpGoing": "Zusagen · Ich komme",
+  "rsvpClosed": "Die Anmeldung ist für diese Veranstaltung geschlossen",
+  "pastNote": "Diese Veranstaltung hat bereits stattgefunden.",
+  "share": "Teilen",
+  "cityTime": "Ortszeit {{city}}",
+  "yourTime": "{{time}} deine Zeit",
+  "gateTitle": "Sichere dir deinen Platz",
+  "gateBody": "Melde dich an, um zuzusagen, damit deine Familie weiß, dass du kommst.",
+  "gateDismissed": "Du kannst Veranstaltungen als Gast weiter ansehen.",
+  "notFoundTitle": "Diese Veranstaltung ist nicht verfügbar",
+  "notFoundBody": "Sie wurde womöglich entfernt. Sieh dir an, was sonst ansteht."
+}

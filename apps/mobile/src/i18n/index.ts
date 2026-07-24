@@ -25,8 +25,9 @@ export const LANGUAGE_AUTONYMS: Record<SupportedLanguage, string> = {
   fr: 'Français',
 };
 
-// Namespaces per docs/spec/24 §2.5. The empty ones fill as their features build
-// (home W1.4, watch W1.3, family W1.5, ...); full DE/NL/FR translation lands at W4.6.
+// Namespaces per docs/spec/24 §2.5 (church added at W1.7 for the screens 04
+// owns directly). The empty ones fill as their features build (home W1.4,
+// watch W1.3, family W1.5, ...); full DE/NL/FR translation lands at W4.6.
 export const NAMESPACES = [
   'common',
   'home',
@@ -34,6 +35,7 @@ export const NAMESPACES = [
   'family',
   'give',
   'events',
+  'church',
   'auth',
   'settings',
   'errors',
@@ -48,6 +50,7 @@ const resources = {
     family: require('./locales/en/family.json') as object,
     give: require('./locales/en/give.json') as object,
     events: require('./locales/en/events.json') as object,
+    church: require('./locales/en/church.json') as object,
     auth: require('./locales/en/auth.json') as object,
     errors: require('./locales/en/errors.json') as object,
   },
@@ -59,6 +62,7 @@ const resources = {
     family: require('./locales/de/family.json') as object,
     give: require('./locales/de/give.json') as object,
     events: require('./locales/de/events.json') as object,
+    church: require('./locales/de/church.json') as object,
     auth: require('./locales/de/auth.json') as object,
     errors: require('./locales/de/errors.json') as object,
   },
@@ -70,6 +74,7 @@ const resources = {
     family: require('./locales/nl/family.json') as object,
     give: require('./locales/nl/give.json') as object,
     events: require('./locales/nl/events.json') as object,
+    church: require('./locales/nl/church.json') as object,
     auth: require('./locales/nl/auth.json') as object,
     errors: require('./locales/nl/errors.json') as object,
   },
@@ -81,6 +86,7 @@ const resources = {
     family: require('./locales/fr/family.json') as object,
     give: require('./locales/fr/give.json') as object,
     events: require('./locales/fr/events.json') as object,
+    church: require('./locales/fr/church.json') as object,
     auth: require('./locales/fr/auth.json') as object,
     errors: require('./locales/fr/errors.json') as object,
   },

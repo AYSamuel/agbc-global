@@ -280,6 +280,9 @@ export default function Family() {
               onOpenTestimony={(id) => {
                 router.push({ pathname: '/testimony/[id]', params: { id } });
               }}
+              onOpenBranch={(id) => {
+                router.push({ pathname: '/branch/[id]', params: { id } });
+              }}
             />
           </View>
         </Screen>

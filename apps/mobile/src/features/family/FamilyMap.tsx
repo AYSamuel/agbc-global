@@ -45,12 +45,14 @@ import { useRelativeAgeLabel } from './useRelativeAgeLabel';
 // Earth coastline, branch pins coloured per nation, recent testimony pins in their
 // branch's colour, floating zoom + locate controls, and a swipeable "family,
 // lately" sheet. One finger pans, two fingers pinch-zoom (buttons zoom too), and
-// the sheet drags down to reveal the whole map. Branch pins are not yet tappable
-// to BRANCH-INFO (that screen is W1.7); testimony pins and sheet rows open
-// TESTIMONY-DETAIL.
+// the sheet drags down to reveal the whole map. Branch pins open BRANCH-INFO
+// (landed W1.7); testimony pins and sheet rows open TESTIMONY-DETAIL.
 
 const BRANCH_PIN = 6.5;
 const HOME_HALO = 12;
+// Tap target for a branch pin (invisible circle): near the 44px floor without
+// letting neighbouring pins' hit areas swallow the map between them.
+const HIT_RADIUS = 20;
 const SHEET_ROWS = 3;
 // How much of the sheet stays on screen when it is swiped down: the grab handle
 // and the title, enough to grab and pull back up.
@@ -205,12 +207,15 @@ export function FamilyMap({
   testimonies,
   branchNames,
   onOpenTestimony,
+  onOpenBranch,
 }: {
   branches: BranchPoint[];
   homeBranchId: string | null;
   testimonies: TestimonyFeedItem[];
   branchNames: Record<string, string>;
   onOpenTestimony: (id: string) => void;
+  /** Branch pin tap -> BRANCH-INFO (docs/spec/04 map destinations). */
+  onOpenBranch: (id: string) => void;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -428,6 +433,19 @@ export function FamilyMap({
                     fill={color}
                     stroke={colors.mapSea}
                     strokeWidth={1.6}
+                  />
+                  {/* Invisible hit area: the 6.5px pin alone is untappable.
+                      Taps pass through the pan responder (it claims only on
+                      movement), so pin -> BRANCH-INFO works without fighting
+                      the drag gesture. */}
+                  <Circle
+                    cx={s.x}
+                    cy={s.y}
+                    r={HIT_RADIUS}
+                    fill="transparent"
+                    onPress={() => {
+                      onOpenBranch(item.id);
+                    }}
                   />
                 </Fragment>
               );

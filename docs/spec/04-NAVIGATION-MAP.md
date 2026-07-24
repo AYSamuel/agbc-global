@@ -146,7 +146,7 @@ Each row → its screen. Every leaf screen has back. Guest rows that need auth o
 - **`BRANCH-INFO`** (destination of Home's "Plan a visit", both map pin types, and `BRANCHES`): renders one branch from `branches` + `branch_services`: next services (computed from `branch_services`, displayed with `service_times` strings), address with a Directions link (OS maps), lead + leaders, `welcome` copy, contact email. Actions: Directions, Share, "Watch this branch" (sets the browsing chip), and around service time the "I'm here" affordance (gate). Empty/edge: branch without coordinates hides the map link, never errors.
 - **`BRANCHES`**: list of all branches (name, city, country, HQ badge) → `BRANCH-INFO`. Same data as onboarding's picker.
 - **`ABOUT`**: the church's story + "One family · many nations" statement (static content, from the website's copy). Links to `BRANCHES` and `CONTACT`.
-- **`CONTACT`**: contact form (name, message → edge function → church inbox) + direct email links per branch. Submit → confirmation; failure preserves the draft.
+- **`CONTACT`**: contact form (name, email, message → edge function → church inbox, reply-to = the sender's email) + direct email links per branch. Submit → confirmation; failure preserves the draft.
 - **`LEADER-HOME`** (role-gated): explains the leader role and links out to the web dashboard (`17`); shows the leader's branch scope. No moderation happens in the app.
 
 ## Auth cluster
