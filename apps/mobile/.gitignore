@@ -33,6 +33,13 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Firebase config: the client config is public (it ships in the app binary), but
+# GitHub secret-scanning flags the embedded API key, so it stays out of git. Kept
+# locally (untracked) and supplied to EAS builds via the GOOGLE_SERVICES_JSON file
+# secret (see app.config.js and docs/runbooks/credentials.md).
+google-services.json
+GoogleService-Info.plist
+
 # typescript
 *.tsbuildinfo
 

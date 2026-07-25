@@ -10,7 +10,7 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Google Play Console | Android distribution | Ayo | Google account | TBC | $25 one-off, paid | Highest versionCode 19; App Signing SHA-256 recorded in `docs/spec/19` |
 | GitHub `AYSamuel/agbc-global` | Repo, CI | Ayo | GitHub + MFA | TBC (ADR 0012: personal account, second owners via collaborators) | Free | Identity for the OAuth sign-ins below; recovery codes in password manager |
 | Supabase org | Prod (shared with website) + dev | Ayo | TBC | Church officer TBC | Free (Pro is a pre-TestFlight gate) | Prod ref `fotfplvqsnmbzjjhqlwp`, eu-central-1 |
-| Google Cloud / Firebase `agbc-app` | FCM push credentials + app YouTube key | Ayo | Google account | TBC | Free (Spark) | Old Grace Portal project; Android app `com.oami.agbcapp` registered; FCM V1 key + YouTube key in password manager (2026-07-18) |
+| Google Cloud / Firebase `agbc-app` | FCM push credentials + app YouTube key | Ayo | Google account | TBC | Free (Spark) | Old Grace Portal project; Android app `com.oami.agbcapp` registered; FCM V1 key + YouTube key in password manager (2026-07-18). `google-services.json` is untracked (gitignored) and supplied to EAS via the `GOOGLE_SERVICES_JSON` file secret; local dev keeps its own copy. Android API key regeneration + restriction tracked below (2026-07-25 public-leak alert) |
 | Google Cloud `agbc-website` | Website's YouTube key ONLY | Ayo | Google account | TBC | Free | Never share key strings with the app (rotation + quota isolation) |
 | Meta Business portfolio | WhatsApp broadcasts (Phase 3) | Ayo (portfolio TBC, month 1) | Facebook profile | TBC | Free; per-conversation broadcast costs | Verification needs incorporation cert + utility bill |
 | Resend | Auth OTP email + transactional (via website account) | Ayo | TBC (website account) | TBC | Free tier (3k/month) | Becomes Supabase custom SMTP before first real sign-ins |
@@ -33,3 +33,13 @@ The Android upload keystore exists in: EAS credentials (at W0.11) + encrypted va
 - [ ] Name and add second owners (church officer) on: Supabase org, password-manager vault, Apple (once Ayo's Admin invite lands)
 - [ ] Fill TBC sign-in methods as each account is next touched
 - [ ] Record domain renewal date from the registrar
+
+## Firebase `agbc-app` Android API key: leak remediation (2026-07-25)
+
+GitHub flagged the Firebase Android API key committed in `apps/mobile/google-services.json`. It is a client key (public by design: it ships in the APK), so severity is low, but it is being cleaned up. Order matters; do these on the Google Cloud / Firebase side:
+
+- [ ] **Regenerate** the Android API key in Google Cloud Console (Credentials), then download the fresh `google-services.json` from Firebase project settings. This invalidates the leaked value.
+- [ ] **Restrict** the new key: Application restrictions -> Android apps -> package `com.oami.agbcapp` + the signing SHA-1(s) (upload keystore + dev); API restrictions -> only the Firebase APIs it needs. Confirm no billable API (Maps, etc.) is reachable on it.
+- [ ] Put the new `google-services.json` at `apps/mobile/google-services.json` (untracked) and set the EAS file secret: `eas secret:create --scope project --type file --name GOOGLE_SERVICES_JSON --value ./google-services.json`.
+- [ ] Rebuild the dev clients so they carry the new config, then **close the GitHub alert as revoked**.
+- [ ] (Note) The old value stays in git history; regeneration is what neutralizes it, not history rewriting (a client key already lives in every binary).
