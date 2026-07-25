@@ -124,6 +124,15 @@ export default function Home() {
   const { branches } = resolveBranchList(branchesQuery);
   // The hero's address line comes from the branch row (mockup .hero .where).
   const currentBranch = branches.find((b) => b.id === branch?.id) ?? null;
+  // Display-string service times for the hero fallback (docs/spec/07 §3): shown
+  // only when a branch has no branch_services rows (so `next` is null). Ordered
+  // Sunday first; the snapshot omits service_times, so an offline first launch
+  // simply has none and falls to "coming soon".
+  const displayTimes = [
+    currentBranch?.service_times?.sunday,
+    currentBranch?.service_times?.classes,
+    currentBranch?.service_times?.midweek,
+  ].filter((s): s is string => Boolean(s));
 
   const now = new Date();
   const next = resolveNextService(
@@ -257,7 +266,7 @@ export default function Home() {
         ) : (
           <NextServiceCard
             next={next}
-            displayTimes={[]}
+            displayTimes={displayTimes}
             branchName={branch?.name ?? ''}
             addressLine={resolveAddressLine(
               currentBranch?.address ?? null,

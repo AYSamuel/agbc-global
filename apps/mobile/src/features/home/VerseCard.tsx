@@ -18,6 +18,11 @@ export function VerseCard({ verse }: { verse: DailyVerse }) {
   const quoted = `“${verse.text}”`;
   const attribution = `${verse.reference} · ${verse.translation}`;
 
+  // Text share for now. The branded-IMAGE share (docs/spec/07 "branded image/text")
+  // is deferred: rasterizing this card needs a native capture module
+  // (react-native-view-shot), which trips the dev-client native fence (a new EAS
+  // build), so it lands in the next rebuild batch / the Phase 4 polish pass, not
+  // silently dropped.
   const share = () => {
     void Share.share({
       message: `"${verse.text}"\n${verse.reference} · ${verse.translation}`,

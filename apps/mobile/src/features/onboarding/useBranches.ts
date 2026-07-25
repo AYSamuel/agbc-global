@@ -12,18 +12,19 @@ export const branchesQueryOptions = {
     const { data, error } = await supabase
       .from('branches')
       .select(
-        'id, slug, name, city, country, is_hq, youtube_channel_id, timezone, address, lat, lng, order',
+        'id, slug, name, city, country, is_hq, youtube_channel_id, timezone, address, service_times, lat, lng, order',
       )
       .eq('status', 'active')
       .order('order');
     if (error) throw new Error(error.message);
-    // address is jsonb (generic Json in the generated types): narrow it here so
-    // screens read a typed shape rather than casting at every call site. lat/lng
-    // are numeric in the DB; coerce defensively (0/0 is the Gulf of Guinea, an
-    // obviously-wrong fallback rather than a plausible European coordinate).
+    // address / service_times are jsonb (generic Json in the generated types):
+    // narrow them here so screens read a typed shape rather than casting at every
+    // call site. lat/lng are numeric in the DB; coerce defensively (0/0 is the Gulf
+    // of Guinea, an obviously-wrong fallback rather than a plausible coordinate).
     return data.map((row) => ({
       ...row,
       address: narrowAddress(row.address),
+      service_times: narrowServiceTimes(row.service_times),
       lat: typeof row.lat === 'number' ? row.lat : Number(row.lat) || 0,
       lng: typeof row.lng === 'number' ? row.lng : Number(row.lng) || 0,
     }));
@@ -40,6 +41,16 @@ function narrowAddress(value: unknown): BranchSummary['address'] {
   return {
     line1: typeof line1 === 'string' ? line1 : undefined,
     line2: typeof line2 === 'string' ? line2 : undefined,
+  };
+}
+
+function narrowServiceTimes(value: unknown): BranchSummary['service_times'] {
+  if (typeof value !== 'object' || value === null) return null;
+  const { sunday, classes, midweek } = value as Record<string, unknown>;
+  return {
+    sunday: typeof sunday === 'string' ? sunday : undefined,
+    classes: typeof classes === 'string' ? classes : undefined,
+    midweek: typeof midweek === 'string' ? midweek : undefined,
   };
 }
 

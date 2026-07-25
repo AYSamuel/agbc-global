@@ -103,6 +103,15 @@ values
 update public.prayers set status = 'approved'
   where id = '86000000-0000-4000-8000-00000000000c';
 
+-- What we assert here is the PAYLOAD sanitization: the row realtime.send() actually
+-- wrote carries no author_id for an anonymous request. That is the anonymity
+-- guarantee. The separate subscription-gate policy on realtime.messages (who may
+-- SELECT a `family:%` channel) is deliberately NOT asserted here: it reads
+-- `realtime.topic()` from the live subscription context, and realtime's own
+-- delivery layer, not this RLS, does the topic-to-row matching, so a pgTAP check of
+-- the policy in isolation would test the wrong layer. It is a device-verification
+-- item (a real subscriber on the wrong topic sees nothing), noted in the W1 audit.
+--
 -- Asserted over ALL messages for this row, never "the latest": every statement in
 -- this transaction shares one now(), so inserted_at cannot order them.
 select is(

@@ -78,6 +78,8 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 | Counter reconciliation | nightly | recount glory/pray mismatches | drifted counts |
 | Dev keep-alive | weekly (dev project only) | trivial query | dev project pauses |
 
+**Scheduling-wiring status (flagged in the W1 audit, 2026-07-25):** the edge functions above ship built + tested (`youtube-sync`, `live-detection` in Phase 1; the rest in their phases), but the `pg_cron` + `pg_net` migration that actually *registers* the schedules is NOT yet in the repo. Phase 1 local testing is unaffected: the YouTube sync runs via `pnpm db:sync-sermons` (on `db:reset`), and live detection is exercised by its deno tests. The cron registration is **owned by Track P** and lands with the first hosted-dev/prod deployment that must auto-run these, because the schedule is environment-specific (function URLs + a cron-invocation secret differ per env, and `19`'s traffic fence keeps prod off Pro until the pre-TestFlight upgrade). Until then, hosted dev/prod do not auto-sync.
+
 ## 6. Observability (the minimal owned alert set)
 
 1. **Sentry** (app + dashboard + Deno SDK in edge functions), PII scrubbing on: alert on a new issue hitting > 5 users/hour; crash-free sessions < 99.5% during a rollout = halt criterion.

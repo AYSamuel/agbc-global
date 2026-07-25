@@ -17,6 +17,14 @@ export interface BranchSummary {
   timezone: string;
   /** Display address (jsonb in the DB); Home's hero shows line1. */
   address: { line1?: string; line2?: string } | null;
+  /** Display-string service times (jsonb); Home's hero fallback shows these when a
+   * branch has no branch_services rows (docs/spec/07 §3). Optional: the bundled
+   * snapshot omits it, so an offline first launch shows "coming soon" instead. */
+  service_times?: {
+    sunday?: string;
+    classes?: string;
+    midweek?: string;
+  } | null;
   /** Venue/city-level coordinates for the Family map (docs/spec/09). */
   lat: number;
   lng: number;
