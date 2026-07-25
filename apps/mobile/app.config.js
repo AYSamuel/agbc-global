@@ -23,9 +23,14 @@ const config = {
   android: {
     package: 'com.oami.agbcapp',
     versionCode: 20,
-    // Public Firebase client config (committable); the FCM V1 SECRET key lives only
-    // in EAS credentials (docs/spec/21 §3).
-    googleServicesFile: './google-services.json',
+    // Firebase client config. The file ships inside the app binary, so its API key
+    // is public by design (Google: safe to include), but it is kept OUT of git so
+    // secret-scanning stops flagging it (decision 2026-07-25, reversing the earlier
+    // "committable" call). EAS builds get it from the GOOGLE_SERVICES_JSON file
+    // secret; locally it falls back to the untracked ./google-services.json. The FCM
+    // V1 SECRET key still lives only in EAS credentials (docs/spec/21 §3).
+    googleServicesFile:
+      process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
