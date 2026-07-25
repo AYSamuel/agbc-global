@@ -36,10 +36,20 @@ The Android upload keystore exists in: EAS credentials (at W0.11) + encrypted va
 
 ## Firebase `agbc-app` Android API key: leak remediation (2026-07-25)
 
-GitHub flagged the Firebase Android API key committed in `apps/mobile/google-services.json`. It is a client key (public by design: it ships in the APK), so severity is low, but it is being cleaned up. Order matters; do these on the Google Cloud / Firebase side:
+GitHub flagged the Firebase Android API key committed in `apps/mobile/google-services.json` (secret-scanning alert #1). It is a client key (public by design: it ships in the APK), so severity is low. Chosen fix: **restrict, do not rotate**. Google advises against routinely rotating these keys, restriction fully neutralizes the risk, and this is the old Grace Portal project on a shared package/signing, so rotating could disrupt live Grace Portal installs.
 
-- [ ] **Regenerate** the Android API key in Google Cloud Console (Credentials), then download the fresh `google-services.json` from Firebase project settings. This invalidates the leaked value.
-- [ ] **Restrict** the new key: Application restrictions -> Android apps -> package `com.oami.agbcapp` + the signing SHA-1(s) (upload keystore + dev); API restrictions -> only the Firebase APIs it needs. Confirm no billable API (Maps, etc.) is reachable on it.
-- [ ] Put the new `google-services.json` at `apps/mobile/google-services.json` (untracked) and set the EAS file secret: `eas secret:create --scope project --type file --name GOOGLE_SERVICES_JSON --value ./google-services.json`.
-- [ ] Rebuild the dev clients so they carry the new config, then **close the GitHub alert as revoked**.
-- [ ] (Note) The old value stays in git history; regeneration is what neutralizes it, not history rewriting (a client key already lives in every binary).
+Done (2026-07-25):
+
+- [x] **Application restrictions** added on the key (Google Cloud Console -> APIs & Services -> Credentials -> "Android key (auto created by Firebase)"): Application restrictions -> Android apps -> package `com.oami.agbcapp` with the Play **app-signing** SHA-1 (`02:7C:1A:FA:36:7F:39:9A:07:64:AE:B7:5C:DD:67:3B:3C:FD:BF:72`) and **upload-key** SHA-1 (`64:AF:5B:46:1E:90:25:AD:68:FB:D5:D1:CB:22:18:EF:77:51:53:0D`). The leaked string is now non-abusable: Google only honors it from an app signed with those certs. API restrictions left as Firebase's default set.
+- [x] `google-services.json` untracked + gitignored, supplied to EAS via the `GOOGLE_SERVICES_JSON` file secret (PR #68).
+- [x] GitHub alert #1 closed as `wont_fix` (mitigated).
+
+Open follow-ups:
+
+- [ ] Before the next EAS build, set the file secret: `eas secret:create --scope project --type file --name GOOGLE_SERVICES_JSON --value ./google-services.json`.
+- [ ] **When push is wired (W3.3):** add the EAS **dev/preview** keystore SHA-1(s) to the same Android-apps restriction (those builds use different keystores), getting each from `eas credentials` (Android). The restriction has no runtime effect before then: nothing calls Firebase until Phase 3.
+
+Notes:
+
+- The old value stays in git history; that is acceptable for a restricted client key (it already ships in every binary). Restriction, not history rewriting, is the control.
+- **Failure signature:** a future Firebase call failing with HTTP 403 / "Requests from this Android client application are blocked" means a signing SHA-1 is missing from this key's Android-apps restriction. Fix (30 seconds): add that build's SHA-1 (Console -> Credentials -> the key -> Application restrictions -> Android apps -> Add). Get a keystore's SHA-1 from `eas credentials` (Android) or Play Console -> App integrity -> App signing.
