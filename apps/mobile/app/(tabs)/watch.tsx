@@ -100,7 +100,14 @@ export default function Watch() {
   const liveRail = liveReplays.slice(0, SECTION_LIMIT);
 
   return (
-    <Screen widthClass="capped" padded={false}>
+    <Screen
+      widthClass="capped"
+      padded={false}
+      refreshing={query.isRefetching}
+      onRefresh={() => {
+        void query.refetch();
+      }}
+    >
       {/* Mockup .stitle with the search .ic-btn: the title sits at the 20px
           gutter, the cards below at 16 (matching Home + Family). */}
       <View

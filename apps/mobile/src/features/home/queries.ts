@@ -1,6 +1,7 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 
 import { latestTestimonyQueryOptions } from '@/features/family/queries';
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 import type { ServiceRow } from './nextService';
@@ -42,6 +43,8 @@ export function dailyVerseQueryOptions(dateKey: string, language: string) {
       return data;
     },
     staleTime: 60 * 60_000,
+    // Home is one tap from cold start and must survive offline (docs/spec/07).
+    meta: PERSIST_META,
   };
 }
 
@@ -63,6 +66,8 @@ export function branchServicesQueryOptions(branchId: string | null) {
       return data;
     },
     staleTime: 30 * 60_000,
+    // The next-service card must render offline from cache (docs/spec/07).
+    meta: PERSIST_META,
   };
 }
 

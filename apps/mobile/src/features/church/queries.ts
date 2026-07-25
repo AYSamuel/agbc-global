@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 // Church-screen reads (docs/spec/04): BRANCH-INFO renders the full branch row;
@@ -91,6 +92,8 @@ export function branchDetailQueryOptions(id: string | null) {
       };
     },
     staleTime: 5 * 60_000,
+    // BRANCH-INFO paints from cache offline (docs/spec/04 offline state).
+    meta: PERSIST_META,
   };
 }
 
@@ -120,6 +123,9 @@ export const branchContactsQueryOptions = {
     return data;
   },
   staleTime: 30 * 60_000,
+  // CONTACT's branch-email fallback must survive offline: it is the only
+  // non-network route to reach the church (docs/spec/04).
+  meta: PERSIST_META,
 };
 
 export function useBranchContactsQuery() {

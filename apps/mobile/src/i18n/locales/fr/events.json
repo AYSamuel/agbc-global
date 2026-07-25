@@ -10,6 +10,8 @@
   "emptyUpcomingBody": "Revenez bientôt.",
   "emptyPastTitle": "Pas encore d'événements passés",
   "emptyPastBody": "Les rassemblements apparaîtront ici après avoir eu lieu.",
+  "emptyUpcomingAction": "Voir les événements passés",
+  "emptyPastAction": "Voir les événements à venir",
   "ministryWide": "Toute l'église · toute la famille",
   "cancelledBanner": "Annulé par l'organisateur",
   "seeOtherEvents": "Voir d'autres événements",

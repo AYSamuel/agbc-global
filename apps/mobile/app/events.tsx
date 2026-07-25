@@ -70,15 +70,25 @@ export default function Events() {
       );
     }
     if (visible.length === 0) {
+      // An empty range still offers a next step (never a bare empty list): the
+      // other range, which keeps the guest on the events surface.
       return range === 'upcoming' ? (
         <EmptyState
           title={t('events:emptyUpcomingTitle')}
           body={t('events:emptyUpcomingBody')}
+          actionLabel={t('events:emptyUpcomingAction')}
+          onAction={() => {
+            setRange('past');
+          }}
         />
       ) : (
         <EmptyState
           title={t('events:emptyPastTitle')}
           body={t('events:emptyPastBody')}
+          actionLabel={t('events:emptyPastAction')}
+          onAction={() => {
+            setRange('upcoming');
+          }}
         />
       );
     }

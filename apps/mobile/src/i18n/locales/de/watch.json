@@ -37,5 +37,8 @@
   "rotBodyAudio": "Das Video wurde entfernt; das Audio kehrt mit einem kommenden Update zurück.",
   "backToWatch": "Zurück zu Ansehen",
   "emptyTitle": "Botschaften sind auf dem Weg",
-  "emptyBody": "Neue Botschaften erscheinen hier nach dem nächsten Gottesdienst."
+  "emptyBody": "Neue Botschaften erscheinen hier nach dem nächsten Gottesdienst.",
+  "notesGateTitle": "Anmelden, um Notizen zu machen",
+  "notesGateBody": "Halte Notizen zu dieser Botschaft fest und finde sie auf jedem Gerät wieder.",
+  "gateDismissed": "Du kannst als Gast weiter zuschauen."
 }

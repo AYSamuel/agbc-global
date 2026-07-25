@@ -344,6 +344,43 @@ describe('WATCH-SEARCH', () => {
     );
   });
 
+  // The see-all list mode used to render only its success state: a cold-offline
+  // open showed a bare header (docs/spec/04 forbids the blank freeze). W1.8 gives
+  // it the full four states, mirroring the search branch.
+  test('see-all list mode: loading shows skeletons under the header', async () => {
+    mockParams = { list: 'videos' };
+    mockKindList.mockReturnValue({
+      data: undefined,
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<WatchSearch />);
+    expect(screen.getByText('All messages')).toBeOnTheScreen();
+    expect(
+      screen.getAllByTestId('skeleton', { includeHiddenElements: true }).length,
+    ).toBeGreaterThan(0);
+  });
+
+  test('see-all list mode: error offers a retry that refetches', async () => {
+    mockParams = { list: 'videos' };
+    const refetch = jest.fn();
+    mockKindList.mockReturnValue({ data: undefined, isError: true, refetch });
+    await renderScreen(<WatchSearch />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  test('see-all list mode: empty is friendly, never a bare header', async () => {
+    mockParams = { list: 'videos' };
+    mockKindList.mockReturnValue({
+      data: [],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<WatchSearch />);
+    expect(screen.getByText('Messages are on their way')).toBeOnTheScreen();
+  });
+
   test('no results offers a clear path back', async () => {
     mockParams = { q: 'zzzz' };
     mockSearch.mockReturnValue({
@@ -375,7 +412,7 @@ describe('SERMON player', () => {
     expect(screen.getByText('Videos play via YouTube')).toBeOnTheScreen();
   });
 
-  test('the audio tile is disabled without audio and Notes gates to /auth', async () => {
+  test('the audio tile is disabled without audio and Notes opens the gate', async () => {
     mockParams = { id: 'aaa' };
     mockSermon.mockReturnValue({
       data: sermon({ audio_url: null }),
@@ -384,7 +421,12 @@ describe('SERMON player', () => {
     });
     await renderScreen(<Sermon />);
     expect(screen.getByRole('button', { name: 'Audio only' })).toBeDisabled();
+    // Notes is a member feature: it opens the gate (not a bare push to /auth), so
+    // W2.2 can wire gate-return through the sheet.
     await fireEvent.press(screen.getByRole('button', { name: 'Notes' }));
+    expect(screen.getByText('Sign in to take notes')).toBeOnTheScreen();
+    expect(mockPush).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByText('Sign in'));
     expect(mockPush).toHaveBeenCalledWith('/auth');
   });
 

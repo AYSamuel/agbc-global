@@ -37,5 +37,8 @@
   "rotBodyAudio": "De video is verwijderd; de audio keert terug met een komende update.",
   "backToWatch": "Terug naar Kijken",
   "emptyTitle": "Boodschappen zijn onderweg",
-  "emptyBody": "Nieuwe boodschappen verschijnen hier na de volgende dienst."
+  "emptyBody": "Nieuwe boodschappen verschijnen hier na de volgende dienst.",
+  "notesGateTitle": "Meld je aan om notities te maken",
+  "notesGateBody": "Bewaar notities bij deze boodschap en vind ze terug op elk apparaat.",
+  "gateDismissed": "Je kunt als gast blijven kijken."
 }

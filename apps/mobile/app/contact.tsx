@@ -384,6 +384,35 @@ export default function Contact() {
                 ))}
               </View>
             </>
+          ) : contacts.isError ? (
+            // The list persists across launches, so this shows only on a genuine
+            // fetch failure with nothing cached: keep the branch-email path
+            // reachable with a retry rather than letting it vanish silently.
+            <View style={{ marginTop: spacing.md, gap: 4 }}>
+              <Text
+                style={{
+                  fontFamily: fontFamily.body.medium,
+                  fontSize: 13,
+                  color: colors.sub,
+                }}
+              >
+                {t('errors:couldntLoad')}
+              </Text>
+              <Text
+                accessibilityRole="button"
+                accessibilityLabel={t('errors:tryAgain')}
+                onPress={() => {
+                  void contacts.refetch();
+                }}
+                style={{
+                  fontFamily: fontFamily.body.bold,
+                  fontSize: 13,
+                  color: colors.blue,
+                }}
+              >
+                {t('errors:tryAgain')}
+              </Text>
+            </View>
           ) : null}
         </View>
       </Screen>

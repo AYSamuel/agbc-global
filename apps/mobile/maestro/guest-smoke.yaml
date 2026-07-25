@@ -1,0 +1,39 @@
+# W1.8 guest smoke journey (docs/spec/25 §2 · docs/spec/18 Phase 1 exit): a visitor
+# browses the whole church with NO account and meets no dead end:
+# Home > Watch > Family > Give bank details.
+#
+# Run locally against a running dev build (device/emulator):
+#   maestro test apps/mobile/maestro/guest-smoke.yaml
+#
+# In CI this runs on nightly.yml's `workflow_dispatch` ONLY. There is no cron yet:
+# Actions minutes are a shared pool across all repos, and a nightly emulator run is
+# not zero-cost (project CLAUDE.md CI budget rule). The cron cadence is a budget
+# decision made when the APK-build source is wired into CI.
+#
+# Selectors are text / accessibility-label based (EN locale). They are validated on
+# the first real run; add testIDs if any prove flaky.
+appId: com.oami.agbcapp
+---
+- launchApp:
+    clearState: true
+
+# ONB-1 Welcome: enter as a pure guest (no onboarding steps, no account).
+- tapOn: "I'm just looking"
+
+# HOME (guest shell): the 5-tab bar is present, so we reached the shell.
+- assertVisible: 'More'
+- assertVisible: 'Give'
+
+# WATCH: the messages surface. The search control's label is unique to Watch.
+- tapOn: 'Watch'
+- assertVisible: 'Search messages'
+
+# FAMILY (the wedge): the scope toggle's "Everywhere" is unique to Family.
+- tapOn: 'Family'
+- assertVisible: 'Everywhere'
+
+# GIVE > bank details (spec'd fully offline-capable and copyable).
+- tapOn: 'Give'
+- assertVisible: 'Bank transfer'
+- tapOn: 'Bank transfer'
+- assertVisible: 'Account name'

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 // Events reads (docs/spec/11): the browsing branch's events PLUS ministry-wide
@@ -59,6 +60,8 @@ export function eventsQueryOptions(branchId: string | null) {
       return data;
     },
     staleTime: 60_000,
+    // Events list paints from cache offline (docs/spec/04 offline state).
+    meta: PERSIST_META,
   };
 }
 
@@ -80,6 +83,7 @@ export function eventDetailQueryOptions(id: string | null) {
       return data;
     },
     staleTime: 60_000,
+    meta: PERSIST_META,
   };
 }
 

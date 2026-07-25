@@ -70,13 +70,17 @@ export default function Family() {
   const [gateVisible, setGateVisible] = useState(false);
 
   const branchId = branch?.id ?? null;
+  // Guard: "My branch" needs a chosen branch. If it is somehow selected without
+  // one, fall back to Everywhere so the feed loads instead of skeleton-locking on
+  // a disabled query (the ScopeToggle also disables the option in that state).
+  const effectiveScope: FamilyScope = branchId ? scope : 'everywhere';
   const branchNames = useBranchNames();
   const branchColorFor = useBranchColors();
   const mapBranches = useMapBranches();
   useFamilyRealtime(branchId);
 
-  const testimonies = useTestimonyFeedQuery(scope, branchId);
-  const prayers = usePrayerFeedQuery(scope, branchId);
+  const testimonies = useTestimonyFeedQuery(effectiveScope, branchId);
+  const prayers = usePrayerFeedQuery(effectiveScope, branchId);
   const active = tab === 'prayer' ? prayers : testimonies;
 
   const subhead =
@@ -249,7 +253,7 @@ export default function Family() {
 
         <View style={{ marginTop: spacing.md, marginBottom: spacing.sm }}>
           <ScopeToggle
-            value={scope}
+            value={effectiveScope}
             onChange={setScope}
             branchName={branch?.name ?? null}
           />
@@ -276,6 +280,12 @@ export default function Family() {
               branches={mapBranches}
               homeBranchId={branchId}
               testimonies={testimonies.data ?? []}
+              testimoniesError={
+                testimonies.isError && (testimonies.data ?? []).length === 0
+              }
+              onRetryTestimonies={() => {
+                void testimonies.refetch();
+              }}
               branchNames={branchNames}
               onOpenTestimony={(id) => {
                 router.push({ pathname: '/testimony/[id]', params: { id } });
@@ -287,7 +297,14 @@ export default function Family() {
           </View>
         </Screen>
       ) : (
-        <Screen widthClass="capped" padded={false}>
+        <Screen
+          widthClass="capped"
+          padded={false}
+          refreshing={active.isRefetching}
+          onRefresh={() => {
+            void active.refetch();
+          }}
+        >
           {header}
           {/* Cards sit at 16px (mockup .testi/.prayer margin 16), inside the
               title's 20px gutter. */}

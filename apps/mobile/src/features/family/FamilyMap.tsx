@@ -205,6 +205,8 @@ export function FamilyMap({
   branches,
   homeBranchId,
   testimonies,
+  testimoniesError = false,
+  onRetryTestimonies,
   branchNames,
   onOpenTestimony,
   onOpenBranch,
@@ -212,6 +214,10 @@ export function FamilyMap({
   branches: BranchPoint[];
   homeBranchId: string | null;
   testimonies: TestimonyFeedItem[];
+  /** The testimony feed errored with nothing cached: show a retry, not a silently
+   * missing sheet (docs/spec/04 error state). */
+  testimoniesError?: boolean;
+  onRetryTestimonies?: () => void;
   branchNames: Record<string, string>;
   onOpenTestimony: (id: string) => void;
   /** Branch pin tap -> BRANCH-INFO (docs/spec/04 map destinations). */
@@ -387,10 +393,18 @@ export function FamilyMap({
   const branchPins = canvas.width > 0 ? placeBranches(branches, canvas) : [];
 
   const hasSheet = testimonies.length > 0;
+  // The retry banner stands in for the sheet when the feed errored with nothing to
+  // show (docs/spec/04): the map still pans, but the teaser gets a way back.
+  const showErrorBanner = !hasSheet && testimoniesError;
   // Controls sit above the sheet's expanded footprint so they never hide behind
-  // it; when the sheet is swiped down they simply float a little higher.
+  // it; when the sheet is swiped down they simply float a little higher. The error
+  // banner is short, so a fixed clearance keeps the controls clear of it.
   const controlsBottom =
-    hasSheet && sheetHeight > 0 ? sheetHeight + spacing.md : spacing.lg;
+    hasSheet && sheetHeight > 0
+      ? sheetHeight + spacing.md
+      : showErrorBanner
+        ? 84
+        : spacing.lg;
 
   return (
     <View
@@ -580,6 +594,57 @@ export function FamilyMap({
             />
           ))}
         </Animated.View>
+      ) : showErrorBanner ? (
+        // A slim degraded-sheet: the recent-testimony feed failed with nothing
+        // cached, so offer a retry rather than a silently absent sheet.
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: colors.card,
+            borderTopLeftRadius: radius.cardHero,
+            borderTopRightRadius: radius.cardHero,
+            borderTopWidth: 1,
+            borderTopColor: colors.cardline,
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.md,
+            paddingBottom: spacing.lg,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: spacing.md,
+          }}
+        >
+          <Text
+            style={{
+              flex: 1,
+              fontFamily: fontFamily.body.medium,
+              fontSize: 13,
+              color: colors.sub,
+            }}
+          >
+            {t('errors:couldntLoad')}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('errors:tryAgain')}
+            onPress={onRetryTestimonies}
+            hitSlop={spacing.sm}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text
+              style={{
+                fontFamily: fontFamily.body.bold,
+                fontSize: 13,
+                color: colors.blue,
+              }}
+            >
+              {t('errors:tryAgain')}
+            </Text>
+          </Pressable>
+        </View>
       ) : null}
     </View>
   );

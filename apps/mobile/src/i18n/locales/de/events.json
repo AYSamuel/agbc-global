@@ -10,6 +10,8 @@
   "emptyUpcomingBody": "Schau bald wieder vorbei.",
   "emptyPastTitle": "Noch keine vergangenen Veranstaltungen",
   "emptyPastBody": "Treffen erscheinen hier, nachdem sie stattgefunden haben.",
+  "emptyUpcomingAction": "Vergangene Veranstaltungen ansehen",
+  "emptyPastAction": "Kommende Veranstaltungen ansehen",
   "ministryWide": "Weltweit · die ganze Familie",
   "cancelledBanner": "Vom Veranstalter abgesagt",
   "seeOtherEvents": "Andere Veranstaltungen ansehen",

@@ -26,6 +26,20 @@ export default function Splash() {
   const { t } = useTranslation();
   const hydrated = useLaunchStore((s) => s.hydrated);
   const hasOnboarded = useLaunchStore((s) => s.hasOnboarded);
+  const setHydrated = useLaunchStore((s) => s.setHydrated);
+
+  // Failsafe: if store hydration never resolves (an AsyncStorage read error leaves
+  // onRehydrateStorage's callback without a state to flip), don't strand the user on
+  // the splash forever. Force the gate open after a bounded wait; hasOnboarded then
+  // falls back to its default, routing to onboarding, the safe first-run path.
+  useEffect(() => {
+    const failsafe = setTimeout(() => {
+      setHydrated();
+    }, SPLASH_MS + 2500);
+    return () => {
+      clearTimeout(failsafe);
+    };
+  }, [setHydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
