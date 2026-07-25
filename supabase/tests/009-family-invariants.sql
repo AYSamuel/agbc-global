@@ -15,7 +15,7 @@
 -- '{}'`, as every privileged block below does.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(48);
+select plan(50);
 
 -- Cast: an author and a second member in Glasgow, a Glasgow leader, an admin, one
 -- member who never finished AUTH-3, one deleted account, and a would-be spammer.
@@ -233,6 +233,20 @@ select lives_ok(
             '00000000-0000-4000-8000-000000000001',
             'inv my own answer', 'tap-v1', '83000000-0000-4000-8000-00000000000a')$$,
   'linking their own answered request is exactly what the loop is for');
+
+-- ===========================================================================
+-- `removed` is terminal for a prayer's author too (symmetry with testimonies
+-- above; 83..000c is an already-removed request owned by this member).
+-- ===========================================================================
+select throws_ok(
+  $$update public.prayers set body = 'inv prayer edited after removal'
+    where id = '83000000-0000-4000-8000-00000000000c'$$,
+  '42501', 'removed content cannot be edited; only an admin may restore it',
+  'the prayer author cannot edit their way out of a removal either');
+select lives_ok(
+  $$update public.prayers set deleted_at = now()
+    where id = '83000000-0000-4000-8000-00000000000c'$$,
+  'but the prayer author may still delete a removed request (not a trap)');
 
 -- ===========================================================================
 -- Mark-answered has server-checked preconditions.
