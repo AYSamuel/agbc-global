@@ -253,6 +253,16 @@ describe('FAMILY tab · scope + navigation', () => {
     expect(screen.getByText('AGBC Glasgow')).toBeTruthy();
   });
 
+  test('with no branch chosen, "My branch" is disabled so the feed cannot skeleton-lock', async () => {
+    // "My branch" with no branch would fire a disabled query and skeleton-lock the
+    // feed forever (W1.8): the option stays unselectable until a branch is picked,
+    // and the feed keeps rendering on Everywhere.
+    mockBranch.mockReturnValue(null);
+    await renderScreen();
+    expect(screen.getByRole('tab', { name: 'My branch' })).toBeDisabled();
+    expect(screen.getByText(/God provided a job/)).toBeTruthy();
+  });
+
   test('a card taps through to its detail route', async () => {
     await renderScreen();
     await fireEvent.press(screen.getByText(/God provided a job/));

@@ -26,9 +26,16 @@ export function ScopeToggle({
   const { colors } = useTheme();
   const { t } = useTranslation();
 
-  const options: { key: FamilyScope; label: string }[] = [
-    { key: 'everywhere', label: t('family:scopeEverywhere') },
-    { key: 'branch', label: branchName ?? t('family:scopeMyBranch') },
+  // "My branch" needs a chosen branch to filter on; with none set it would fire a
+  // disabled query and leave the feed skeleton-locked, so it stays unselectable
+  // until the guest picks a branch (the golden path always sets one).
+  const options: { key: FamilyScope; label: string; disabled: boolean }[] = [
+    { key: 'everywhere', label: t('family:scopeEverywhere'), disabled: false },
+    {
+      key: 'branch',
+      label: branchName ?? t('family:scopeMyBranch'),
+      disabled: branchName === null,
+    },
   ];
 
   return (
@@ -50,8 +57,9 @@ export function ScopeToggle({
           <Pressable
             key={option.key}
             accessibilityRole="tab"
-            accessibilityState={{ selected }}
+            accessibilityState={{ selected, disabled: option.disabled }}
             accessibilityLabel={option.label}
+            disabled={option.disabled}
             onPress={() => {
               onChange(option.key);
             }}
@@ -64,7 +72,7 @@ export function ScopeToggle({
               justifyContent: 'center',
               borderRadius: radius.full,
               backgroundColor: selected ? colors.btnBg : 'transparent',
-              opacity: pressed ? 0.85 : 1,
+              opacity: option.disabled ? 0.4 : pressed ? 0.85 : 1,
             })}
           >
             <Text

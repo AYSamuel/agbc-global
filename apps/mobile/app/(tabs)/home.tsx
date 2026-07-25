@@ -15,7 +15,9 @@ import {
   Screen,
   Skeleton,
 } from '@/components/ui';
+import { joinMeta } from '@/features/family/format';
 import { useLatestTestimonyQuery } from '@/features/family/queries';
+import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
 import { useBranchColors } from '@/features/family/useBranchColors';
 import { useBranchNames } from '@/features/family/useBranchNames';
@@ -133,8 +135,30 @@ export default function Home() {
     (s) => s.kind === 'video',
   );
 
+  // Pull-to-refresh is Home's retry path: the cache is persisted so nothing blanks
+  // offline, but a failed surface (verse, service, latest message, family) recovers
+  // by refetching all four rather than needing an app restart (docs/spec/04).
+  const refreshing =
+    verseQuery.isRefetching ||
+    servicesQuery.isRefetching ||
+    sermonsQuery.isRefetching ||
+    branchesQuery.isRefetching ||
+    testimonyHighlight.isRefetching;
+  const refreshAll = () => {
+    void verseQuery.refetch();
+    void servicesQuery.refetch();
+    void sermonsQuery.refetch();
+    void branchesQuery.refetch();
+    void testimonyHighlight.refetch();
+  };
+
   return (
-    <Screen padded={false} widthClass="capped">
+    <Screen
+      padded={false}
+      widthClass="capped"
+      refreshing={refreshing}
+      onRefresh={refreshAll}
+    >
       {/* Mockup .head: greeting + branch chip on the left, bell on the right. */}
       <View
         style={{
@@ -259,7 +283,16 @@ export default function Home() {
 
         <QuickActions
           onVisit={() => {
-            router.push('/branches');
+            // BRANCH-INFO is the 04 destination ("Plan a visit"); the list is the
+            // fallback when no browsing branch is set (matches the hero action).
+            if (branch) {
+              router.push({
+                pathname: '/branch/[id]',
+                params: { id: branch.id },
+              });
+            } else {
+              router.push('/branches');
+            }
           }}
           onWatch={() => {
             router.push('/watch');
@@ -278,7 +311,18 @@ export default function Home() {
           <VerseCard verse={verseQuery.data} />
         ) : null}
 
-        {latestSermon ? (
+        {sermonsQuery.data === undefined && !sermonsQuery.isError ? (
+          <View>
+            <SectionHeader
+              label={t('home:latestMessage')}
+              actionLabel={t('watch:seeAll')}
+              onAction={() => {
+                router.push('/watch');
+              }}
+            />
+            <Skeleton height={96} />
+          </View>
+        ) : latestSermon ? (
           <View>
             <SectionHeader
               label={t('home:latestMessage')}
@@ -339,8 +383,21 @@ export default function Home() {
               onGlory={() => {
                 setGateVisible(true);
               }}
+              // Sharing is outbound, not a gated contribution (matches the Family
+              // feed): open the OS sheet rather than the gate.
               onShare={() => {
-                setGateVisible(true);
+                const item = testimonyHighlight.data;
+                if (!item) return;
+                void shareText(
+                  testimonyShareText(
+                    item.body,
+                    joinMeta([
+                      item.author_name,
+                      branchNames[item.branch_id] ?? null,
+                    ]),
+                    t('appName'),
+                  ),
+                );
               }}
             />
           ) : (

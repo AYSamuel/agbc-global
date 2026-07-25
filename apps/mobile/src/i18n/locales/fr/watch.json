@@ -38,5 +38,8 @@
   "rotBodyAudio": "La vidéo a été retirée ; l'audio reviendra avec une prochaine mise à jour.",
   "backToWatch": "Retour à Regarder",
   "emptyTitle": "Les messages arrivent",
-  "emptyBody": "Les nouveaux messages apparaissent ici après le prochain culte."
+  "emptyBody": "Les nouveaux messages apparaissent ici après le prochain culte.",
+  "notesGateTitle": "Connectez-vous pour prendre des notes",
+  "notesGateBody": "Gardez des notes sur ce message et retrouvez-les sur tous vos appareils.",
+  "gateDismissed": "Vous pouvez continuer à regarder en tant qu'invité."
 }

@@ -20,6 +20,7 @@ import {
   AppHeader,
   Button,
   EmptyState,
+  GateSheet,
   Screen,
   ShareIcon,
   Skeleton,
@@ -131,6 +132,7 @@ export default function Sermon() {
   const query = useSermonQuery(id);
   const [playerError, setPlayerError] = useState(false);
   const [playerKey, setPlayerKey] = useState(0);
+  const [gateVisible, setGateVisible] = useState(false);
 
   const sermon = query.data ?? null;
   // Screen gutter (20) each side, capped like the mockup player column.
@@ -359,8 +361,10 @@ export default function Sermon() {
                     key: 'notes',
                     label: t('watch:notes'),
                     enabled: true,
+                    // Notes are a member feature: open the gate (W2.2 wires
+                    // gate-return so the note composer opens after sign-in).
                     onPress: () => {
-                      router.push('/auth');
+                      setGateVisible(true);
                     },
                   },
                 ] as const
@@ -429,6 +433,22 @@ export default function Sermon() {
           </>
         )}
       </View>
+
+      <GateSheet
+        visible={gateVisible}
+        title={t('watch:notesGateTitle')}
+        body={t('watch:notesGateBody')}
+        signInLabel={t('common:signIn')}
+        dismissLabel={t('common:notNow')}
+        dismissAnnouncement={t('watch:gateDismissed')}
+        onSignIn={() => {
+          setGateVisible(false);
+          router.push('/auth');
+        }}
+        onDismiss={() => {
+          setGateVisible(false);
+        }}
+      />
     </Screen>
   );
 }

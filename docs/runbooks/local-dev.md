@@ -106,6 +106,23 @@ reload the app.
   `netstat -ano | findstr :8081` then `taskkill /F /PID <pid>`.
 - Supabase: `supabase stop` (data survives; a later `supabase start` resumes).
 
+## Guest smoke journey (Maestro)
+
+The W1.8 exit smoke test walks a guest through Home > Watch > Family > Give bank
+details with no account. Run it locally against a running dev build (device or
+emulator), with Metro up (step 4):
+
+```powershell
+# One-time: install Maestro (https://maestro.mobile.dev), then
+maestro test apps/mobile/maestro/guest-smoke.yaml
+```
+
+In CI it lives in `.github/workflows/nightly.yml` as a `workflow_dispatch`-only
+job (no cron: Actions minutes are a shared pool, project CLAUDE.md CI budget). To
+run it there, dispatch the workflow with an `app_binary_url` pointing at an
+Android `.apk` (e.g. an EAS build artifact); the cron cadence is decided once an
+APK-build source is wired into CI.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |

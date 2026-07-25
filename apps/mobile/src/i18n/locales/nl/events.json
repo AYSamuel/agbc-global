@@ -10,6 +10,8 @@
   "emptyUpcomingBody": "Kom binnenkort terug.",
   "emptyPastTitle": "Nog geen voorbije evenementen",
   "emptyPastBody": "Bijeenkomsten verschijnen hier nadat ze hebben plaatsgevonden.",
+  "emptyUpcomingAction": "Voorbije evenementen bekijken",
+  "emptyPastAction": "Aankomende evenementen bekijken",
   "ministryWide": "Wereldwijd · de hele familie",
   "cancelledBanner": "Geannuleerd door de organisator",
   "seeOtherEvents": "Andere evenementen bekijken",

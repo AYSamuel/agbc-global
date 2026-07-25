@@ -47,7 +47,14 @@ export default function Branches() {
   const countLine = `${t('church:branches', { count: branches.length })} · ${t('church:nations', { count: nations })}`;
 
   return (
-    <Screen widthClass="capped" padded={false}>
+    <Screen
+      widthClass="capped"
+      padded={false}
+      refreshing={query.isRefetching}
+      onRefresh={() => {
+        void query.refetch();
+      }}
+    >
       <AppHeader
         title={t('church:branchesTitle')}
         backLabel={t('back')}

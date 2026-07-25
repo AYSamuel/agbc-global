@@ -37,5 +37,8 @@
   "rotBodyAudio": "The video was removed, and its audio returns with a coming update.",
   "backToWatch": "Back to Watch",
   "emptyTitle": "Messages are on their way",
-  "emptyBody": "New messages appear here after the next service."
+  "emptyBody": "New messages appear here after the next service.",
+  "notesGateTitle": "Sign in to take notes",
+  "notesGateBody": "Keep notes on this message and find them on any device.",
+  "gateDismissed": "You can keep watching as a guest."
 }

@@ -56,9 +56,9 @@ PRAYER (pending → approved) → family taps "I will pray" (praying_count), lat
 This is the emotional spine of the app: make each step feel like a small celebration.
 
 ### Map
-- Stylized global map: **branch pins** (from `branches.lat/lng`) + recent **testimony pins** across nations.
-- Scope toggle: highlight my branch vs show all nations.
-- Tap branch pin → `BRANCH-INFO`; testimony pin → `TESTIMONY-DETAIL`.
+- Stylized global map: **branch pins** (from `branches.lat/lng`), plus a swipeable **"family, lately" sheet** listing recent testimonies. A testimony's only location is its branch, so separate testimony pins would just cluster on the branch pin and read as extra branches; the recent testimonies live in the sheet instead (design synced W1.8, was "recent testimony pins across nations").
+- Scope toggle: highlight my branch vs show all nations (also narrows the sheet).
+- Tap branch pin → `BRANCH-INFO`; tap a sheet row → `TESTIMONY-DETAIL`.
 - Conveys "one family, many nations" at a glance.
 
 ### `MY-POSTS` (the author's view of the pipeline)

@@ -1,5 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 import type { BranchSummary } from './branches-snapshot';
@@ -28,6 +29,9 @@ export const branchesQueryOptions = {
     }));
   },
   staleTime: 5 * 60_000,
+  // Persist the live branch list too: the bundled snapshot is the first-launch
+  // fallback, but a returning guest gets their real branches offline from cache.
+  meta: PERSIST_META,
 };
 
 function narrowAddress(value: unknown): BranchSummary['address'] {

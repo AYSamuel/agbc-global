@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 // Family reads (docs/spec/09). Everything here goes through the FEED VIEWS, never
@@ -158,6 +159,8 @@ export function useTestimonyFeedQuery(
     // keeps the toggle on Everywhere in that case, so this should never fire.
     enabled: scope === 'everywhere' || Boolean(branchId),
     staleTime: FEED_STALE_TIME,
+    // Realtime keeps this fresh online; persistence lets the feed paint offline.
+    meta: PERSIST_META,
   });
 }
 
@@ -182,6 +185,7 @@ export function usePrayerFeedQuery(
     },
     enabled: scope === 'everywhere' || Boolean(branchId),
     staleTime: FEED_STALE_TIME,
+    meta: PERSIST_META,
   });
 }
 
@@ -198,6 +202,7 @@ export function useTestimonyQuery(id: string) {
       return data === null ? null : mapTestimony(data);
     },
     staleTime: FEED_STALE_TIME,
+    meta: PERSIST_META,
   });
 }
 
@@ -218,6 +223,8 @@ export function latestTestimonyQueryOptions() {
       return data === null ? null : mapTestimony(data);
     },
     staleTime: FEED_STALE_TIME,
+    // Home's "From the family" highlight paints offline (docs/spec/07).
+    meta: PERSIST_META,
   };
 }
 
@@ -238,5 +245,6 @@ export function usePrayerQuery(id: string) {
       return data === null ? null : mapPrayer(data);
     },
     staleTime: FEED_STALE_TIME,
+    meta: PERSIST_META,
   });
 }

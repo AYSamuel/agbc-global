@@ -4,7 +4,7 @@ The complete screen graph. Every screen has an **ID**, who can see it, and **whe
 
 ## Global rules (apply everywhere)
 
-- **Back:** every non-tab screen has a back affordance → previous screen. Tab-root screens have no back (Android hardware back on a tab root → Home, then exit).
+- **Back:** every non-tab screen has a back affordance → previous screen. Tab-root screens have no back (Android hardware back on a tab root → Home, then exit). Exception: the onboarding steps (ONB-2/ONB-3) show a step indicator, not a back control (the mockup deliberately omits one); system back (Android hardware / iOS edge-swipe) returns to the prior step, so it is never a dead end (synced W1.8).
 - **Bottom tab bar** (persistent on the 5 roots): **Home · Watch · Family · Give · More**.
 - **Gate:** a gated action → `GATE` sheet → (Sign in → `AUTH-1…4`) → original action runs → stay in place.
 - **Deep links:** notifications and shares open the exact target screen (see `15`).
@@ -101,11 +101,11 @@ Full testimony, Glory reactions, (if from prayer) the **"Answered prayer" ribbon
 Body, praying + prayed counts, the two-step **"I will pray"** then **"I prayed"**; (own) **Mark as answered** → prompts to write the testimony (the loop). **`⋯` in the header**: own → `POST-ACTIONS`; other member's → `REPORT` / Block. 
 
 ### Map (`FAMILY` → Map)
-Global family map: branches as pins + recent testimony pins across nations.
+Global family map: branches as pins, plus a swipeable "family, lately" sheet listing recent testimonies. A testimony's only location is its branch, so testimonies cluster onto (and read as) their branch pin; they live in the sheet rather than as separate pins (ADR 0009; design synced W1.8, was "recent testimony pins across nations").
 | Action | → Destination |
 |--------|---------------|
 | Branch pin | `BRANCH-INFO` |
-| Testimony pin | `TESTIMONY-DETAIL` |
+| Sheet row (recent testimony) | `TESTIMONY-DETAIL` |
 | Scope | My branch highlights vs all nations |
 
 ## Tab 4: GIVE (`GIVE`)

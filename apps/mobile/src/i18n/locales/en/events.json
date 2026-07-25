@@ -10,6 +10,8 @@
   "emptyUpcomingBody": "Check back soon.",
   "emptyPastTitle": "No past events yet",
   "emptyPastBody": "Gatherings will appear here after they happen.",
+  "emptyUpcomingAction": "See past events",
+  "emptyPastAction": "See upcoming events",
   "ministryWide": "Ministry-wide · the whole family",
   "cancelledBanner": "Cancelled by the organiser",
   "seeOtherEvents": "See other events",

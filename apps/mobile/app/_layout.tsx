@@ -1,6 +1,6 @@
 import i18n from '@/i18n';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 
@@ -8,19 +8,9 @@ import { ToastProvider } from '@/components/ui';
 import { prefetchHome } from '@/features/home/queries';
 import { prefetchBranches } from '@/features/onboarding/useBranches';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
+import { persistOptions, queryClient } from '@/lib/queryPersist';
 import { useBranchStore } from '@/state/branch';
 import { ThemeProvider, useTheme } from '@/theme';
-
-// One data layer for the whole app (frontend standard): stale-while-revalidate by
-// default; per-feature options tune from here.
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60_000,
-      retry: 1,
-    },
-  },
-});
 
 function ThemedStack() {
   const { colors } = useTheme();
@@ -44,7 +34,13 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    // PersistQueryClientProvider hydrates the on-disk cache before mounting the tree
+    // (docs/spec/04 offline state): flagged public reads paint from the last session
+    // on a cold, offline launch instead of a retry card. See lib/queryPersist.
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={persistOptions}
+    >
       <ThemeProvider>
         <ToastProvider>
           {/* Below-minimum binaries block before any navigation (docs/spec/21 §8). */}
@@ -53,6 +49,6 @@ export default function RootLayout() {
           </ForcedUpdateGate>
         </ToastProvider>
       </ThemeProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

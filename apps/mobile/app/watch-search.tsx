@@ -25,6 +25,24 @@ import { useSearchHistoryStore } from '@/features/watch/searchHistory';
 import { SermonRow } from '@/features/watch/SermonRow';
 import { useTheme } from '@/theme';
 
+// The three-row placeholder shared by search results and the see-all list while
+// their query loads (mockup STATE loading): a thumb + two text lines per row.
+function SermonRowSkeletons() {
+  return (
+    <View style={{ gap: spacing.lg, marginTop: spacing.lg }}>
+      {[0, 1, 2].map((i) => (
+        <View key={i} style={{ flexDirection: 'row', gap: spacing.md }}>
+          <Skeleton width={120} height={72} />
+          <View style={{ flex: 1, gap: spacing.sm }}>
+            <Skeleton height={13} width="80%" />
+            <Skeleton height={11} width="50%" />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 // WATCH-SEARCH (docs/spec/08): query title/speaker/series; empty input shows
 // recent searches; no results shows a clear path back. Series chips arrive
 // with ?q= prefilled; the sections' See all arrives with ?list= (videos|live)
@@ -47,7 +65,8 @@ export default function WatchSearch() {
       : params.list === 'videos'
         ? ('video' as const)
         : null;
-  const listQuery = useSermonKindQuery(listKind ?? 'video');
+  // Only fetch the list in list mode; in search mode the result is discarded.
+  const listQuery = useSermonKindQuery(listKind ?? 'video', listKind !== null);
   const listRows = listKind === null ? [] : (listQuery.data ?? []);
 
   // Deeper history lives on the channel itself (decision 2026-07-20): the list
@@ -134,7 +153,8 @@ export default function WatchSearch() {
         </View>
 
         {!active && listKind !== null ? (
-          // See-all list mode: the full section rail, newest first.
+          // See-all list mode: the full section rail with its own four states, so
+          // a cold-offline open shows a skeleton then a retry, never a bare header.
           <>
             <Text
               style={{
@@ -151,27 +171,57 @@ export default function WatchSearch() {
                 ? t('watch:allMessages')
                 : t('watch:allLiveStreams')}
             </Text>
-            {listRows.map((sermon) => (
-              <SermonRow
-                key={sermon.id}
-                sermon={sermon}
-                onPress={() => {
-                  openSermon(sermon);
+            {listQuery.data === undefined && !listQuery.isError ? (
+              <SermonRowSkeletons />
+            ) : listQuery.isError && listRows.length === 0 ? (
+              <EmptyState
+                title={t('errors:somethingWrong')}
+                body={t('errors:couldntLoad')}
+                actionLabel={t('errors:tryAgain')}
+                onAction={() => {
+                  void listQuery.refetch();
                 }}
               />
-            ))}
-            {channelTabUrl !== null && listRows.length > 0 ? (
-              <View style={{ marginTop: spacing.lg, marginBottom: spacing.md }}>
-                <Button
-                  label={t('watch:seeMoreOnYoutube')}
-                  variant="outline"
-                  fullWidth
-                  onPress={() => {
-                    void WebBrowser.openBrowserAsync(channelTabUrl);
-                  }}
-                />
-              </View>
-            ) : null}
+            ) : listRows.length === 0 ? (
+              <EmptyState
+                title={t('watch:emptyTitle')}
+                body={t('watch:emptyBody')}
+                {...(channelTabUrl !== null
+                  ? {
+                      actionLabel: t('watch:seeMoreOnYoutube'),
+                      onAction: () => {
+                        void WebBrowser.openBrowserAsync(channelTabUrl);
+                      },
+                    }
+                  : {})}
+              />
+            ) : (
+              <>
+                {listRows.map((sermon) => (
+                  <SermonRow
+                    key={sermon.id}
+                    sermon={sermon}
+                    onPress={() => {
+                      openSermon(sermon);
+                    }}
+                  />
+                ))}
+                {channelTabUrl !== null ? (
+                  <View
+                    style={{ marginTop: spacing.lg, marginBottom: spacing.md }}
+                  >
+                    <Button
+                      label={t('watch:seeMoreOnYoutube')}
+                      variant="outline"
+                      fullWidth
+                      onPress={() => {
+                        void WebBrowser.openBrowserAsync(channelTabUrl);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </>
+            )}
           </>
         ) : !active ? (
           history.terms.length > 0 ? (
@@ -215,17 +265,7 @@ export default function WatchSearch() {
             />
           )
         ) : query.data === undefined && !query.isError ? (
-          <View style={{ gap: spacing.lg, marginTop: spacing.lg }}>
-            {[0, 1, 2].map((i) => (
-              <View key={i} style={{ flexDirection: 'row', gap: spacing.md }}>
-                <Skeleton width={120} height={72} />
-                <View style={{ flex: 1, gap: spacing.sm }}>
-                  <Skeleton height={13} width="80%" />
-                  <Skeleton height={11} width="50%" />
-                </View>
-              </View>
-            ))}
-          </View>
+          <SermonRowSkeletons />
         ) : query.isError ? (
           <EmptyState
             title={t('errors:somethingWrong')}

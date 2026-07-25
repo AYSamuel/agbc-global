@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 // Giving config (docs/spec/12, docs/spec/02). The single giving_config row holds
@@ -95,6 +96,9 @@ export const givingConfigQueryOptions = {
   // Giving details change rarely; keep them fresh for an hour so the tab and the
   // bank screen paint instantly from cache (and offline) between refreshes.
   staleTime: 60 * 60_000,
+  // GIVE-BANK is spec'd fully offline-capable (docs/spec/12): persist so a cold,
+  // offline launch shows the cached bank details, not a retry card.
+  meta: PERSIST_META,
 };
 
 export function useGivingConfigQuery() {

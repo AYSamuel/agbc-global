@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
 // Watch reads (docs/spec/08): rails show available sermons newest-first (the
@@ -40,6 +41,8 @@ export const sermonsQueryOptions = {
     return data;
   },
   staleTime: 5 * 60_000,
+  // Watch rails paint from cache offline (docs/spec/04 offline state).
+  meta: PERSIST_META,
 };
 
 export function useSermonsQuery() {
@@ -50,7 +53,11 @@ export function useSermonsQuery() {
 // starves the other when the combined feed exceeds the rails query's window.
 // Depth beyond the sync's window is deliberately NOT paginated: the list ends
 // with a "See more on YouTube" link to the channel tab (decision 2026-07-20).
-export function useSermonKindQuery(kind: SermonSummary['kind']) {
+// `enabled` lets WATCH-SEARCH skip the fetch entirely in search mode (no list).
+export function useSermonKindQuery(
+  kind: SermonSummary['kind'],
+  enabled = true,
+) {
   return useQuery({
     queryKey: ['sermons', 'kind', kind] as const,
     queryFn: async (): Promise<SermonSummary[]> => {
@@ -64,7 +71,9 @@ export function useSermonKindQuery(kind: SermonSummary['kind']) {
       if (error) throw new Error(error.message);
       return data;
     },
+    enabled,
     staleTime: 5 * 60_000,
+    meta: PERSIST_META,
   });
 }
 
@@ -81,6 +90,7 @@ export function useSermonQuery(id: string) {
       return data;
     },
     staleTime: 5 * 60_000,
+    meta: PERSIST_META,
   });
 }
 

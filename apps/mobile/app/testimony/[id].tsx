@@ -58,7 +58,12 @@ export default function TestimonyDetail() {
     <Screen widthClass="capped" padded={false}>
       <AppHeader
         title={t('family:detailTestimony')}
-        onBack={router.back}
+        // A share/notification deep link opens this with no history: fall back to
+        // Family so back is never an inert dead end (docs/spec/04).
+        onBack={() => {
+          if (router.canGoBack()) router.back();
+          else router.replace('/(tabs)/family');
+        }}
         backLabel={t('common:back')}
       />
 
