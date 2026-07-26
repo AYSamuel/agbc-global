@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
@@ -12,14 +12,16 @@ import {
   typeScale,
 } from '@agbc/shared/theme';
 
-import { resolveEntryRoute, useLaunchStore } from '@/state/launch';
+import { resolveAuthEntryRoute, useAuthStore } from '@/state/auth';
+import { useLaunchStore } from '@/state/launch';
 import { useTheme } from '@/theme';
 
 const SPLASH_MS = 1200;
 
 // SPLASH (docs/spec/06): brand moment, auto-advances after ~1.2s. First launch goes
-// to onboarding; returning users go straight to Home with restored choices. Routing
-// waits for both the timer AND store hydration.
+// to onboarding; returning users go straight to Home with restored choices; a
+// half-created profile (killed mid-AUTH-3) resumes AUTH-3 (docs/spec/03). Routing
+// waits for the timer, store hydration, AND session resolution.
 export default function Splash() {
   const router = useRouter();
   const { colors } = useTheme();
@@ -27,14 +29,17 @@ export default function Splash() {
   const hydrated = useLaunchStore((s) => s.hydrated);
   const hasOnboarded = useLaunchStore((s) => s.hasOnboarded);
   const setHydrated = useLaunchStore((s) => s.setHydrated);
+  const authStatus = useAuthStore((s) => s.status);
+  const [authTimedOut, setAuthTimedOut] = useState(false);
 
-  // Failsafe: if store hydration never resolves (an AsyncStorage read error leaves
-  // onRehydrateStorage's callback without a state to flip), don't strand the user on
-  // the splash forever. Force the gate open after a bounded wait; hasOnboarded then
-  // falls back to its default, routing to onboarding, the safe first-run path.
+  // Failsafe: if store hydration or session resolution never lands (an
+  // AsyncStorage read error, a hung profile read), don't strand the user on the
+  // splash forever. Force the gates open after a bounded wait; the defaults
+  // route to onboarding / guest, the safe first-run paths.
   useEffect(() => {
     const failsafe = setTimeout(() => {
       setHydrated();
+      setAuthTimedOut(true);
     }, SPLASH_MS + 2500);
     return () => {
       clearTimeout(failsafe);
@@ -43,13 +48,16 @@ export default function Splash() {
 
   useEffect(() => {
     if (!hydrated) return;
+    const effectiveStatus =
+      authStatus === 'loading' ? (authTimedOut ? 'guest' : null) : authStatus;
+    if (effectiveStatus === null) return;
     const timer = setTimeout(() => {
-      router.replace(resolveEntryRoute(hasOnboarded));
+      router.replace(resolveAuthEntryRoute(hasOnboarded, effectiveStatus));
     }, SPLASH_MS);
     return () => {
       clearTimeout(timer);
     };
-  }, [hydrated, hasOnboarded, router]);
+  }, [hydrated, hasOnboarded, authStatus, authTimedOut, router]);
 
   return (
     <View

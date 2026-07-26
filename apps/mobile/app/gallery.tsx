@@ -21,9 +21,11 @@ import {
   MenuLabel,
   MenuRow,
   MoreTabIcon,
+  OtpInput,
   SegmentedControl,
   Skeleton,
   TabBar,
+  TextField,
   useToast,
   WatchTabIcon,
 } from '@/components/ui';
@@ -45,6 +47,34 @@ function ScopePreview() {
       value={scope}
       onChange={setScope}
     />
+  );
+}
+
+function FormPreview() {
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('419');
+  return (
+    <View>
+      <TextField
+        label="Email address"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="you@example.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextField
+        label="With error"
+        value="not-an-email"
+        onChangeText={() => undefined}
+        error="Enter a valid email address."
+      />
+      <OtpInput
+        value={code}
+        onChange={setCode}
+        accessibilityLabel="6-digit code"
+      />
+    </View>
   );
 }
 
@@ -102,6 +132,7 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
         <ActionPill label="You prayed" tone="green" />
       </View>
       <ScopePreview />
+      <FormPreview />
       <Card>
         <Text style={[typeScale.cardTitle, { color: colors.text }]}>
           Static card

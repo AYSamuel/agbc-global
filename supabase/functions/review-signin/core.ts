@@ -36,8 +36,9 @@ export async function isAllowedAttempt(
 ): Promise<boolean> {
   if (!config.enabled) return false;
   if (!config.reviewEmail || !config.reviewCode) return false;
-  // Fail closed on weak configuration: a short fixed code would make the
-  // bypass brute-forceable (docs/spec/03 calls for a LONG random code).
+  // Fail closed on weak configuration. The code is 6 digits by design
+  // (docs/spec/03, decided 2026-07-26: it must fit AUTH-2's normal input);
+  // the compensating controls live in index.ts and the config flags.
   if (config.reviewCode.length < REVIEW_CODE_MIN) return false;
   if (request.email.toLowerCase() !== config.reviewEmail.trim().toLowerCase()) {
     return false;

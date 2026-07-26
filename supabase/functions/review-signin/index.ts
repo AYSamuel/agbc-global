@@ -21,7 +21,8 @@ import { isAllowedAttempt, parseReviewSignin } from './core.ts';
 const MAX_BODY_BYTES = 8 * 1024;
 const ADMIN_TIMEOUT_MS = 10_000;
 // Tighter than contact-form: a legitimate reviewer needs a handful of
-// attempts; a >= 20-char fixed code makes brute force hopeless anyway.
+// attempts, and with a 6-digit fixed code this limit is a primary control
+// alongside the per-environment flag and per-window rotation (docs/spec/03).
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 10 * 60_000;
 

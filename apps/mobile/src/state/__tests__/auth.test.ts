@@ -1,0 +1,166 @@
+// The auth store's transitions (docs/spec/03): server truth via profiles,
+// snapshot-backed member routing, and the refresh-failure guest transition.
+
+import { useAuthStore } from '../auth';
+
+jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
+
+const mockGetSession = jest.fn<Promise<unknown>, []>();
+const mockMaybeSingle = jest.fn<Promise<unknown>, []>();
+const mockSignOut = jest.fn(() => Promise.resolve({ error: null }));
+
+// The listener registry lives INSIDE the factory: the store subscribes at
+// module load, which runs before this file's own statements, so a test-file
+// variable would be re-initialized to null right after the subscription.
+jest.mock('@/lib/supabase', () => {
+  const listeners: ((event: string) => void)[] = [];
+  return {
+    __fireAuthEvent: (event: string) => {
+      listeners.forEach((listener) => {
+        listener(event);
+      });
+    },
+    supabase: {
+      auth: {
+        getSession: () => mockGetSession(),
+        signOut: () => mockSignOut(),
+        onAuthStateChange: (callback: (event: string) => void) => {
+          listeners.push(callback);
+          return { data: { subscription: { unsubscribe: () => undefined } } };
+        },
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({ maybeSingle: () => mockMaybeSingle() }),
+        }),
+      }),
+    },
+  };
+});
+
+const { __fireAuthEvent: fireAuthEvent } = jest.requireMock<{
+  __fireAuthEvent: (event: string) => void;
+}>('@/lib/supabase');
+
+const SESSION = {
+  data: {
+    session: { user: { id: 'user-1', email: 'a@test.local' } },
+  },
+};
+const NO_SESSION = { data: { session: null } };
+const ONBOARDED_ROW = {
+  data: {
+    display_name: 'Ayo',
+    branch_id: 'branch-1',
+    language: 'en',
+    role: 'member',
+    onboarded_at: '2026-07-26T00:00:00Z',
+  },
+  error: null,
+};
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  useAuthStore.setState({
+    status: 'loading',
+    email: null,
+    profile: null,
+    signedOutBanner: false,
+  });
+});
+
+describe('syncFromSession', () => {
+  it('lands on guest without a session', async () => {
+    mockGetSession.mockResolvedValue(NO_SESSION);
+    await useAuthStore.getState().syncFromSession();
+    expect(useAuthStore.getState().status).toBe('guest');
+  });
+
+  it('lands on member when the profile is onboarded', async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue(ONBOARDED_ROW);
+    await useAuthStore.getState().syncFromSession();
+    const state = useAuthStore.getState();
+    expect(state.status).toBe('member');
+    expect(state.profile?.displayName).toBe('Ayo');
+  });
+
+  it('routes a session without a profile row to onboarding (killed mid-AUTH-3)', async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+    await useAuthStore.getState().syncFromSession();
+    expect(useAuthStore.getState().status).toBe('onboarding');
+  });
+
+  it('falls back to onboarding when the profile read fails with no snapshot', async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue({
+      data: null,
+      error: { message: 'offline' },
+    });
+    await useAuthStore.getState().syncFromSession();
+    expect(useAuthStore.getState().status).toBe('onboarding');
+  });
+
+  it('routes instantly on a persisted snapshot without waiting for the network', async () => {
+    useAuthStore.setState({
+      profile: {
+        displayName: 'Ayo',
+        branchId: 'branch-1',
+        language: 'en',
+        role: 'member',
+      },
+    });
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockReturnValue(new Promise(() => undefined)); // never resolves
+    await useAuthStore.getState().syncFromSession();
+    expect(useAuthStore.getState().status).toBe('member');
+  });
+});
+
+describe('completeSignIn (AUTH-2 exit)', () => {
+  it('returns member for a returning profile', async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue(ONBOARDED_ROW);
+    await expect(useAuthStore.getState().completeSignIn()).resolves.toBe(
+      'member',
+    );
+  });
+
+  it('returns onboarding for a first sign-in', async () => {
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+    await expect(useAuthStore.getState().completeSignIn()).resolves.toBe(
+      'onboarding',
+    );
+  });
+});
+
+describe('the refresh-failure transition (docs/spec/03)', () => {
+  it('a SIGNED_OUT event without user intent shows the banner', () => {
+    useAuthStore.setState({ status: 'member', email: 'a@test.local' });
+    fireAuthEvent('SIGNED_OUT');
+    const state = useAuthStore.getState();
+    expect(state.status).toBe('guest');
+    expect(state.signedOutBanner).toBe(true);
+  });
+
+  it('a user-initiated sign-out shows no banner', async () => {
+    useAuthStore.setState({ status: 'member', email: 'a@test.local' });
+    const signOutDone = useAuthStore.getState().signOut();
+    fireAuthEvent('SIGNED_OUT');
+    await signOutDone;
+    const state = useAuthStore.getState();
+    expect(state.status).toBe('guest');
+    expect(state.signedOutBanner).toBe(false);
+  });
+
+  it('a SIGNED_OUT while already guest is a no-op', () => {
+    useAuthStore.setState({ status: 'guest' });
+    fireAuthEvent('SIGNED_OUT');
+    expect(useAuthStore.getState().signedOutBanner).toBe(false);
+  });
+});
