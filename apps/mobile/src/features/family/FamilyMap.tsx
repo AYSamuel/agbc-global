@@ -399,12 +399,24 @@ export function FamilyMap({
   // Controls sit above the sheet's expanded footprint so they never hide behind
   // it; when the sheet is swiped down they simply float a little higher. The error
   // banner is short, so a fixed clearance keeps the controls clear of it.
-  const controlsBottom =
+  // Clamped to the canvas: at large text scale the sheet grows tall enough to
+  // push the controls off the top of the map entirely (#76); past the clamp
+  // they overlap the sheet instead, which stays dismissible.
+  const CONTROLS_CLEARANCE = 176;
+  const rawControlsBottom =
     hasSheet && sheetHeight > 0
       ? sheetHeight + spacing.md
       : showErrorBanner
         ? 84
         : spacing.lg;
+  const controlsBottom =
+    canvas.height > 0
+      ? clampNum(
+          rawControlsBottom,
+          spacing.lg,
+          Math.max(spacing.lg, canvas.height - CONTROLS_CLEARANCE),
+        )
+      : rawControlsBottom;
 
   return (
     <View

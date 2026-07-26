@@ -120,12 +120,15 @@ export function NextServiceCard({
               here instead of repeating it (decision 2026-07-20). */}
           {addressLine ?? branchName}
         </Text>
+        {/* fill on both: when one label wraps at large text scale, the pair
+            stays equal height instead of the gold button outgrowing (#76). */}
         <View style={{ flexDirection: 'row', gap: spacing.md }}>
           <View style={{ flex: 1 }}>
             <Button
               label={t('home:planVisit')}
               variant="accent"
               fullWidth
+              fill
               onPress={onPlanVisit}
             />
           </View>
@@ -135,6 +138,7 @@ export function NextServiceCard({
               label={t('home:watchLive')}
               variant="glass"
               fullWidth
+              fill
               onPress={onWatchLive}
             />
           </View>

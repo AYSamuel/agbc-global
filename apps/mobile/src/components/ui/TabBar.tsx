@@ -68,7 +68,12 @@ export function TabBar<K extends string>({
             }}
           >
             {item.renderIcon?.(tint, 22)}
+            {/* Bar labels follow the native-platform convention at
+                accessibility sizes: capped scale, one line (docs/spec/05,
+                #76). Wrapping labels misaligned the five icons. */}
             <Text
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
               style={[typeScale.label, { color: tint, letterSpacing: 0.5 }]}
             >
               {item.label}
