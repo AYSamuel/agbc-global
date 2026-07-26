@@ -1,11 +1,11 @@
 import 'react-native-url-polyfill/auto';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from '@agbc/shared/database';
 
 import { fetchWithTimeout } from './fetchWithTimeout';
+import { LargeSecureStore } from './largeSecureStore';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_KEY;
@@ -17,11 +17,11 @@ if (!url || !key) {
 }
 
 // The publishable key is public by design; RLS is the security boundary
-// (docs/spec/02). Auth storage is AsyncStorage for the guest phase; W2.1 swaps in
-// the LargeSecureStore adapter per docs/spec/03 before any real session exists.
+// (docs/spec/02). Auth storage is the LargeSecureStore adapter per docs/spec/03:
+// AES key in SecureStore, encrypted session in AsyncStorage, never plaintext.
 export const supabase = createClient<Database>(url, key, {
   auth: {
-    storage: AsyncStorage,
+    storage: new LargeSecureStore(),
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
