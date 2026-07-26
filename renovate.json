@@ -23,13 +23,21 @@
       "groupName": "expo sdk"
     },
     {
-      "description": "SDK-locked or deliberately pinned: majors follow the Expo SDK (jest/TS/react family) or an explicit decision (eslint 9, see W0.5); never bump independently",
+      "description": "Expo SDK owns these: react and the react-native native modules are pinned to what the managed SDK expects, and move ONLY via `expo install` on an SDK bump, never independently. An independent bump diverges from the SDK and can break native pairing, and expo-doctor (which would catch it) is advisory in CI, so a green build is misleading (decided during the W1 audit, 2026-07-26).",
       "matchPackageNames": [
-        "jest",
-        "typescript",
         "react",
         "react-dom",
         "react-native",
+        "react-native-*",
+        "@react-native-async-storage/async-storage"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Toolchain: MAJOR bumps follow the Expo SDK (jest / TypeScript / @types) or an explicit decision (eslint 9, see W0.5); node stays on the latest stable within its current major. Non-major bumps flow normally.",
+      "matchPackageNames": [
+        "jest",
+        "typescript",
         "@types/react",
         "@types/jest",
         "eslint",
