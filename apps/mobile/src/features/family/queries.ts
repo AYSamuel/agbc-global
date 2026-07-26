@@ -128,6 +128,36 @@ function mapPrayer(row: PrayerRow): PrayerFeedItem | null {
 // staleTime sits under that so a focus refetch is never served a stale cache.
 const FEED_STALE_TIME = 30_000;
 
+/** A testimony category as the composer needs it: the id goes on the row, the
+ * key resolves the label from the i18n bundle (docs/spec/02). */
+export interface TestimonyCategory {
+  id: string;
+  key: string;
+}
+
+/**
+ * TESTIMONY-COMPOSE's chips. Public reference data that changes about never, so
+ * it is cached long and persisted: opening the composer offline still offers the
+ * categories the author saw last time. A failure here hides the chip row rather
+ * than blocking the post, because category is optional (docs/spec/09).
+ */
+export function useTestimonyCategoriesQuery() {
+  return useQuery({
+    queryKey: ['family', 'categories'],
+    queryFn: async (): Promise<TestimonyCategory[]> => {
+      const { data, error } = await supabase
+        .from('testimony_categories')
+        .select('id, key')
+        .eq('active', true)
+        .order('sort', { ascending: true });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    staleTime: 24 * 60 * 60_000,
+    meta: PERSIST_META,
+  });
+}
+
 export function testimonyFeedKey(scope: FamilyScope, branchId: string | null) {
   return ['family', 'testimonies', scope, scope === 'branch' ? branchId : null];
 }

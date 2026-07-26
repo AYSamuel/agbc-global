@@ -30,6 +30,7 @@ import { useBranchNames } from '@/features/family/useBranchNames';
 import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
 import { useMapBranches } from '@/features/family/useMapBranches';
 import { StubIcon } from '@/features/shell/StubIcon';
+import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore, type GateAction } from '@/state/gate';
 import { useTheme } from '@/theme';
@@ -51,6 +52,7 @@ export default function Family() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const branch = useBranchStore((s) => s.branch);
+  const isMember = useAuthStore((s) => s.status === 'member');
 
   // The sub-tab is local state the segmented control drives, but a caller can
   // land the user on a specific one: Home's "From the family > See all" pushes
@@ -97,6 +99,20 @@ export default function Family() {
   const openGate = (action: GateAction) => {
     setGateAction(action);
     setGateVisible(true);
+  };
+
+  // W2.3: the composer exists now, so a signed-in member goes straight there
+  // and only a guest meets the gate (which then replays this exact action after
+  // sign-in, docs/spec/03). Membership is a UI routing decision; the write
+  // itself is still refused server-side for anyone else (docs/spec/02).
+  const startCompose = (target: 'testimony' | 'prayer') => {
+    if (isMember) {
+      router.push(
+        target === 'prayer' ? '/prayer/compose' : '/testimony/compose',
+      );
+      return;
+    }
+    openGate({ kind: 'compose', target });
   };
   const gateTitle =
     gateAction?.kind === 'intercede'
@@ -148,7 +164,7 @@ export default function Family() {
             icon={<StubIcon Icon={FamilyTabIcon} />}
             actionLabel={t('family:shareTestimony')}
             onAction={() => {
-              openGate({ kind: 'compose', target: 'testimony' });
+              startCompose('testimony');
             }}
           />
         );
@@ -194,7 +210,7 @@ export default function Family() {
           icon={<StubIcon Icon={FamilyTabIcon} />}
           actionLabel={t('family:sharePrayer')}
           onAction={() => {
-            openGate({ kind: 'compose', target: 'prayer' });
+            startCompose('prayer');
           }}
         />
       );
@@ -343,10 +359,7 @@ export default function Family() {
             tab === 'prayer' ? t('family:fabPrayer') : t('family:fabTestimony')
           }
           onPress={() => {
-            openGate({
-              kind: 'compose',
-              target: tab === 'prayer' ? 'prayer' : 'testimony',
-            });
+            startCompose(tab === 'prayer' ? 'prayer' : 'testimony');
           }}
         />
       ) : null}

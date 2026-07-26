@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui';
 import i18n from '@/i18n';
+import { useAuthStore } from '@/state/auth';
 import { ThemeScope } from '@/theme';
 
 import type { PrayerFeedItem, TestimonyFeedItem } from '../queries';
@@ -39,6 +40,21 @@ jest.mock('../queries', () => ({
 // The realtime hook opens a socket; the screen tests only care that it is a no-op
 // here. Its own behavior is covered separately below.
 jest.mock('../useFamilyRealtime', () => ({ useFamilyRealtime: jest.fn() }));
+
+// W2.3: the screen now reads the auth store to decide composer-or-gate, and the
+// store's module scope reaches the real Supabase client (which refuses to build
+// without env). Stub the client, keep the real store.
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null } }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
+    from: () => ({}),
+  },
+}));
 
 jest.mock('@/features/onboarding/useBranches', () => ({
   useBranchesQuery: () => ({
@@ -134,6 +150,8 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Guest by default: the gate paths below are the majority case.
+  useAuthStore.setState({ status: 'guest', profile: null });
   mockParams.mockReturnValue({});
   mockBranch.mockReturnValue({ id: 'b-gla', name: 'AGBC Glasgow' });
   mockTestimonies.mockReturnValue({
@@ -314,6 +332,40 @@ describe('FAMILY tab · share FAB (mockup .fab)', () => {
     await fireEvent.press(screen.getByText('Map'));
     expect(screen.queryByText('Share your testimony')).toBeNull();
     expect(screen.queryByText('Share a prayer request')).toBeNull();
+  });
+
+  // W2.3: the composer exists now, so a member skips the gate entirely. The
+  // guest path above is unchanged: gate first, then the action replays.
+  test('a signed-in member goes straight to the composer, no gate', async () => {
+    useAuthStore.setState({
+      status: 'member',
+      profile: {
+        displayName: 'Ayo',
+        branchId: '00000000-0000-4000-8000-000000000001',
+        language: 'en',
+        role: 'member',
+      },
+    });
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Share your testimony'));
+    expect(mockPush).toHaveBeenCalledWith('/testimony/compose');
+    expect(screen.queryByText('Sign in to share with the family')).toBeNull();
+  });
+
+  test('a member on the Prayer sub-tab reaches the prayer composer', async () => {
+    useAuthStore.setState({
+      status: 'member',
+      profile: {
+        displayName: 'Ayo',
+        branchId: '00000000-0000-4000-8000-000000000001',
+        language: 'en',
+        role: 'member',
+      },
+    });
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Prayer'));
+    await fireEvent.press(screen.getByText('Share a prayer request'));
+    expect(mockPush).toHaveBeenCalledWith('/prayer/compose');
   });
 });
 
