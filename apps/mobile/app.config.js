@@ -41,6 +41,9 @@ const config = {
   },
   plugins: [
     'expo-router',
+    // Session-key storage for LargeSecureStore (docs/spec/03); links at the
+    // next EAS build (dev clients older than that fall back, see largeSecureStore.ts).
+    'expo-secure-store',
     [
       'expo-font',
       {
