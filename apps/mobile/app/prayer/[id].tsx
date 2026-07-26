@@ -26,6 +26,7 @@ import { usePrayerQuery } from '@/features/family/queries';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // PRAYER-DETAIL (mockup frame + docs/spec/09): the request in a card (meta, the
@@ -268,10 +269,15 @@ export default function PrayerDetail() {
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('family:gateDismissed')}
         onSignIn={() => {
+          // Gate-return (W2.2): the commitment executor itself lands at W2.4.
+          useGateStore
+            .getState()
+            .beginGateSignIn({ kind: 'intercede', prayerId: id });
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          useGateStore.getState().dismissGate('intercede');
           setGateVisible(false);
         }}
       />

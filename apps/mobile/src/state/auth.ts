@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { supabase } from '@/lib/supabase';
+import { useGateStore } from '@/state/gate';
 import { resolveEntryRoute } from '@/state/launch';
 
 // Session state (docs/spec/03). Server truth: profiles.onboarded_at decides
@@ -173,6 +174,8 @@ supabase.auth.onAuthStateChange((event) => {
       profile: null,
       signedOutBanner: !userInitiatedSignOut,
     });
+    // A session ending in any way orphans a pending gate action (W2.2).
+    useGateStore.getState().clearPending();
   }
 });
 

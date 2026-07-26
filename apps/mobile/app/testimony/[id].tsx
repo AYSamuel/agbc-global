@@ -28,6 +28,7 @@ import { shareToWhatsApp, testimonyShareText } from '@/features/family/share';
 import { useBranchColors } from '@/features/family/useBranchColors';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // TESTIMONY-DETAIL (mockup frame + docs/spec/09): the answered-prayer ribbon at
@@ -299,10 +300,15 @@ export default function TestimonyDetail() {
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('family:gateDismissed')}
         onSignIn={() => {
+          // Gate-return (W2.2): AUTH-4 replays the Glory on this testimony.
+          useGateStore
+            .getState()
+            .beginGateSignIn({ kind: 'glory', testimonyId: id });
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          useGateStore.getState().dismissGate('glory');
           setGateVisible(false);
         }}
       />

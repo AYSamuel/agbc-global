@@ -280,12 +280,14 @@ describe('FAMILY tab · scope + navigation', () => {
 });
 
 describe('FAMILY tab · share FAB (mockup .fab)', () => {
-  test('the FAB shows on a populated feed and opens the gate', async () => {
+  test('the FAB shows on a populated feed and opens the compose-framed gate', async () => {
     await renderScreen();
     const fab = screen.getByText('Share your testimony');
     expect(fab).toBeTruthy();
     await fireEvent.press(fab);
-    expect(screen.getByText('Sign in to say Glory to God')).toBeTruthy();
+    // W2.2: the sheet title follows the ACTION (docs/spec/03 framing), so the
+    // compose gate no longer borrows the Glory title.
+    expect(screen.getByText('Sign in to share with the family')).toBeTruthy();
   });
 
   test('its label follows the sub-tab', async () => {

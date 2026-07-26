@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
@@ -5,13 +6,24 @@ import { fontFamily, palette, spacing } from '@agbc/shared/theme';
 
 import { Button, CheckIcon, Screen } from '@/components/ui';
 import { useAuthStore } from '@/state/auth';
+import { useGateStore, type GateActionKind } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // AUTH-4 (docs/spec/03, mockup frame line 1080): the .success layout: gold
 // check circle with the soft ring, "You're in!", personalized welcome, gold
-// Continue. The frame's action-specific line ("...to say Glory to God") waits
-// for W2.2's gate-return replay; until then the copy is the generic variant
-// and Continue returns to wherever the flow was opened from.
+// Continue. The copy names the pending gate action where one exists ("...to
+// say Glory to God", the frame's line), and the screen hands the user back
+// automatically after a short beat (docs/spec/03 "performs it automatically";
+// decided 2026-07-26); Continue skips the wait.
+
+const AUTO_CONTINUE_MS = 1200;
+
+const BODY_BY_KIND: Partial<Record<GateActionKind, string>> = {
+  glory: 'successBodyGlory',
+  intercede: 'successBodyIntercede',
+  compose: 'successBodyCompose',
+  rsvp: 'successBodyRsvp',
+};
 
 export interface SuccessStepProps {
   onContinue: () => void;
@@ -21,6 +33,31 @@ export function SuccessStep({ onContinue }: SuccessStepProps) {
   const { t } = useTranslation('auth');
   const { colors } = useTheme();
   const name = useAuthStore((s) => s.profile?.displayName ?? '');
+  const pendingKind = useGateStore((s) => s.pending?.kind ?? null);
+  const bodyKey = (pendingKind && BODY_BY_KIND[pendingKind]) ?? 'successBody';
+
+  // Once-guarded: the timer and a Continue tap must not both navigate. The
+  // latest-ref is written in an effect (never during render, compiler rule);
+  // the mount-once timer then always calls the current handler.
+  const doneRef = useRef(false);
+  const continueOnce = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onContinue();
+  };
+  const continueRef = useRef<() => void>(() => undefined);
+  useEffect(() => {
+    continueRef.current = continueOnce;
+  });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      continueRef.current();
+    }, AUTO_CONTINUE_MS);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
 
   return (
     <Screen widthClass="capped" padded={false} scroll={false}>
@@ -84,14 +121,14 @@ export function SuccessStep({ onContinue }: SuccessStepProps) {
             marginBottom: 22,
           }}
         >
-          {t('successBody', { name })}
+          {t(bodyKey, { name })}
         </Text>
         <View style={{ width: '100%', maxWidth: 220 }}>
           <Button
             label={t('continue')}
             variant="accent"
             fullWidth
-            onPress={onContinue}
+            onPress={continueOnce}
           />
         </View>
         <View style={{ height: spacing.x2l }} />

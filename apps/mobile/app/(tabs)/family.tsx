@@ -31,6 +31,7 @@ import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
 import { useMapBranches } from '@/features/family/useMapBranches';
 import { StubIcon } from '@/features/shell/StubIcon';
 import { useBranchStore } from '@/state/branch';
+import { useGateStore, type GateAction } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // docs/spec/09: three sub-tabs (Testimonies, Prayer, Map; ADR 0009).
@@ -90,9 +91,19 @@ export default function Family() {
         ? t('family:subheadPrayer')
         : t('family:subheadMap');
 
-  const openGate = () => {
+  // Gate-return (W2.2): each trigger passes its typed action so AUTH-4 can
+  // replay it; the sheet title follows the action (docs/spec/03 framing).
+  const [gateAction, setGateAction] = useState<GateAction | null>(null);
+  const openGate = (action: GateAction) => {
+    setGateAction(action);
     setGateVisible(true);
   };
+  const gateTitle =
+    gateAction?.kind === 'intercede'
+      ? t('family:gatePrayerTitle')
+      : gateAction?.kind === 'compose'
+        ? t('family:gateComposeTitle')
+        : t('family:gateTitle');
 
   // The share FAB (mockup .fab) shows on a populated feed only: the empty state
   // carries its own centred "Share" CTA, and a map has nothing to compose.
@@ -136,7 +147,9 @@ export default function Family() {
             body={t('family:emptyTestimoniesBody')}
             icon={<StubIcon Icon={FamilyTabIcon} />}
             actionLabel={t('family:shareTestimony')}
-            onAction={openGate}
+            onAction={() => {
+              openGate({ kind: 'compose', target: 'testimony' });
+            }}
           />
         );
       }
@@ -154,7 +167,9 @@ export default function Family() {
                 params: { id: item.id },
               });
             }}
-            onGlory={openGate}
+            onGlory={() => {
+              openGate({ kind: 'glory', testimonyId: item.id });
+            }}
             // Sharing is outbound, not a gated contribution: open the OS sheet.
             onShare={() => {
               void shareText(
@@ -178,7 +193,9 @@ export default function Family() {
           body={t('family:emptyPrayerBody')}
           icon={<StubIcon Icon={FamilyTabIcon} />}
           actionLabel={t('family:sharePrayer')}
-          onAction={openGate}
+          onAction={() => {
+            openGate({ kind: 'compose', target: 'prayer' });
+          }}
         />
       );
     }
@@ -199,7 +216,9 @@ export default function Family() {
           onPress={() => {
             router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
           }}
-          onCommit={openGate}
+          onCommit={() => {
+            openGate({ kind: 'intercede', prayerId: item.id });
+          }}
         />
       ),
     );
@@ -323,22 +342,29 @@ export default function Family() {
           label={
             tab === 'prayer' ? t('family:fabPrayer') : t('family:fabTestimony')
           }
-          onPress={openGate}
+          onPress={() => {
+            openGate({
+              kind: 'compose',
+              target: tab === 'prayer' ? 'prayer' : 'testimony',
+            });
+          }}
         />
       ) : null}
 
       <GateSheet
         visible={gateVisible}
-        title={t('family:gateTitle')}
+        title={gateTitle}
         body={t('family:gateBody')}
         signInLabel={t('common:signIn')}
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('family:gateDismissed')}
         onSignIn={() => {
+          if (gateAction) useGateStore.getState().beginGateSignIn(gateAction);
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          if (gateAction) useGateStore.getState().dismissGate(gateAction.kind);
           setGateVisible(false);
         }}
       />

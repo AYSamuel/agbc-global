@@ -36,6 +36,7 @@ import { useEventDetailQuery } from '@/features/events/queries';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useBranchCities } from '@/features/events/useBranchCities';
 import { shareText } from '@/features/family/share';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 const HERO_MIN_HEIGHT = 186;
@@ -395,10 +396,15 @@ export default function EventDetailScreen() {
         dismissLabel={t('notNow')}
         dismissAnnouncement={t('events:gateDismissed')}
         onSignIn={() => {
+          // Gate-return (W2.2): the RSVP executor itself lands at W2.9.
+          useGateStore
+            .getState()
+            .beginGateSignIn({ kind: 'rsvp', eventId: id });
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          useGateStore.getState().dismissGate('rsvp');
           setGateVisible(false);
         }}
       />
