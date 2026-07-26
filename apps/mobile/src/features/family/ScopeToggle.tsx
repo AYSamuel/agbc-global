@@ -29,12 +29,25 @@ export function ScopeToggle({
   // "My branch" needs a chosen branch to filter on; with none set it would fire a
   // disabled query and leave the feed skeleton-locked, so it stays unselectable
   // until the guest picks a branch (the golden path always sets one).
-  const options: { key: FamilyScope; label: string; disabled: boolean }[] = [
-    { key: 'everywhere', label: t('family:scopeEverywhere'), disabled: false },
+  // shrink: only the branch pill gives way when space runs out (its name can be
+  // long); "Everywhere" always reads whole (#76).
+  const options: {
+    key: FamilyScope;
+    label: string;
+    disabled: boolean;
+    shrink: boolean;
+  }[] = [
+    {
+      key: 'everywhere',
+      label: t('family:scopeEverywhere'),
+      disabled: false,
+      shrink: false,
+    },
     {
       key: 'branch',
       label: branchName ?? t('family:scopeMyBranch'),
       disabled: branchName === null,
+      shrink: true,
     },
   ];
 
@@ -42,9 +55,12 @@ export function ScopeToggle({
     <View
       accessibilityRole="tablist"
       accessibilityLabel={t('family:scopeLabel')}
+      // maxWidth bounds the self-sized pill: a long branch name at large text
+      // scale grew the track past the screen edge (#76).
       style={{
         flexDirection: 'row',
         alignSelf: 'flex-start',
+        maxWidth: '100%',
         gap: 3,
         backgroundColor: colors.alt,
         borderRadius: radius.full,
@@ -67,6 +83,7 @@ export function ScopeToggle({
             // carries the touch target to the 44px floor.
             hitSlop={{ top: 7, bottom: 7 }}
             style={({ pressed }) => ({
+              flexShrink: option.shrink ? 1 : 0,
               paddingVertical: 7,
               paddingHorizontal: spacing.md + 3,
               justifyContent: 'center',
@@ -77,7 +94,9 @@ export function ScopeToggle({
           >
             <Text
               numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
               style={{
+                flexShrink: 1,
                 fontFamily: fontFamily.body.bold,
                 fontSize: 12,
                 color: selected ? colors.btnText : colors.muted,

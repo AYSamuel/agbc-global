@@ -69,6 +69,11 @@ export function SegmentedControl<K extends string>({
           >
             <Text
               // Mockup .seg button: 13px/700, not the 15/600 body scale.
+              // Control labels cap their scale and ellipsize (docs/spec/05,
+              // #76): a long branch name at max font pushed the control
+              // off-screen on the Family scope toggle.
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
               style={{
                 fontFamily: fontFamily.body.bold,
                 fontSize: 13,

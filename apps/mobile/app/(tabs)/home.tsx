@@ -207,7 +207,11 @@ export default function Home() {
           >
             <Text
               numberOfLines={1}
+              // flexShrink so a long name ellipsizes INSIDE the row: without
+              // it the text takes full content width and pushes the chevron
+              // (the selector affordance) off-screen at large scale (#76).
               style={{
+                flexShrink: 1,
                 fontFamily: fontFamily.display.extraBold,
                 fontSize: 20,
                 letterSpacing: -0.4,

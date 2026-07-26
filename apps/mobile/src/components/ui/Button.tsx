@@ -34,6 +34,12 @@ export interface ButtonProps extends Omit<
   variant?: ButtonVariant;
   loading?: boolean;
   fullWidth?: boolean;
+  /**
+   * Fill the parent's main axis (flex: 1). For side-by-side pairs whose
+   * labels may wrap at large text scale: both buttons stay equal height
+   * instead of the wrapped one outgrowing its sibling (#76).
+   */
+  fill?: boolean;
   /** Leading icon (mockup buttons that carry a glyph, e.g. "I will pray"). */
   icon?: ReactNode;
 }
@@ -43,6 +49,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   fullWidth = false,
+  fill = false,
   icon,
   disabled,
   ...pressableProps
@@ -94,11 +101,13 @@ export function Button({
           variant === 'glass' ? 'rgba(255,255,255,0.28)' : colors.cardline,
         opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
         alignSelf: fullWidth ? 'stretch' : 'auto',
+        flex: fill ? 1 : undefined,
       })}
     >
       {loading ? <ActivityIndicator size="small" color={foreground} /> : null}
       {!loading && icon ? <View accessible={false}>{icon}</View> : null}
-      {/* Mockup .btn: weight 800 at 15.5 (ghost: 700 at 13.5). */}
+      {/* Mockup .btn: weight 800 at 15.5 (ghost: 700 at 13.5). Centered so a
+          label wrapped at large text scale stays symmetric (#76). */}
       <Text
         style={{
           fontFamily:
@@ -107,6 +116,7 @@ export function Button({
               : fontFamily.body.extraBold,
           fontSize: variant === 'ghost' ? 13.5 : 15.5,
           color: foreground,
+          textAlign: 'center',
         }}
       >
         {label}

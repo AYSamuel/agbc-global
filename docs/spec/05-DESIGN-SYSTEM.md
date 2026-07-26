@@ -150,6 +150,8 @@ Custom controls are semantic components, not bare views with press handlers. Per
 
 Every feature's acceptance criteria include the verification matrix: small phone (~320 to 360dp), large phone, tablet width, 200% text scale, VoiceOver + TalkBack pass.
 
+**Text-scale rule for control labels (added 2026-07-26, #76):** body and content text scales fully to 200%+. Labels inside CONTROLS (the tab bar, segmented controls, and similar bars) follow the native-platform convention instead: scale capped at ~1.3x (`maxFontSizeMultiplier`) and a single line, ellipsizing rather than wrapping. Wrapping bar labels misalign the bar; both iOS and Android treat bars this way at accessibility sizes. Truncatable data (a long branch name next to its selector chevron) keeps the affordance visible and ellipsizes the text, never the reverse.
+
 ## Tablet & orientation (decision 2026-07-12: full tablet layouts in v1)
 
 - v1 ships real tablet layouts, not just a capped column. Direction: above ~600dp width, list-heavy tabs (Watch, Family, Events, Store) move to master-detail or multi-column grids; Home caps content width (~680px) and widens the quick-action row; player and reader support landscape on all devices.
