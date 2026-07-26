@@ -30,6 +30,17 @@ export function CheckIcon(props: IconProps) {
   );
 }
 
+// The AUTH-1/AUTH-2 header glyph (mockup .authicon). The frame's <rect> is a
+// path here: react-native-svg deprecates the x/y props Rect leans on.
+export function MailIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5v-9A2.5 2.5 0 0 1 5.5 5z" />
+      <Path d="M3 7.5l9 6 9-6" />
+    </Svg>
+  );
+}
+
 // Map zoom controls (mockup .mzoom): drawn as icons rather than "+"/"−" text so
 // they stay crisp and dodge the literal-string lint on product screens.
 export function PlusIcon(props: IconProps) {

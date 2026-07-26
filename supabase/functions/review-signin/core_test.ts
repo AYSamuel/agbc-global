@@ -3,7 +3,7 @@ import { assertEquals } from 'jsr:@std/assert@1';
 import { timingSafeEqual } from '../_shared/auth.ts';
 import { isAllowedAttempt, parseReviewSignin } from './core.ts';
 
-const CODE = 'k7mQ2xw9PzR4tVnB8sJd6Yh3'; // 24 chars, >= REVIEW_CODE_MIN
+const CODE = '428913'; // the 6-digit fixed shape (docs/spec/03)
 const CONFIG = {
   enabled: true,
   reviewEmail: 'review@agbcglobal.com',
@@ -64,7 +64,7 @@ Deno.test('deny: missing configuration denies (fail closed)', async () => {
 });
 
 Deno.test('deny: a configured code below the length floor denies its own exact match', async () => {
-  const short = 'too-short-code';
+  const short = '12345';
   assertEquals(
     await isAllowedAttempt(
       { ...CONFIG, reviewCode: short },
