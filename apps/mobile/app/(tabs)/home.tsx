@@ -37,6 +37,7 @@ import { useBranchesQuery } from '@/features/onboarding/useBranches';
 import { useSermonsQuery } from '@/features/watch/queries';
 import { SermonRow } from '@/features/watch/SermonRow';
 import { useBranchStore } from '@/state/branch';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // HOME (docs/spec/07, mockup "Home · guest"): greeting + branch chip + bell,
@@ -109,6 +110,7 @@ export default function Home() {
   const setBranch = useBranchStore((s) => s.setBranch);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [gateVisible, setGateVisible] = useState(false);
+  const [gateTestimonyId, setGateTestimonyId] = useState<string | null>(null);
 
   // Date-anchored reads re-key at local midnight and on foreground.
   const dateKey = useLocalDate();
@@ -395,6 +397,7 @@ export default function Home() {
               }}
               onGlory={() => {
                 setGateVisible(true);
+                setGateTestimonyId(testimonyHighlight.data?.id ?? null);
               }}
               // Sharing is outbound, not a gated contribution (matches the Family
               // feed): open the OS sheet rather than the gate.
@@ -498,10 +501,17 @@ export default function Home() {
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('family:gateDismissed')}
         onSignIn={() => {
+          // Gate-return (W2.2): remember the Glory so AUTH-4 replays it.
+          if (gateTestimonyId) {
+            useGateStore
+              .getState()
+              .beginGateSignIn({ kind: 'glory', testimonyId: gateTestimonyId });
+          }
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          useGateStore.getState().dismissGate('glory');
           setGateVisible(false);
         }}
       />

@@ -37,6 +37,7 @@ import {
   usePlaybackStore,
 } from '@/features/watch/playback';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 function youtubeUrl(youtubeId: string): string {
@@ -442,10 +443,15 @@ export default function Sermon() {
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('watch:gateDismissed')}
         onSignIn={() => {
+          // Gate-return (W2.2): the notes executor itself lands at W3.1.
+          useGateStore
+            .getState()
+            .beginGateSignIn({ kind: 'sermon_notes', sermonId: id });
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          useGateStore.getState().dismissGate('sermon_notes');
           setGateVisible(false);
         }}
       />

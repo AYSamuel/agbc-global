@@ -12,6 +12,7 @@ import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
+import { useGateStore } from '@/state/gate';
 
 import { AuthFlow } from '../AuthFlow';
 
@@ -46,6 +47,7 @@ const mockVerifyOtp = jest.fn<Promise<{ error: unknown }>, [unknown]>();
 const mockGetSession = jest.fn<Promise<unknown>, []>();
 const mockMaybeSingle = jest.fn<Promise<unknown>, []>();
 const mockInsert = jest.fn<Promise<{ error: unknown }>, [unknown]>();
+const mockUpsert = jest.fn<Promise<{ error: unknown }>, [unknown, unknown]>();
 const mockInvoke = jest.fn<Promise<{ data: unknown; error: unknown }>, []>();
 
 jest.mock('@/lib/supabase', () => ({
@@ -65,6 +67,7 @@ jest.mock('@/lib/supabase', () => ({
         eq: () => ({ maybeSingle: () => mockMaybeSingle() }),
       }),
       insert: (row: unknown) => mockInsert(row),
+      upsert: (row: unknown, options: unknown) => mockUpsert(row, options),
       update: () => ({ eq: () => Promise.resolve({ error: null }) }),
     }),
     functions: { invoke: () => mockInvoke() },
@@ -125,6 +128,7 @@ async function reachCodeStep() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  useGateStore.setState({ pending: null, dismissedKinds: [] });
   useAuthStore.setState({
     status: 'guest',
     email: null,
@@ -309,6 +313,54 @@ describe('AUTH-4 success step', () => {
     await waitFor(() => {
       expect(screen.getByText(/Welcome to the family, Ayo/)).toBeTruthy();
     });
+  });
+});
+
+describe('gate-return replay (W2.2, docs/spec/03 + 04 rule 9)', () => {
+  it('names the action on AUTH-4 and lands the Glory after returning', async () => {
+    useGateStore
+      .getState()
+      .beginGateSignIn({ kind: 'glory', testimonyId: 'tes-1' });
+    await reachCodeStep();
+    mockVerifyOtp.mockResolvedValue({ error: null });
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue(ONBOARDED_ROW);
+    mockUpsert.mockResolvedValue({ error: null });
+
+    await type(screen.getByLabelText('6-digit code'), '123456');
+    await screen.findByText(/Taking you back to say Glory to God/);
+    await press(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(mockBack).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockUpsert).toHaveBeenCalledWith(
+        { testimony_id: 'tes-1', profile_id: 'user-1' },
+        { onConflict: 'testimony_id,profile_id', ignoreDuplicates: true },
+      );
+    });
+    expect(useGateStore.getState().pending).toBeNull();
+  });
+
+  it('a sign-in without a pending action replays nothing', async () => {
+    await reachCodeStep();
+    mockVerifyOtp.mockResolvedValue({ error: null });
+    mockGetSession.mockResolvedValue(SESSION);
+    mockMaybeSingle.mockResolvedValue(ONBOARDED_ROW);
+
+    await type(screen.getByLabelText('6-digit code'), '123456');
+    await screen.findByText(/Taking you back…/);
+    await press(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it('an abandoned flow drops the pending action (docs/spec/03 lifetime)', async () => {
+    useGateStore
+      .getState()
+      .beginGateSignIn({ kind: 'glory', testimonyId: 'tes-1' });
+    const view = await renderFlow();
+    await view.unmount();
+    expect(useGateStore.getState().pending).toBeNull();
   });
 });
 

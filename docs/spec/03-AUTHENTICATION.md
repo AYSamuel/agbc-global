@@ -101,5 +101,5 @@ Any ❌-gate action triggers a lightweight **gate sheet** (bottom sheet, not a f
 - **Total OTP outage (email provider down):** `AUTH-2` shows "Codes aren't being delivered right now: please try again in a little while." Existing sessions are unaffected (silent refresh does not involve OTP); guests browse as always. Detection: the ministry-wide OTP alarm in `21` §6.
 - **Email changed / lost** → re-auth with the new address creates/needs re-link; v1: new email = new profile (document limitation), admin can merge on request.
 - **Airplane/offline during OTP** → clear error, retry.
-- **Guest hits gate repeatedly** → don't nag; gate sheet is dismissible and remembers "Not now" for the session for that action type.
+- **Guest hits gate repeatedly** → don't nag; gate sheet is dismissible and remembers "Not now" for the session for that action type. (Semantics pinned 2026-07-26, W2.2: an EXPLICIT tap on a gated action always opens the sheet, because answering a tap is not nagging; the remembered dismissals exist so future PASSIVE prompts never re-pitch a dismissed action type in the same session.)
 - **Deleted account signs in again** → treated as new profile (prior content already anonymized/removed per `16`).

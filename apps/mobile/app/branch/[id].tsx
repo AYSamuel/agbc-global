@@ -36,6 +36,7 @@ import {
 } from '@/features/home/nextService';
 import { useBranchServicesQuery } from '@/features/home/queries';
 import { useBranchStore } from '@/state/branch';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 const HERO_MIN_HEIGHT = 196;
@@ -490,10 +491,13 @@ export default function BranchInfo() {
         dismissLabel={t('notNow')}
         dismissAnnouncement={t('church:gateDismissed')}
         onSignIn={() => {
+          // Gate-return (W2.2): the attendance executor itself lands at W2.8.
+          useGateStore.getState().beginGateSignIn({ kind: 'im_here' });
           setGateVisible(false);
           router.push('/auth');
         }}
         onDismiss={() => {
+          useGateStore.getState().dismissGate('im_here');
           setGateVisible(false);
         }}
       />
