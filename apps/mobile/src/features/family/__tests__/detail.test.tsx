@@ -70,7 +70,7 @@ function testimony(o: Partial<TestimonyFeedItem> = {}): TestimonyFeedItem {
     body: 'God provided a job after months of waiting.',
     language: 'en',
     category_key: null,
-    image_url: null,
+    image_path: null,
     glory_count: 32,
     created_at: '2026-07-24T10:00:00Z',
     author_id: 'a1',

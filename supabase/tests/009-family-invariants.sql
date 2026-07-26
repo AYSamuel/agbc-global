@@ -68,7 +68,7 @@ select lives_ok(
     values ('82000000-0000-4000-8000-00000000000a',
             '91000000-0000-4000-8000-00000000000b',
             '00000000-0000-4000-8000-000000000002',
-            'inv forged everything', 'approved', 'tap-v1',
+            'inv forged everything', 'approved', 'content-share-v1',
             '91000000-0000-4000-8000-00000000000d', now(), 9999)$$,
   'a member may post a testimony, however they fill in the columns');
 
@@ -199,11 +199,11 @@ set local request.jwt.claims to '{}';
 insert into public.prayers (id, author_id, branch_id, body, status, consent_version)
 values
   ('83000000-0000-4000-8000-00000000000a', '91000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'inv my request', 'approved', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000001', 'inv my request', 'approved', 'content-share-v1'),
   ('83000000-0000-4000-8000-00000000000b', '91000000-0000-4000-8000-00000000000b',
-   '00000000-0000-4000-8000-000000000001', 'inv their request', 'approved', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000001', 'inv their request', 'approved', 'content-share-v1'),
   ('83000000-0000-4000-8000-00000000000c', '91000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'inv removed request', 'removed', 'tap-v1');
+   '00000000-0000-4000-8000-000000000001', 'inv removed request', 'removed', 'content-share-v1');
 
 set local role authenticated;
 set local request.jwt.claims to
@@ -213,7 +213,7 @@ select throws_ok(
   $$insert into public.testimonies (author_id, branch_id, body, consent_version, from_prayer_id)
     values ('91000000-0000-4000-8000-00000000000a',
             '00000000-0000-4000-8000-000000000001',
-            'inv squatting a stranger''s answer', 'tap-v1',
+            'inv squatting a stranger''s answer', 'content-share-v1',
             '83000000-0000-4000-8000-00000000000b')$$,
   '23514', 'only the prayer''s author may link a testimony to it',
   'a member cannot fabricate an answered-prayer ribbon on a stranger''s request');
@@ -221,7 +221,7 @@ select throws_ok(
   $$insert into public.testimonies (author_id, branch_id, body, consent_version, from_prayer_id)
     values ('91000000-0000-4000-8000-00000000000a',
             '00000000-0000-4000-8000-000000000001',
-            'inv linking a removed request', 'tap-v1',
+            'inv linking a removed request', 'content-share-v1',
             '83000000-0000-4000-8000-00000000000c')$$,
   '23514', 'a removed prayer cannot be linked to a testimony',
   'and cannot link a removed request even when it is their own');
@@ -231,7 +231,7 @@ select lives_ok(
     values ('82000000-0000-4000-8000-00000000000b',
             '91000000-0000-4000-8000-00000000000a',
             '00000000-0000-4000-8000-000000000001',
-            'inv my own answer', 'tap-v1', '83000000-0000-4000-8000-00000000000a')$$,
+            'inv my own answer', 'content-share-v1', '83000000-0000-4000-8000-00000000000a')$$,
   'linking their own answered request is exactly what the loop is for');
 
 -- ===========================================================================
@@ -255,7 +255,7 @@ reset role;
 set local request.jwt.claims to '{}';
 insert into public.prayers (id, author_id, branch_id, body, status, consent_version)
 values ('83000000-0000-4000-8000-00000000000d', '91000000-0000-4000-8000-00000000000a',
-        '00000000-0000-4000-8000-000000000001', 'inv pending request', 'pending', 'tap-v1');
+        '00000000-0000-4000-8000-000000000001', 'inv pending request', 'pending', 'content-share-v1');
 
 set local role authenticated;
 set local request.jwt.claims to
@@ -398,7 +398,7 @@ set local request.jwt.claims to
 select throws_ok(
   $$insert into public.testimonies (author_id, branch_id, body, consent_version)
     values ('91000000-0000-4000-8000-00000000000e',
-            '00000000-0000-4000-8000-000000000001', 'inv halfway', 'tap-v1')$$,
+            '00000000-0000-4000-8000-000000000001', 'inv halfway', 'content-share-v1')$$,
   '42501', null,
   'a session that never finished AUTH-3 cannot post');
 
@@ -407,7 +407,7 @@ set local request.jwt.claims to
 select throws_ok(
   $$insert into public.testimonies (author_id, branch_id, body, consent_version)
     values ('91000000-0000-4000-8000-00000000000f',
-            '00000000-0000-4000-8000-000000000001', 'inv from a deleted account', 'tap-v1')$$,
+            '00000000-0000-4000-8000-000000000001', 'inv from a deleted account', 'content-share-v1')$$,
   '42501', null,
   'a queued write from a deleted account is rejected, never recreating erased content');
 
@@ -421,20 +421,20 @@ select lives_ok(
   $$insert into public.testimonies (author_id, branch_id, body, consent_version)
     select '91000000-0000-4000-8000-000000000010',
            '00000000-0000-4000-8000-000000000001',
-           'inv flood ' || g, 'tap-v1'
+           'inv flood ' || g, 'content-share-v1'
     from generate_series(1, 3) g$$,
   'three testimonies in a day are fine');
 select lives_ok(
   $$insert into public.prayers (author_id, branch_id, body, consent_version)
     select '91000000-0000-4000-8000-000000000010',
            '00000000-0000-4000-8000-000000000001',
-           'inv flood request ' || g, 'tap-v1'
+           'inv flood request ' || g, 'content-share-v1'
     from generate_series(1, 2) g$$,
   'and two requests takes them to the combined limit of five');
 select throws_ok(
   $$insert into public.prayers (author_id, branch_id, body, consent_version)
     values ('91000000-0000-4000-8000-000000000010',
-            '00000000-0000-4000-8000-000000000001', 'inv one too many', 'tap-v1')$$,
+            '00000000-0000-4000-8000-000000000001', 'inv one too many', 'content-share-v1')$$,
   '23514', 'daily sharing limit reached',
   'the sixth post in twenty-four hours is refused');
 
@@ -444,7 +444,7 @@ insert into public.testimonies (id, author_id, branch_id, body, status, consent_
 select ('85000000-0000-4000-8000-0000000000' || lpad(g::text, 2, '0'))::uuid,
        '91000000-0000-4000-8000-00000000000a',
        '00000000-0000-4000-8000-000000000001',
-       'inv report target ' || g, 'approved', 'tap-v1'
+       'inv report target ' || g, 'approved', 'content-share-v1'
 from generate_series(1, 21) g;
 
 set local role authenticated;

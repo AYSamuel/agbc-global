@@ -19,7 +19,9 @@ export interface TestimonyFeedItem {
   body: string;
   language: string;
   category_key: string | null;
-  image_url: string | null;
+  /** Object path in the private `testimony-photos` bucket; a signed URL is minted
+   * per view and never stored (docs/spec/02 §Storage). */
+  image_path: string | null;
   glory_count: number;
   created_at: string;
   author_id: string | null;
@@ -50,7 +52,7 @@ export interface PrayerFeedItem {
 }
 
 const TESTIMONY_FIELDS =
-  'id, branch_id, body, language, category_key, image_url, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id';
+  'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id';
 
 const PRAYER_FIELDS =
   'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id';
@@ -87,7 +89,7 @@ function mapTestimony(row: TestimonyRow): TestimonyFeedItem | null {
     body,
     language: str(row.language) ?? 'en',
     category_key: str(row.category_key),
-    image_url: str(row.image_url),
+    image_path: str(row.image_path),
     glory_count: num(row.glory_count),
     created_at: createdAt,
     author_id: str(row.author_id),

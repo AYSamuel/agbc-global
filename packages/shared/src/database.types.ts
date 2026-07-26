@@ -212,6 +212,27 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_versions: {
+        Row: {
+          active: boolean
+          notes: string | null
+          published_at: string
+          version: string
+        }
+        Insert: {
+          active?: boolean
+          notes?: string | null
+          published_at?: string
+          version: string
+        }
+        Update: {
+          active?: boolean
+          notes?: string | null
+          published_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       daily_verses: {
         Row: {
           created_at: string
@@ -629,6 +650,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "prayers_consent_version_fkey"
+            columns: ["consent_version"]
+            isOneToOne: false
+            referencedRelation: "consent_versions"
+            referencedColumns: ["version"]
+          },
+          {
             foreignKeyName: "prayers_moderated_by_fkey"
             columns: ["moderated_by"]
             isOneToOne: false
@@ -966,7 +994,7 @@ export type Database = {
           from_prayer_id: string | null
           glory_count: number
           id: string
-          image_url: string | null
+          image_path: string | null
           language: string
           moderated_at: string | null
           moderated_by: string | null
@@ -986,7 +1014,7 @@ export type Database = {
           from_prayer_id?: string | null
           glory_count?: number
           id?: string
-          image_url?: string | null
+          image_path?: string | null
           language?: string
           moderated_at?: string | null
           moderated_by?: string | null
@@ -1006,7 +1034,7 @@ export type Database = {
           from_prayer_id?: string | null
           glory_count?: number
           id?: string
-          image_url?: string | null
+          image_path?: string | null
           language?: string
           moderated_at?: string | null
           moderated_by?: string | null
@@ -1035,6 +1063,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "testimony_categories"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonies_consent_version_fkey"
+            columns: ["consent_version"]
+            isOneToOne: false
+            referencedRelation: "consent_versions"
+            referencedColumns: ["version"]
           },
           {
             foreignKeyName: "testimonies_from_prayer_id_fkey"
@@ -1128,7 +1163,7 @@ export type Database = {
           from_prayer_id: string | null
           glory_count: number | null
           id: string | null
-          image_url: string | null
+          image_path: string | null
           language: string | null
           origin_prayer_id: string | null
           updated_at: string | null
@@ -1173,11 +1208,16 @@ export type Database = {
       }
     }
     Functions: {
+      assert_consent_version_active: {
+        Args: { target: string }
+        Returns: undefined
+      }
       assert_content_quota: { Args: never; Returns: undefined }
       assert_event_accepts_rsvps: {
         Args: { target_event: string }
         Returns: undefined
       }
+      assert_photo_path_owned: { Args: { target: string }; Returns: undefined }
       assert_prayer_link_allowed: {
         Args: { target_prayer: string }
         Returns: undefined
@@ -1186,6 +1226,10 @@ export type Database = {
       caller_is_onboarded: { Args: never; Returns: boolean }
       caller_profile_is_live: { Args: never; Returns: boolean }
       can_moderate_branch: { Args: { target_branch: string }; Returns: boolean }
+      can_read_testimony_photo: {
+        Args: { object_name: string }
+        Returns: boolean
+      }
       custom_access_token: { Args: { event: Json }; Returns: Json }
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }

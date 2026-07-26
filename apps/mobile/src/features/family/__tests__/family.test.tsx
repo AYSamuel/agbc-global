@@ -79,7 +79,7 @@ function testimony(
     body: 'God provided a job after months of waiting.',
     language: 'en',
     category_key: null,
-    image_url: null,
+    image_path: null,
     glory_count: 14,
     created_at: '2026-07-21T10:00:00Z',
     author_id: 'a1',

@@ -3,5 +3,6 @@
 // Contracts land with their edge functions (W1.3 onward); database.types.ts lands at W0.10.
 export * from './contracts/auth';
 export * from './contracts/contact';
+export * from './contracts/family';
 export * from './contracts/watch-jobs';
 export * from './theme';

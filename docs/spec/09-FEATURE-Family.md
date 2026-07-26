@@ -23,8 +23,8 @@ Sub-tabs (segmented): **Testimonies · Prayer · Map**. Persistent **scope toggl
 - Tap card → `TESTIMONY-DETAIL`.
 
 ### `TESTIMONY-COMPOSE` → `CONSENT` → `POST-PENDING`
-1. Compose: body (required), category (optional: healing, provision, salvation, breakthrough…), optional photo.
-2. **Consent step** (`CONSENT`): explicit agreement to share publicly + notice that a leader reviews before it's visible. (Important for pastoral care + safeguarding.)
+1. Compose: body (required, **max 2000 characters**; prayer requests max 1000), category (optional: healing, provision, salvation, breakthrough…), optional photo. Both ceilings are CHECK constraints, not just input limits (`02`); the composer shows a counter as the cap approaches rather than silently truncating.
+2. **Consent step** (`CONSENT`): explicit agreement to share publicly + notice that a leader reviews before it's visible. (Important for pastoral care + safeguarding.) The version of the wording shown is recorded on the row against `consent_versions` (`02`), so the Art. 9 evidence says which words the author actually agreed to; changing the wording in any language means minting a new version, never editing the old one.
 3. **Draft survival:** compose drafts persist to local storage on every change and restore on next composer open with a "Draft restored" notice (process death loses nothing). Consent is per-submission: the `CONSENT` step always re-runs after a restore (a stale carried-over consent flag would undermine the Art. 9 capture).
 4. Submit → `status = pending`. Show `POST-PENDING` ("Thank you: a leader will review this shortly"). Author sees their pending post with a "Pending" badge in feed and in `MY-POSTS`.
 

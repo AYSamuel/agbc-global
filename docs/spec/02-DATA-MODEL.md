@@ -18,7 +18,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 |-----------|-------------|
 | Content is born `pending` | `status default 'pending'`; BEFORE INSERT trigger forces `status='pending'`, `moderated_by/at=NULL` for non-moderators regardless of client-supplied values; member INSERT policy `WITH CHECK (status='pending')` |
 | Authorship cannot be forged | trigger forces `author_id = auth.uid()` and `branch_id` = the author's profile branch on insert |
-| Approved content cannot be edited into abuse | BEFORE UPDATE trigger: any author change to `body`, `image_url`, or `category_id` on an `approved` row resets `status='pending'` and clears `moderated_by/at`; only leader (own branch) / admin policies may set `approved`/`rejected`/`removed` |
+| Approved content cannot be edited into abuse | BEFORE UPDATE trigger: any author change to `body`, `image_path`, or `category_id` on an `approved` row resets `status='pending'` and clears `moderated_by/at`; only leader (own branch) / admin policies may set `approved`/`rejected`/`removed` |
 | Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref, phone); `email` is NOT in the allowlist: it mirrors the auth identity and changes only via the Supabase auth email-change flow (`03`); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
 | Counters are server-maintained | `glory_count` and the prayer counts (`praying_count`/`prayed_count`) written only by triggers (below), never by any client policy; the "I prayed" tap moves an intercession `committed`→`prayed`, decrementing `praying_count` and incrementing `prayed_count` |
 | Prayer commitment cannot be forged or self-scheduled | `prayer_intercessions.profile_id` is trigger-forced = `auth.uid()`; a BEFORE UPDATE trigger allows only the one-way `committed`→`prayed` transition (sets `prayed_at`, never reverts); `committed_at`, `next_reminder_at`, and `reminder_count` are server/trigger-controlled, so a client cannot backdate, self-schedule, or silence reminders (its own or anyone else's) by writing these columns |
@@ -29,6 +29,8 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | Deleted accounts cannot write | every member INSERT/UPDATE policy additionally requires the profile row to have `deleted_at IS NULL`. Closes the second-device replay hole: queued writes from a device that missed the deletion are rejected, never recreating erased Art. 9 data |
 | Mark-answered has preconditions | a trigger refuses setting `answered_at` unless the prayer is `approved` and not deleted; "Mark as not answered" clears it only while no linked testimony exists. The `from_prayer_id` trigger additionally raises when the referenced prayer is `removed` |
 | `removed` is terminal for authors | a trigger refuses author UPDATE on `removed` rows (DELETE stays allowed); only an admin may restore removed content, audit-logged |
+| Consent evidence is real and current | `consent_version` is an FK into `consent_versions`, so no client (and no service-role job either) can record consent against a version that was never published; the BEFORE INSERT trigger additionally refuses one whose `active` is false, so a stale app cannot keep recording superseded wording. Authorship, branch and both consent columns are already immutable after insert. Without this the Art. 9(2)(a) record (`20`) is just a string the app chose |
+| A photo reference must be the author's own | the BEFORE INSERT/UPDATE trigger raises unless `image_path`'s first path segment is `auth.uid()`. Reads of the object hang on "is there an approved testimony pointing at it", so owning the reference has to be as hard as owning the object: otherwise a member could point their own testimony at a stranger's private photo and mint a signed URL for it once approved |
 | `is_anonymous` flips without re-moderation but never silently | author changes to `is_anonymous` on an approved prayer are allowed (it is their own identity), fire the same sanitized realtime broadcast so live clients re-render, and anonymous-to-named requires a confirm sheet. All OTHER author-editable content columns (`body`, `language`) reset an approved row to pending |
 
 **Role/branch in policies:** put `role` and `branch_id` into JWT claims via the Supabase Custom Access Token auth hook (server-set, so client role claims stay untrusted). Caveat: a demoted leader keeps stale claims until token refresh, so moderation-plane actions re-check `profiles.role` from the table. Wrap `auth.uid()` as `(select auth.uid())` in policies (per-row re-evaluation footgun), `FORCE ROW LEVEL SECURITY` on every table, per-role statement timeouts.
@@ -61,7 +63,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 
 | Bucket | Access | Rules |
 |--------|--------|-------|
-| `testimony-photos` | private | signed URLs minted by an edge function ONLY for `approved` rows; pending photos are unreachable pre-review |
+| `testimony-photos` | private | 5 MiB, jpeg/png only. A member writes only inside their own `<author_id>/` folder, and `testimonies.image_path` is trigger-checked to sit in that same folder, so a reference cannot be pointed at a stranger's object. Reads are decided by a `storage.objects` SELECT policy: own object, OR referenced by an `approved` non-deleted testimony, OR the caller moderates that testimony's branch. A signed URL cannot be minted without passing it, so pending photos are unreachable pre-review. **Amended W2.3:** this used to say an edge function would mint the URLs; the RLS policy gives the identical guarantee with no extra service on the read path, and one less place to re-implement the rule wrongly |
 | `book-files` | private | signed URL per request after an `entitlements` check, short TTL (minutes); see `14` |
 | `avatars` | public-read | low sensitivity; still re-encoded on upload |
 | `sermon-audio` | public-read or modest-TTL signed | choose per bandwidth posture; see `08` |
@@ -190,20 +192,29 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | sort | int | |
 | active | bool | |
 
+### `consent_versions`
+The consent wordings a member can agree to when sharing. Art. 9(2)(a) evidence has to be verifiable, so the version on a post is an FK into this table and not free text a client could invent; the insert guards additionally refuse an inactive version, so consent is only ever recorded against the wording currently on offer. The wording TEXT lives in the app i18n bundle in four languages, pinned to these keys by a hash test in `apps/mobile`, so consent copy cannot drift without minting a new version. New versions ship as migrations (the row must reach dev and prod, which seeds do not); no client can write here.
+| field | type | notes |
+|-------|------|-------|
+| version | text PK | e.g. `content-share-v1` |
+| published_at | timestamptz | |
+| active | bool | retire with `active=false`, NEVER a delete: existing rows reference it as retained evidence (`20`). Retiring breaks any app build still shipping that key, so retire only after `app_config.minimum_supported_version` has moved past those builds |
+| notes | text null | what changed in this wording |
+
 ### `testimonies`
 | field | type | notes |
 |-------|------|-------|
 | id | uuid PK | |
 | author_id | uuid FK→profiles | trigger-forced = auth.uid() |
 | branch_id | uuid FK→branches | trigger-forced = author's branch at post time (scopes "My branch") |
-| body | text | |
+| body | text | CHECK 1..2000 characters after trimming (`09`; unbounded UGC text is both an abuse vector and an unreadable feed card) |
 | language | text | declared at compose or detected server-side (`en`/`de`/`nl`/`fr`/`yo`…); drives the Everywhere-feed label (`09`) and moderation language escalation (`17`/`22`) |
 | category_id | uuid FK→testimony_categories null | |
-| image_url | text null | private bucket; signed URLs only for approved rows (see Storage buckets above) |
+| image_path | text null | object PATH in the private `testimony-photos` bucket (`<author_id>/<uuid>.jpg`), never a URL: URLs for this bucket are signed and expire. Trigger-checked to sit in the author's own folder, so the reference cannot be pointed at a stranger's object. Readability is decided by the storage policies (see Storage buckets above). Renamed from `image_url` in W2.3, before it ever held a value |
 | from_prayer_id | uuid FK→prayers null **unique** | set when born from an answered prayer; `on delete set null`. Single source of truth for the loop; the reverse link is derived by join (no second FK to drift) |
 | status | enum | `pending` \| `approved` \| `rejected` \| `removed` (trigger-forced pending on insert and on author edit) |
 | rejection_reason | text null | shown to the author in MY-POSTS with "Edit and resubmit" (`09`) |
-| consent_version | text | version of the consent wording shown (Art. 9 evidence, see `20`) |
+| consent_version | text FK→consent_versions | version of the consent wording shown (Art. 9 evidence, see `20`). FK, not free text: the insert guard additionally refuses a version that is no longer `active`, so consent can only ever be recorded against wording currently on offer |
 | consented_at | timestamptz | |
 | moderated_by | uuid null | leader/admin |
 | moderated_at | timestamptz null | |
@@ -224,12 +235,12 @@ Lookup table (product-facing + translatable; freeform text fragments filters and
 | id | uuid PK | |
 | author_id | uuid FK | trigger-forced |
 | branch_id | uuid FK | trigger-forced |
-| body | text | |
+| body | text | CHECK 1..1000 characters after trimming (as on `testimonies`, shorter: a request is an ask, not an essay) |
 | language | text | as on `testimonies` |
 | is_anonymous | bool | show as "A member"; `author_id` stripped server-side in every public read AND in realtime broadcasts (see Write-path invariants) |
 | status | enum | `pending` \| `approved` \| `rejected` \| `removed` |
 | rejection_reason | text null | |
-| consent_version | text | |
+| consent_version | text FK→consent_versions | as on `testimonies` |
 | consented_at | timestamptz | |
 | answered_at | timestamptz null | set when author marks answered |
 | praying_count | int | denormalized: intercessors still committed (not yet fulfilled) |
