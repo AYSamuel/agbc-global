@@ -69,6 +69,22 @@ const config = {
         imageWidth: 76,
       },
     ],
+    [
+      // Testimony photos (docs/spec/09, W2.3 slice 3). The app only ever PICKS an
+      // existing image, so the camera and microphone permissions are blocked
+      // outright rather than left to the plugin's defaults: declaring a permission
+      // the app never uses is both a store-privacy lie and a needless prompt
+      // (docs/spec/20, ~/.claude/standards/mobile.md "request the minimum scope").
+      // Option names verified against the installed expo-image-picker 57.0.6
+      // plugin types, not from memory.
+      'expo-image-picker',
+      {
+        photosPermission:
+          'AGBC Global uses your photos only so you can attach one to a testimony you choose to share.',
+        cameraPermission: false,
+        microphonePermission: false,
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
