@@ -1,3 +1,5 @@
+import { router } from 'expo-router';
+
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 import type { GateAction } from '@/state/gate';
@@ -39,9 +41,18 @@ export async function replayGateAction(
         return 'failed';
       }
     }
-    // Executors land with their work items: compose (W2.3), intercede (W2.4),
-    // rsvp (W2.9), im_here (W2.8), save/notes/resume (W3.1),
-    // notifications (W3.3).
+    case 'compose': {
+      // The gated action WAS "open the composer", so replaying it is opening
+      // the composer. The route is chosen from the action's own target and
+      // never from anything a link could supply (docs/spec/03: the pending
+      // action exists only in memory, set only by a gate tap this session).
+      router.push(
+        action.target === 'prayer' ? '/prayer/compose' : '/testimony/compose',
+      );
+      return 'done';
+    }
+    // Executors land with their work items: intercede (W2.4), rsvp (W2.9),
+    // im_here (W2.8), save/notes/resume (W3.1), notifications (W3.3).
     default:
       return 'noop';
   }

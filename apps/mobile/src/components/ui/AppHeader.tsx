@@ -5,11 +5,15 @@ import { fontFamily, radius, spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
-import { ChevronLeftIcon } from './icons';
+import { ChevronLeftIcon, CloseIcon } from './icons';
 
 // The mockup's .chead pattern (SETTINGS, compose, detail screens): a 40px circle
 // back button on the alt surface, centered display title, and a balancing slot on
 // the right so the title stays optically centered.
+//
+// The compose frames (lines 1147 and 1610) use the same row with an X instead of
+// the chevron, because leaving a composer discards rather than goes back. Same
+// component, different glyph: `leading`.
 const CONTROL_SIZE = 40;
 
 export interface AppHeaderProps {
@@ -18,6 +22,8 @@ export interface AppHeaderProps {
   onBack?: () => void;
   /** Accessible label for the back control (i18n key resolution at call sites). */
   backLabel?: string;
+  /** Glyph in the leading control: a chevron to go back, an X to leave. */
+  leading?: 'back' | 'close';
   /** Right-side slot: bell, branch chip, overflow menu. */
   trailing?: ReactNode;
 }
@@ -26,6 +32,7 @@ export function AppHeader({
   title,
   onBack,
   backLabel = 'Back',
+  leading = 'back',
   trailing,
 }: AppHeaderProps) {
   const { colors } = useTheme();
@@ -58,7 +65,11 @@ export function AppHeader({
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          <ChevronLeftIcon color={colors.text} />
+          {leading === 'close' ? (
+            <CloseIcon size={18} color={colors.text} strokeWidth={2} />
+          ) : (
+            <ChevronLeftIcon color={colors.text} />
+          )}
         </Pressable>
       ) : (
         <View style={{ width: CONTROL_SIZE }} />

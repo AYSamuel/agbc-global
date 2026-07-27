@@ -298,3 +298,27 @@ export function UpdateIcon(props: IconProps) {
     </Svg>
   );
 }
+
+// POST-PENDING's "sent for review" glyph (mockup frame line 1182): a clock, not
+// a tick. The distinction is the whole point of the screen: the post is waiting,
+// not published.
+export function ClockIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={12} cy={12} r={9} />
+      <Path d="M12 7.5v5l3 2" />
+    </Svg>
+  );
+}
+
+// The compose photo affordance (mockup .addphoto): a framed picture. Rendered
+// only when the picker module is linked (W2.3 slice 3, dev-client native fence).
+export function ImageIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z" />
+      <Circle cx={8.5} cy={8.5} r={1.5} />
+      <Path d="M21 15l-5-5L5 21" />
+    </Svg>
+  );
+}

@@ -33,10 +33,10 @@ insert into public.prayers
 values
   ('86000000-0000-4000-8000-00000000000a', '92000000-0000-4000-8000-00000000000a',
    '00000000-0000-4000-8000-000000000001', 'anon hidden request', true,
-   'approved', 'tap-v1'),
+   'approved', 'content-share-v1'),
   ('86000000-0000-4000-8000-00000000000b', '92000000-0000-4000-8000-00000000000a',
    '00000000-0000-4000-8000-000000000001', 'anon named request', false,
-   'approved', 'tap-v1');
+   'approved', 'content-share-v1');
 
 -- ===========================================================================
 -- 1. Anonymity is a property of the data.
@@ -99,7 +99,7 @@ insert into public.prayers
 values
   ('86000000-0000-4000-8000-00000000000c', '92000000-0000-4000-8000-00000000000a',
    '00000000-0000-4000-8000-000000000001', 'anon broadcast probe', true,
-   'pending', 'tap-v1');
+   'pending', 'content-share-v1');
 update public.prayers set status = 'approved'
   where id = '86000000-0000-4000-8000-00000000000c';
 
@@ -149,9 +149,9 @@ insert into public.testimonies
   (id, author_id, branch_id, body, status, consent_version)
 values
   ('87000000-0000-4000-8000-00000000000a', '92000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'blk by author', 'approved', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000001', 'blk by author', 'approved', 'content-share-v1'),
   ('87000000-0000-4000-8000-00000000000b', '92000000-0000-4000-8000-00000000000b',
-   '00000000-0000-4000-8000-000000000001', 'blk by reader', 'approved', 'tap-v1');
+   '00000000-0000-4000-8000-000000000001', 'blk by reader', 'approved', 'content-share-v1');
 
 set local role authenticated;
 set local request.jwt.claims to

@@ -19,7 +19,9 @@ export interface TestimonyFeedItem {
   body: string;
   language: string;
   category_key: string | null;
-  image_url: string | null;
+  /** Object path in the private `testimony-photos` bucket; a signed URL is minted
+   * per view and never stored (docs/spec/02 §Storage). */
+  image_path: string | null;
   glory_count: number;
   created_at: string;
   author_id: string | null;
@@ -50,7 +52,7 @@ export interface PrayerFeedItem {
 }
 
 const TESTIMONY_FIELDS =
-  'id, branch_id, body, language, category_key, image_url, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id';
+  'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id';
 
 const PRAYER_FIELDS =
   'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id';
@@ -87,7 +89,7 @@ function mapTestimony(row: TestimonyRow): TestimonyFeedItem | null {
     body,
     language: str(row.language) ?? 'en',
     category_key: str(row.category_key),
-    image_url: str(row.image_url),
+    image_path: str(row.image_path),
     glory_count: num(row.glory_count),
     created_at: createdAt,
     author_id: str(row.author_id),
@@ -125,6 +127,36 @@ function mapPrayer(row: PrayerRow): PrayerFeedItem | null {
 // pushes changes, and a 60s refetch is the worst-case ceiling if the socket drops.
 // staleTime sits under that so a focus refetch is never served a stale cache.
 const FEED_STALE_TIME = 30_000;
+
+/** A testimony category as the composer needs it: the id goes on the row, the
+ * key resolves the label from the i18n bundle (docs/spec/02). */
+export interface TestimonyCategory {
+  id: string;
+  key: string;
+}
+
+/**
+ * TESTIMONY-COMPOSE's chips. Public reference data that changes about never, so
+ * it is cached long and persisted: opening the composer offline still offers the
+ * categories the author saw last time. A failure here hides the chip row rather
+ * than blocking the post, because category is optional (docs/spec/09).
+ */
+export function useTestimonyCategoriesQuery() {
+  return useQuery({
+    queryKey: ['family', 'categories'],
+    queryFn: async (): Promise<TestimonyCategory[]> => {
+      const { data, error } = await supabase
+        .from('testimony_categories')
+        .select('id, key')
+        .eq('active', true)
+        .order('sort', { ascending: true });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    staleTime: 24 * 60 * 60_000,
+    meta: PERSIST_META,
+  });
+}
 
 export function testimonyFeedKey(scope: FamilyScope, branchId: string | null) {
   return ['family', 'testimonies', scope, scope === 'branch' ? branchId : null];

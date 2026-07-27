@@ -6,6 +6,7 @@ export {
 export { AppHeader, type AppHeaderProps } from './AppHeader';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export { Card, type CardProps } from './Card';
+export { Checkbox, type CheckboxProps } from './Checkbox';
 export { Chip, type ChipProps } from './Chip';
 export {
   CircleIconButton,
@@ -32,5 +33,6 @@ export {
 } from './SegmentedControl';
 export { Skeleton, type SkeletonProps } from './Skeleton';
 export { TabBar, type TabBarProps, type TabItem } from './TabBar';
+export { TextArea, type TextAreaProps } from './TextArea';
 export { TextField, type TextFieldProps } from './TextField';
 export { ToastProvider, useToast } from './Toast';

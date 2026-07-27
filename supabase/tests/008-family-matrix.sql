@@ -67,14 +67,14 @@ insert into public.testimonies
   (id, author_id, branch_id, body, status, consent_version)
 values
   ('80000000-0000-4000-8000-00000000000a', '90000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'tap approved glasgow', 'approved', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000001', 'tap approved glasgow', 'approved', 'content-share-v1'),
   ('80000000-0000-4000-8000-00000000000b', '90000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'tap pending glasgow', 'pending', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000001', 'tap pending glasgow', 'pending', 'content-share-v1'),
   ('80000000-0000-4000-8000-00000000000c', '90000000-0000-4000-8000-00000000000d',
-   '00000000-0000-4000-8000-000000000002', 'tap approved berlin', 'approved', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000002', 'tap approved berlin', 'approved', 'content-share-v1'),
   -- Approved but soft-deleted by its author: must be invisible everywhere public.
   ('80000000-0000-4000-8000-00000000000d', '90000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'tap deleted glasgow', 'approved', 'tap-v1');
+   '00000000-0000-4000-8000-000000000001', 'tap deleted glasgow', 'approved', 'content-share-v1');
 update public.testimonies set deleted_at = now()
   where id = '80000000-0000-4000-8000-00000000000d';
 
@@ -82,9 +82,9 @@ insert into public.prayers
   (id, author_id, branch_id, body, status, consent_version)
 values
   ('81000000-0000-4000-8000-00000000000a', '90000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'tap approved request', 'approved', 'tap-v1'),
+   '00000000-0000-4000-8000-000000000001', 'tap approved request', 'approved', 'content-share-v1'),
   ('81000000-0000-4000-8000-00000000000b', '90000000-0000-4000-8000-00000000000a',
-   '00000000-0000-4000-8000-000000000001', 'tap pending request', 'pending', 'tap-v1');
+   '00000000-0000-4000-8000-000000000001', 'tap pending request', 'pending', 'content-share-v1');
 
 -- === Guest =================================================================
 set local role anon;

@@ -7,7 +7,7 @@ import { Pressable, Text, View } from 'react-native';
 import { authProfileSchema, type AuthProfileForm } from '@agbc/shared';
 import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
 
-import { Button, CheckIcon, TextField } from '@/components/ui';
+import { Button, Checkbox, TextField } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { branchInitial } from '@/features/onboarding/branchInitial';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
@@ -237,60 +237,16 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
           <ChevronRightIcon size={16} color={colors.muted} strokeWidth={2} />
         </View>
       </Pressable>
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: ageConfirmed }}
-        accessibilityLabel={t('agePrompt')}
-        onPress={() => {
-          setValue('ageConfirmed', !ageConfirmed);
-        }}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 12,
-          marginTop: 8,
-          marginBottom: 6,
-          minHeight: 44,
-        }}
-      >
-        <View
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: 7,
-            borderWidth: 2,
-            borderColor: ageConfirmed ? colors.btnBg : colors.cardline,
-            backgroundColor: ageConfirmed ? colors.btnBg : colors.card,
-            alignItems: 'center',
-            justifyContent: 'center',
+      <View style={{ marginTop: 8, marginBottom: 6 }}>
+        <Checkbox
+          checked={ageConfirmed}
+          onChange={(checked) => {
+            setValue('ageConfirmed', checked);
           }}
-        >
-          {ageConfirmed ? (
-            <CheckIcon size={14} color={colors.btnText} strokeWidth={3} />
-          ) : null}
-        </View>
-        <Text
-          style={{
-            fontFamily: fontFamily.body.semiBold,
-            fontSize: 14,
-            color: colors.text,
-          }}
-        >
-          {t('agePrompt')}
-        </Text>
-      </Pressable>
-      {errors.ageConfirmed ? (
-        <Text
-          accessibilityLiveRegion="polite"
-          style={{
-            fontFamily: fontFamily.body.regular,
-            fontSize: 12.5,
-            color: palette.red,
-          }}
-        >
-          {t('ageInvalid')}
-        </Text>
-      ) : null}
+          label={t('agePrompt')}
+          error={errors.ageConfirmed ? t('ageInvalid') : null}
+        />
+      </View>
       {submitError ? (
         <Text
           accessibilityLiveRegion="polite"
