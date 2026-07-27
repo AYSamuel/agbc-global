@@ -28,7 +28,17 @@ jest.mock('expo-localization', () => ({
 
 // The queries module is partially mocked via requireActual, which pulls in the
 // real client; it needs env that tests do not carry.
-jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+// The auth store subscribes at module scope, and the Glory hook pulls it in
+// through TestimonyCard (W2.4).
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
+  },
+}));
 
 const mockVerse = jest.fn<
   { data: unknown; isError: boolean; refetch: () => void },
@@ -217,6 +227,7 @@ describe('HOME composition (docs/spec/07)', () => {
         author_avatar_url: null,
         from_prayer_id: null,
         origin_prayer_id: null,
+        reacted_by_me: false,
       },
       isError: false,
     });

@@ -6,6 +6,7 @@ import { ThemeScope } from '@/theme';
 
 import { PhotoField } from '../PhotoField';
 import { base64ToBytes, resizeTarget } from '../photo';
+import { testimonyPhotoQueryKey } from '../useSignedPhotoUrl';
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */
@@ -81,6 +82,17 @@ describe('base64ToBytes', () => {
 
   test('an empty string is an empty buffer, not a crash', () => {
     expect(base64ToBytes('').byteLength).toBe(0);
+  });
+});
+
+describe('where a signed photo URL is cached', () => {
+  test('outside the family tree, so family invalidations cannot re-sign it', () => {
+    // It lived under ['family', 'photo', path] until a landed Glory invalidated
+    // ['family'], re-signed every photo in the feed, and made unrelated images
+    // reload as the URI changed under them (found on device 2026-07-27). The URL
+    // is keyed by an immutable object path; a count changing is none of its
+    // business.
+    expect(testimonyPhotoQueryKey('u/p.jpg')[0]).not.toBe('family');
   });
 });
 

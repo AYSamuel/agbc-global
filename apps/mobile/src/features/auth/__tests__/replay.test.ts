@@ -1,3 +1,5 @@
+import { useWriteQueueStore } from '@/lib/writeQueue';
+
 import { replayGateAction } from '../replay';
 
 const mockPush = jest.fn();
@@ -9,32 +11,31 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-const mockUpsert = jest.fn<Promise<{ error: unknown }>, [unknown, unknown]>();
-const mockInvalidate = jest.fn<Promise<void>, []>();
-
-jest.mock('@/lib/queryPersist', () => ({
-  queryClient: { invalidateQueries: () => mockInvalidate() },
-}));
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return --
+   documented jest.mock factory shape */
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
+/* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return */
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: () =>
-        Promise.resolve({ data: { session: { user: { id: 'user-1' } } } }),
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: () => undefined } },
       }),
     },
-    from: () => ({
-      upsert: (row: unknown, options: unknown) => mockUpsert(row, options),
-    }),
   },
 }));
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUpsert.mockResolvedValue({ error: null });
-  mockInvalidate.mockResolvedValue(undefined);
+  useWriteQueueStore.setState({
+    queue: {},
+    handlers: null,
+    draining: false,
+    failures: 0,
+  });
 });
 
 // The gate-return contract (docs/spec/03, 04 rule 9): whatever the guest reached
@@ -71,22 +72,27 @@ describe('replayGateAction: the kinds that are still waiting for their item', ()
   });
 });
 
-describe('replayGateAction: glory (W2.2)', () => {
-  it('lands the reaction and refreshes the family surfaces', async () => {
+// W2.4 moved this from a direct write to an enqueue, so the gate-return path and
+// an ordinary tap are one path. What the replay owes the member is that the wish
+// is RECORDED; the queue owns getting it to the server and retrying.
+describe('replayGateAction: glory', () => {
+  it('records the reaction as a queued wish', async () => {
     await expect(
       replayGateAction({ kind: 'glory', testimonyId: 't1' }),
     ).resolves.toBe('done');
-    expect(mockUpsert).toHaveBeenCalledWith(
-      { testimony_id: 't1', profile_id: 'user-1' },
-      { onConflict: 'testimony_id,profile_id', ignoreDuplicates: true },
-    );
-    expect(mockInvalidate).toHaveBeenCalled();
+    expect(useWriteQueueStore.getState().queue['glory:t1']).toMatchObject({
+      kind: 'glory',
+      entityId: 't1',
+      state: 'on',
+    });
   });
 
-  it('reports failure honestly when the write is refused', async () => {
-    mockUpsert.mockResolvedValue({ error: { message: 'nope' } });
-    await expect(
-      replayGateAction({ kind: 'glory', testimonyId: 't1' }),
-    ).resolves.toBe('failed');
+  it('is a reaction, never a toggle: a replay only ever turns Glory ON', async () => {
+    // The gated action was "say Glory to this". Signing in and finding it turned
+    // OFF because the member had reacted on another device would be a betrayal
+    // of the tap that started the sign-in.
+    await replayGateAction({ kind: 'glory', testimonyId: 't1' });
+    await replayGateAction({ kind: 'glory', testimonyId: 't1' });
+    expect(useWriteQueueStore.getState().queue['glory:t1']?.state).toBe('on');
   });
 });

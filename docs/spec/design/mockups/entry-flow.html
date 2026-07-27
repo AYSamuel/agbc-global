@@ -319,6 +319,11 @@
   .tauthor .mt{font-size:12px;color:var(--muted);margin-top:2px}
   .glorybig{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 40px);margin:0 20px 10px;padding:14px;border-radius:100px;background:var(--gold);color:var(--navy);border:none;font-weight:800;font-size:15px;cursor:pointer}
   .glorybig .st{-webkit-text-stroke:.3px var(--navy)}
+  /* Already reacted (W2.4). The solid pill is the invitation; once the member has
+     said it, the button quietens to the same tinted-gold treatment .glory.on uses
+     on the feed card, so "done" reads the same way in both places. */
+  .glorybig.on{background:rgba(255,207,74,.20);border:1px solid var(--gold);color:var(--text);padding:13px}
+  .glorybig.on .st{color:var(--gold);-webkit-text-stroke:.3px var(--navy)}
   .wabtn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 40px);margin:0 20px;padding:14px;border-radius:13px;background:rgba(31,138,91,.12);color:var(--green);border:none;font-weight:800;font-size:14.5px;cursor:pointer}
   .mapcanvas{position:relative;flex:1;min-height:0;background:var(--mapsea);overflow:hidden}
   .world2{position:absolute;inset:0;width:100%;height:100%}
@@ -1442,6 +1447,28 @@
           <div class="shotbox tshot"><span class="ph">photo: the author&#39;s picture</span></div>
           <div class="tauthor"><span class="avatar" style="width:44px;height:44px">A</span><div><div class="nm">Ayo Samuel</div><div class="mt">AGBC Berlin &middot; just now</div></div></div>
           <button class="glorybig"><span class="st">&#10022;</span> Glory to God &middot; 32</button>
+          <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/></svg> Share to WhatsApp</button>
+          <div style="height:16px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONY-DETAIL (already reacted) -->
+    <div class="device">
+      <p class="name"><b>TESTIMONY-DETAIL</b> &middot; member has said Glory</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Testimony</span><span style="width:40px"></span></div>
+          <div class="quotemark">&#8220;</div>
+          <div class="tquote">God provided a job after eight months of waiting. I applied everywhere with no reply, but last week the offer came through. He is faithful.</div>
+          <div class="tauthor"><span class="avatar" style="width:44px;height:44px">G</span><div><div class="nm">Grace A.</div><div class="mt">AGBC Glasgow &middot; 2h</div></div></div>
+          <!-- The one state the frames were missing (W2.4): on the feed card
+               .glory.on says "you have already said this", and the big button
+               said nothing at all. Same tinted-gold treatment, so the answer
+               reads identically wherever the member meets it. Tapping again
+               takes it back, exactly as on the card. -->
+          <button class="glorybig on"><span class="st">&#10022;</span> Glory to God &middot; 33</button>
           <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/></svg> Share to WhatsApp</button>
           <div style="height:16px"></div>
         </div>

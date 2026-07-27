@@ -18,7 +18,7 @@
 -- its own rows between sections rather than quietly running out of budget.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(34);
 
 -- Cast: an author and a leader in Glasgow, one member in Berlin (the outsider for both
 -- the photo-ownership and the pending-photo-read cases).
@@ -292,6 +292,97 @@ select is(
     where name = '93000000-0000-4000-8000-00000000000a/cmp-photo.jpg'),
   1,
   'once the testimony is approved the photo is readable by anyone');
+
+-- ===========================================================================
+-- 7. reacted_by_me: a card's own reaction state, on the card's own row (W2.4)
+-- ===========================================================================
+-- The count and "did I react" used to be two client queries that refetched
+-- independently, so a card could briefly hold one and not the other. They travel
+-- together now, and the column must answer about the CALLER and nobody else.
+reset role;
+set local request.jwt.claims to '{}';
+insert into public.glory_reactions (testimony_id, profile_id)
+values ('84000000-0000-4000-8000-00000000000b',
+        '93000000-0000-4000-8000-00000000000a');
+
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub":"93000000-0000-4000-8000-00000000000a","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000001"}';
+select is(
+  (select reacted_by_me from public.testimony_feed
+    where id = '84000000-0000-4000-8000-00000000000b'),
+  true,
+  'the member who reacted sees reacted_by_me true');
+
+reset role;
+set local request.jwt.claims to '{}';
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub":"93000000-0000-4000-8000-00000000000b","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000002"}';
+select is(
+  (select reacted_by_me from public.testimony_feed
+    where id = '84000000-0000-4000-8000-00000000000b'),
+  false,
+  'another member sees false: the column never reports anyone else''s reaction');
+
+set local role anon;
+set local request.jwt.claims to '{}';
+select is(
+  (select reacted_by_me from public.testimony_feed
+    where id = '84000000-0000-4000-8000-00000000000b'),
+  false,
+  'a guest, having no uid, always sees false');
+
+-- ===========================================================================
+-- 8. my_intercession_state: the prayer card's own commitment, on its own row
+-- ===========================================================================
+-- Same claim as reacted_by_me one section up, for the state W2.4 slice 3 will
+-- read. It must answer about the CALLER and never about anyone else, and it must
+-- follow the two-step forward: committed, then prayed.
+reset role;
+set local request.jwt.claims to '{}';
+insert into public.prayers
+  (id, author_id, branch_id, body, consent_version, status)
+values ('86000000-0000-4000-8000-00000000000a',
+        '93000000-0000-4000-8000-00000000000a',
+        '00000000-0000-4000-8000-000000000001',
+        'cmp please pray for my mother', 'content-share-v1', 'approved');
+
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub":"93000000-0000-4000-8000-00000000000b","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000002"}';
+select is(
+  (select my_intercession_state from public.prayer_feed
+    where id = '86000000-0000-4000-8000-00000000000a'),
+  null,
+  'a member who has not committed sees null');
+
+insert into public.prayer_intercessions (prayer_id, profile_id)
+values ('86000000-0000-4000-8000-00000000000a',
+        '93000000-0000-4000-8000-00000000000b');
+select is(
+  (select my_intercession_state::text from public.prayer_feed
+    where id = '86000000-0000-4000-8000-00000000000a'),
+  'committed',
+  'after "I will pray" the row reports committed');
+
+update public.prayer_intercessions
+  set state = 'prayed', prayed_at = now()
+  where prayer_id = '86000000-0000-4000-8000-00000000000a'
+    and profile_id = '93000000-0000-4000-8000-00000000000b';
+select is(
+  (select my_intercession_state::text from public.prayer_feed
+    where id = '86000000-0000-4000-8000-00000000000a'),
+  'prayed',
+  'after "I prayed" it reports prayed');
+
+set local role anon;
+set local request.jwt.claims to '{}';
+select is(
+  (select my_intercession_state from public.prayer_feed
+    where id = '86000000-0000-4000-8000-00000000000a'),
+  null,
+  'a guest sees null, and someone else''s commitment is never disclosed');
 
 reset role;
 set local request.jwt.claims to '{}';

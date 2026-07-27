@@ -22,6 +22,11 @@ jest.mock(
 // real client (src/lib/supabase throws without EXPO_PUBLIC_* config).
 jest.mock('@/lib/supabase', () => ({
   supabase: {
+    auth: {
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
     storage: {
       from: () => ({
         createSignedUrl: () =>
@@ -93,6 +98,7 @@ function testimony(o: Partial<TestimonyFeedItem> = {}): TestimonyFeedItem {
     author_avatar_url: null,
     from_prayer_id: null,
     origin_prayer_id: null,
+    reacted_by_me: false,
     ...o,
   };
 }
@@ -112,6 +118,7 @@ function prayer(o: Partial<PrayerFeedItem> = {}): PrayerFeedItem {
     author_name: 'Daniel Kern',
     author_avatar_url: null,
     answer_testimony_id: null,
+    my_intercession_state: null,
     ...o,
   };
 }

@@ -30,6 +30,14 @@ export interface ActionPillProps {
   /** Announced state for a toggle-like pill (Glory on/off). */
   selected?: boolean;
   accessibilityLabel?: string;
+  /**
+   * Announce the label when it changes. Set by pills whose label carries a live
+   * count, so a reaction is reported to assistive tech even when the animation
+   * that would otherwise convey it is suppressed (docs/spec/05 §Motion).
+   */
+  live?: boolean;
+  /** Decoration drawn behind the pill's content, e.g. the Glory burst. */
+  children?: ReactNode;
 }
 
 export function ActionPill({
@@ -39,6 +47,8 @@ export function ActionPill({
   icon,
   selected,
   accessibilityLabel,
+  live = false,
+  children,
 }: ActionPillProps) {
   const { colors } = useTheme();
 
@@ -56,6 +66,7 @@ export function ActionPill({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={selected === undefined ? undefined : { selected }}
+      accessibilityLiveRegion={live ? 'polite' : undefined}
       onPress={onPress}
       disabled={!onPress}
       // The pill renders at the mockup's compact height (8px vertical padding,
@@ -77,6 +88,7 @@ export function ActionPill({
         opacity: pressed ? 0.8 : 1,
       })}
     >
+      {children}
       {icon ? <View accessible={false}>{icon}</View> : null}
       <Text
         style={{

@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { PERSIST_META } from '@/lib/queryMeta';
 import { supabase } from '@/lib/supabase';
 
+import { reconcileGlory } from './gloryCache';
+import { prayerFeedKey, testimonyFeedKey } from './keys';
+
 // Family reads (docs/spec/09). Everything here goes through the FEED VIEWS, never
 // the base tables: `testimonies` and `prayers` grant anon nothing, and an anonymous
 // request's author_id does not exist in prayer_feed's output at all (ADR 0013). If
@@ -32,6 +35,10 @@ export interface TestimonyFeedItem {
   /** Set only while the origin prayer is itself publicly visible: the ribbon is a
    * link when set, a static label when null but from_prayer_id is set (docs/spec/09). */
   origin_prayer_id: string | null;
+  /** Whether the CALLING member has said Glory to this one. On the row rather
+   * than in a second query, so a card's count and its own reaction state can
+   * never disagree mid-refetch (W2.4). Always false for a guest. */
+  reacted_by_me: boolean;
 }
 
 export interface PrayerFeedItem {
@@ -49,13 +56,17 @@ export interface PrayerFeedItem {
   author_name: string | null;
   author_avatar_url: string | null;
   answer_testimony_id: string | null;
+  /** This member's own commitment: null until they tap "I will pray". On the row
+   * beside the counts it belongs with, so a card cannot hold one without the
+   * other (W2.4). Read by the two-step controls in slice 3. */
+  my_intercession_state: 'committed' | 'prayed' | null;
 }
 
 const TESTIMONY_FIELDS =
-  'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id';
+  'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id, reacted_by_me';
 
 const PRAYER_FIELDS =
-  'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id';
+  'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id, my_intercession_state';
 
 const FEED_LIMIT = 50;
 
@@ -97,6 +108,9 @@ function mapTestimony(row: TestimonyRow): TestimonyFeedItem | null {
     author_avatar_url: str(row.author_avatar_url),
     from_prayer_id: str(row.from_prayer_id),
     origin_prayer_id: str(row.origin_prayer_id),
+    // The view returns null for a guest; the app's answer for "has this member
+    // reacted" when there is no member is simply no.
+    reacted_by_me: row.reacted_by_me === true,
   };
 }
 
@@ -120,6 +134,13 @@ function mapPrayer(row: PrayerRow): PrayerFeedItem | null {
     author_name: str(row.author_name),
     author_avatar_url: str(row.author_avatar_url),
     answer_testimony_id: str(row.answer_testimony_id),
+    // Anything the app does not recognise reads as "no commitment": a card that
+    // cannot tell must offer the forward step, never a fulfilled one.
+    my_intercession_state:
+      row.my_intercession_state === 'committed' ||
+      row.my_intercession_state === 'prayed'
+        ? row.my_intercession_state
+        : null,
   };
 }
 
@@ -143,7 +164,10 @@ export interface TestimonyCategory {
  */
 export function useTestimonyCategoriesQuery() {
   return useQuery({
-    queryKey: ['family', 'categories'],
+    // Its OWN key, deliberately outside the family tree: eight seeded rows of
+    // reference data that no post and no reaction can change, and which used to
+    // be refetched by every family invalidation for nothing.
+    queryKey: ['testimony-categories'],
     queryFn: async (): Promise<TestimonyCategory[]> => {
       const { data, error } = await supabase
         .from('testimony_categories')
@@ -158,13 +182,12 @@ export function useTestimonyCategoriesQuery() {
   });
 }
 
-export function testimonyFeedKey(scope: FamilyScope, branchId: string | null) {
-  return ['family', 'testimonies', scope, scope === 'branch' ? branchId : null];
-}
-
-export function prayerFeedKey(scope: FamilyScope, branchId: string | null) {
-  return ['family', 'prayers', scope, scope === 'branch' ? branchId : null];
-}
+export {
+  PRAYER_SURFACE_KEYS,
+  prayerFeedKey,
+  TESTIMONY_SURFACE_KEYS,
+  testimonyFeedKey,
+} from './keys';
 
 export function useTestimonyFeedQuery(
   scope: FamilyScope,
@@ -173,6 +196,9 @@ export function useTestimonyFeedQuery(
   return useQuery({
     queryKey: testimonyFeedKey(scope, branchId),
     queryFn: async (): Promise<TestimonyFeedItem[]> => {
+      // Stamped BEFORE the request leaves, so reconcileGlory can tell whether
+      // this answer could have known about the member's own recent taps.
+      const startedAt = Date.now();
       let request = supabase
         .from('testimony_feed')
         .select(TESTIMONY_FIELDS)
@@ -183,9 +209,12 @@ export function useTestimonyFeedQuery(
       }
       const { data, error } = await request;
       if (error) throw new Error(error.message);
-      return data
-        .map(mapTestimony)
-        .filter((r): r is TestimonyFeedItem => r !== null);
+      return reconcileGlory(
+        data
+          .map(mapTestimony)
+          .filter((r): r is TestimonyFeedItem => r !== null),
+        startedAt,
+      );
     },
     // "My branch" with no chosen branch would silently mean Everywhere; the screen
     // keeps the toggle on Everywhere in that case, so this should never fire.
@@ -225,13 +254,17 @@ export function useTestimonyQuery(id: string) {
   return useQuery({
     queryKey: ['family', 'testimony', id] as const,
     queryFn: async (): Promise<TestimonyFeedItem | null> => {
+      const startedAt = Date.now();
       const { data, error } = await supabase
         .from('testimony_feed')
         .select(TESTIMONY_FIELDS)
         .eq('id', id)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return data === null ? null : mapTestimony(data);
+      const row = data === null ? null : mapTestimony(data);
+      return row === null
+        ? null
+        : (reconcileGlory([row], startedAt)[0] ?? null);
     },
     staleTime: FEED_STALE_TIME,
     meta: PERSIST_META,
@@ -245,6 +278,7 @@ export function latestTestimonyQueryOptions() {
   return {
     queryKey: ['family', 'latest-testimony'] as const,
     queryFn: async (): Promise<TestimonyFeedItem | null> => {
+      const startedAt = Date.now();
       const { data, error } = await supabase
         .from('testimony_feed')
         .select(TESTIMONY_FIELDS)
@@ -252,7 +286,10 @@ export function latestTestimonyQueryOptions() {
         .limit(1)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return data === null ? null : mapTestimony(data);
+      const row = data === null ? null : mapTestimony(data);
+      return row === null
+        ? null
+        : (reconcileGlory([row], startedAt)[0] ?? null);
     },
     staleTime: FEED_STALE_TIME,
     // Home's "From the family" highlight paints offline (docs/spec/07).

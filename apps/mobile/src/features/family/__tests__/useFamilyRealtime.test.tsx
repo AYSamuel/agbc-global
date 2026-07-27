@@ -96,7 +96,17 @@ test('a broadcast invalidates the family queries', async () => {
   mockChannels[0]?.handler?.({
     payload: { table: 'prayers', action: 'inserted' },
   });
-  expect(mockInvalidate).toHaveBeenCalledWith({ queryKey: ['family'] });
+  // Only the prayer surfaces. A blanket ['family'] sweep also re-signed every
+  // photo, so someone else's activity reloaded images on this device (W2.4).
+  expect(mockInvalidate).toHaveBeenCalledWith({
+    queryKey: ['family', 'prayers'],
+  });
+  expect(mockInvalidate).toHaveBeenCalledWith({
+    queryKey: ['family', 'prayer'],
+  });
+  expect(mockInvalidate).not.toHaveBeenCalledWith({
+    queryKey: ['family', 'testimonies'],
+  });
 });
 
 test('an event from a blocked author is dropped, not invalidated', async () => {
@@ -122,7 +132,9 @@ test('an anonymous event (no author_id) is never dropped', async () => {
   mockChannels[0]?.handler?.({
     payload: { table: 'prayers', action: 'inserted', author_id: null },
   });
-  expect(mockInvalidate).toHaveBeenCalledWith({ queryKey: ['family'] });
+  expect(mockInvalidate).toHaveBeenCalledWith({
+    queryKey: ['family', 'prayers'],
+  });
 });
 
 test('the 60s poll fires as the degradation floor even with no broadcast', async () => {
@@ -131,7 +143,14 @@ test('the 60s poll fires as the degradation floor even with no broadcast', async
   });
   expect(mockInvalidate).not.toHaveBeenCalled();
   jest.advanceTimersByTime(60_000);
-  expect(mockInvalidate).toHaveBeenCalledWith({ queryKey: ['family'] });
+  // The safety net refreshes both kinds: it exists precisely for the case where
+  // no broadcast arrived to say which one moved.
+  expect(mockInvalidate).toHaveBeenCalledWith({
+    queryKey: ['family', 'testimonies'],
+  });
+  expect(mockInvalidate).toHaveBeenCalledWith({
+    queryKey: ['family', 'prayers'],
+  });
 });
 
 test('blur tears the mockChannels and the timer down', async () => {

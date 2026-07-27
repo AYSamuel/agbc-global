@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 
-import { queryClient } from '@/lib/queryPersist';
-import { supabase } from '@/lib/supabase';
+import { applyGloryToCaches } from '@/features/family/gloryCache';
+import { pushWrite } from '@/lib/writeQueue';
 import type { GateAction } from '@/state/gate';
 
 // Gate-return executors (docs/spec/03, 04 rule 9): after AUTH-4 lands the user
@@ -9,37 +9,29 @@ import type { GateAction } from '@/state/gate';
 // REAL executor arrives with its own work item; until then it resolves 'noop'
 // (the user is back where they started, which is already the promise kept).
 //
-// glory is live now (decided 2026-07-26): its backend has existed since W1.5
-// and W2.2's Done criterion is the reaction landing. W2.4 swaps this direct
-// write for the offline queue and adds the button UI.
+// glory went live at W2.2 (its backend has existed since W1.5), as a direct
+// write from here. W2.4 replaced that with an enqueue, so the gate-return path
+// and an ordinary tap are now the SAME path: one place decides what a Glory
+// means, one place retries it, and a member who signs in on a train still has
+// their reaction land when the signal comes back.
 
 export type ReplayOutcome = 'done' | 'noop' | 'failed';
 
-export async function replayGateAction(
-  action: GateAction,
-): Promise<ReplayOutcome> {
+// Returns a promise rather than being `async`: every executor here happens to
+// be synchronous today (one enqueue, one navigation), but the contract is
+// asynchronous because the ones still to land are not (rsvp, playback).
+export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
   switch (action.kind) {
     case 'glory': {
-      try {
-        const { data } = await supabase.auth.getSession();
-        const userId = data.session?.user.id;
-        if (!userId) return 'failed';
-        // Conflict-tolerant per the table's contract (docs/spec/02): a repeat
-        // replay or an existing reaction stays count-correct.
-        const { error } = await supabase
-          .from('glory_reactions')
-          .upsert(
-            { testimony_id: action.testimonyId, profile_id: userId },
-            { onConflict: 'testimony_id,profile_id', ignoreDuplicates: true },
-          );
-        if (error) return 'failed';
-        // Counters are server-maintained; refetch the family surfaces so the
-        // count updates in place (04: "count +1 in place").
-        await queryClient.invalidateQueries({ queryKey: ['family'] });
-        return 'done';
-      } catch {
-        return 'failed';
-      }
+      // The gated action was "say Glory to this", and it is queued rather than
+      // sent: the queue owns idempotency, retries and the optimistic count, and
+      // the card reads its state from there either way (docs/spec/01 §8).
+      // Same two steps as an ordinary tap (features/family/useGlory): show it,
+      // then queue it. The member is landing back on the card that sent them to
+      // sign in, and it should already be reacted when they get there.
+      applyGloryToCaches(action.testimonyId, true);
+      pushWrite('glory', action.testimonyId, 'on');
+      return Promise.resolve('done');
     }
     case 'compose': {
       // The gated action WAS "open the composer", so replaying it is opening
@@ -49,11 +41,11 @@ export async function replayGateAction(
       router.push(
         action.target === 'prayer' ? '/prayer/compose' : '/testimony/compose',
       );
-      return 'done';
+      return Promise.resolve('done');
     }
-    // Executors land with their work items: intercede (W2.4), rsvp (W2.9),
-    // im_here (W2.8), save/notes/resume (W3.1), notifications (W3.3).
+    // Executors land with their work items: intercede (W2.4 slice 3), rsvp
+    // (W2.9), im_here (W2.8), save/notes/resume (W3.1), notifications (W3.3).
     default:
-      return 'noop';
+      return Promise.resolve('noop');
   }
 }

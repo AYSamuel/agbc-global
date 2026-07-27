@@ -14,6 +14,7 @@ import {
   PersonIcon,
   Screen,
   Skeleton,
+  useManualRefresh,
 } from '@/components/ui';
 import { joinMeta } from '@/features/family/format';
 import { useLatestTestimonyQuery } from '@/features/family/queries';
@@ -149,19 +150,15 @@ export default function Home() {
   // Pull-to-refresh is Home's retry path: the cache is persisted so nothing blanks
   // offline, but a failed surface (verse, service, latest message, family) recovers
   // by refetching all four rather than needing an app restart (docs/spec/04).
-  const refreshing =
-    verseQuery.isRefetching ||
-    servicesQuery.isRefetching ||
-    sermonsQuery.isRefetching ||
-    branchesQuery.isRefetching ||
-    testimonyHighlight.isRefetching;
-  const refreshAll = () => {
-    void verseQuery.refetch();
-    void servicesQuery.refetch();
-    void sermonsQuery.refetch();
-    void branchesQuery.refetch();
-    void testimonyHighlight.refetch();
-  };
+  const { refreshing, onRefresh: refreshAll } = useManualRefresh(() =>
+    Promise.all([
+      verseQuery.refetch(),
+      servicesQuery.refetch(),
+      sermonsQuery.refetch(),
+      branchesQuery.refetch(),
+      testimonyHighlight.refetch(),
+    ]),
+  );
 
   return (
     <Screen
@@ -395,7 +392,7 @@ export default function Home() {
                   params: { id: testimonyHighlight.data?.id ?? '' },
                 });
               }}
-              onGlory={() => {
+              onGloryGate={() => {
                 setGateVisible(true);
                 setGateTestimonyId(testimonyHighlight.data?.id ?? null);
               }}

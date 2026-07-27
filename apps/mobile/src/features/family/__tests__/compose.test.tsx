@@ -50,6 +50,9 @@ jest.mock('@/lib/queryPersist', () => ({
 // convention); the WRITE is mocked at the client, because the payload the
 // composer sends is exactly what these tests exist to pin down.
 jest.mock('../queries', () => ({
+  // The composer refreshes only the surfaces its post belongs to (W2.4).
+  TESTIMONY_SURFACE_KEYS: [['family', 'testimonies']],
+  PRAYER_SURFACE_KEYS: [['family', 'prayers']],
   useTestimonyCategoriesQuery: () => ({
     data: [
       { id: '40000000-0000-4000-8000-000000000001', key: 'healing' },

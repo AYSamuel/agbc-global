@@ -9,12 +9,13 @@ import {
   spacing,
 } from '@agbc/shared/theme';
 
-import { ActionPill, GradientFill } from '@/components/ui';
+import { ActionPill, Burst, GradientFill } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 import { initials, joinMeta } from './format';
 import type { TestimonyFeedItem } from './queries';
 import { TestimonyPhoto } from './TestimonyPhoto';
+import { useGloryPress } from './useGlory';
 import { useRelativeAgeLabel } from './useRelativeAgeLabel';
 
 // Mockup .testi: card surface, 1px border, 18px radius, 18px padding, 12px gutter
@@ -27,22 +28,33 @@ const BODY_SIZE = 15;
 export function GloryPill({
   count,
   reacted = false,
+  bursts = 0,
   onPress,
 }: {
   count: number;
   reacted?: boolean;
+  /** Increments once per tap that turns Glory ON; owned by useGloryPress so the
+   * celebration belongs to the act and never to a refetch. */
+  bursts?: number;
   onPress: () => void;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
+
   return (
     <ActionPill
       label={t('family:gloryCount', { count })}
       tone={reacted ? 'gold' : 'neutral'}
       selected={reacted}
+      // The count is in the label, so announcing the label IS announcing the
+      // count. This is what carries the reaction to assistive tech, and it is
+      // the whole story under reduce-motion (docs/spec/05 §Motion).
+      live
       onPress={onPress}
       icon={<Text style={{ fontSize: 12.5, color: colors.accent }}>{'✦'}</Text>}
-    />
+    >
+      <Burst trigger={bursts} color={colors.accent} />
+    </ActionPill>
   );
 }
 
@@ -51,7 +63,7 @@ export function TestimonyCard({
   branchName,
   branchColor,
   onPress,
-  onGlory,
+  onGloryGate,
   onShare,
 }: {
   testimony: TestimonyFeedItem;
@@ -60,7 +72,9 @@ export function TestimonyCard({
    * matches their map pin and their avatar on the detail screen. */
   branchColor: string;
   onPress: () => void;
-  onGlory: () => void;
+  /** Opens the screen's gate sheet. Only reached for guests: a signed-in tap
+   * reacts instead, through the write queue. */
+  onGloryGate: () => void;
   onShare: () => void;
 }) {
   const { colors } = useTheme();
@@ -68,6 +82,14 @@ export function TestimonyCard({
   const age = useRelativeAgeLabel(testimony.created_at);
   const name = testimony.author_name ?? t('family:aMember');
   const meta = joinMeta([branchName, age]);
+  const glory = useGloryPress(
+    testimony.id,
+    testimony.glory_count,
+    // Straight off the card's own row, so the count and the reaction state can
+    // never be from different moments (W2.4).
+    testimony.reacted_by_me,
+    onGloryGate,
+  );
 
   return (
     <Pressable
@@ -184,7 +206,12 @@ export function TestimonyCard({
           marginTop: spacing.md,
         }}
       >
-        <GloryPill count={testimony.glory_count} onPress={onGlory} />
+        <GloryPill
+          count={glory.count}
+          reacted={glory.reacted}
+          bursts={glory.bursts}
+          onPress={glory.onPress}
+        />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('family:share')}
