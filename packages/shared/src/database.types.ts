@@ -215,18 +215,21 @@ export type Database = {
       consent_versions: {
         Row: {
           active: boolean
+          covers_photos: boolean
           notes: string | null
           published_at: string
           version: string
         }
         Insert: {
           active?: boolean
+          covers_photos?: boolean
           notes?: string | null
           published_at?: string
           version: string
         }
         Update: {
           active?: boolean
+          covers_photos?: boolean
           notes?: string | null
           published_at?: string
           version?: string
@@ -1121,6 +1124,33 @@ export type Database = {
         }
         Relationships: []
       }
+      testimony_photo_validations: {
+        Row: {
+          byte_size: number
+          content_type: string
+          object_id: string
+          object_name: string
+          object_version: string | null
+          validated_at: string
+        }
+        Insert: {
+          byte_size: number
+          content_type: string
+          object_id: string
+          object_name: string
+          object_version?: string | null
+          validated_at?: string
+        }
+        Update: {
+          byte_size?: number
+          content_type?: string
+          object_id?: string
+          object_name?: string
+          object_version?: string | null
+          validated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       prayer_feed: {
@@ -1208,6 +1238,10 @@ export type Database = {
       }
     }
     Functions: {
+      assert_consent_covers_photo: {
+        Args: { target_version: string }
+        Returns: undefined
+      }
       assert_consent_version_active: {
         Args: { target: string }
         Returns: undefined
@@ -1218,6 +1252,7 @@ export type Database = {
         Returns: undefined
       }
       assert_photo_path_owned: { Args: { target: string }; Returns: undefined }
+      assert_photo_validated: { Args: { target: string }; Returns: undefined }
       assert_prayer_link_allowed: {
         Args: { target_prayer: string }
         Returns: undefined
@@ -1248,6 +1283,10 @@ export type Database = {
       jwt_role: { Args: never; Returns: string }
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
+      record_photo_validation: {
+        Args: { content_type: string; object_name: string }
+        Returns: undefined
+      }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
     }

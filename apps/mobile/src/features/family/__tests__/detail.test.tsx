@@ -16,6 +16,21 @@ jest.mock(
 );
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
+// TESTIMONY-DETAIL renders the optional photo, which reaches the storage client
+// through useSignedPhotoUrl. These fixtures carry no photo, so nothing signs
+// anything; the mock exists only so importing the screen does not construct a
+// real client (src/lib/supabase throws without EXPO_PUBLIC_* config).
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    storage: {
+      from: () => ({
+        createSignedUrl: () =>
+          Promise.resolve({ data: null, error: new Error('not in tests') }),
+      }),
+    },
+  },
+}));
+
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({

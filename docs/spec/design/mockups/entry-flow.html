@@ -263,6 +263,18 @@
   .catchip{background:var(--card);border:1px solid var(--border);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:13px;font-weight:700}
   .catchip.on{background:var(--btnBg);color:var(--btnText);border-color:var(--btnBg)}
   .addphoto{margin:14px 18px 0;border:1px dashed var(--border);border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-weight:700;font-size:14px}
+  /* Testimony photo, W2.3 slice 3. The picked image replaces the dashed .addphoto box in
+     place; the sandbox draws every real photo as the same navy/blue gradient the ONB hero
+     and the WATCH .thumb use, with a .ph label naming the file. */
+  .shotbox{position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#2f6fed,#14213d)}
+  .shotbox .ph{position:absolute;left:13px;bottom:11px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.58);letter-spacing:.06em}
+  .shotbox .rm{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(14,20,32,0.62);border:none;color:#fff;display:grid;place-items:center;cursor:pointer}
+  .shotbox .busy{position:absolute;inset:0;background:rgba(14,20,32,0.62);display:flex;align-items:center;justify-content:center;gap:9px;color:#fff;font-size:13px;font-weight:700}
+  .shotbox .spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff}
+  .cshot{margin:14px 18px 0;height:184px}
+  .photoerr{margin:8px 18px 0;font-size:12px;line-height:1.45;color:var(--red);font-weight:700}
+  .testi .shot{margin-top:12px;height:172px}
+  .tshot{margin:0 20px 16px;height:212px}
   .cpoint{display:flex;gap:12px;align-items:flex-start;margin-bottom:15px}
   .cpoint .ck{width:26px;height:26px;border-radius:50%;background:rgba(31,138,91,.14);color:var(--green);display:grid;place-items:center;flex:none;margin-top:1px}
   .cpoint .txt{font-size:14px;color:var(--text);line-height:1.45}
@@ -907,6 +919,9 @@
           <div class="testi">
             <div class="who"><span class="av" style="background:linear-gradient(135deg,#2f6fed,#14213d)">T</span><div><div class="nm">Tunde A.</div><div class="mt">Miracle Centre, Ogbomosho &middot; 5h</div></div></div>
             <div class="body">&#8220;Our daughter&#39;s surgery was a success. Glory to God for His mercy.&#8221;</div>
+            <!-- Optional testimony photo (docs/spec/09 feed line; W2.3 slice 3): under the
+                 words, above the actions, so the testimony still leads with what was said. -->
+            <div class="shotbox shot"><span class="ph">photo: the author&#39;s picture</span></div>
             <div class="acts"><span class="glory"><span class="st">&#10022;</span> Glory to God &middot; 31</span><span class="shr">Share</span></div>
           </div>
           <div style="height:96px"></div>
@@ -1154,6 +1169,60 @@
       </div>
     </div>
 
+    <!-- TESTIMONY-COMPOSE (photo attached) -->
+    <div class="device">
+      <p class="name"><b>TESTIMONY-COMPOSE</b> &middot; photo attached</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="ct">Share a testimony</span><span style="width:40px"></span></div>
+          <div class="ctext">God provided a job after 8 months of waiting. I applied everywhere with no reply, but last week the offer came through. He is faithful.</div>
+          <div class="clabel">Category (optional)</div>
+          <div class="chips"><span class="catchip on">Provision</span><span class="catchip">Healing</span><span class="catchip">Salvation</span><span class="catchip">Breakthrough</span></div>
+          <div class="shotbox cshot">
+            <span class="ph">photo: the author&#39;s picture</span>
+            <button class="rm" aria-label="Remove photo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          </div>
+          <div style="padding:18px"><button class="btn primary">Continue</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONY-COMPOSE (photo uploading) -->
+    <div class="device">
+      <p class="name"><b>TESTIMONY-COMPOSE</b> &middot; photo uploading</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="ct">Share a testimony</span><span style="width:40px"></span></div>
+          <div class="ctext">God provided a job after 8 months of waiting. I applied everywhere with no reply, but last week the offer came through. He is faithful.</div>
+          <div class="clabel">Category (optional)</div>
+          <div class="chips"><span class="catchip on">Provision</span><span class="catchip">Healing</span><span class="catchip">Salvation</span><span class="catchip">Breakthrough</span></div>
+          <div class="shotbox cshot">
+            <span class="ph">photo: the author&#39;s picture</span>
+            <div class="busy"><span class="spin"></span> Preparing your photo&hellip;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONY-COMPOSE (photo failed) -->
+    <div class="device">
+      <p class="name"><b>TESTIMONY-COMPOSE</b> &middot; photo could not be added</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="ct">Share a testimony</span><span style="width:40px"></span></div>
+          <div class="ctext">God provided a job after 8 months of waiting. I applied everywhere with no reply, but last week the offer came through. He is faithful.</div>
+          <div class="clabel">Category (optional)</div>
+          <div class="chips"><span class="catchip on">Provision</span><span class="catchip">Healing</span><span class="catchip">Salvation</span><span class="catchip">Breakthrough</span></div>
+          <div class="addphoto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Add a photo</div>
+          <div class="photoerr">We couldn&#39;t add that photo. Check your connection and try again, or share without it.</div>
+          <div style="padding:18px"><button class="btn primary">Continue</button></div>
+        </div>
+      </div>
+    </div>
+
     <!-- CONSENT -->
     <div class="device">
       <p class="name"><b>CONSENT</b> · mandatory before posting</p>
@@ -1166,6 +1235,26 @@
           <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Visible to the family.</b> Once approved, it appears in the AGBC feed across every nation.</span></div>
           <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Reviewed first.</b> A leader from your branch reviews it before it goes public.</span></div>
           <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Yours to manage.</b> Edit or delete it anytime from My posts.</span></div>
+          <div class="checkrow"><span class="cbox on"></span><span class="ct">I agree to share this publicly.</span></div>
+          <div class="spacer"></div>
+          <button class="btn primary">Post testimony</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONSENT (with a photo attached) -->
+    <div class="device">
+      <p class="name"><b>CONSENT</b> &middot; testimony with a photo</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="authwrap">
+          <button class="backbtn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <h1>Before you share</h1>
+          <p class="lead">A quick note on how your testimony is shared.</p>
+          <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Visible to the family.</b> Once approved, it appears in the AGBC feed across every nation.</span></div>
+          <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Reviewed first.</b> A leader from your branch reviews it before it goes public.</span></div>
+          <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Yours to manage.</b> Edit or delete it anytime from My posts.</span></div>
+          <div class="cpoint"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></span><span class="txt"><b>Your photo, their permission.</b> If someone can be recognised in it, please ask them first. Never share a photo of a child without their parent&#39;s consent.</span></div>
           <div class="checkrow"><span class="cbox on"></span><span class="ct">I agree to share this publicly.</span></div>
           <div class="spacer"></div>
           <button class="btn primary">Post testimony</button>
@@ -1348,6 +1437,9 @@
           <div class="ribbon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6l1-1a4 4 0 0 1 6 6l-1 1"/><path d="M13 18l-1 1a4 4 0 0 1-6-6l1-1"/></svg> Born from an answered prayer</div>
           <div class="quotemark">&#8220;</div>
           <div class="tquote">God answered! My mother came through her surgery and is recovering well. Thank you, family, for praying with me.</div>
+          <!-- Optional testimony photo (docs/spec/09 TESTIMONY-DETAIL; W2.3 slice 3). It
+               follows the quote and precedes the author: words, then image, then who. -->
+          <div class="shotbox tshot"><span class="ph">photo: the author&#39;s picture</span></div>
           <div class="tauthor"><span class="avatar" style="width:44px;height:44px">A</span><div><div class="nm">Ayo Samuel</div><div class="mt">AGBC Berlin &middot; just now</div></div></div>
           <button class="glorybig"><span class="st">&#10022;</span> Glory to God &middot; 32</button>
           <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/></svg> Share to WhatsApp</button>

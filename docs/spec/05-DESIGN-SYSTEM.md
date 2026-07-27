@@ -20,7 +20,7 @@ Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.htm
 | `green` | `#1f8a5b` | success |
 | `red` | `#e0342c` | danger |
 
-Plus the `onInk` group for content on ink/photo surfaces (same in both themes): text `#ffffff`, sub `#9aa6bd`, link `#8db4ff`, scrim `rgba(14,20,32,0.15) → rgba(14,20,32,0.92)` (vertical).
+Plus the `onInk` group for content on ink/photo surfaces (same in both themes): text `#ffffff`, sub `#9aa6bd`, link `#8db4ff`, scrim `rgba(14,20,32,0.15) → rgba(14,20,32,0.92)` (vertical), and `scrimSolid` `rgba(14,20,32,0.62)` for flat washes and controls drawn on a photo (the compose photo's remove disc and its "preparing" overlay; added W2.3 slice 3).
 
 ### Light
 | Token | Value | Use |

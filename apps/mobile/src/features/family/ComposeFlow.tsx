@@ -8,7 +8,7 @@ import { BackHandler } from 'react-native';
 import {
   composeBodyMax,
   composeSchema,
-  CONSENT_VERSION,
+  consentVersionFor,
   type ComposeForm,
   type ComposeTarget,
 } from '@agbc/shared';
@@ -23,6 +23,12 @@ import { mapComposeError, type ComposeErrorKey } from './composeErrors';
 import { ComposeStep } from './ComposeStep';
 import { ConsentStep } from './ConsentStep';
 import { clearDraft, loadDraft, saveDraft } from './drafts';
+import {
+  discardTestimonyPhoto,
+  photoPickingAvailable,
+  pickAndUploadTestimonyPhoto,
+  type PhotoFailure,
+} from './photo';
 import { PostPendingStep } from './PostPendingStep';
 
 // TESTIMONY-COMPOSE / PRAYER-COMPOSE -> CONSENT -> POST-PENDING (docs/spec/09),
@@ -59,6 +65,12 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
   const [stage, setStage] = useState<ComposeStage>('compose');
   const [errorKey, setErrorKey] = useState<ComposeErrorKey | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  // Photo state that is NOT part of the form: the local preview file (gone after
+  // process death, unlike the object) and the in-flight/failure flags. The path
+  // itself lives on the form, because that is what the row carries.
+  const [photoPreviewUri, setPhotoPreviewUri] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoFailure, setPhotoFailure] = useState<PhotoFailure | null>(null);
 
   const schema = useMemo(() => composeSchema(target), [target]);
   const {
@@ -74,6 +86,7 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
     defaultValues: {
       body: '',
       categoryId: null,
+      imagePath: null,
       isAnonymous: false,
       consentAgreed: false,
     },
@@ -81,6 +94,7 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
 
   const body = useWatch({ control, name: 'body' });
   const categoryId = useWatch({ control, name: 'categoryId' });
+  const imagePath = useWatch({ control, name: 'imagePath' });
   const isAnonymous = useWatch({ control, name: 'isAnonymous' });
 
   const exit = () => {
@@ -99,6 +113,9 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
         reset({
           body: draft.body,
           categoryId: draft.categoryId,
+          // The object survived; the cached file the picker wrote may not, so
+          // the preview falls back to a signed URL for the author's own photo.
+          imagePath: target === 'testimony' ? draft.imagePath : null,
           isAnonymous: draft.isAnonymous,
           consentAgreed: false,
         });
@@ -119,12 +136,12 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
   useEffect(() => {
     if (!hydrated || stage === 'sent') return undefined;
     const timer = setTimeout(() => {
-      void saveDraft(target, { body, categoryId, isAnonymous });
+      void saveDraft(target, { body, categoryId, imagePath, isAnonymous });
     }, DRAFT_DEBOUNCE_MS);
     return () => {
       clearTimeout(timer);
     };
-  }, [hydrated, stage, target, body, categoryId, isAnonymous]);
+  }, [hydrated, stage, target, body, categoryId, imagePath, isAnonymous]);
 
   // Hardware back mirrors the on-screen control: consent returns to compose,
   // everything else leaves the composer (the default pop).
@@ -143,6 +160,44 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
       subscription.remove();
     };
   }, [stage]);
+
+  const onPickPhoto = () => {
+    if (photoBusy) return;
+    setPhotoFailure(null);
+    setPhotoBusy(true);
+    // The folder name IS the member's id: the storage policies and the row guard
+    // both hang on it, so it comes from the session rather than anywhere the UI
+    // could have stale-cached it.
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        const userId = data.session?.user.id;
+        if (!userId) return { ok: false, reason: 'failed' } as const;
+        return pickAndUploadTestimonyPhoto(userId);
+      })
+      .then((result) => {
+        if (result.ok) {
+          setValue('imagePath', result.path, { shouldValidate: true });
+          setPhotoPreviewUri(result.previewUri);
+          return;
+        }
+        // Backing out of the system picker is not a failure and gets no copy.
+        if (result.reason !== 'cancelled') setPhotoFailure(result.reason);
+      })
+      .finally(() => {
+        setPhotoBusy(false);
+      });
+  };
+
+  const onRemovePhoto = () => {
+    const current = getValues('imagePath');
+    setValue('imagePath', null, { shouldValidate: true });
+    setPhotoPreviewUri(null);
+    setPhotoFailure(null);
+    // Take the object with it. The author changed their mind before anyone else
+    // could ever see it, so it should not linger in the bucket.
+    if (current !== null) void discardTestimonyPhoto(current);
+  };
 
   const goToConsent = () => {
     void trigger('body').then((valid) => {
@@ -172,13 +227,18 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
       branch_id: profile.branchId,
       body: form.body.trim(),
       language: currentContentLanguage(),
-      consent_version: CONSENT_VERSION,
+      // The wording that was actually on screen: a post carrying a photo shows
+      // (and records) the version with the photo-permission clause, and the
+      // database refuses the pairing if the two ever disagree (docs/spec/20).
+      consent_version: consentVersionFor(form.imagePath !== null),
     };
     const { error } =
       target === 'testimony'
-        ? await supabase
-            .from('testimonies')
-            .insert({ ...common, category_id: form.categoryId })
+        ? await supabase.from('testimonies').insert({
+            ...common,
+            category_id: form.categoryId,
+            image_path: form.imagePath,
+          })
         : await supabase
             .from('prayers')
             .insert({ ...common, is_anonymous: form.isAnonymous });
@@ -207,6 +267,15 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
               : t('composeBodyTooLong', { max: composeBodyMax(target) })
             : null
         }
+        photo={{
+          available: photoPickingAvailable,
+          path: imagePath,
+          previewUri: photoPreviewUri,
+          busy: photoBusy,
+          failure: photoFailure,
+          onPick: onPickPhoto,
+          onRemove: onRemovePhoto,
+        }}
         onClose={exit}
         onContinue={goToConsent}
       />
@@ -217,6 +286,7 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
       <ConsentStep
         target={target}
         control={control}
+        hasPhoto={imagePath !== null}
         consentError={errors.consentAgreed ? t('consentRequired') : null}
         submitErrorMessage={errorKey ? t(errorKey) : null}
         submitting={isSubmitting}

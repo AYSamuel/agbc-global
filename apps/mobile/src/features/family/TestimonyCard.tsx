@@ -14,6 +14,7 @@ import { useTheme } from '@/theme';
 
 import { initials, joinMeta } from './format';
 import type { TestimonyFeedItem } from './queries';
+import { TestimonyPhoto } from './TestimonyPhoto';
 import { useRelativeAgeLabel } from './useRelativeAgeLabel';
 
 // Mockup .testi: card surface, 1px border, 18px radius, 18px padding, 12px gutter
@@ -150,6 +151,14 @@ export function TestimonyCard({
       >
         {testimony.body}
       </Text>
+
+      {/* Mockup: the optional photo sits under the words and above the actions,
+          so the testimony always leads with what was said. */}
+      <TestimonyPhoto
+        path={testimony.image_path}
+        variant="card"
+        authorName={name}
+      />
 
       {/* The ribbon degrades to a static label once the origin prayer stops being
           publicly visible; the server decides by returning a null id (09). Here it

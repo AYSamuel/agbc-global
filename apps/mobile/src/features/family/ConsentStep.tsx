@@ -21,10 +21,17 @@ import { useTheme } from '@/theme';
 //
 // This screen IS the GDPR Art. 9(2)(a) capture (docs/spec/20 §Consent mechanics),
 // which has two consequences the copy has to respect. First, the wording is
-// versioned: these keys are hashed against CONSENT_VERSION by a test, so editing
+// versioned: these keys are hashed against their version by a test, so editing
 // any of them in any language without minting a new version fails CI. Second,
 // agreement is per-submission: the flow re-runs this step after a draft restore
 // and never carries the tick over.
+//
+// A post carrying a photo shows a FOURTH point and records a different version
+// (CONSENT_VERSION_PHOTO): sharing a picture of other people is a different act
+// and docs/spec/20 §Photos asks for it explicitly. Two versions rather than one
+// with an always-on photo line (decided with Ayo, 2026-07-27) so that a prayer
+// author never agrees to wording about a photo they were never offered, and the
+// version on the row always names exactly the words that were on this screen.
 
 const POINTS = [
   { title: 'consentPoint1Title', body: 'consentPoint1Body' },
@@ -32,9 +39,16 @@ const POINTS = [
   { title: 'consentPoint3Title', body: 'consentPoint3Body' },
 ] as const;
 
+const PHOTO_POINT = {
+  title: 'consentPhotoTitle',
+  body: 'consentPhotoBody',
+} as const;
+
 export interface ConsentStepProps {
   target: ComposeTarget;
   control: Control<ComposeForm>;
+  /** Drives the fourth point AND, through ComposeFlow, the version recorded. */
+  hasPhoto: boolean;
   consentError: string | null;
   submitErrorMessage: string | null;
   submitting: boolean;
@@ -45,6 +59,7 @@ export interface ConsentStepProps {
 export function ConsentStep({
   target,
   control,
+  hasPhoto,
   consentError,
   submitErrorMessage,
   submitting,
@@ -109,7 +124,7 @@ export function ConsentStep({
           )}
         </Text>
 
-        {POINTS.map((point) => (
+        {(hasPhoto ? [...POINTS, PHOTO_POINT] : POINTS).map((point) => (
           <View
             key={point.title}
             style={{

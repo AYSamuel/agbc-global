@@ -152,22 +152,58 @@ delete from public.prayers
   where author_id = '93000000-0000-4000-8000-00000000000a';
 
 -- ===========================================================================
--- 4. A photo reference must point at the author's own folder.
+-- 4. The photo path, in the order it really happens: upload, then the server's
+--    magic-byte check, then the reference.
 -- ===========================================================================
+-- The upload comes first because a member picks a photo in the composer, long before
+-- the testimony row exists. Since W2.3 slice 3 the reference is refused until the
+-- photo-guard edge function has opened the object (that gate has its own suite, 014);
+-- here the record is written the way the service role writes it, so the ownership rules
+-- can be tested on a photo that is otherwise in good standing.
 set local role authenticated;
 set local request.jwt.claims to
   '{"sub":"93000000-0000-4000-8000-00000000000a","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000001"}';
 
+-- `version` is set by Storage on every real upload and is part of what the validation
+-- record pins, so the fixtures carry one too.
+select lives_ok(
+  $$insert into storage.objects (bucket_id, name, version)
+    values ('testimony-photos',
+            '93000000-0000-4000-8000-00000000000a/cmp-photo.jpg', 'v-cmp-1')$$,
+  'a member may upload into their own folder');
+
+select throws_ok(
+  $$insert into storage.objects (bucket_id, name, version)
+    values ('testimony-photos',
+            '93000000-0000-4000-8000-00000000000b/planted.jpg', 'v-cmp-2')$$,
+  '42501', null,
+  'a member cannot upload into another member''s folder');
+
+reset role;
+set local request.jwt.claims to '{}';
+insert into public.testimony_photo_validations
+  (object_name, object_id, object_version, byte_size, content_type)
+select o.name, o.id, o.version, 204800, 'image/jpeg'
+from storage.objects o
+where o.bucket_id = 'testimony-photos'
+  and o.name = '93000000-0000-4000-8000-00000000000a/cmp-photo.jpg';
+
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub":"93000000-0000-4000-8000-00000000000a","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000001"}';
+
+-- Note the consent version: a post carrying a photo records the wording that asks about
+-- the people in it (docs/spec/20 §Photos), and the guard checks the pairing.
 select lives_ok(
   $$insert into public.testimonies (id, body, consent_version, image_path)
     values ('84000000-0000-4000-8000-00000000000b', 'cmp with my own photo',
-            'content-share-v1',
+            'content-share-photo-v1',
             '93000000-0000-4000-8000-00000000000a/cmp-photo.jpg')$$,
-  'a member may attach a photo from their own folder');
+  'a member may attach a checked photo from their own folder');
 
 select throws_ok(
   $$insert into public.testimonies (body, consent_version, image_path)
-    values ('cmp claiming a stranger''s photo', 'content-share-v1',
+    values ('cmp claiming a stranger''s photo', 'content-share-photo-v1',
             '93000000-0000-4000-8000-00000000000b/private.jpg')$$,
   '23514', 'a testimony photo must live in the author''s own folder',
   'a member cannot attach another member''s photo object');
@@ -204,19 +240,6 @@ select is(
 set local role authenticated;
 set local request.jwt.claims to
   '{"sub":"93000000-0000-4000-8000-00000000000a","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000001"}';
-
-select lives_ok(
-  $$insert into storage.objects (bucket_id, name)
-    values ('testimony-photos',
-            '93000000-0000-4000-8000-00000000000a/cmp-photo.jpg')$$,
-  'a member may upload into their own folder');
-
-select throws_ok(
-  $$insert into storage.objects (bucket_id, name)
-    values ('testimony-photos',
-            '93000000-0000-4000-8000-00000000000b/planted.jpg')$$,
-  '42501', null,
-  'a member cannot upload into another member''s folder');
 
 select is(
   (select count(*)::int from storage.objects
