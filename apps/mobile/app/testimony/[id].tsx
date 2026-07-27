@@ -14,6 +14,7 @@ import {
 
 import {
   AppHeader,
+  Burst,
   EmptyState,
   GateSheet,
   GradientFill,
@@ -27,6 +28,7 @@ import { useTestimonyQuery } from '@/features/family/queries';
 import { shareToWhatsApp, testimonyShareText } from '@/features/family/share';
 import { TestimonyPhoto } from '@/features/family/TestimonyPhoto';
 import { useBranchColors } from '@/features/family/useBranchColors';
+import { useGloryPress } from '@/features/family/useGlory';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
 import { useGateStore } from '@/state/gate';
@@ -55,6 +57,14 @@ export default function TestimonyDetail() {
     : null;
   const age = useRelativeAgeLabel(testimony?.created_at ?? '');
   const authorName = testimony?.author_name ?? t('family:aMember');
+  const glory = useGloryPress(
+    id,
+    testimony?.glory_count ?? 0,
+    testimony?.reacted_by_me ?? false,
+    () => {
+      setGateVisible(true);
+    },
+  );
 
   return (
     <Screen widthClass="capped" padded={false}>
@@ -228,37 +238,52 @@ export default function TestimonyDetail() {
             </View>
           </View>
 
-          {/* Mockup .glorybig: a full-width gold pill with the count. Guests hit
-              the gate; W2.2 completes the reaction on return. */}
+          {/* Mockup .glorybig: a full-width gold pill with the count. A guest
+              hits the gate and W2.2 completes the reaction on return; a member
+              reacts straight into the write queue (W2.4). */}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('family:gloryCount', {
-              count: testimony.glory_count,
-            })}
-            onPress={() => {
-              setGateVisible(true);
-            }}
+            accessibilityState={{ selected: glory.reacted }}
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={t('family:gloryCount', { count: glory.count })}
+            onPress={glory.onPress}
             style={({ pressed }) => ({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              paddingVertical: 14,
+              // Mockup .glorybig.on: the border replaces a pixel of padding on
+              // each side so both states are the same height and the screen
+              // does not shift under the tap.
+              paddingVertical: glory.reacted ? 13 : 14,
               borderRadius: radius.full,
-              backgroundColor: colors.accent,
+              borderWidth: glory.reacted ? 1 : 0,
+              borderColor: tonal.gold.border,
+              backgroundColor: glory.reacted ? tonal.gold.bg : colors.accent,
               marginBottom: spacing.sm,
               opacity: pressed ? 0.85 : 1,
             })}
           >
-            <Text style={{ fontSize: 15, color: palette.navy }}>{'✦'}</Text>
+            <Burst
+              trigger={glory.bursts}
+              color={glory.reacted ? palette.gold : palette.navy}
+            />
+            <Text
+              style={{
+                fontSize: 15,
+                color: glory.reacted ? palette.gold : palette.navy,
+              }}
+            >
+              {'✦'}
+            </Text>
             <Text
               style={{
                 fontFamily: fontFamily.body.extraBold,
                 fontSize: 15,
-                color: palette.navy,
+                color: glory.reacted ? colors.text : palette.navy,
               }}
             >
-              {t('family:gloryCount', { count: testimony.glory_count })}
+              {t('family:gloryCount', { count: glory.count })}
             </Text>
           </Pressable>
 

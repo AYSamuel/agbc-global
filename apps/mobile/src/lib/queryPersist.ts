@@ -29,7 +29,11 @@ const persister = createAsyncStoragePersister({
 
 // Bump when a persisted query's shape changes so a cache written by older code is
 // discarded rather than hydrated into a shape it no longer matches.
-const PERSIST_BUSTER = 'v1';
+//
+// v2 (W2.4): testimony rows gained `reacted_by_me`. A cache written before that
+// hydrates rows with the field simply absent, so a card cannot tell whether this
+// member has reacted until a refetch replaces it.
+const PERSIST_BUSTER = 'v2';
 
 // A week: long enough to serve a returning-offline guest, short enough that a dead
 // cache can't keep serving genuinely stale public content (a moved service time).

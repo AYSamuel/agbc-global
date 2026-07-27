@@ -22,8 +22,18 @@ const TTL_SECONDS = 600;
 /** Refetch a minute before expiry so a slow scroll never renders a dead link. */
 const STALE_MS = (TTL_SECONDS - 60) * 1000;
 
+/**
+ * Deliberately OUTSIDE the `['family', ...]` tree.
+ *
+ * A signed URL is keyed by an immutable object path and is valid for its TTL; it
+ * has nothing to do with whether a testimony's count changed. While this lived
+ * under `['family']` it was swept up by every family invalidation, so saying
+ * Glory to one testimony re-signed every photo in the feed, handed each `Image`
+ * a brand new URI, and made unrelated photos visibly reload (reported on device,
+ * 2026-07-27). Reacting to one post must not touch another.
+ */
 export function testimonyPhotoQueryKey(path: string) {
-  return ['family', 'photo', path] as const;
+  return ['testimony-photo', path] as const;
 }
 
 /**

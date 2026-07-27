@@ -10,6 +10,7 @@ import {
   SearchIcon,
   Skeleton,
   WatchTabIcon,
+  useManualRefresh,
 } from '@/components/ui';
 import { durationMinutes, joinMeta } from '@/features/watch/format';
 import { resolveLiveSermon } from '@/features/watch/live';
@@ -82,6 +83,9 @@ export default function Watch() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const query = useSermonsQuery();
+  // Only a pull spins the indicator, never a refetch the app started itself
+  // (see components/ui/useManualRefresh).
+  const manualRefresh = useManualRefresh(() => query.refetch());
 
   const openSermon = (sermon: SermonSummary) => {
     router.push({ pathname: '/sermon/[id]', params: { id: sermon.id } });
@@ -103,10 +107,8 @@ export default function Watch() {
     <Screen
       widthClass="capped"
       padded={false}
-      refreshing={query.isRefetching}
-      onRefresh={() => {
-        void query.refetch();
-      }}
+      refreshing={manualRefresh.refreshing}
+      onRefresh={manualRefresh.onRefresh}
     >
       {/* Mockup .stitle with the search .ic-btn: the title sits at the 20px
           gutter, the cards below at 16 (matching Home + Family). */}

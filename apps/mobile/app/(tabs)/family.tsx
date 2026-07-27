@@ -13,6 +13,7 @@ import {
   Screen,
   SegmentedControl,
   Skeleton,
+  useManualRefresh,
 } from '@/components/ui';
 import { FamilyMap } from '@/features/family/FamilyMap';
 import { joinMeta } from '@/features/family/format';
@@ -85,6 +86,9 @@ export default function Family() {
   const testimonies = useTestimonyFeedQuery(effectiveScope, branchId);
   const prayers = usePrayerFeedQuery(effectiveScope, branchId);
   const active = tab === 'prayer' ? prayers : testimonies;
+  // Only a pull shows the spinner: a reaction refreshing its caches in the
+  // background must not look like the screen reloading (see useManualRefresh).
+  const manualRefresh = useManualRefresh(() => active.refetch());
 
   const subhead =
     tab === 'testimonies'
@@ -183,7 +187,7 @@ export default function Family() {
                 params: { id: item.id },
               });
             }}
-            onGlory={() => {
+            onGloryGate={() => {
               openGate({ kind: 'glory', testimonyId: item.id });
             }}
             // Sharing is outbound, not a gated contribution: open the OS sheet.
@@ -335,10 +339,8 @@ export default function Family() {
         <Screen
           widthClass="capped"
           padded={false}
-          refreshing={active.isRefetching}
-          onRefresh={() => {
-            void active.refetch();
-          }}
+          refreshing={manualRefresh.refreshing}
+          onRefresh={manualRefresh.onRefresh}
         >
           {header}
           {/* Cards sit at 16px (mockup .testi/.prayer margin 16), inside the

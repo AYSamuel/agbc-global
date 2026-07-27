@@ -11,6 +11,7 @@ import {
   Screen,
   SearchIcon,
   Skeleton,
+  useManualRefresh,
 } from '@/components/ui';
 import { BranchListRow } from '@/features/church/BranchListRow';
 import { BRANCHES_SNAPSHOT } from '@/features/onboarding/branches-snapshot';
@@ -26,6 +27,9 @@ export default function Branches() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const query = useBranchesQuery();
+  // Only a pull spins the indicator, never a refetch the app started itself
+  // (see components/ui/useManualRefresh).
+  const manualRefresh = useManualRefresh(() => query.refetch());
   const [search, setSearch] = useState('');
 
   // Offline/error fall back to the snapshot rather than a dead screen; the
@@ -50,10 +54,8 @@ export default function Branches() {
     <Screen
       widthClass="capped"
       padded={false}
-      refreshing={query.isRefetching}
-      onRefresh={() => {
-        void query.refetch();
-      }}
+      refreshing={manualRefresh.refreshing}
+      onRefresh={manualRefresh.onRefresh}
     >
       <AppHeader
         title={t('church:branchesTitle')}

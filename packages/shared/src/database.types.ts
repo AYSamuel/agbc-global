@@ -1166,6 +1166,9 @@ export type Database = {
           id: string | null
           is_anonymous: boolean | null
           language: string | null
+          my_intercession_state:
+            | Database["public"]["Enums"]["intercession_state"]
+            | null
           prayed_count: number | null
           praying_count: number | null
           updated_at: string | null
@@ -1196,6 +1199,7 @@ export type Database = {
           image_path: string | null
           language: string | null
           origin_prayer_id: string | null
+          reacted_by_me: boolean | null
           updated_at: string | null
         }
         Relationships: [

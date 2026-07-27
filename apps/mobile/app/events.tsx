@@ -11,6 +11,7 @@ import {
   Screen,
   SegmentedControl,
   Skeleton,
+  useManualRefresh,
 } from '@/components/ui';
 import { EventRow } from '@/features/events/EventRow';
 import { isPastEvent } from '@/features/events/format';
@@ -32,6 +33,9 @@ export default function Events() {
   const { colors } = useTheme();
   const branch = useBranchStore((s) => s.branch);
   const query = useEventsQuery(branch?.id ?? null);
+  // Only a pull spins the indicator, never a refetch the app started itself
+  // (see components/ui/useManualRefresh).
+  const manualRefresh = useManualRefresh(() => query.refetch());
   const cities = useBranchCities();
   const [range, setRange] = useState<Range>('upcoming');
 
@@ -120,10 +124,8 @@ export default function Events() {
     <Screen
       widthClass="capped"
       padded={false}
-      refreshing={query.isRefetching}
-      onRefresh={() => {
-        void query.refetch();
-      }}
+      refreshing={manualRefresh.refreshing}
+      onRefresh={manualRefresh.onRefresh}
     >
       <AppHeader
         title={t('events:title')}

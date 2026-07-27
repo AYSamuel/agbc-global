@@ -30,6 +30,7 @@ import {
   type PhotoFailure,
 } from './photo';
 import { PostPendingStep } from './PostPendingStep';
+import { PRAYER_SURFACE_KEYS, TESTIMONY_SURFACE_KEYS } from './keys';
 
 // TESTIMONY-COMPOSE / PRAYER-COMPOSE -> CONSENT -> POST-PENDING (docs/spec/09),
 // as ONE route with internal steps, the same shape as AuthFlow: leaving the
@@ -251,7 +252,14 @@ export function ComposeFlow({ target }: ComposeFlowProps) {
     await clearDraft(target);
     // The author's own pending row is not in the public feed, but a refetch
     // keeps counts and any concurrent approval honest when they land back.
-    await queryClient.invalidateQueries({ queryKey: ['family'] });
+    // Only the surfaces this post belongs to: a new testimony has nothing to say
+    // about the prayer feed, and a blanket sweep also re-signs every photo.
+    await Promise.all(
+      (target === 'testimony'
+        ? TESTIMONY_SURFACE_KEYS
+        : PRAYER_SURFACE_KEYS
+      ).map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    );
     setStage('sent');
   });
 

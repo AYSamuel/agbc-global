@@ -41,9 +41,13 @@ interface WriteQueueState {
   hydrated: boolean;
   /** Absent until the composition root wires the feature handlers. */
   handlers: WriteHandlers | null;
+  /** Called when the cap forces a wish to be dropped. `01` §8 requires eviction
+   * to revert that entity's optimistic UI, and only the feature that applied it
+   * knows how to take it back. */
+  onEvicted: (() => void) | null;
   draining: boolean;
   failures: number;
-  setHandlers: (handlers: WriteHandlers) => void;
+  setHandlers: (handlers: WriteHandlers, onEvicted?: () => void) => void;
   hydrate: () => Promise<void>;
   /** Record what the member now wants, then try to send it straight away. */
   push: <K extends QueuedKind>(
@@ -60,11 +64,12 @@ export const useWriteQueueStore = create<WriteQueueState>()((set, get) => ({
   queue: {},
   hydrated: false,
   handlers: null,
+  onEvicted: null,
   draining: false,
   failures: 0,
 
-  setHandlers: (handlers) => {
-    set({ handlers });
+  setHandlers: (handlers, onEvicted) => {
+    set({ handlers, onEvicted: onEvicted ?? null });
   },
 
   hydrate: async () => {

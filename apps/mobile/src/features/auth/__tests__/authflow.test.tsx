@@ -12,6 +12,7 @@ import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
+import { useWriteQueueStore } from '@/lib/writeQueue';
 import { useGateStore } from '@/state/gate';
 
 import { AuthFlow } from '../AuthFlow';
@@ -325,18 +326,21 @@ describe('gate-return replay (W2.2, docs/spec/03 + 04 rule 9)', () => {
     mockVerifyOtp.mockResolvedValue({ error: null });
     mockGetSession.mockResolvedValue(SESSION);
     mockMaybeSingle.mockResolvedValue(ONBOARDED_ROW);
-    mockUpsert.mockResolvedValue({ error: null });
 
     await type(screen.getByLabelText('6-digit code'), '123456');
     await screen.findByText(/Taking you back to say Glory to God/);
     await press(screen.getByRole('button', { name: 'Continue' }));
 
     expect(mockBack).toHaveBeenCalled();
+    // W2.4 moved the landing from a direct write to the offline write queue, so
+    // what the return guarantees is that the reaction is RECORDED. Getting it to
+    // the server, retrying it and reconciling a refusal are the queue's job and
+    // are tested there; the promise to the member is unchanged, and now it also
+    // holds when they signed in with no signal.
     await waitFor(() => {
-      expect(mockUpsert).toHaveBeenCalledWith(
-        { testimony_id: 'tes-1', profile_id: 'user-1' },
-        { onConflict: 'testimony_id,profile_id', ignoreDuplicates: true },
-      );
+      expect(useWriteQueueStore.getState().queue['glory:tes-1']).toMatchObject({
+        state: 'on',
+      });
     });
     expect(useGateStore.getState().pending).toBeNull();
   });

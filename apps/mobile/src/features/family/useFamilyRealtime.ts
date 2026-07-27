@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 
 import { supabase } from '@/lib/supabase';
 
+import { PRAYER_SURFACE_KEYS, TESTIMONY_SURFACE_KEYS } from './keys';
+
 // Live Family feeds (docs/spec/02 Realtime, docs/spec/09).
 //
 // The contract is realtime-first, polling-bounded: the database broadcasts on
@@ -49,6 +51,12 @@ export function useFamilyRealtime(
     if (!isFocused) return;
 
     const blocked = new Set(blockedKey ? blockedKey.split(',') : []);
+    const refresh = (keys: readonly (readonly string[])[]) => {
+      for (const queryKey of keys) {
+        void queryClient.invalidateQueries({ queryKey });
+      }
+    };
+
     const invalidate = (payload: FamilyBroadcast) => {
       if (payload.author_id && blocked.has(payload.author_id)) return;
       // Invalidate rather than patch the cache. The feed views apply block
@@ -56,7 +64,15 @@ export function useFamilyRealtime(
       // carry, so a refetch is the only way to be sure what we render is what the
       // server would serve. Counts ride along in the payload, but a count is not
       // worth a second source of truth.
-      void queryClient.invalidateQueries({ queryKey: ['family'] });
+      //
+      // Only the surfaces for the table that changed, though. A blanket
+      // ['family'] sweep also re-signed every photo, so someone else's Glory
+      // made images reload on this device (found 2026-07-27); at a Sunday peak
+      // that fires on every broadcast. A payload naming no table is refreshed
+      // both ways, because failing wide is the safe direction here.
+      if (payload.table === 'testimonies') refresh(TESTIMONY_SURFACE_KEYS);
+      else if (payload.table === 'prayers') refresh(PRAYER_SURFACE_KEYS);
+      else refresh([...TESTIMONY_SURFACE_KEYS, ...PRAYER_SURFACE_KEYS]);
     };
 
     const topics = ['family:all'];
@@ -75,7 +91,7 @@ export function useFamilyRealtime(
     // nearly free (the queries are fresh and refetch is cheap), and if it is down
     // this is the guarantee.
     const timer = setInterval(() => {
-      void queryClient.invalidateQueries({ queryKey: ['family'] });
+      refresh([...TESTIMONY_SURFACE_KEYS, ...PRAYER_SURFACE_KEYS]);
     }, POLL_INTERVAL);
 
     return () => {

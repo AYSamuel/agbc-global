@@ -103,6 +103,7 @@ function testimony(
     author_avatar_url: null,
     from_prayer_id: null,
     origin_prayer_id: null,
+    reacted_by_me: false,
     ...overrides,
   };
 }
@@ -122,6 +123,7 @@ function prayer(overrides: Partial<PrayerFeedItem> = {}): PrayerFeedItem {
     author_name: 'Daniel Kern',
     author_avatar_url: null,
     answer_testimony_id: null,
+    my_intercession_state: null,
     ...overrides,
   };
 }
