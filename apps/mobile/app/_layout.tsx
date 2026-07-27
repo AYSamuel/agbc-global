@@ -10,6 +10,7 @@ import { prefetchBranches } from '@/features/onboarding/useBranches';
 import { SignedOutToast } from '@/features/shell/SignedOutToast';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
 import { persistOptions, queryClient } from '@/lib/queryPersist';
+import { startWriteQueue } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { ThemeProvider, useTheme } from '@/theme';
@@ -35,6 +36,11 @@ export default function RootLayout() {
     void useAuthStore.getState().syncFromSession();
     const { branch } = useBranchStore.getState();
     void prefetchHome(queryClient, branch?.id ?? null, i18n.language);
+    // The offline write queue (docs/spec/01 §8): hydrate whatever the member
+    // tapped before the app last closed, and arm the replay triggers. Handlers
+    // are wired separately (state/writeQueueHandlers) so this layer never
+    // imports a feature.
+    return startWriteQueue();
   }, []);
 
   return (
