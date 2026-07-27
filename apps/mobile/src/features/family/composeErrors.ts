@@ -41,3 +41,30 @@ export function mapComposeError(error: unknown): ComposeErrorKey {
   if (code === '') return 'errorOffline';
   return 'errorGeneric';
 }
+
+// Same idea one layer out: why a photo could not be attached. Kept here rather
+// than in photo.ts so it stays a pure decision with no client to mock, and
+// beside its sibling so the two failure vocabularies are read together.
+export type PhotoErrorKey =
+  | 'photoErrorPermission'
+  | 'photoErrorTooLarge'
+  | 'photoErrorNotAnImage'
+  | 'photoErrorGeneric';
+
+/** Every failure gets a line that says what the author can do next; a cancelled
+ * pick is not a failure and never reaches here (docs/spec/04, error handling). */
+export function photoFailureKey(
+  failure:
+    'permission' | 'too_large' | 'not_an_image' | 'unavailable' | 'failed',
+): PhotoErrorKey {
+  switch (failure) {
+    case 'permission':
+      return 'photoErrorPermission';
+    case 'too_large':
+      return 'photoErrorTooLarge';
+    case 'not_an_image':
+      return 'photoErrorNotAnImage';
+    default:
+      return 'photoErrorGeneric';
+  }
+}

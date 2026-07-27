@@ -25,17 +25,15 @@ import {
 } from '@/components/ui';
 import { useTheme } from '@/theme';
 
+import type { PhotoFailure } from './photo';
+import { PhotoField } from './PhotoField';
 import { useTestimonyCategoriesQuery } from './queries';
 
-// TESTIMONY-COMPOSE (mockup frame line 1141) and PRAYER-COMPOSE (line 1604).
-// Same frame twice: .chead with an X, the .ctext body box, then the one control
-// that differs (category chips for a testimony, the anonymity .checkrow for a
-// request), then Continue.
-//
-// The frame's "Add a photo" (.addphoto) is deliberately absent: it needs
-// expo-image-picker, a native module the current dev clients do not carry, and
-// it lands with the private-bucket upload in W2.3 slice 3. A dashed box that
-// does nothing would be exactly the dead affordance docs/spec/04 forbids.
+// TESTIMONY-COMPOSE (mockup frames line 1141 and the photo states that follow it)
+// and PRAYER-COMPOSE (line 1604). Same frame twice: .chead with an X, the .ctext
+// body box, then the one control that differs (category chips for a testimony,
+// the anonymity .checkrow for a request), then Continue. A testimony also gets
+// the .addphoto row; a prayer request has no photo at all.
 //
 // Layout deviates from the frame in one deliberate way: the frame scrolls the
 // Continue button with the content, and this pins it below a scroll view. At the
@@ -47,6 +45,19 @@ export interface ComposeStepProps {
   target: ComposeTarget;
   control: Control<ComposeForm>;
   bodyError: string | null;
+  /** Photo state, owned by ComposeFlow (the form holds the path; the preview and
+   * the in-flight flag are session-only and never reach a draft). */
+  photo: {
+    /** False on a dev client with no picker linked: the row is then not offered
+     * at all rather than offered and broken. */
+    available: boolean;
+    path: string | null;
+    previewUri: string | null;
+    busy: boolean;
+    failure: PhotoFailure | null;
+    onPick: () => void;
+    onRemove: () => void;
+  };
   onClose: () => void;
   onContinue: () => void;
 }
@@ -55,6 +66,7 @@ export function ComposeStep({
   target,
   control,
   bodyError,
+  photo,
   onClose,
   onContinue,
 }: ComposeStepProps) {
@@ -179,6 +191,17 @@ export function ComposeStep({
               />
             </View>
           )}
+
+          {target === 'testimony' && photo.available ? (
+            <PhotoField
+              path={photo.path}
+              previewUri={photo.previewUri}
+              busy={photo.busy}
+              failure={photo.failure}
+              onPick={photo.onPick}
+              onRemove={photo.onRemove}
+            />
+          ) : null}
         </ScrollView>
         <View
           style={{
@@ -187,12 +210,17 @@ export function ComposeStep({
             paddingBottom: spacing.md,
           }}
         >
-          <Button
-            label={t('composeContinue')}
-            variant="primary"
-            fullWidth
-            onPress={onContinue}
-          />
+          {/* Hidden, not disabled, while the photo is in flight: continuing would
+              carry a half-attached photo, and a dead button under a busy overlay
+              is exactly what the project convention forbids. */}
+          {photo.busy ? null : (
+            <Button
+              label={t('composeContinue')}
+              variant="primary"
+              fullWidth
+              onPress={onContinue}
+            />
+          )}
         </View>
       </KeyboardAvoidingView>
     </Screen>

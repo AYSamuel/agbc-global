@@ -58,6 +58,27 @@ jest.mock('../queries', () => ({
   }),
 }));
 
+// The photo pipeline is mocked at its own seam rather than at the picker: what
+// these tests care about is the CONSENT the composer records once a photo is
+// attached, not how the bytes got there (photo.test.tsx owns that half).
+const PHOTO_PATH =
+  '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg';
+const mockDiscard = jest.fn();
+jest.mock('../photo', () => ({
+  photoPickingAvailable: true,
+  pickAndUploadTestimonyPhoto: () =>
+    Promise.resolve({
+      ok: true,
+      path: '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg',
+      bytes: 204800,
+      previewUri: 'file:///cache/photo.jpg',
+    }),
+  discardTestimonyPhoto: (path: string) => {
+    mockDiscard(path);
+    return Promise.resolve();
+  },
+}));
+
 const mockInsert = jest.fn<Promise<{ error: unknown }>, [unknown]>();
 const mockFrom = jest.fn<unknown, [string]>();
 
@@ -167,6 +188,69 @@ describe('TESTIMONY-COMPOSE', () => {
       }),
     );
     expect(await screen.findByText('Sent for review')).toBeTruthy();
+  });
+
+  test('a photo changes the consent shown AND the version recorded', async () => {
+    await renderFlow('testimony');
+    await writeBody('Share a testimony', 'God provided, and here we are.');
+
+    // Without a photo the consent step is the three words-only points.
+    await press(screen.getByText('Continue'));
+    expect(screen.queryByText(/Your photo, their permission\./)).toBeNull();
+    await press(screen.getByLabelText('Back'));
+
+    await press(screen.getByLabelText('Add a photo'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Remove photo')).toBeTruthy();
+    });
+
+    await press(screen.getByText('Continue'));
+    expect(
+      await screen.findByText(/Your photo, their permission\./),
+    ).toBeTruthy();
+    await press(screen.getByLabelText('I agree to share this publicly.'));
+    await press(screen.getByText('Post testimony'));
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          image_path: PHOTO_PATH,
+          // The pairing the database also enforces: a row with a photo may only
+          // record wording that mentions photos (docs/spec/20 §Photos).
+          consent_version: 'content-share-photo-v1',
+        }),
+      );
+    });
+  });
+
+  test('removing a photo takes the object with it and restores the wordless consent', async () => {
+    await renderFlow('testimony');
+    await writeBody('Share a testimony', 'Words are enough after all.');
+    await press(screen.getByLabelText('Add a photo'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Remove photo')).toBeTruthy();
+    });
+
+    await press(screen.getByLabelText('Remove photo'));
+    // The author changed their mind before anyone else could see it, so the
+    // uploaded object goes too rather than lingering in the bucket.
+    await waitFor(() => {
+      expect(mockDiscard).toHaveBeenCalledWith(PHOTO_PATH);
+    });
+
+    await press(screen.getByText('Continue'));
+    expect(screen.queryByText(/Your photo, their permission\./)).toBeNull();
+    await press(screen.getByLabelText('I agree to share this publicly.'));
+    await press(screen.getByText('Post testimony'));
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          image_path: null,
+          consent_version: 'content-share-v1',
+        }),
+      );
+    });
   });
 
   test('a selected category rides along, and tapping it again clears it', async () => {

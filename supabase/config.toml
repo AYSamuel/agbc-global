@@ -459,3 +459,11 @@ verify_jwt = true
 [functions.review-signin]
 enabled = true
 verify_jwt = true
+
+# Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
+# by the member right after uploading, with THEIR access token: verify_jwt only
+# proves the token belongs to this project, so the function resolves the real
+# user and refuses any path outside that member's own folder.
+[functions.photo-guard]
+enabled = true
+verify_jwt = true

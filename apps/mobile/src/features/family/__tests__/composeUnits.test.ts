@@ -1,6 +1,11 @@
-import { CONSENT_VERSION, composeSchema } from '@agbc/shared';
+import {
+  CONSENT_VERSION,
+  CONSENT_VERSION_PHOTO,
+  composeSchema,
+  consentVersionFor,
+} from '@agbc/shared';
 
-import { mapComposeError } from '../composeErrors';
+import { mapComposeError, photoFailureKey } from '../composeErrors';
 import { parseDraft } from '../drafts';
 
 import de from '@/i18n/locales/de/family.json';
@@ -65,6 +70,7 @@ describe('parseDraft', () => {
     ).toEqual({
       body: 'hello',
       categoryId: 'c1',
+      imagePath: null,
       isAnonymous: true,
       savedAt: 7,
     });
@@ -81,6 +87,7 @@ describe('parseDraft', () => {
     expect(parseDraft(JSON.stringify({ body: 'hi' }))).toEqual({
       body: 'hi',
       categoryId: null,
+      imagePath: null,
       isAnonymous: false,
       savedAt: 0,
     });
@@ -89,7 +96,12 @@ describe('parseDraft', () => {
 
 describe('composeSchema', () => {
   test('the ceilings match the database CHECKs, per target', () => {
-    const base = { categoryId: null, isAnonymous: false, consentAgreed: true };
+    const base = {
+      categoryId: null,
+      imagePath: null,
+      isAnonymous: false,
+      consentAgreed: true,
+    };
     expect(
       composeSchema('testimony').safeParse({ ...base, body: 'x'.repeat(2000) })
         .success,
@@ -113,6 +125,7 @@ describe('composeSchema', () => {
       composeSchema('prayer').safeParse({
         body: 'pray for me',
         categoryId: null,
+        imagePath: null,
         isAnonymous: false,
         consentAgreed: false,
       }).success,
@@ -121,6 +134,7 @@ describe('composeSchema', () => {
       composeSchema('prayer').safeParse({
         body: '   ',
         categoryId: null,
+        imagePath: null,
         isAnonymous: false,
         consentAgreed: true,
       }).success,
@@ -205,6 +219,96 @@ describe('consent wording is pinned to its version', () => {
     for (const lang of Object.keys(BUNDLES)) {
       for (const key of CONSENT_KEYS) {
         expect(() => consentLine(BUNDLES[lang], key)).not.toThrow();
+      }
+    }
+  });
+
+  // The photo wording is a SECOND version, not an edit of the first: a post with
+  // a photo shows the three points above plus the photo-permission clause, and
+  // records content-share-photo-v1. Same rule if this fails: mint a new version
+  // in a migration, do not edit the words under an existing key.
+  test(`${CONSENT_VERSION_PHOTO} still describes the wording on screen`, () => {
+    const keys = [...CONSENT_KEYS, 'consentPhotoTitle', 'consentPhotoBody'];
+    const material = Object.keys(BUNDLES)
+      .sort()
+      .flatMap((lang) =>
+        keys.map((key) => `${lang}.${key}=${consentLine(BUNDLES[lang], key)}`),
+      )
+      .join('\n');
+
+    expect(CONSENT_VERSION_PHOTO).toBe('content-share-photo-v1');
+    expect(fnv1a(material)).toBe('caf26b16');
+  });
+});
+
+describe('consentVersionFor', () => {
+  test('the version recorded names the wording that was actually shown', () => {
+    expect(consentVersionFor(false)).toBe(CONSENT_VERSION);
+    expect(consentVersionFor(true)).toBe(CONSENT_VERSION_PHOTO);
+  });
+});
+
+describe('the photo field on the compose schema', () => {
+  const base = { categoryId: null, isAnonymous: false, consentAgreed: true };
+
+  test('a testimony accepts an object path in the author-folder shape', () => {
+    expect(
+      composeSchema('testimony').safeParse({
+        ...base,
+        body: 'God provided',
+        imagePath:
+          '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg',
+      }).success,
+    ).toBe(true);
+  });
+
+  test('a testimony refuses anything that is not that shape', () => {
+    for (const imagePath of [
+      'photo.jpg',
+      '93000000-0000-4000-8000-00000000000a/../secret.jpg',
+      'https://example.test/photo.jpg',
+    ]) {
+      expect(
+        composeSchema('testimony').safeParse({
+          ...base,
+          body: 'God provided',
+          imagePath,
+        }).success,
+      ).toBe(false);
+    }
+  });
+
+  test('a prayer request cannot carry a photo at all', () => {
+    expect(
+      composeSchema('prayer').safeParse({
+        ...base,
+        body: 'please pray',
+        imagePath:
+          '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg',
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe('photoFailureKey', () => {
+  test('every failure reaches copy that says what to do next', () => {
+    expect(photoFailureKey('permission')).toBe('photoErrorPermission');
+    expect(photoFailureKey('too_large')).toBe('photoErrorTooLarge');
+    expect(photoFailureKey('not_an_image')).toBe('photoErrorNotAnImage');
+    expect(photoFailureKey('failed')).toBe('photoErrorGeneric');
+    expect(photoFailureKey('unavailable')).toBe('photoErrorGeneric');
+    // Every key it can return exists in all four bundles: a photo failure must
+    // never surface as a raw i18n key.
+    for (const lang of Object.keys(BUNDLES)) {
+      for (const failure of [
+        'permission',
+        'too_large',
+        'not_an_image',
+        'failed',
+      ] as const) {
+        expect(() =>
+          consentLine(BUNDLES[lang], photoFailureKey(failure)),
+        ).not.toThrow();
       }
     }
   });

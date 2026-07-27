@@ -73,6 +73,11 @@ export const onInk = {
   link: '#8db4ff',
   scrimTop: 'rgba(14,20,32,0.15)',
   scrimBottom: 'rgba(14,20,32,0.92)',
+  /** Flat scrim for controls and status drawn ON a photo: the compose photo's
+   * remove disc and its "preparing" overlay (mockup `.shotbox .rm` / `.busy`).
+   * Unlike the pair above this is not a gradient stop; it is one wash dark
+   * enough for white text and a white glyph to clear contrast over any photo. */
+  scrimSolid: 'rgba(14,20,32,0.62)',
 } as const;
 
 // The scripture card is a CONSTANT cream/gold surface in both themes: the

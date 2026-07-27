@@ -17,6 +17,10 @@ export type ComposeTarget = 'testimony' | 'prayer';
 export interface ComposeDraft {
   body: string;
   categoryId: string | null;
+  /** The uploaded, server-checked object path (testimony only). Safe to persist:
+   * it is a path into a private bucket, readable only by its owner until a leader
+   * approves the post, so a restored draft finds the photo still waiting. */
+  imagePath: string | null;
   isAnonymous: boolean;
   savedAt: number;
 }
@@ -40,6 +44,7 @@ export function parseDraft(raw: string | null): ComposeDraft | null {
       body: record.body,
       categoryId:
         typeof record.categoryId === 'string' ? record.categoryId : null,
+      imagePath: typeof record.imagePath === 'string' ? record.imagePath : null,
       isAnonymous: record.isAnonymous === true,
       savedAt: typeof record.savedAt === 'number' ? record.savedAt : 0,
     };

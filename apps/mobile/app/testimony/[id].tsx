@@ -25,6 +25,7 @@ import {
 import { initials, joinMeta } from '@/features/family/format';
 import { useTestimonyQuery } from '@/features/family/queries';
 import { shareToWhatsApp, testimonyShareText } from '@/features/family/share';
+import { TestimonyPhoto } from '@/features/family/TestimonyPhoto';
 import { useBranchColors } from '@/features/family/useBranchColors';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
@@ -161,6 +162,14 @@ export default function TestimonyDetail() {
           >
             {testimony.body}
           </Text>
+
+          {/* Mockup .tshot: the optional photo between the quote and the author,
+              so the screen reads words, then image, then who shared it. */}
+          <TestimonyPhoto
+            path={testimony.image_path}
+            variant="detail"
+            authorName={authorName}
+          />
 
           {/* Mockup .tauthor: avatar + name + meta, below the quote. */}
           <View
