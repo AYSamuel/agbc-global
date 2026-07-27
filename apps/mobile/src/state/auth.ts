@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { supabase } from '@/lib/supabase';
+import { useWriteQueueStore } from '@/lib/writeQueue';
 import { useGateStore } from '@/state/gate';
 import { resolveEntryRoute } from '@/state/launch';
 
@@ -176,6 +177,11 @@ supabase.auth.onAuthStateChange((event) => {
     });
     // A session ending in any way orphans a pending gate action (W2.2).
     useGateStore.getState().clearPending();
+    // ...and orphans every unsent write, which belonged to that member and
+    // could not be replayed as anyone else (docs/spec/01 §8: cleared on
+    // sign-out). This sits on the SIGNED_OUT event rather than in signOut()
+    // so a session that ends by refresh failure clears the queue too.
+    void useWriteQueueStore.getState().reset();
   }
 });
 
