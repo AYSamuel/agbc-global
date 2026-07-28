@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 
 import { applyGloryToCaches } from '@/features/family/gloryCache';
+import { applyIntercessionToCaches } from '@/features/family/prayerCache';
 import { pushWrite } from '@/lib/writeQueue';
 import type { GateAction } from '@/state/gate';
 
@@ -33,6 +34,14 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       pushWrite('glory', action.testimonyId, 'on');
       return Promise.resolve('done');
     }
+    case 'intercede': {
+      // The gated action was "I will pray", the FIRST step and never the second:
+      // a member returning from sign-in has promised to pray, not yet prayed.
+      // Same two steps as an ordinary tap: show it, then queue it.
+      applyIntercessionToCaches(action.prayerId, 'committed');
+      pushWrite('intercession', action.prayerId, 'committed');
+      return Promise.resolve('done');
+    }
     case 'compose': {
       // The gated action WAS "open the composer", so replaying it is opening
       // the composer. The route is chosen from the action's own target and
@@ -43,8 +52,8 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       );
       return Promise.resolve('done');
     }
-    // Executors land with their work items: intercede (W2.4 slice 3), rsvp
-    // (W2.9), im_here (W2.8), save/notes/resume (W3.1), notifications (W3.3).
+    // Executors land with their work items: rsvp (W2.9), im_here (W2.8),
+    // save/notes/resume (W3.1), notifications (W3.3).
     default:
       return Promise.resolve('noop');
   }

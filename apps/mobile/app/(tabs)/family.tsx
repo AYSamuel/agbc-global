@@ -22,11 +22,13 @@ import {
   usePrayerFeedQuery,
   useTestimonyFeedQuery,
   type FamilyScope,
+  type PrayerFeedItem,
 } from '@/features/family/queries';
 import { ScopeToggle } from '@/features/family/ScopeToggle';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
 import { useBranchColors } from '@/features/family/useBranchColors';
+import { useIntercessionPress } from '@/features/family/useIntercession';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
 import { useMapBranches } from '@/features/family/useMapBranches';
@@ -229,14 +231,14 @@ export default function Family() {
           }}
         />
       ) : (
-        <PrayerCard
+        <PrayerRow
           key={item.id}
           prayer={item}
           branchName={branchNames[item.branch_id] ?? null}
-          onPress={() => {
+          onOpen={() => {
             router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
           }}
-          onCommit={() => {
+          onGate={() => {
             openGate({ kind: 'intercede', prayerId: item.id });
           }}
         />
@@ -384,5 +386,33 @@ export default function Family() {
         }}
       />
     </View>
+  );
+}
+
+/**
+ * One prayer card. Its own component because the commitment hook has to be
+ * called per row, and a hook cannot live inside the `map` that renders the feed.
+ */
+function PrayerRow({
+  prayer,
+  branchName,
+  onOpen,
+  onGate,
+}: {
+  prayer: PrayerFeedItem;
+  branchName: string | null;
+  onOpen: () => void;
+  onGate: () => void;
+}) {
+  const { commitment, onPress, onUndo } = useIntercessionPress(prayer, onGate);
+  return (
+    <PrayerCard
+      prayer={prayer}
+      branchName={branchName}
+      commitment={commitment}
+      onPress={onOpen}
+      onCommit={onPress ?? (() => undefined)}
+      onUndo={onUndo}
+    />
   );
 }

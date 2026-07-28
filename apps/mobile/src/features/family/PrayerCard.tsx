@@ -10,7 +10,7 @@ import {
   tonal,
 } from '@agbc/shared/theme';
 
-import { ActionPill, CheckIcon, HeartIcon } from '@/components/ui';
+import { ActionPill, CheckIcon, HeartIcon, UndoIcon } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 import { joinMeta } from './format';
@@ -148,12 +148,15 @@ export function PrayerCard({
   commitment = 'none',
   onPress,
   onCommit,
+  onUndo,
 }: {
   prayer: PrayerFeedItem;
   branchName: string | null;
   commitment?: CommitmentState;
   onPress: () => void;
   onCommit: () => void;
+  /** Present only while the 5s way back is open (docs/spec/09 undo window). */
+  onUndo?: () => void;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -242,7 +245,35 @@ export function PrayerCard({
             />
           }
         />
-        {commitment === 'committed' ? (
+        {/* Mockup .prayundo: while the way back is open it stands where the
+            reminder line will be, so the row never carries two secondary things
+            at once. When the window closes, the reminder takes its place. */}
+        {onUndo ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('family:undoCommitment')}
+            onPress={onUndo}
+            hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 5,
+              flexShrink: 1,
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <UndoIcon size={12} color={colors.blue} strokeWidth={2} />
+            <Text
+              style={{
+                fontFamily: fontFamily.body.bold,
+                fontSize: 11.5,
+                color: colors.blue,
+              }}
+            >
+              {t('family:undo')}
+            </Text>
+          </Pressable>
+        ) : commitment === 'committed' ? (
           <Text
             style={{
               fontFamily: fontFamily.body.bold,

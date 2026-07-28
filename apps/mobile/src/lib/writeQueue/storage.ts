@@ -15,7 +15,7 @@ const STORAGE_KEY = 'agbc.writeQueue.v1';
 const KINDS = ['glory', 'intercession'] as const;
 const STATES: Record<(typeof KINDS)[number], readonly string[]> = {
   glory: ['on', 'off'],
-  intercession: ['committed', 'prayed'],
+  intercession: ['none', 'committed', 'prayed'],
 };
 
 /** Pure for tests. Anything malformed reads as "no such entry" rather than

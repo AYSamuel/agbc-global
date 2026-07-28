@@ -15,13 +15,17 @@ export type QueuedKind = 'glory' | 'intercession';
 
 /**
  * The end state per kind. Glory is a toggle because `09` says "tap again to
- * remove"; the prayer commitment is deliberately forward-only, because the whole
- * point of the two step is that a tap means real prayer, so there is no state
- * that walks it back.
+ * remove". The prayer commitment is forward-only in spirit, and `none` is not a
+ * fourth direction: it is the member taking back a mis-tap, which the database
+ * permits for a couple of minutes and refuses after (W2.4, 2026-07-28).
+ *
+ * Because the queue keeps only the LAST wish per entity, tapping and undoing
+ * before the queue drains sends nothing at all: the two collapse and the server
+ * never hears about either.
  */
 export interface QueuedStates {
   glory: 'on' | 'off';
-  intercession: 'committed' | 'prayed';
+  intercession: 'none' | 'committed' | 'prayed';
 }
 
 export type QueuedWrite = {

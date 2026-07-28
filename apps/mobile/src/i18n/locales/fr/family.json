@@ -22,6 +22,8 @@
   "iWillPray": "Je vais prier",
   "iPrayed": "J'ai prié",
   "youPrayed": "Vous avez prié",
+  "undo": "Annuler",
+  "undoCommitment": "Annuler cette étape",
   "willRemindYou": "Nous vous rappellerons de prier",
   "ageNow": "À l'instant",
   "ageMinutes_one": "{{count}} min",

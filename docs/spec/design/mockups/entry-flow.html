@@ -296,6 +296,11 @@
   .praybtn.committed{background:rgba(185,134,0,.14);border-color:rgba(185,134,0,.42);color:var(--eye)}
   .praycount{font-size:12px;color:var(--muted);font-weight:600}
   .prayreminder{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--eye);font-weight:700}
+  /* The 5s undo window after either step (W2.4 slice 3). It takes the reminder
+     line's place rather than sitting beside it, so the row never carries two
+     secondary things at once; when the window closes, the reminder returns.
+     Blue because it is an action, the same blue .copy uses in GIVE. */
+  .prayundo{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--blue);font-weight:700}
   .prayexplain{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;padding:0 20px}
   .praystats{display:flex;align-items:center;gap:16px;margin-top:12px;font-size:12px;font-weight:700}
   .praystats .pi{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
@@ -1356,6 +1361,48 @@
           <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M15.5 8.5a2.6 2.6 0 1 0 0 4"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M15 19a5.2 5.2 0 0 1 5.5-4"/></svg><span>Family</span></button>
           <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg><span>Give</span></button>
           <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg><span>More</span></button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PRAYER · the 5s undo window -->
+    <div class="device">
+      <p class="name"><b>Prayer</b> &middot; the 5s undo window</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="stitle"><h1>Family</h1></div>
+          <div class="subhead">Carry one another in prayer.</div>
+          <div class="seg"><button>Testimonies</button><button class="on">Prayer</button><button>Map</button></div>
+          <!-- Just committed. For five seconds Undo stands where the reminder
+               line will be; a mis-tap is corrected while it is still obviously a
+               mis-tap, and after that the commitment stands (decided 2026-07-28). -->
+          <div class="prayer">
+            <div class="meta">Daniel K. &middot; AGBC Berlin &middot; 1d</div>
+            <div class="body">&#8220;Pray for wisdom as I start a new role, and for peace for my family.&#8221;</div>
+            <div class="praystats"><span class="pi praying"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> 25 praying</span><span class="pi prayed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 9 prayed</span></div>
+            <div class="acts"><span class="praybtn committed"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> I prayed</span><span class="prayundo"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v5h5"/><path d="M4.6 13a8 8 0 1 0 1.9-6.3L3 10"/></svg> Undo</span></div>
+          </div>
+          <!-- The same window after the second step. Undoing here removes the
+               commitment entirely rather than stepping back to "praying": the
+               database refuses to un-pray, and for a mis-tap being returned to
+               "I will pray" is what the member wanted anyway. -->
+          <div class="prayer">
+            <div class="meta">Grace A. &middot; AGBC Glasgow &middot; 2d</div>
+            <div class="body">&#8220;Please pray for my father&#39;s job interview on Thursday.&#8221;</div>
+            <div class="praystats"><span class="pi praying"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> 5 praying</span><span class="pi prayed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 16 prayed</span></div>
+            <div class="acts"><span class="praybtn on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Prayed</span><span class="prayundo"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v5h5"/><path d="M4.6 13a8 8 0 1 0 1.9-6.3L3 10"/></svg> Undo</span></div>
+          </div>
+          <!-- Once the window closes the row returns to normal: the reminder
+               line for a commitment, nothing extra for a fulfilment. -->
+          <div class="prayer">
+            <div class="meta">A member &middot; AGBC Emmen &middot; 4h</div>
+            <div class="body">&#8220;Please pray for my mother&#39;s recovery after her surgery this week.&#8221;</div>
+            <div class="praystats"><span class="pi praying"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> 25 praying</span><span class="pi prayed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 9 prayed</span></div>
+            <div class="acts"><span class="praybtn committed"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> I prayed</span><span class="prayreminder"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg> We&#39;ll remind you to pray</span></div>
+          </div>
+          <div style="height:96px"></div>
         </div>
       </div>
     </div>

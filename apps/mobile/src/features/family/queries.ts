@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 
 import { reconcileGlory } from './gloryCache';
 import { prayerFeedKey, testimonyFeedKey } from './keys';
+import { reconcileIntercession } from './prayerCache';
 
 // Family reads (docs/spec/09). Everything here goes through the FEED VIEWS, never
 // the base tables: `testimonies` and `prayers` grant anon nothing, and an anonymous
@@ -232,6 +233,8 @@ export function usePrayerFeedQuery(
   return useQuery({
     queryKey: prayerFeedKey(scope, branchId),
     queryFn: async (): Promise<PrayerFeedItem[]> => {
+      // Stamped before the request leaves: see reconcileIntercession.
+      const startedAt = Date.now();
       let request = supabase
         .from('prayer_feed')
         .select(PRAYER_FIELDS)
@@ -242,7 +245,10 @@ export function usePrayerFeedQuery(
       }
       const { data, error } = await request;
       if (error) throw new Error(error.message);
-      return data.map(mapPrayer).filter((r): r is PrayerFeedItem => r !== null);
+      return reconcileIntercession(
+        data.map(mapPrayer).filter((r): r is PrayerFeedItem => r !== null),
+        startedAt,
+      );
     },
     enabled: scope === 'everywhere' || Boolean(branchId),
     staleTime: FEED_STALE_TIME,
@@ -305,13 +311,17 @@ export function usePrayerQuery(id: string) {
   return useQuery({
     queryKey: ['family', 'prayer', id] as const,
     queryFn: async (): Promise<PrayerFeedItem | null> => {
+      const startedAt = Date.now();
       const { data, error } = await supabase
         .from('prayer_feed')
         .select(PRAYER_FIELDS)
         .eq('id', id)
         .maybeSingle();
       if (error) throw new Error(error.message);
-      return data === null ? null : mapPrayer(data);
+      const row = data === null ? null : mapPrayer(data);
+      return row === null
+        ? null
+        : (reconcileIntercession([row], startedAt)[0] ?? null);
     },
     staleTime: FEED_STALE_TIME,
     meta: PERSIST_META,
