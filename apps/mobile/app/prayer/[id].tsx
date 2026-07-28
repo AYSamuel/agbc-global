@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
@@ -15,6 +15,7 @@ import {
   AppHeader,
   Button,
   CheckIcon,
+  UndoIcon,
   EmptyState,
   GateSheet,
   HeartIcon,
@@ -22,10 +23,11 @@ import {
   Skeleton,
 } from '@/components/ui';
 import { joinMeta } from '@/features/family/format';
-import { usePrayerQuery } from '@/features/family/queries';
+import { usePrayerQuery, type PrayerFeedItem } from '@/features/family/queries';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
+import { useIntercessionPress } from '@/features/family/useIntercession';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -44,6 +46,16 @@ export default function PrayerDetail() {
   const query = usePrayerQuery(id);
   const branchNames = useBranchNames();
   const prayer = query.data ?? null;
+  // Guests are gated; a member's tap moves them along the two-step. Called with
+  // a placeholder row while the query is loading, because a hook cannot be
+  // conditional; the controls it feeds do not render until `prayer` exists.
+  const {
+    commitment,
+    onPress: onCommit,
+    onUndo,
+  } = useIntercessionPress(prayer ?? PLACEHOLDER_PRAYER, () => {
+    setGateVisible(true);
+  });
   const branchName = prayer ? (branchNames[prayer.branch_id] ?? null) : null;
   const age = useRelativeAgeLabel(prayer?.created_at ?? '');
 
@@ -227,26 +239,83 @@ export default function PrayerDetail() {
               />
             )}
 
+            {/* The two-step (docs/spec/09). The forward promise first; once made, the
+                pill becomes "I prayed", and once fulfilled it stops being a
+                button at all, because there is nothing further to ask of them. */}
             <Button
-              label={t('family:iWillPray')}
-              variant="primary"
+              label={
+                commitment === 'none'
+                  ? t('family:iWillPray')
+                  : commitment === 'committed'
+                    ? t('family:iPrayed')
+                    : t('family:youPrayed')
+              }
+              variant={commitment === 'prayed' ? 'outline' : 'primary'}
               fullWidth
-              icon={<HeartIcon size={17} color={colors.btnText} />}
-              onPress={() => {
-                setGateVisible(true);
-              }}
+              disabled={commitment === 'prayed'}
+              icon={
+                commitment === 'prayed' ? (
+                  <CheckIcon
+                    size={17}
+                    color={palette.green}
+                    strokeWidth={2.5}
+                  />
+                ) : (
+                  <HeartIcon
+                    size={17}
+                    color={
+                      commitment === 'committed' ? colors.eye : colors.btnText
+                    }
+                  />
+                )
+              }
+              onPress={onCommit ?? (() => undefined)}
             />
             <Text
+              accessibilityLiveRegion="polite"
               style={{
                 fontFamily: fontFamily.body.regular,
                 fontSize: 12.5,
                 lineHeight: 18.75,
-                color: colors.muted,
+                color: commitment === 'committed' ? colors.eye : colors.muted,
                 textAlign: 'center',
               }}
             >
-              {t('family:prayCommitExplain')}
+              {/* Once committed, the explainer becomes the promise the app is
+                  now keeping: gentle reminders until they mark "I prayed"
+                  (docs/spec/09; the reminders themselves land with W3.4). */}
+              {commitment === 'committed'
+                ? t('family:willRemindYou')
+                : t('family:prayCommitExplain')}
             </Text>
+            {/* The same 5s way back as the feed card, as a plain text action so
+                it never competes with the primary button above it. */}
+            {onUndo ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('family:undoCommitment')}
+                onPress={onUndo}
+                hitSlop={{ top: 10, bottom: 10 }}
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 5,
+                  opacity: pressed ? 0.6 : 1,
+                })}
+              >
+                <UndoIcon size={13} color={colors.blue} strokeWidth={2} />
+                <Text
+                  style={{
+                    fontFamily: fontFamily.body.bold,
+                    fontSize: 12.5,
+                    color: colors.blue,
+                  }}
+                >
+                  {t('family:undo')}
+                </Text>
+              </Pressable>
+            ) : null}
             <Button
               label={t('family:share')}
               variant="outline"
@@ -284,3 +353,23 @@ export default function PrayerDetail() {
     </Screen>
   );
 }
+
+/** Stands in while the request is still loading, so the commitment hook has a
+ * row to read. Never rendered: every control it feeds is inside the branch that
+ * requires a real prayer. */
+const PLACEHOLDER_PRAYER: PrayerFeedItem = {
+  id: '',
+  branch_id: '',
+  body: '',
+  language: 'en',
+  is_anonymous: false,
+  answered_at: null,
+  praying_count: 0,
+  prayed_count: 0,
+  created_at: '',
+  author_id: null,
+  author_name: null,
+  author_avatar_url: null,
+  answer_testimony_id: null,
+  my_intercession_state: null,
+};

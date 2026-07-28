@@ -322,3 +322,13 @@ export function ImageIcon(props: IconProps) {
     </Svg>
   );
 }
+
+// Mockup .prayundo: a counter-clockwise arrow for taking back the last step.
+export function UndoIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M3 8v5h5" />
+      <Path d="M4.6 13a8 8 0 1 0 1.9-6.3L3 10" />
+    </Svg>
+  );
+}

@@ -22,6 +22,8 @@
   "iWillPray": "I will pray",
   "iPrayed": "I prayed",
   "youPrayed": "You prayed",
+  "undo": "Undo",
+  "undoCommitment": "Undo taking that step",
   "willRemindYou": "We'll remind you to pray",
   "ageNow": "Just now",
   "ageMinutes_one": "{{count}}m",

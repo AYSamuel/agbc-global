@@ -1,5 +1,8 @@
 import { applyGloryToCaches } from '@/features/family/gloryCache';
-import { TESTIMONY_SURFACE_KEYS } from '@/features/family/keys';
+import {
+  PRAYER_SURFACE_KEYS,
+  TESTIMONY_SURFACE_KEYS,
+} from '@/features/family/keys';
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 import {
@@ -18,8 +21,8 @@ import {
 // one way (~/.claude/standards/frontend.md: lower layers never import higher).
 //
 // Handlers land here as their work items build the surface that queues them:
-// glory (W2.4), intercession (W2.4 slice 3), rsvp (W2.9), attendance (W2.8),
-// playback (W3.1), plan_day (Phase 4).
+// glory and intercession (W2.4), rsvp (W2.9), attendance (W2.8), playback
+// (W3.1), plan_day (Phase 4).
 
 /**
  * Postgres codes that mean "and it will still say no next time": a check
@@ -80,11 +83,81 @@ async function handleGlory(write: QueuedWrite): Promise<ReplayOutcome> {
   }
   return outcome;
 }
+async function handleIntercession(write: QueuedWrite): Promise<ReplayOutcome> {
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user.id;
+  if (!userId) return 'retry';
+
+  let error;
+  if (write.state === 'none') {
+    // The undo. Deleting is already the member's own right, and the counter
+    // trigger takes them out of whichever count they were in. Deleting something
+    // already gone is success: the wish is that no commitment exist, and none
+    // does.
+    ({ error } = await supabase
+      .from('prayer_intercessions')
+      .delete()
+      .eq('prayer_id', write.entityId)
+      .eq('profile_id', userId));
+  } else if (write.state === 'committed') {
+    // "I will pray". Conflict-tolerant: a repeated replay must not enrol the
+    // member twice, which would double the praying count the author sees. The
+    // insert guard forces profile_id, state and the reminder schedule
+    // server-side whatever this sends (docs/spec/02).
+    ({ error } = await supabase
+      .from('prayer_intercessions')
+      .upsert(
+        { prayer_id: write.entityId, profile_id: userId },
+        { onConflict: 'prayer_id,profile_id', ignoreDuplicates: true },
+      ));
+  } else {
+    // "I prayed", in TWO statements, because the queue keeps only the last wish
+    // per request and this one may be the only thing left of a whole sequence.
+    // A member who undoes and then taps through again can collapse "commit" and
+    // "fulfil" into this single wish, and by then the undo may already have
+    // deleted their row on the server. The insert guard forces every new
+    // intercession to `committed` (a member can never insert one fulfilled), so
+    // reaching `prayed` from nothing genuinely takes both steps.
+    //
+    // Both are idempotent, so this is also correct when the row already exists,
+    // and when it is already fulfilled: the upsert conflicts and does nothing,
+    // and the update matches no still-committed row.
+    ({ error } = await supabase
+      .from('prayer_intercessions')
+      .upsert(
+        { prayer_id: write.entityId, profile_id: userId },
+        { onConflict: 'prayer_id,profile_id', ignoreDuplicates: true },
+      ));
+    if (!error) {
+      ({ error } = await supabase
+        .from('prayer_intercessions')
+        .update({ state: 'prayed' })
+        .eq('prayer_id', write.entityId)
+        .eq('profile_id', userId)
+        // Scoped to a row still committed, so a replay landing after the first
+        // success matches nothing and is a success rather than an error.
+        .eq('state', 'committed'));
+    }
+  }
+
+  const outcome = outcomeFor(error);
+
+  // As with Glory: the card was patched when the member tapped, so success
+  // changes nothing on screen. A refusal is the one case that must, and there is
+  // only one honest thing to show then. The prayer was answered, deleted or
+  // removed while the tap was in flight, so the commitment the member reached
+  // for no longer exists; refetching is the only way to learn what replaced it.
+  if (outcome === 'refused') {
+    for (const queryKey of PRAYER_SURFACE_KEYS) {
+      void queryClient.invalidateQueries({ queryKey });
+    }
+  }
+  return outcome;
+}
+
 export const writeHandlers: WriteHandlers = {
   glory: handleGlory,
-  // Slice 3. Until then a queued intercession would have nowhere to go, and
-  // nothing queues one: the prayer controls still open the gate or do nothing.
-  intercession: () => Promise.resolve('retry'),
+  intercession: handleIntercession,
 };
 
 /**

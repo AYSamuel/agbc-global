@@ -8,6 +8,7 @@ import { writeHandlers } from '../writeQueueHandlers';
 const mockUpsert = jest.fn<Promise<{ error: unknown }>, [unknown, unknown]>();
 const mockDelete = jest.fn<Promise<{ error: unknown }>, [string, string]>();
 const mockGetSession = jest.fn<Promise<unknown>, []>();
+const mockUpdate = jest.fn<Promise<{ error: unknown }>, [unknown, string[]]>();
 const mockInvalidate = jest.fn<Promise<void>, [{ queryKey: unknown[] }]>();
 const mockApply = jest.fn<undefined, [string, boolean]>();
 
@@ -43,6 +44,18 @@ jest.mock('@/lib/supabase', () => ({
         };
         return chain;
       },
+      // update().eq().eq().eq(): resolves once every filter is applied, so the
+      // test can assert the whole scope and not just the last column.
+      update: (patch: unknown) => {
+        const eqs: string[] = [];
+        const chain = {
+          eq: (column: string, value: string) => {
+            eqs.push(`${column}=${value}`);
+            return eqs.length < 3 ? chain : mockUpdate(patch, eqs);
+          },
+        };
+        return chain;
+      },
     }),
   },
 }));
@@ -62,6 +75,7 @@ beforeEach(() => {
   });
   mockUpsert.mockResolvedValue({ error: null });
   mockDelete.mockResolvedValue({ error: null });
+  mockUpdate.mockResolvedValue({ error: null });
   mockInvalidate.mockResolvedValue(undefined);
 });
 
@@ -117,6 +131,7 @@ describe('the glory handler', () => {
   test('deleting a reaction that is already gone is success, not failure', async () => {
     // The wish is "no reaction here", and there is none.
     mockDelete.mockResolvedValue({ error: null });
+    mockUpdate.mockResolvedValue({ error: null });
     await expect(writeHandlers.glory(OFF)).resolves.toBe('done');
   });
 });
@@ -160,17 +175,87 @@ describe('classifying a refusal', () => {
   });
 });
 
-describe('the kinds that have no surface yet', () => {
-  test('an intercession waits rather than claiming success', async () => {
-    // Nothing queues one until slice 3; if anything did, "retry" keeps the wish
-    // alive instead of quietly dropping it.
-    await expect(
-      writeHandlers.intercession({
-        kind: 'intercession',
-        entityId: 'p1',
-        state: 'committed',
-        queuedAt: 1,
-      }),
-    ).resolves.toBe('retry');
+const COMMIT = {
+  kind: 'intercession',
+  entityId: 'p1',
+  state: 'committed',
+  queuedAt: 1,
+} as const;
+const FULFIL = {
+  kind: 'intercession',
+  entityId: 'p1',
+  state: 'prayed',
+  queuedAt: 1,
+} as const;
+
+describe('the intercession handler', () => {
+  test('"I will pray" is a conflict-tolerant enrolment', async () => {
+    // A repeated replay must not enrol the member twice, which would double the
+    // praying count the author sees.
+    await expect(writeHandlers.intercession(COMMIT)).resolves.toBe('done');
+    expect(mockUpsert).toHaveBeenCalledWith(
+      { prayer_id: 'p1', profile_id: 'u1' },
+      { onConflict: 'prayer_id,profile_id', ignoreDuplicates: true },
+    );
+  });
+
+  test('the undo deletes the commitment outright, from either step', async () => {
+    // Which is why the database needed no change: deleting your own intercession
+    // was always permitted, while un-praying never was.
+    const UNDO = {
+      kind: 'intercession',
+      entityId: 'p1',
+      state: 'none',
+      queuedAt: 1,
+    } as const;
+    await expect(writeHandlers.intercession(UNDO)).resolves.toBe('done');
+    expect(mockDelete).toHaveBeenCalledWith('prayer_id=p1', 'profile_id=u1');
+  });
+
+  test('"I prayed" ensures the commitment exists, then fulfils it', async () => {
+    // Two statements on purpose. The queue keeps only the last wish per request,
+    // so this one can be all that survives of "undo, commit again, fulfil again",
+    // by which point the server may have no row at all. The insert guard forces
+    // every new intercession to `committed`, so reaching `prayed` from nothing
+    // genuinely takes both steps.
+    await expect(writeHandlers.intercession(FULFIL)).resolves.toBe('done');
+    expect(mockUpsert).toHaveBeenCalledWith(
+      { prayer_id: 'p1', profile_id: 'u1' },
+      { onConflict: 'prayer_id,profile_id', ignoreDuplicates: true },
+    );
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ state: 'prayed' }),
+      // Scoped to a row still committed, so a replay after the first success
+      // matches nothing and is a success rather than an error.
+      ['prayer_id=p1', 'profile_id=u1', 'state=committed'],
+    );
+  });
+
+  test('and if the enrolment fails, it does not pretend to fulfil', async () => {
+    mockUpsert.mockResolvedValue({
+      error: { message: 'Network request failed' },
+    });
+    await expect(writeHandlers.intercession(FULFIL)).resolves.toBe('retry');
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  test('a landed commitment changes nothing on screen', async () => {
+    // The card was patched when the member tapped, exactly as for Glory.
+    await writeHandlers.intercession(COMMIT);
+    expect(mockInvalidate).not.toHaveBeenCalled();
+  });
+
+  test('a refusal refetches, because only the server knows what replaced it', async () => {
+    // The prayer was answered, deleted or removed while the tap was in flight,
+    // so the commitment the member reached for no longer exists.
+    mockUpsert.mockResolvedValue({ error: { code: '23514' } });
+    await expect(writeHandlers.intercession(COMMIT)).resolves.toBe('refused');
+    expect(mockInvalidate).toHaveBeenCalled();
+  });
+
+  test('no session is a race with sign-out, not a refusal', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+    await expect(writeHandlers.intercession(COMMIT)).resolves.toBe('retry');
+    expect(mockUpsert).not.toHaveBeenCalled();
   });
 });

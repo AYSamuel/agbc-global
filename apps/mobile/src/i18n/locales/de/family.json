@@ -22,6 +22,8 @@
   "iWillPray": "Ich werde beten",
   "iPrayed": "Ich habe gebetet",
   "youPrayed": "Du hast gebetet",
+  "undo": "Rückgängig",
+  "undoCommitment": "Diesen Schritt rückgängig machen",
   "willRemindYou": "Wir erinnern dich ans Beten",
   "ageNow": "Gerade eben",
   "ageMinutes_one": "{{count}} Min.",

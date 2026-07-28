@@ -22,6 +22,8 @@
   "iWillPray": "Ik ga bidden",
   "iPrayed": "Ik heb gebeden",
   "youPrayed": "Je hebt gebeden",
+  "undo": "Ongedaan maken",
+  "undoCommitment": "Deze stap ongedaan maken",
   "willRemindYou": "We herinneren je eraan te bidden",
   "ageNow": "Zojuist",
   "ageMinutes_one": "{{count}} min.",
