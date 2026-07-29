@@ -27,6 +27,46 @@ export const BRANCH = {
 } as const;
 
 /**
+ * A branch that exists only for one test file.
+ *
+ * Any test that COUNTS what a moderator sees needs this. Counting against a seeded
+ * branch means counting the dev seed's content plus whatever a developer left behind
+ * while clicking through the app, and the assertion fails for reasons that have nothing
+ * to do with the code. That happened three times while building W2.7 before the cause
+ * was fixed rather than the symptom.
+ *
+ * Owning the branch makes the queue exactly what the test put in it.
+ */
+export async function createTestBranch(label: string): Promise<string> {
+  const service = admin();
+  const slug = `test-${label}-${String(process.pid)}-${String(++branchCounter)}`;
+
+  const { data, error } = await service
+    .from('branches')
+    .insert({
+      slug,
+      name: `Test Branch ${slug}`,
+      city: 'Testville',
+      country: 'Testland',
+      timezone: 'Europe/London',
+      lat: 0,
+      lng: 0,
+    })
+    .select('id')
+    .single();
+
+  if (error)
+    throw new Error(`could not create a test branch: ${error.message}`);
+  return data.id;
+}
+
+export async function deleteTestBranch(id: string): Promise<void> {
+  await admin().from('branches').delete().eq('id', id);
+}
+
+let branchCounter = 0;
+
+/**
  * The four states a leader's second factor can actually be in.
  *
  * Worth spelling out, because Supabase's MFA guide describes `aal1 / aal2` as "user has

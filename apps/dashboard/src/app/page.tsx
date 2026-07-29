@@ -9,12 +9,17 @@ import { authorize, type DenialReason } from '@/server/authorize';
 export const dynamic = 'force-dynamic';
 
 /**
- * Slice 1's whole surface: who you are, and which branch you moderate.
+ * The door, not a destination.
  *
- * Deliberately nothing else. The point of the slice is that the authorization layer
- * exists and is tested BEFORE anything valuable sits behind it, so this page is the
- * smallest thing that proves the chain end to end: cookie, live session, second factor,
- * role and branch read from the database.
+ * In slice 1 this WAS the destination: it showed who you are and which branch you
+ * moderate, because that was the smallest thing that proved the whole chain (cookie,
+ * live session, second factor, role and branch read from the database). Now that the
+ * queue exists, an authorized caller belongs there, and the identity this page used to
+ * show lives in the rail where the frame puts it.
+ *
+ * What stays here is the part with nowhere else to go: the honest refusals. A member, a
+ * signed-in stranger with no profile, or a closed account gets an explanation rather
+ * than a redirect loop.
  */
 export default async function HomePage() {
   const supabase = await createServerComponentClient();
@@ -31,47 +36,7 @@ export default async function HomePage() {
     return <Refused reason={verdict.reason} />;
   }
 
-  const { caller } = verdict;
-
-  return (
-    <AuthShell title={copy.identity.title}>
-      <dl className="flex flex-col gap-4 rounded-card border border-cardline bg-card p-5">
-        <Row label={copy.identity.emailLabel} value={caller.email} />
-        <Row
-          label={copy.identity.roleLabel}
-          value={copy.identity.roles[caller.role]}
-        />
-        <Row
-          label={copy.identity.branchLabel}
-          value={
-            caller.role === 'admin'
-              ? copy.identity.adminScope
-              : caller.branchName
-          }
-        />
-      </dl>
-
-      <p className="text-body leading-relaxed text-sub">
-        {copy.identity.comingNext}
-      </p>
-
-      <SignOutButton />
-    </AuthShell>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <dt className="text-label font-bold tracking-wide text-muted uppercase">
-        {label}
-      </dt>
-      {/* break-words because these are DATA, not copy: an email address is one long
-          unbreakable token, and at a large text size on a narrow window it pushes the
-          whole page sideways if it is not allowed to wrap. */}
-      <dd className="text-card font-semibold break-words text-text">{value}</dd>
-    </div>
-  );
+  redirect('/moderation');
 }
 
 /**

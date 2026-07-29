@@ -1165,6 +1165,24 @@ export type Database = {
       }
     }
     Views: {
+      moderation_queue: {
+        Row: {
+          author_id: string | null
+          body: string | null
+          branch_id: string | null
+          consent_version: string | null
+          created_at: string | null
+          id: string | null
+          image_path: string | null
+          is_anonymous: boolean | null
+          is_answered_prayer: boolean | null
+          kind: string | null
+          language: string | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       prayer_feed: {
         Row: {
           answer_testimony_id: string | null
