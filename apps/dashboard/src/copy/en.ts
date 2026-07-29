@@ -69,18 +69,68 @@ export const copy = {
   },
 
   identity: {
-    title: 'You are signed in',
-    roleLabel: 'Role',
-    branchLabel: 'Branch you moderate',
-    emailLabel: 'Signed in as',
+    // Slice 1 rendered a whole identity screen from this block. The queue replaced it and
+    // the rail now carries the identity, so all that survives is the role label, used in
+    // the rail and on the refusals. The rest was deleted rather than left to rot.
     roles: {
       leader: 'Branch leader',
       admin: 'Ministry admin',
     },
-    adminScope: 'All branches',
-    // The honest statement of what this screen is, rather than pretending it is a home page.
-    comingNext:
-      'The moderation queue arrives next. Nothing else is here yet, on purpose: this screen exists so the sign-in and permission checks behind it can be proven before anything valuable sits on top of them.',
+  },
+
+  nav: {
+    label: 'Sections',
+    brand: 'AGBC',
+    signedInAs: 'Signed in as',
+    moderation: 'Moderation',
+    reports: 'Reports',
+    verses: 'Daily verses',
+    people: 'People',
+    later: 'Later',
+    broadcasts: 'Broadcasts',
+    events: 'Events',
+    branches: 'Branches',
+    library: 'Library & courses',
+    insights: 'Insights',
+    // Screen-reader text on the dimmed rows, so "Phase B" is not conveyed by dimming alone.
+    notYet: (phase: string) => `not built yet, arrives in Phase ${phase}`,
+  },
+
+  queue: {
+    title: 'Moderation queue',
+    allBranches: 'All branches',
+    stats: {
+      toReview: 'To review',
+      overdue: 'Waiting over 48h',
+      testimonies: 'Testimonies',
+    },
+    filters: {
+      all: 'All',
+      testimonies: 'Testimonies',
+      prayers: 'Prayers',
+    },
+    // The safeguarding guideline lives where the decision is made (17 §1, 20), not in a
+    // wiki nobody opens at the moment they are about to approve something.
+    safeguardingTitle: 'Before you approve:',
+    safeguarding:
+      'anything disclosing abuse or self-harm is not approved here. Route it to the branch lead pastor through the church safeguarding process. Photos showing identifiable children without known consent are rejected.',
+    waitingLabel: 'Waiting for review',
+    kind: { testimony: 'Testimony', prayer: 'Prayer' },
+    anonymous: 'Shared anonymously',
+    answeredPrayer: 'Answered prayer',
+    photoAlt: 'Photo attached to this testimony',
+    consent: (version: string) => `Consent ${version}`,
+    waitingDays: (days: number) =>
+      `Waiting ${String(days)} ${days === 1 ? 'day' : 'days'}`,
+    // Slice 2 is read-only on purpose: scoping is provable before anything can act.
+    readOnly:
+      'Reviewing only for now. Approve, reject and remove arrive in the next slice, once the branch scoping above is proven.',
+    emptyTitle: 'Nothing waiting',
+    emptyBody: (branch: string) =>
+      `${branch} is fully reviewed. New testimonies and prayers land here as soon as members post them.`,
+    errorTitle: 'We could not load the queue',
+    errorBody:
+      'That is on us, not you. Nothing has been approved or rejected in the meantime.',
   },
 
   refused: {
