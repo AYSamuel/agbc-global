@@ -54,7 +54,7 @@ A short pre-permission sheet explains the value BEFORE the OS dialog fires (the 
 - **Permission denied (whenever asked in context):** the triggering action still completes (the RSVP records, attendance counts); Settings shows "Notifications off: enable in system settings."
 - **First launch offline (no cache exists yet):** `ONB-3` needs branches from the backend; ship a bundled read-only branch snapshot (the same versioned seed data) as fallback, refreshed and reconciled on next connectivity. The server stays authoritative; the bundle is a stale-tolerant day-one cache. Same treatment for one evergreen daily verse. (Online, the list is already warmed at launch: see the prefetch inventory, `01` §9.)
 - **Returning user, branch removed:** if saved branch no longer exists, fall back to HQ + toast.
-- **Re-run onboarding:** available via Settings ("Change branch/language"): not forced again.
+- **Re-run onboarding:** available via Settings ("Change branch/language"): not forced again. Note for members: re-running does NOT reset their home branch, which after onboarding is changed only by request and approval (ADR 0015, `16`). For a guest it still just changes the local pick, since there is no profile yet.
 
 ## Permissions
 - No auth required. Everything here is guest-level.
