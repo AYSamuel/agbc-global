@@ -23,9 +23,11 @@ Composition, top to bottom:
 ## Branch context model (`BRANCH-SWITCH`): two distinct concepts, never conflated
 
 1. **Browsing context (the chip):** view-only and session-persistent. Switching it changes what Home SHOWS: next service card, events, live channel. It does NOT change notifications, streak timezone, or the Family scope default.
-2. **Home branch (the profile):** drives attendance timezone, service reminders, branch-tier notifications, and "My branch" scoping. Changed only via an explicit action.
+2. **Home branch (the profile):** drives attendance timezone, service reminders, branch-tier notifications, and "My branch" scoping. Changed only by REQUEST, approved by the branch being joined.
 
-- The `BRANCH-SWITCH` sheet lists branches AND (for members) offers a second, explicit action: **"Make this my home branch"** (writes `profiles.branch_id`). Browsing and moving home are visibly different operations.
+- The `BRANCH-SWITCH` sheet lists branches AND (for members) offers a second, explicit action: **"Make this my home branch"**. Browsing and moving home are visibly different operations, which is the whole point of the two-concept model.
+- **That action does NOT write `profiles.branch_id`** (changed 2026-07-29, ADR 0015). It opens a request that the destination branch's leader approves, because moderation authority derives from this column and a self-writable one was a privilege-escalation hole. So the action leads to the same confirm sheet, pending state, refusal state and 90-day cooldown that `16` specifies, and this sheet is the SECOND entry point into that one flow, not a shortcut past it. Both entry points show the same state: a member with a request already open sees "awaiting confirmation" here too, not a fresh action.
+- Browsing is untouched by any of this. The chip stays instant, guest-available and needs no approval, which is what makes it the right place to explore other branches while a move is pending.
 - **"I'm here" while browsing another branch** records attendance AT the browsed branch (real visits happen: diaspora members travel); streaks count attendance at any branch (week = the ISO week of `service_date`, fixed at write time, `10`).
 - The chip never changes the Family scope default (Family defaults to "Everywhere" per `09`; the user's manual scope choice persists).
 - This is the multi-branch backbone on Home: nothing on Home assumes Glasgow.

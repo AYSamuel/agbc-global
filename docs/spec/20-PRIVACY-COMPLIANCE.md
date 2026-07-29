@@ -58,12 +58,14 @@ Keep the accepted-DPA list with the church's records; re-check when a vendor or 
 | Consent records (`consent_version`/`consented_at` on content rows) | retained after deletion/anonymization as Art. 9 processing evidence | kept on the anonymized/soft-deleted row |
 | `payhip_events` raw payloads (buyer emails) | payload redacted to non-PII after successful processing; full rows purged at 12 months | `21` §5 retention job |
 | `unmatched_purchases` (buyer emails) | purged 12 months after creation if unclaimed | `21` §5 retention job |
+| `privileged_actions` (who granted a role or moved a member, and when; ADR 0015) | **7 years**, aligned with charity governance record-keeping. The row survives the target's deletion with their identifying data dropped and `target_redacted_at` stamped: the governance question ("who appointed this leader") stays answerable while the member is genuinely gone. Same shape as the consent-record carve-out above | append-only table, immutable by policy and trigger (`17` §Platform); purge job deferred until the first rows approach 7 years, tracked in `21` §5 |
 | Backups | Supabase Pro: daily, **7-day retention** (Free has none; PITR is a paid add-on); plus nightly off-provider dumps (`21` §7) | deletion honored by age-out ("beyond use") |
 
 ## Deletion & data rights
 
 - **In-app deletion** (`16`) plus the **web deletion path** (Play requirement): a page on the agbc website, email + OTP verified, driving the same server-side flow.
 - Deletion reaches: DB rows, storage objects (avatars, testimony photos), the auth user, push tokens, analytics (deletion API or expiry), and third parties where applicable. Backups age out.
+- **Two documented carve-outs, both narrow, both stated in the privacy notice** rather than left as surprises: consent evidence on anonymized content rows (above), and `privileged_actions` audit rows, where the deletion job drops the identity and keeps the governance record. An audit log that a member can erase by asking to be deleted cannot do the one job it exists for, which is showing who was given authority over other people's Art. 9 data. The deletion job MUST know about this table: it redacts rather than skips, so "we forgot" and "we decided" are not the same code path.
 - Access/export: an admin-run export (JSON) of one member's data; respond within one month of a request. **Identity verification to the same bar as deletion:** the requester proves control of the account's email via OTP before any export is fulfilled (an email-only account has no other identity anchor; releasing special-category data to an impostor is itself a breach).
 
 ## Age policy & safeguarding

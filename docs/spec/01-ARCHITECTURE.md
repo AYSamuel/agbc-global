@@ -71,6 +71,8 @@ A single platform giving us everything the feature set needs:
 
 **Why:** RLS maps cleanly onto our guest/member/leader model; realtime powers the Family feed and live counts for free; storage + signed URLs handle self-hosted audio and owned-book files; one vendor, one bill, minimal ops for a church team.
 
+**The one thing RLS does not do for you** (ADR [0015](../decisions/0015-branch-is-assigned-not-chosen.md), learned the expensive way): a policy protects rows, not the *inputs to the policy*. `can_moderate_branch()` reads `profiles.branch_id`, so while that column was member-writable a leader could move themselves into another branch and moderate it, and every branch-scoping test still passed because each one held the leader still. Two rules follow. **Any column an authorization check reads is part of the security boundary and must not be writable by the subject of that check.** And **authority is read from the live table, never from a JWT claim** (`caller_is_admin_live()`, not `is_admin()`), so revoking a role takes effect immediately instead of at token expiry. RLS is also row-level only, so a private column on an otherwise-shareable row needs a view or a different home, not a cleverer policy.
+
 ### Alternative: custom backend
 
 If a fully custom backend is preferred, here's what it takes and roughly what it costs.

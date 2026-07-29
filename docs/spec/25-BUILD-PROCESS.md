@@ -186,6 +186,14 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Done: `17` module 1 flows work against dev; a leader can only touch their branch (proven by tests, not the UI); verse queue alert job pings healthchecks.
 - Note: moderation actions here are the dependency for W2.5/W2.6 verification; build W2.7 in parallel with W2.3-2.6 and no later.
 - Amended 2026-07-29: **role assignment is pulled forward from Phase B** (`17` module 5) into W2.7, after the moderation-actions slice. The queue is built for branch leaders, and until a role can be assigned there is exactly one admin and no leaders, so the whole module would be a single-user tool and the branch scoping W2.5/W2.6 depend on would never be exercised by a real leader. See `docs/spec/plans/W2.7-dashboard-phase-a.md` slice 3.5.
+- Amended again 2026-07-29 after PR #101: role assignment and **branch moves** are one
+  slice, decided in **ADR 0015** and specced in
+  `docs/spec/plans/W2.7-people-roles-and-branch-moves.md`. Reason: the
+  branch half was a live privilege-escalation hole (a leader could move their own profile
+  into another branch and moderate it), and closing it removed the last write path to
+  another member's profile, so both halves now need the same `SECURITY DEFINER` path, the
+  same audit table and the same step-up. This slice reaches the APP as well as the
+  dashboard. Its mockup frames do not exist yet and composing them is a blocking gate.
 
 **W2.8 · Member Home + Rhythm slice**
 - Refs: `10`, `07` (member Home, branch-context model), `02` (attendance/streaks/milestones).
@@ -196,7 +204,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 **W2.9 · RSVP + Academy + profile slice**
 - Refs: `11` (RSVP), `13`, `02` (courses tables), `16` (profile edit).
 - Build BE: courses + course_fees_regional + course_registrations + course_interest migrations + RLS + pgTAP (cancel-only transition, partial unique) + seed conversion script (symbol majors → minor units + ISO currency, NG overrides).
-- Build FE: RSVP on EVENT-DETAIL (going/interested/cancel, gate, add-to-calendar via expo-calendar, share); ACADEMY pathway, COURSE, REGISTER (prefill, fee summary, format/branch), REGISTER-CONFIRM, already-registered + cancel, upcoming → Notify me (`course_interest`); profile edit (name, avatar upload, home branch change).
+- Build FE: RSVP on EVENT-DETAIL (going/interested/cancel, gate, add-to-calendar via expo-calendar, share); ACADEMY pathway, COURSE, REGISTER (prefill, fee summary, format/branch), REGISTER-CONFIRM, already-registered + cancel, upcoming → Notify me (`course_interest`); profile edit (name, avatar upload). **Home branch is NOT edited here** (ADR 0015): it moved into the W2.7 people slice as a request-and-approve flow, with a second entry point on the `BRANCH-SWITCH` sheet (`07`). If that slice has shipped by the time this item runs, this screen only links to it.
 - Done: `11` + `13` acceptance criteria; RSVP against a cancelled event rejected server-side and reconciled quietly.
 
 **W2.10 · Analytics + crash reporting + Phase 2 exit**
