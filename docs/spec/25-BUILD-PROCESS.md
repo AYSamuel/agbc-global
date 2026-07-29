@@ -185,6 +185,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Build: dashboard auth (same identity, role-checked), centralized authz middleware on every server route (no client-supplied authority), passkeys for admins + step-up actions; moderation queue (approve/reject-with-reason/remove, compare-and-set, reports inbox, 48h escalation job, safeguarding guideline surfaced in UI copy); daily-verse CRUD + CSV batch import; IDOR probes in CI; moderation pushes to leaders (in-app/email until push lands in Phase 3).
 - Done: `17` module 1 flows work against dev; a leader can only touch their branch (proven by tests, not the UI); verse queue alert job pings healthchecks.
 - Note: moderation actions here are the dependency for W2.5/W2.6 verification; build W2.7 in parallel with W2.3-2.6 and no later.
+- Amended 2026-07-29: **role assignment is pulled forward from Phase B** (`17` module 5) into W2.7, after the moderation-actions slice. The queue is built for branch leaders, and until a role can be assigned there is exactly one admin and no leaders, so the whole module would be a single-user tool and the branch scoping W2.5/W2.6 depend on would never be exercised by a real leader. See `docs/spec/plans/W2.7-dashboard-phase-a.md` slice 3.5.
 
 **W2.8 · Member Home + Rhythm slice**
 - Refs: `10`, `07` (member Home, branch-context model), `02` (attendance/streaks/milestones).
