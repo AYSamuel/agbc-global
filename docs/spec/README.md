@@ -27,7 +27,7 @@ Read them in order. The numbered files build on each other.
 | 12 | `12-FEATURE-Giving.md` | Link-out giving (v1), currencies, accounts, recurring |
 | 13 | `13-FEATURE-Academy.md` | Grace Academy pathway, courses, registration |
 | 14 | `14-FEATURE-Store-Library.md` | Bookstore (buy on web), My Library reader |
-| 15 | `15-FEATURE-Notifications.md` | Push + WhatsApp, tiers, notification center, deep links |
+| 15 | `15-FEATURE-Notifications.md` | Push + in-app, tiers, notification center, deep links |
 | 16 | `16-FEATURE-Settings.md` | Settings, theme toggle, language, profile, privacy, account deletion |
 | 17 | `17-ADMIN-DASHBOARD.md` | Separate web dashboard for leaders: moderation, broadcast, content |
 | 18 | `18-BUILD-PLAN.md` | Phasing, MVP cut lines, milestones, launch checklist |

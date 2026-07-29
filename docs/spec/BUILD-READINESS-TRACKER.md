@@ -16,7 +16,7 @@ Last updated: 2026-07-18
 | 2 | **Owners + open decisions** | Content doesn't dry up; specs are unambiguous | 🟡 3 decisions closed today; owners pending | Ayo |
 | 3 | **Design phase (hi-fi + component library)** | Feature build in each phase; Reader + Family map are undesigned | 🟡 in progress (Family map spec+mockup done; Figma foundations built) | Ayo + Claude |
 | 4 | **Technical + legal gates** | Safe prod migration; lawful NG operation | 🔴 not started | Developer + legal |
-| 5 | **Phase -1 accounts** | WhatsApp broadcasts by Phase 3 (Meta fuse, start in month 1); everything else is same-day and free. Auth has NO external fuse since the email-OTP decision (2026-07-18) | see `24` | Ayo + Developer |
+| 5 | **Phase -1 accounts** | **No external fuse left at all** (2026-07-29): everything is same-day and free. Auth lost its fuse with email OTP (2026-07-18); broadcasts lost theirs with ADR 0014 | see `24` | Ayo + Developer |
 
 Gate 1 runs in parallel (2-week lead). Gates 3 and 4 are the next big workstreams once Gate 2's owners are named.
 
@@ -33,7 +33,7 @@ Gate 1 runs in parallel (2-week lead). Gates 3 and 4 are the next big workstream
 | UI languages | **Add French: UI ships EN/DE/NL/FR.** Content (verses/devotionals) stays EN v1. FR strings are net-new (the website has no French); docs, schema (`profiles.language`, `body_fr`), i18n layout, store listings, and the ONB-3 mockup updated. An FR reviewer must be named (see open decisions) | 2026-07-18 |
 | Bible translation (verses/devotionals) | **Public domain: World English Bible (WEB)**. No attribution burden; free to store and put on share images. Add `translation` column; render translation label. | 2026-07-15 |
 | Tablet / iPad stance | **Full bespoke tablet layouts in v1** (not capped-column). Conscious trade-off: more design + build cost; capped-column is the fallback if schedule slips. | 2026-07-15 |
-| WhatsApp broadcast budget | **Push-first; cap ~2 ministry-wide WhatsApp blasts/month.** Broadcasts default to free push + in-app; WhatsApp reserved for high-value moments. Wire spend alerts. | 2026-07-15 |
+| WhatsApp broadcast budget | **SUPERSEDED 2026-07-29 by ADR 0014: no WhatsApp Cloud API at all.** The 2-blasts/month cap existed to bound a ~$200-per-blast channel that only ever reached a subset of the push audience. Broadcasts are push + in-app, free, with no cap and no spend alert to wire. | 2026-07-15, superseded 2026-07-29 |
 | Devotional in-app experience | **One purchase unlocks BOTH**: the readable book in My Library AND the structured day-by-day plan (PLAN-DAY) that drives Home's daily CTA + Rhythm streak. Content already written by the authoring pastor; import tool splits the book into days. | 2026-07-15 |
 | Reader v1 scope | Both PDF + EPUB | 2026-07-12 |
 | Analytics tool | PostHog (EU cloud) | 2026-07-12 |
@@ -49,7 +49,7 @@ Gate 1 runs in parallel (2-week lead). Gates 3 and 4 are the next big workstream
 | French reviewer (translation + UGC moderation escalation) | Name a fluent French reader: no francophone branch exists, so this cannot default to a branch lead like DE/NL | Phase 4 localization pass; French UGC moderation (`17`/`22`) | Ayo |
 
 ### Decisions already in the specs (verified 2026-07-15)
-All of today's decisions were already documented by the 2026-07-12 remediation pass; verified file-by-file, no edits needed. WEB translation: `07` (Daily Verse), `20` (Content licensing), `02` (`daily_verses.translation` + `devotional_days.verse_translation`). Full tablet layouts: `05` (Tablet & orientation). WhatsApp cap (2 ministry-wide/month, push-first): `15` (Sending) + `21` §9. Devotional = one entitlement unlocks BOTH reader + structured plan: `10`, `14`, `07`, `02`. Today's session ratified these; docs and decisions now agree.
+All of today's decisions were already documented by the 2026-07-12 remediation pass; verified file-by-file, no edits needed. WEB translation: `07` (Daily Verse), `20` (Content licensing), `02` (`daily_verses.translation` + `devotional_days.verse_translation`). Full tablet layouts: `05` (Tablet & orientation). WhatsApp cap (2 ministry-wide/month, push-first): superseded 2026-07-29 by ADR 0014, which removed the channel altogether. Devotional = one entitlement unlocks BOTH reader + structured plan: `10`, `14`, `07`, `02`. Today's session ratified these; docs and decisions now agree.
 
 ---
 

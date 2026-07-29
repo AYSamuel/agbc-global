@@ -52,14 +52,16 @@ describe('the email step', () => {
     const user = userEvent.setup();
     render(<SignInForm next="/" />);
 
-    // Wait for autoFocus to land BEFORE tabbing, rather than assuming it already has.
-    // Firing Tab into the gap moves focus from <body> to the field instead of from the
-    // field to the button, which passes on a fast machine and fails on a loaded CI
-    // runner. Asserting each step also says what the tab order actually is.
+    // Put focus somewhere known instead of inheriting whatever autoFocus left behind.
+    // Two CI failures came from tabbing while focus sat on <body>: Tab then moved INTO
+    // the field rather than out of it, so the assertion read the input and not the
+    // button. Waiting for autoFocus first was not enough, because it can land and then
+    // be dropped again before the tab. The claim under test is the tab ORDER, and that
+    // does not need autoFocus to be involved at all. (autoFocus itself is verified in
+    // the browser, where it is real; asserting it in jsdom only bought flakes.)
     const field = screen.getByLabelText('Email address');
-    await waitFor(() => {
-      expect(field).toHaveFocus();
-    });
+    await user.click(field);
+    expect(field).toHaveFocus();
 
     await user.tab();
     expect(

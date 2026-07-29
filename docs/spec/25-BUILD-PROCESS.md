@@ -48,7 +48,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W0.1 · Phase -1 day-1 sweep** (with Ayo; runs in background for weeks)
 - Refs: `24` §1 + §4.
-- Build: request Apple Admin invite; look up highest Play versionCode + App Signing SHA-256; Firebase project + FCM V1 key; YouTube Data API key; create PostHog EU (EU region), Sentry (EU region at org creation), healthchecks.io, UptimeRobot accounts; start Meta business verification within month 1 (broadcasts-only prerequisite now, `03`/`24`); confirm the broadcast WhatsApp number receives a registration code. Everything here is free: the Twilio cluster and NG registration were dropped with email OTP (2026-07-18).
+- Build: request Apple Admin invite; look up highest Play versionCode + App Signing SHA-256; Firebase project + FCM V1 key; YouTube Data API key; create PostHog EU (EU region), Sentry (EU region at org creation), healthchecks.io, UptimeRobot accounts; Everything here is free and same-day: the Twilio cluster and NG registration went with email OTP (2026-07-18), and Meta business verification, the sender number and the tier ramp went with ADR [0014](../decisions/0014-push-only-broadcasts.md) (2026-07-29). No external fuse remains.
 - Done: every `24` §1 row has an owner and a status; long fuses submitted; tracked as a checklist issue.
 
 **W0.2 · Repo restructure + workspace bootstrap**
@@ -230,7 +230,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W3.5 · Broadcasts + Dashboard Phase B** (multi-session)
 - Refs: `17` §2/§3/§5, `02` (broadcasts state machine, deliveries), `15` (fan-out), `21` §5/§9.
-- Build: dashboard broadcast compose (scope, locale bodies, channels, link allowlist + preview, recipient count + rendered body + WhatsApp cost pre-send), four-eyes ministry approval (DB CHECK + route refusal), edit-during-approval reset, halt control, server-enforced WhatsApp monthly cap; fan-out edge function (chunked, cursor-resumable, deduped, respects prefs + blocks); events CRUD + cancellation/reschedule/reinstate auto-notifications; branch/role management + archive-branch flow; WhatsApp opt-in toggle already in NOTIF-PREFS, Cloud API sender wiring.
+- Build: dashboard broadcast compose (scope, locale bodies, link allowlist + preview, recipient count + rendered body pre-send, "Copy for WhatsApp" pasteable text), four-eyes ministry approval (DB CHECK + route refusal), edit-during-approval reset, halt control; fan-out edge function (chunked, cursor-resumable, deduped, respects prefs + blocks); events CRUD + cancellation/reschedule/reinstate auto-notifications; branch/role management + archive-branch flow. No channel picker, no cost estimation and no monthly cap: push + in-app only (ADR 0014).
 - Done: `17` Phase B modules work on dev; a halted fan-out resumes exactly once per recipient (proven by deliveries rows); broadcast state machine covered by tests.
 
 **W3.6 · Phase 3 exit audit**
@@ -352,7 +352,7 @@ Same as §4 minus the device matrix (desktop-first web, but check a narrow windo
 
 | Dependency | Blocks | Lead time / note |
 |------------|--------|------------------|
-| Meta business verification | WhatsApp broadcasts (Phase 3) only | up to 2 weeks + display-name review + tier ramp; start within month 1 (W0.1). Auth is email-OTP and never waits on Meta (`03`) |
+| ~~Meta business verification~~ | ~~WhatsApp broadcasts~~ | **Gone 2026-07-29** (ADR 0014): broadcasts are push + in-app, so nothing waits on Meta at any phase |
 | Resend SMTP + SPF/DKIM/DMARC on the domain | real-user sign-ins (Founding Members onward) + Phase 4 restore emails | ~1 day; Ayo holds DNS (`24` §1 rows 11-12). Dev never waits (local Mailpit) |
 | Apple Admin invite + Play lookups | iOS dev builds (W0.11), release config | same day once requested |
 | FCM V1 key + APNs in EAS | Push (W3.3) | same day; do it in W0.1 |

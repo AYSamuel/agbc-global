@@ -463,7 +463,6 @@ export type Database = {
           service_reminders: boolean
           testimony_activity: boolean
           updated_at: string
-          whatsapp_opt_in: boolean
         }
         Insert: {
           branch_updates?: boolean
@@ -474,7 +473,6 @@ export type Database = {
           service_reminders?: boolean
           testimony_activity?: boolean
           updated_at?: string
-          whatsapp_opt_in?: boolean
         }
         Update: {
           branch_updates?: boolean
@@ -485,7 +483,6 @@ export type Database = {
           service_reminders?: boolean
           testimony_activity?: boolean
           updated_at?: string
-          whatsapp_opt_in?: boolean
         }
         Relationships: [
           {
@@ -698,7 +695,6 @@ export type Database = {
           id: string
           language: string
           onboarded_at: string | null
-          phone: string | null
           role: Database["public"]["Enums"]["profile_role"]
           theme_pref: string
           updated_at: string
@@ -714,7 +710,6 @@ export type Database = {
           id: string
           language?: string
           onboarded_at?: string | null
-          phone?: string | null
           role?: Database["public"]["Enums"]["profile_role"]
           theme_pref?: string
           updated_at?: string
@@ -730,7 +725,6 @@ export type Database = {
           id?: string
           language?: string
           onboarded_at?: string | null
-          phone?: string | null
           role?: Database["public"]["Enums"]["profile_role"]
           theme_pref?: string
           updated_at?: string

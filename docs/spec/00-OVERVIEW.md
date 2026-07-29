@@ -56,7 +56,7 @@ In-app native giving (App Store review risk) · in-app book purchase (store-cut 
 - **Store identity:** ships as an update to the existing Grace Portal listings (same Android app id / iOS bundle id), so current installs receive it automatically. See `19-MIGRATION-GRACE-PORTAL.md`.
 - **Video:** YouTube (HQ channel). **Audio:** self-hosted files with resume/background playback (see `08`).
 - **Moderation:** leader-approval before public (see `09` + `17`).
-- **Notifications:** Expo Push + WhatsApp (Cloud API / provider) (see `15`).
+- **Notifications:** Expo Push + in-app Notification Center (see `15`). No WhatsApp Cloud API (ADR 0014).
 - **Admin:** separate web dashboard for leaders (see `17`).
 
 ## Brand in one line
