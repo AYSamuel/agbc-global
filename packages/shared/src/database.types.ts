@@ -686,6 +686,57 @@ export type Database = {
           },
         ]
       }
+      privileged_actions: {
+        Row: {
+          action: Database["public"]["Enums"]["privileged_action"]
+          actor_id: string | null
+          after: Json | null
+          before: Json | null
+          id: number
+          note: string | null
+          occurred_at: string
+          target_id: string | null
+          target_redacted_at: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["privileged_action"]
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          id?: never
+          note?: string | null
+          occurred_at?: string
+          target_id?: string | null
+          target_redacted_at?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["privileged_action"]
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          id?: never
+          note?: string | null
+          occurred_at?: string
+          target_id?: string | null
+          target_redacted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privileged_actions_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "privileged_actions_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age_confirmed_at: string | null
@@ -1310,6 +1361,7 @@ export type Database = {
         Args: { starts_at_local: string; tz: string }
         Returns: string
       }
+      in_audit_maintenance: { Args: never; Returns: boolean }
       in_bootstrap_promote: { Args: never; Returns: boolean }
       in_counter_write: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
@@ -1337,6 +1389,10 @@ export type Database = {
       device_platform: "ios" | "android"
       event_status: "scheduled" | "cancelled"
       intercession_state: "committed" | "prayed"
+      privileged_action:
+        | "role_changed"
+        | "branch_changed"
+        | "branch_request_rejected"
       profile_role: "member" | "leader" | "admin"
       report_status: "open" | "actioned" | "dismissed"
       rsvp_status: "going" | "interested" | "cancelled"
@@ -1478,6 +1534,11 @@ export const Constants = {
       device_platform: ["ios", "android"],
       event_status: ["scheduled", "cancelled"],
       intercession_state: ["committed", "prayed"],
+      privileged_action: [
+        "role_changed",
+        "branch_changed",
+        "branch_request_rejected",
+      ],
       profile_role: ["member", "leader", "admin"],
       report_status: ["open", "actioned", "dismissed"],
       rsvp_status: ["going", "interested", "cancelled"],
