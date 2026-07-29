@@ -89,6 +89,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter dashboard typecheck
       - run: pnpm --filter dashboard lint
+      # The dashboard's tests mint REAL sessions (docs/spec/17 authz, W2.7): a leader
+      # who cannot touch another branch is proven against real JWTs and real profiles
+      # rows, not against a mock of Supabase. That needs Auth, so this job runs the
+      # local stack rather than the db-only start the supabase job uses. Everything the
+      # tests do not touch is excluded to keep the shared Actions minutes down, and the
+      # whole job still costs zero unless a PR changes apps/dashboard, packages, or the
+      # lockfile. The tests read the connection details from `supabase status`, so no
+      # keys are exported into the job environment.
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: latest
+      - run: supabase start -x analytics,edge-runtime,functions,imgproxy,inbucket,meta,realtime,storage,studio,vector
       - run: pnpm --filter dashboard test
       - run: pnpm --filter dashboard build
 

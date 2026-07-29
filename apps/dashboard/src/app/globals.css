@@ -1,26 +1,67 @@
 @import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Tailwind's theme, mapped onto the design tokens injected by src/theme/cssVariables.ts.
+   `inline` means Tailwind emits the reference, not the value, so every utility follows
+   whichever theme block is live. No colour, radius or font value is written here: the
+   single source of truth is packages/shared (docs/spec/05, the mockup's CSS verbatim).
 
+   Spacing deliberately stays on Tailwind's built-in 4px scale, which is numerically the
+   same scale `05` specifies (4/8/12/16/20/24/32/40/56 = 1/2/3/4/5/6/8/10/14). */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg: var(--t-bg);
+  --color-alt: var(--t-alt);
+  --color-card: var(--t-card);
+  --color-cardline: var(--t-cardline);
+  --color-raised: var(--t-raised);
+  --color-text: var(--t-text);
+  --color-sub: var(--t-sub);
+  --color-muted: var(--t-muted);
+  --color-accent: var(--t-accent);
+  --color-blue: var(--t-blue);
+  --color-btn: var(--t-btn-bg);
+  --color-btn-text: var(--t-btn-text);
+  --color-danger: var(--t-danger);
+  --color-success: var(--t-success);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* The 05 type scale, in rem so it follows the reader's own font-size setting. */
+  --text-hero: var(--t-text-hero);
+  --text-section: var(--t-text-section);
+  --text-card: var(--t-text-card);
+  --text-body: var(--t-text-body);
+  --text-label: var(--t-text-label);
+
+  --radius-control: var(--t-radius-control);
+  --radius-button: var(--t-radius-button);
+  --radius-card: var(--t-radius-card);
+  --radius-full: var(--t-radius-full);
+
+  /* The same two typefaces as the app (docs/spec/05): Bricolage Grotesque for display,
+     Hanken Grotesk for body. next/font self-hosts and subsets them. */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--t-bg);
+  color: var(--t-text);
+  font-family: var(--font-body);
+}
+
+/* Never remove a focus ring without an equal replacement (WCAG 2.2). This is the
+   replacement: one visible, high-contrast ring on every focusable thing, keyboard-only
+   so pointer users do not see it on click. */
+:focus-visible {
+  outline: 2px solid var(--t-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

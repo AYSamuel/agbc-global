@@ -9,3 +9,12 @@ allowBuilds:
   # Explicit deny: prebuilt napi binaries ship as optional deps; the install script is a
   # fallback we don't need (create-next-app's own scaffold denies it too).
   unrs-resolver: false
+
+# minimumReleaseAgeExclude stays EMPTY on purpose. pnpm's release-age cooldown is a
+# supply-chain control (~/.claude/standards/security.md: no day-zero installs), and
+# pnpm writes an exclusion here automatically whenever an install names a version
+# newer than the cooldown. If an install adds entries, that is the gate being
+# bypassed, not satisfied: pin to an aged version instead, or record why the
+# exception is worth it. (Hit 2026-07-29 adding @supabase/supabase-js for W2.7:
+# 2.111.0 was one day old, so the dashboard pins ^2.110.7, the same aged release
+# the mobile app already resolves to.)
