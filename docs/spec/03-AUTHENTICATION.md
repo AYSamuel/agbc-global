@@ -14,7 +14,7 @@ The app is **fully browsable without an account.** An account is only required t
 - **Universality with a known trade-off.** Every smartphone member has an email account (their app store requires one), but some rarely check it and OTP mail can land in spam. Mitigations: SPF + DKIM on the sending domain, the code repeated in the subject line, a check-spam hint on `AUTH-2`, and support copy after repeated failures.
 - No password reset flows, no credential leaks.
 - Supported natively by Supabase Auth: email OTP with `{{ .Token }}` in the template, so the email carries the code itself, never a magic link.
-- Removes two multi-week external fuses (Meta business verification, NCC registration) from the launch critical path. Meta verification remains a prerequisite for Phase 3 WhatsApp broadcasts ONLY (`15`, `24`).
+- Removes two multi-week external fuses (Meta business verification, NCC registration) from the launch critical path. **Update 2026-07-29:** Meta left the project entirely when WhatsApp broadcasts were dropped (ADR [0014](../decisions/0014-push-only-broadcasts.md)), so there is no remaining Meta dependency at any phase.
 - **Reversible.** Phone/WhatsApp OTP can be added post-v1 as a second sign-in method without members losing accounts (Supabase supports linking a phone identity to an existing user).
 
 ### Delivery
@@ -55,7 +55,7 @@ Returning users skip `AUTH-3`. "First sign-in" has a concrete marker: `profiles.
 | Give (link-out to web) | ✅ (web) | ✅ (web) | ✅ | ✅ |
 | Buy a book (web) / read owned book | ✅ buy / ❌ library | ✅ | ✅ | ✅ |
 | Moderate testimonies/prayers/reports | ❌ | ❌ | ✅ (own branch) | ✅ |
-| Broadcast (push/WhatsApp) | ❌ | ❌ | ✅ (branch) | ✅ (ministry) |
+| Broadcast (push + in-app) | ❌ | ❌ | ✅ (branch) | ✅ (ministry) |
 | Manage branches / roles / global content | ❌ | ❌ | ❌ | ✅ |
 
 > Giving links out to the web, which needs no account: so **guests can give.** This is intentional (lowest friction for generosity + avoids App Store cut in v1; see `12`).

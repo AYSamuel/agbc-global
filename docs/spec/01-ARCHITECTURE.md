@@ -66,7 +66,7 @@ A single platform giving us everything the feature set needs:
 | Auth (email OTP) | **Supabase Auth** (email OTP via Resend custom SMTP: the typed code in the template, never a magic link; see `03`) |
 | File storage (audio sermons, book files, images) | **Storage** (S3-compatible, signed URLs) |
 | Realtime (live testimony feed, prayer counts, "watching now") | **Realtime Broadcast** from DB triggers on private channels (sanitized payloads; NOT `postgres_changes` on content tables, which would leak anonymous authors: see `02` invariants). "Watching now" = Realtime Presence |
-| Server logic (moderation actions, push fan-out, WhatsApp, receipts) | **Edge Functions** (Deno) |
+| Server logic (moderation actions, push fan-out, receipts) | **Edge Functions** (Deno) |
 | Fine-grained permissions (guest read, member write, leader moderate) | **Row-Level Security (RLS)** policies |
 
 **Why:** RLS maps cleanly onto our guest/member/leader model; realtime powers the Family feed and live counts for free; storage + signed URLs handle self-hosted audio and owned-book files; one vendor, one bill, minimal ops for a church team.
@@ -81,7 +81,7 @@ If a fully custom backend is preferred, here's what it takes and roughly what it
 - **Auth**: email OTP yourself (SMTP provider + code store) + JWT issuance/refresh, session revocation, rate-limiting.
 - **File storage + CDN**: S3 + CloudFront (audio, books, images), signed URLs.
 - **Realtime**: WebSocket layer (Socket.IO) or a service (Ably/Pusher) for feeds and live counts.
-- **Background jobs**: push fan-out, WhatsApp sends, scheduled verse-of-day, receipts (a queue: BullMQ/Redis, or serverless cron).
+- **Background jobs**: push fan-out, scheduled verse-of-day, receipts (a queue: BullMQ/Redis, or serverless cron).
 - **Admin API**: endpoints powering the leader dashboard.
 - **DevOps**: hosting, CI/CD, logging, backups, monitoring, secrets, security patching.
 
@@ -90,7 +90,7 @@ If a fully custom backend is preferred, here's what it takes and roughly what it
 - App/API hosting (Render/Railway/Fly): **$7–25**.
 - Object storage + CDN: **$1–10** (audio bandwidth is the variable; a few GB/month is cents, heavy sermon-audio streaming grows this).
 - OTP (email via Resend): **$0** on the free tier (3,000 emails/month, 100/day); sign-in is rare (sessions persist), so OTP volume stays far under it. The prior phone-OTP design cost tens of dollars per 1,000 sign-ins via Twilio and carried the NG DND problem; the 2026-07-18 email decision (`03`) removed both.
-- WhatsApp (Cloud API): **per-message billing** (Meta changed models in 2025); a marketing-category ministry-wide blast to 2,000 opted-in members costs roughly **$200 per blast** at UK/DE rates. Policy: push + in-app are the default channels; WhatsApp broadcasts capped at 2 ministry-wide sends/month (see `21-OPERATIONS.md` §9).
+- Broadcasts cost nothing to send: push + in-app only, no per-message billing anywhere in the product (ADR [0014](../decisions/0014-push-only-broadcasts.md); the WhatsApp Cloud API and its ~$200-per-blast pricing were dropped 2026-07-29).
 - Push (Expo/FCM/APNs): **free**.
 - Redis/queue (if used): **$0–10**.
 - **Total realistic early range: ~$25–120/month**, dominated by audio bandwidth (OTP is free on email). Supabase's managed path lands at the **low end of this** ($0 free tier → $25 Pro) while removing most of the DevOps labor: which is the real cost for a small team.
@@ -114,7 +114,7 @@ If a fully custom backend is preferred, here's what it takes and roughly what it
 | PayPal (via web) | Giving | `paypal.me/agbcglobal` |
 | Payhip (via web) | Book purchase | Reader-app model; no store cut |
 | ~~Twilio Verify~~ | ~~OTP delivery~~ | DROPPED 2026-07-18: email OTP (`03`); revisit only if phone OTP returns post-v1 |
-| WhatsApp Cloud API | Broadcast + shares | Complements push (see `15`) |
+| ~~WhatsApp Cloud API~~ | ~~Broadcast~~ | **Not used** (ADR 0014). Sharing individual content out to WhatsApp is the OS share sheet, which needs no vendor integration |
 | Expo Push (APNs/FCM) | Push notifications | |
 | Sanity | Events CMS | Post-v1 sync option only; v1 events are manual via the dashboard (see `11`) |
 | Resend | Transactional email | ALL sign-in OTP codes via Supabase Auth custom SMTP (see `03`/`20`); the website already uses Resend |

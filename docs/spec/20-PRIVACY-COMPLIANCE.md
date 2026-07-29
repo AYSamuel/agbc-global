@@ -13,10 +13,10 @@ Church membership, testimonies, and prayer requests reveal **religious beliefs**
 
 | Processing | Data | Lawful basis | Art. 9 condition |
 |-----------|------|--------------|------------------|
-| Account (email, name, branch, language; optional phone only via WhatsApp broadcast opt-in, `15`) | contact + profile | contract (providing the service) | 9(2)(d) |
+| Account (email, name, branch, language) | contact + profile | contract (providing the service) | 9(2)(d) |
 | Testimonies / prayers (public sharing) | UGC incl. religious/health | consent | 9(2)(a) explicit, via consent step |
 | Attendance / rhythm / plan progress | religious-practice data | consent (member opts in by using the feature) | 9(2)(a) |
-| Push / WhatsApp notifications | tokens, phone | consent (opt-in prefs, `15`) | n/a |
+| Push notifications | device tokens | consent (opt-in prefs, `15`) | n/a |
 | Moderation & safety (reports, audit) | UGC + reports | legitimate interest (community safety) | 9(2)(d) |
 | Analytics / crash reporting | pseudonymous usage | consent (see below) | n/a |
 
@@ -36,7 +36,7 @@ Church membership, testimonies, and prayer requests reveal **religious beliefs**
 | Vendor | Purpose | Notes |
 |--------|---------|-------|
 | Supabase | DB / auth / storage | DPA available; pin EU region |
-| Meta (WhatsApp Cloud API) | broadcasts (Phase 3) | business terms + DPA. (Twilio was removed from the processor list with the email-OTP decision 2026-07-18, `03`) |
+| ~~Meta (WhatsApp Cloud API)~~ | **REMOVED from the processor list 2026-07-29** (ADR 0014): broadcasts are push + in-app only, so no member data reaches Meta. **No phone numbers are collected at all any more**, which is a data-minimisation improvement under Art. 5(1)(c). (Twilio left the same list with the email-OTP decision 2026-07-18, `03`) |
 | Expo | push relay | DPA |
 | Sentry | crash reporting | DPA; PII scrubbing on |
 | PostHog | analytics | EU Cloud option; DPA |

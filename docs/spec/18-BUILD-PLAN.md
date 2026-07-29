@@ -41,7 +41,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 - **Audio-only sermons** (self-hosted), background + lock-screen playback, robust resume.
 - HQ **Live** with "watching now" + live-watch attendance.
 - Push (Expo) + Notification Center + tiers + deep links.
-- WhatsApp broadcast integration (opt-in).
+- ~~WhatsApp broadcast integration~~ (dropped 2026-07-29, ADR 0014: broadcasts are push + in-app only).
 - Dashboard: broadcasts + events + branch/role management (Phase B of `17`).
 - **Exit:** members get the right notifications at the right scope; audio works while driving.
 
@@ -64,7 +64,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 ---
 
 ## MVP definition (smallest lovable launch)
-If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no devotional CTA while Store is deferred) · Watch (video + audio + resume) · Family (testimonies + Glory + prayer loop + scope + block) · Rhythm (attendance + streaks + milestones) · Give (link-out) · Events + RSVP · Auth + moderation · Notifications (push + tiers) · Settings (theme/language/blocked/delete).** Defer Store/Library (and with it the paid devotional plan), Academy registration, WhatsApp, and dashboard content-management beyond verse CRUD to fast-follows.
+If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no devotional CTA while Store is deferred) · Watch (video + audio + resume) · Family (testimonies + Glory + prayer loop + scope + block) · Rhythm (attendance + streaks + milestones) · Give (link-out) · Events + RSVP · Auth + moderation · Notifications (push + tiers) · Settings (theme/language/blocked/delete).** Defer Store/Library (and with it the paid devotional plan), Academy registration, and dashboard content-management beyond verse CRUD to fast-follows. (WhatsApp used to sit in this list; ADR 0014 removed it from the product entirely rather than deferring it.)
 
 ## Cross-cutting requirements (every phase)
 - **No dead ends**: every action has a destination + empty/loading/error state (`04`).
@@ -81,7 +81,7 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - [ ] Backend: prod = cleaned shared Supabase project (`19`), backups verified, **Pro plan active** (deferred upgrade, `21` §7: mandatory before launch), RLS reviewed, secrets in EAS/Supabase (never in bundle). EU region confirmed 2026-07-13 (`19`).
 - [ ] Email OTP delivery live: Resend custom SMTP on the church domain, SPF + DKIM + DMARC verified, rate limits configured (`03`).
 - [ ] Push (APNs key + FCM) configured in EAS.
-- [ ] WhatsApp broadcast sender approved (if in v1).
+- [x] ~~WhatsApp broadcast sender approved~~ (not applicable: ADR 0014 removed the Cloud API and its sender registration).
 - [ ] Forced-update gate wired: remote minimum-version check (Android in-app updates + config gate on iOS).
 - [ ] Staged rollout plan with written halt criteria (Play staged %, iOS phased release); crash + ANR reporting live before widening.
 - [ ] Moderation coverage: at least one leader per branch trained on the dashboard; pending-item notifications + 48h admin escalation working (`17`).

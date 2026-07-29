@@ -21,7 +21,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | Content is born `pending` | `status default 'pending'`; BEFORE INSERT trigger forces `status='pending'`, `moderated_by/at=NULL` for non-moderators regardless of client-supplied values; member INSERT policy `WITH CHECK (status='pending')` |
 | Authorship cannot be forged | trigger forces `author_id = auth.uid()` and `branch_id` = the author's profile branch on insert |
 | Approved content cannot be edited into abuse | BEFORE UPDATE trigger: any author change to `body`, `image_path`, or `category_id` on an `approved` row resets `status='pending'` and clears `moderated_by/at`; only leader (own branch) / admin policies may set `approved`/`rejected`/`removed` |
-| Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref, phone); `email` is NOT in the allowlist: it mirrors the auth identity and changes only via the Supabase auth email-change flow (`03`); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
+| Roles are immutable to their owner | members update only an allowlisted column set (display_name, avatar_url, branch_id, language, theme_pref); `email` is NOT in the allowlist: it mirrors the auth identity and changes only via the Supabase auth email-change flow (`03`); BEFORE UPDATE trigger raises if `NEW.role <> OLD.role` and the actor is not an admin |
 | Counters are server-maintained | `glory_count` and the prayer counts (`praying_count`/`prayed_count`) written only by triggers (below), never by any client policy; the "I prayed" tap moves an intercession `committed`→`prayed`, decrementing `praying_count` and incrementing `prayed_count` |
 | Prayer commitment cannot be forged or self-scheduled | `prayer_intercessions.profile_id` is trigger-forced = `auth.uid()`; a BEFORE UPDATE trigger allows only the one-way `committed`→`prayed` transition (sets `prayed_at`, never reverts); `committed_at`, `next_reminder_at`, and `reminder_count` are server/trigger-controlled, so a client cannot backdate, self-schedule, or silence reminders (its own or anyone else's) by writing these columns |
 | The prayer-testimony link cannot be stolen | BEFORE INSERT/UPDATE trigger raises unless `from_prayer_id IS NULL` or the referenced prayer's `author_id = auth.uid()` (admins exempt); the UNIQUE constraint already prevents double-claiming. Without this, anyone could fabricate an "Answered prayer" ribbon on a stranger's prayer and permanently squat the link |
@@ -123,7 +123,6 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 |-------|------|-------|
 | id | uuid PK | = auth user id |
 | email | text unique | the sign-in identity (mirrors `auth.users.email`, kept in sync server-side; see `03`); **verified by definition** (sign-in IS the verification); backs Payhip entitlement matching (`14`); nulled on account deletion so the address can re-register (see `16`) |
-| phone | text unique null | optional, E.164; collected ONLY at WhatsApp broadcast opt-in (`15`), never at sign-in; nulled on deletion |
 | display_name | text | |
 | avatar_url | text null | |
 | branch_id | uuid FK→branches | user's **home branch** (drives attendance timezone, reminders, branch notifications; see `07` branch-context model) |
@@ -132,7 +131,7 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 | theme_pref | enum | `system` \| `light` \| `dark` |
 | onboarded_at | timestamptz | set ONLY when `AUTH-3` completes; a session whose profile has `onboarded_at IS NULL` is routed to `AUTH-3` before anything else (abandoned half-created profiles resume there); content/reaction/RSVP/attendance INSERT policies additionally require `onboarded_at IS NOT NULL` |
 | age_confirmed_at | timestamptz | the 16+ self-declaration evidence (`20`), written in the same `AUTH-3` update |
-| deleted_at | timestamptz null | account deletion; `phone`/`email` nulled at the same time (see `16`) |
+| deleted_at | timestamptz null | account deletion; `email` nulled at the same time (see `16`) |
 
 ### `devices`
 Push targets; a profile may have several. Rows are created on/after sign-in only: v1 push is member-oriented (see `15`), so guests never register tokens.
@@ -155,7 +154,6 @@ Row created by an AFTER INSERT trigger on `profiles`; fan-out treats an absent r
 | prayer_activity | bool | default true (the wedge's reward loop) |
 | prayer_reminders | bool | default true (opt-out; reminders to pray for requests you committed to, stop on "I prayed", see `15`) |
 | testimony_activity | bool | default true |
-| whatsapp_opt_in | bool | default false |
 
 ### `blocked_users`
 Store-required UGC control (Apple 1.2 / Play UGC policy): block, not just report. Feeds filter blocked authors server-side; Settings lists "Blocked members".
@@ -482,7 +480,7 @@ Localization model: automated notifications store a **template key + params**, r
 | body | text | primary language as written |
 | body_de / body_nl / body_fr | text null | optional per-locale bodies; fall back to `body` |
 | link | text null | allowlisted + previewed before send (`17`) |
-| channels | text[] | `push`, `whatsapp`, `in_app` (WhatsApp rationed: max 2 ministry-wide/month, `15`) |
+| channels | text[] | `push`, `in_app` (both, always). Kept as an array rather than collapsed away so a second channel can return without a schema redesign (ADR 0014) |
 | status | enum | `draft` \| `pending_approval` \| `rejected` \| `sending` \| `sent` \| `halted` \| `failed` |
 | review_note | text null | shown to the author on rejection (`status='rejected'`); the author's next edit moves it back to `draft` for resubmission |
 | recipient_count | int null | computed at confirmation |
@@ -496,9 +494,9 @@ Per-recipient delivery tracking: powers resumable chunked fan-out, Expo receipt 
 | field | type | notes |
 |-------|------|-------|
 | broadcast_id | uuid FK | |
-| profile_id | uuid FK | one delivery row per (broadcast, recipient, channel): WhatsApp sends are profile-keyed |
+| profile_id | uuid FK | one delivery row per (broadcast, recipient, channel) |
 | device_id | uuid FK null | set for push rows only; unique(broadcast_id, profile_id, channel, device_id) |
-| channel | enum | `push` \| `whatsapp` \| `in_app` |
+| channel | enum | `push` \| `in_app` (enum kept extensible, ADR 0014) |
 | status | enum | `pending` \| `sent` \| `failed` |
 | ticket_id | text null | Expo push ticket; receipts fetched ~15 min later (`15`) |
 | error | text null | |
@@ -520,4 +518,4 @@ Delivery truth for AUTOMATED pushes (service reminders, activity, transactional)
 - Denormalized counters (`glory_count`, and the prayer `praying_count`/`prayed_count`) are maintained by the DB triggers specced above; the reaction tables remain the source of truth; nightly reconciliation fixes drift.
 - **"My branch" scoping** uses `testimonies.branch_id` / `prayers.branch_id`. **"Everywhere"** removes the branch filter (approved rows only).
 - All user-generated content (`testimonies`, `prayers`) is **`pending` until a leader approves**: public reads filter `status='approved'`; authors can always see their own pending rows; the Write-path invariants make this unforgeable.
-- **Account deletion** (see `16` for the full deletion-reach table): profile soft-deleted AND `phone`/`email` nulled (unique constraints would otherwise block the number from re-registering); pending content hard-cancelled (never approvable post-consent-withdrawal); reactions removed with counter reconciliation; Storage objects deleted in the same job.
+- **Account deletion** (see `16` for the full deletion-reach table): profile soft-deleted AND `email` nulled (the unique constraint would otherwise block that address from registering again); pending content hard-cancelled (never approvable post-consent-withdrawal); reactions removed with counter reconciliation; Storage objects deleted in the same job.

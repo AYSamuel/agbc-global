@@ -19,17 +19,17 @@ Rows/sections:
 - **Sign in** (guest) / **Sign out** (member).
 
 ### `NOTIF-PREFS`
-Toggles mapping to `notification_prefs`: Ministry announcements · Branch updates · Service reminders · Prayer activity · Testimony (Glory) activity · **WhatsApp updates** (opt-in). If OS push denied, banner explains + link to system settings.
+Toggles mapping to `notification_prefs`: Ministry announcements · Branch updates · Service reminders · Prayer activity · Testimony (Glory) activity. If OS push denied, banner explains + link to system settings, and notes that everything still arrives in the Notification Center. (The WhatsApp toggle went with ADR 0014; there is no phone number to collect any more.)
 
 ### Profile edit
 - Display name, avatar (upload → Storage, per the bucket rules in `02`), home branch (drives attendance timezone, service reminders, branch notifications, and "My branch" scoping; what Home DISPLAYS follows the browsing chip, see `07`). Save → `profiles` update.
 
 ### `PRIVACY`
-- Plain-language privacy summary + link to full policy (reuse website legal). What's collected (email, name, activity; optional phone only if WhatsApp broadcasts are opted into), how it's used, moderation notice, contact for data requests. Compliance detail (lawful bases, special-category data, retention, DPAs, age policy) lives in `20-PRIVACY-COMPLIANCE.md`.
+- Plain-language privacy summary + link to full policy (reuse website legal). What's collected (email, name, activity: no phone number, ever, since ADR 0014), how it's used, moderation notice, contact for data requests. Compliance detail (lawful bases, special-category data, retention, DPAs, age policy) lives in `20-PRIVACY-COMPLIANCE.md`.
 
 ### `DELETE` (account deletion: store requirement)
 - Clear explanation of what's removed. Confirm (type/hold). 
-- On confirm: soft-delete profile (`deleted_at`), **null `email` and `phone`** (frees the unique constraints so the address can register again later, see `02`), anonymize or remove user content per policy (testimonies/prayers → removed or authored-by "A former member"), revoke sessions, delete personal data, prune devices.
+- On confirm: soft-delete profile (`deleted_at`), **null `email`** (frees the unique constraint so the address can register again later, see `02`), anonymize or remove user content per policy (testimonies/prayers → removed or authored-by "A former member"), revoke sessions, delete personal data, prune devices.
 - **Deletion reach (every table, in order):**
 
 | Data | Action |

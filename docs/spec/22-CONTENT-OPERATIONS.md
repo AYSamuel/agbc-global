@@ -14,7 +14,7 @@ The software can pass every acceptance criterion and still die in month 3 if the
 | Courses / Academy | academy coordinator | dashboard | per season: flip `upcoming`, dates, fees; process registrations within 7 days | 2 weeks before season | registrations stuck "pending" forever; dead Register buttons | registration-age alert (> 7 days pending) |
 | Books | admin | dashboard catalog + Payhip; unmatched-purchases queue worked weekly | per release | n/a | buyers who paid cannot read (the worst volunteer support ticket) | unmatched-purchases queue count in dashboard |
 | Giving config | trustee-level owner | server config (never an app release) | on change | n/a | wrong bank details in the app | change requires two people to confirm |
-| Broadcasts | branch leaders / admins | dashboard (`17`) | as needed; WhatsApp rationed to 2 ministry-wide/month (`21` §9) | n/a | overspend or spam fatigue | cost shown pre-send; monthly budget alert |
+| Broadcasts | branch leaders / admins | dashboard (`17`) | as needed; push + in-app, free to send (ADR 0014) | n/a | spam fatigue (there is no overspend risk any more) | recipient count + rendered body shown pre-send; four-eyes on ministry scope |
 
 ## 2. Launch-content checklist (minimum viable day-1 set)
 
