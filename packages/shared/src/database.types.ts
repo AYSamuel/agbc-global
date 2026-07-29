@@ -96,6 +96,24 @@ export type Database = {
           },
         ]
       }
+      bootstrap_admins: {
+        Row: {
+          created_at: string
+          email: string
+          note: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          note: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          note?: string
+        }
+        Relationships: []
+      }
       branch_services: {
         Row: {
           branch_id: string
@@ -1274,6 +1292,7 @@ export type Database = {
         Args: { starts_at_local: string; tz: string }
         Returns: string
       }
+      in_bootstrap_promote: { Args: never; Returns: boolean }
       in_counter_write: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_publicly_visible: {
