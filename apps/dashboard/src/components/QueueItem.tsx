@@ -1,3 +1,4 @@
+import { QueueActions } from '@/components/QueueActions';
 import { copy } from '@/copy/en';
 import type { QueueItem as Item } from '@/server/moderationQueue';
 
@@ -8,7 +9,15 @@ import type { QueueItem as Item } from '@/server/moderationQueue';
  * photo, and who and where. Bodies cap at 2000 characters (`02`), so there is no detail
  * pane and nothing to keep in sync with a list.
  */
-export function QueueItem({ item, now }: { item: Item; now: number }) {
+export function QueueItem({
+  item,
+  now,
+  filter,
+}: {
+  item: Item;
+  now: number;
+  filter?: string;
+}) {
   const waitedDays = Math.floor(
     (now - new Date(item.createdAt).getTime()) / (24 * 60 * 60 * 1000),
   );
@@ -62,6 +71,8 @@ export function QueueItem({ item, now }: { item: Item; now: number }) {
           </>
         ) : null}
       </p>
+
+      <QueueActions item={item} filter={filter} />
     </article>
   );
 }

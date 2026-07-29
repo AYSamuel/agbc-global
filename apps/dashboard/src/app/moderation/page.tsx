@@ -50,6 +50,7 @@ export default async function ModerationPage({
   const queue = await loadModerationQueue(supabase, caller, { kind });
   const scope =
     caller.role === 'admin' ? copy.queue.allBranches : caller.branchName;
+  const outcome = readOutcome(params.outcome);
 
   return (
     <DashboardShell caller={caller} current="moderation">
@@ -59,6 +60,15 @@ export default async function ModerationPage({
         </h1>
         <p className="mt-1 text-body font-bold text-sub">{scope}</p>
       </header>
+
+      {outcome ? (
+        // The result of the last decision, carried back as a query parameter so it
+        // survives without JavaScript and a refresh re-submits nothing. Errors are
+        // announced; successes are polite.
+        <div className="mt-4">
+          <Alert tone={outcome.tone}>{outcome.message}</Alert>
+        </div>
+      ) : null}
 
       <dl className="mt-4 flex flex-wrap gap-2.5">
         <Stat label={copy.queue.stats.toReview} value={queue.counts.all} />
@@ -114,13 +124,41 @@ export default async function ModerationPage({
             {copy.queue.waitingLabel}
           </h2>
           {queue.items.map((item) => (
-            <QueueItem key={item.id} item={item} now={queue.readAt} />
+            <QueueItem
+              key={item.id}
+              item={item}
+              now={queue.readAt}
+              filter={kind}
+            />
           ))}
-          <Alert tone="info">{copy.queue.readOnly}</Alert>
         </>
       )}
     </DashboardShell>
   );
+}
+
+const OUTCOMES: Record<string, { message: string; tone: 'error' | 'info' }> = {
+  approved: { message: copy.queue.outcome.approved, tone: 'info' },
+  rejected: { message: copy.queue.outcome.rejected, tone: 'info' },
+  removed: { message: copy.queue.outcome.removed, tone: 'info' },
+  content_changed: {
+    message: copy.queue.outcome.contentChanged,
+    tone: 'error',
+  },
+  refused: { message: copy.queue.outcome.refused, tone: 'error' },
+  restore_needs_admin: {
+    message: copy.queue.outcome.restoreNeedsAdmin,
+    tone: 'error',
+  },
+  missing_reason: { message: copy.queue.outcome.missingReason, tone: 'error' },
+  failed: { message: copy.queue.outcome.failed, tone: 'error' },
+};
+
+function readOutcome(
+  value: string | string[] | undefined,
+): { message: string; tone: 'error' | 'info' } | undefined {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return candidate ? OUTCOMES[candidate] : undefined;
 }
 
 function readKind(value: string | string[] | undefined): QueueKind | undefined {

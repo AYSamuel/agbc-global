@@ -158,7 +158,11 @@ select throws_ok(
   $$update public.testimonies
       set status = 'approved', updated_at = now() - interval '1 hour'
     where id = '82000000-0000-4000-8000-00000000000a'$$,
-  '40001', 'content changed since review',
+  -- PT409, not 40001. The code changed in 20260729180000 because a trigger raising
+  -- serialization_failure makes the PostgREST request never return: the stack reads
+  -- 40001 as "transient, retry" and this condition is permanent. Measured over raw HTTP
+  -- 2026-07-29, W2.7 slice 3.
+  'PT409', 'content changed since review',
   'approving a version that has since changed is refused');
 
 -- ===========================================================================

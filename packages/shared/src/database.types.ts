@@ -606,6 +606,7 @@ export type Database = {
           language: string
           moderated_at: string | null
           moderated_by: string | null
+          moderation_note: string | null
           prayed_count: number
           praying_count: number
           rejection_reason: string | null
@@ -626,6 +627,7 @@ export type Database = {
           language?: string
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_note?: string | null
           prayed_count?: number
           praying_count?: number
           rejection_reason?: string | null
@@ -646,6 +648,7 @@ export type Database = {
           language?: string
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_note?: string | null
           prayed_count?: number
           praying_count?: number
           rejection_reason?: string | null
@@ -1013,6 +1016,7 @@ export type Database = {
           language: string
           moderated_at: string | null
           moderated_by: string | null
+          moderation_note: string | null
           rejection_reason: string | null
           status: Database["public"]["Enums"]["content_status"]
           updated_at: string
@@ -1033,6 +1037,7 @@ export type Database = {
           language?: string
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_note?: string | null
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
@@ -1053,6 +1058,7 @@ export type Database = {
           language?: string
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_note?: string | null
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string

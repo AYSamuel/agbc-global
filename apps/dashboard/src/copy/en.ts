@@ -125,6 +125,37 @@ export const copy = {
     // Slice 2 is read-only on purpose: scoping is provable before anything can act.
     readOnly:
       'Reviewing only for now. Approve, reject and remove arrive in the next slice, once the branch scoping above is proven.',
+    actions: {
+      approve: 'Approve',
+      reject: 'Reject with reason',
+      rejectOpen: 'Reject with reason',
+      rejectSubmit: 'Send this back to the author',
+      rejectLabel: 'What should they change? The author sees this.',
+      remove: 'Remove',
+      removeOpen: 'Remove',
+      removeSubmit: 'Remove permanently',
+      removeLabel:
+        'Why is this being removed? Kept for the ministry record only, never shown to the author.',
+      // The confirm step, and the reason it exists: this is the one decision a leader
+      // cannot take back themselves.
+      removeWarning:
+        'Removing is not reversible by you. Only a ministry admin can bring this back, so use Reject if you want the author to fix it and try again.',
+      cancel: 'Cancel',
+    },
+    outcome: {
+      approved: 'Approved. It is live in the app feed now.',
+      rejected: 'Sent back to the author with your reason.',
+      removed: 'Removed. Only a ministry admin can restore it.',
+      // The honest failure: send them back to read what changed rather than swallowing it.
+      contentChanged:
+        'That post changed while you were reading it, so nothing was decided. The queue below shows the author’s new words: please read them and decide again.',
+      refused:
+        'That is not yours to decide. It may belong to another branch, or your role may have changed since this page loaded.',
+      restoreNeedsAdmin:
+        'Removed content can only be restored by a ministry admin.',
+      missingReason: 'A reason is required, so nothing was changed.',
+      failed: 'Something went wrong and nothing was changed. Try again.',
+    },
     emptyTitle: 'Nothing waiting',
     emptyBody: (branch: string) =>
       `${branch} is fully reviewed. New testimonies and prayers land here as soon as members post them.`,
