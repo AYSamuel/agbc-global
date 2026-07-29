@@ -8,7 +8,7 @@ Give members control over identity, appearance, language, notifications, and the
 
 ### `SETTINGS` (hub: reached from More)
 Rows/sections:
-- **Profile** → edit display name, avatar, home branch.
+- **Profile** → edit display name, avatar; request a home-branch change (see Profile edit).
 - **Appearance → Theme**: segmented **System · Light · Dark** (writes `theme_pref`, applied instantly, persisted locally + to profile). Status bar re-themes too.
 - **Language**: English · Deutsch · Nederlands · Français (writes `profiles.language`; UI relocalizes instantly). Content stays EN in v1.
 - **Notifications** → `NOTIF-PREFS`.
@@ -22,7 +22,10 @@ Rows/sections:
 Toggles mapping to `notification_prefs`: Ministry announcements · Branch updates · Service reminders · Prayer activity · Testimony (Glory) activity. If OS push denied, banner explains + link to system settings, and notes that everything still arrives in the Notification Center. (The WhatsApp toggle went with ADR 0014; there is no phone number to collect any more.)
 
 ### Profile edit
-- Display name, avatar (upload → Storage, per the bucket rules in `02`), home branch (drives attendance timezone, service reminders, branch notifications, and "My branch" scoping; what Home DISPLAYS follows the browsing chip, see `07`). Save → `profiles` update.
+- Display name, avatar (upload → Storage, per the bucket rules in `02`). Save → `profiles` update.
+- **Home branch is REQUESTED, not edited** (decided 2026-07-29). It drives attendance timezone, service reminders, branch notifications and "My branch" scoping (what Home DISPLAYS follows the browsing chip, see `07`), and it is also what `can_moderate_branch()` derives moderation authority from, so it is not a field a member writes. The rule: a change is proposed and someone above approves it. A member's proposal goes to their branch leader, a leader's to an admin. The member is told up front that it takes about 48 hours to be confirmed, so the expectation is set before they wait, and branch does not churn week to week.
+- Chosen freely during onboarding (AUTH-3), then locked: `profiles_guard` refuses any owner change once `onboarded_at` is set (`02` §Invariants, pgTAP `018`).
+- **Not yet designed.** The request surface here, the leader-facing approval queue in `17`, the notifications on approve/reject, and the admin write path the approval needs (no UPDATE policy on `profiles` reaches another member's row today) are all still to be specced. The database half shipped first because the old behaviour was a live privilege-escalation hole, not because the feature was ready.
 
 ### `PRIVACY`
 - Plain-language privacy summary + link to full policy (reuse website legal). What's collected (email, name, activity: no phone number, ever, since ADR 0014), how it's used, moderation notice, contact for data requests. Compliance detail (lawful bases, special-category data, retention, DPAs, age policy) lives in `20-PRIVACY-COMPLIANCE.md`.
