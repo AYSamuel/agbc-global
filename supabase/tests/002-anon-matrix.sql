@@ -7,8 +7,14 @@ select plan(9);
 set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
 
-select is((select count(*) from public.branches)::int, 4,
-  'anon reads the four seeded branches');
+-- Counted by SLUG, not as a raw total. The dashboard's test helpers create throwaway
+-- branches (apps/dashboard/src/test/callers.ts createTestBranch), and an interrupted run
+-- can leave one behind; a raw count then fails here for a reason that has nothing to do
+-- with anon's read access, which is what this file is about.
+select is(
+  (select count(*) from public.branches
+    where slug in ('glasgow', 'berlin', 'emmen', 'ogbomosho'))::int,
+  4, 'anon reads the four seeded branches');
 select is((select count(*) from public.branch_services)::int, 8,
   'anon reads the seeded service schedule');
 select is((select count(*) from public.app_config)::int, 1,
