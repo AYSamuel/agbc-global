@@ -10,6 +10,19 @@
     "minimumReleaseAge": null,
     "labels": ["security"]
   },
+  "customManagers": [
+    {
+      "description": "The Supabase CLI version passed to supabase/setup-cli. The action itself is SHA-pinned by helpers:pinGitHubActionDigests, but its `version:` input is a separate thing Renovate cannot see by default, so without this a pinned CLI would silently rot. It matters most in supabase-deploy.yml, where the CLI is what applies migrations to dev and prod: that binary should be a reviewed change, never whatever shipped this morning.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "supabase/setup-cli@[a-f0-9]+ # v[\\d.]+\\s+with:\\s+version: (?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "supabase/cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
+  ],
   "packageRules": [
     {
       "description": "Expo SDK packages move together; group them so partial bumps never break the SDK pairing",
