@@ -52,8 +52,15 @@ describe('the email step', () => {
     const user = userEvent.setup();
     render(<SignInForm next="/" />);
 
-    // autoFocus puts the caret in the field; Tab then reaches the submit button, and
-    // Enter submits. No pointer involved anywhere.
+    // Wait for autoFocus to land BEFORE tabbing, rather than assuming it already has.
+    // Firing Tab into the gap moves focus from <body> to the field instead of from the
+    // field to the button, which passes on a fast machine and fails on a loaded CI
+    // runner. Asserting each step also says what the tab order actually is.
+    const field = screen.getByLabelText('Email address');
+    await waitFor(() => {
+      expect(field).toHaveFocus();
+    });
+
     await user.tab();
     expect(
       screen.getByRole('button', { name: 'Email me a code' }),
