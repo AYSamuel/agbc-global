@@ -263,7 +263,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W4.5 · Account deletion + web deletion path**
 - Refs: `16` (deletion reach table, in order), `20`, `02`.
-- Build: DELETE screen (choice on approved content, type/hold confirm); the deletion job executing the full `16` reach table in order (hard-cancel pending first, counters reconciled, storage objects, Payhip rows, phone/email nulling); web deletion page on the church site (OTP one-shot, Turnstile, uniform responses); refresh-failure and deleted-account transitions in the app (`03`).
+- Build: DELETE screen (choice on approved content, type/hold confirm); the deletion job executing the full `16` reach table in order (hard-cancel pending first, counters reconciled, storage objects, Payhip rows, email nulling); web deletion page on the church site (OTP one-shot, Turnstile, uniform responses); refresh-failure and deleted-account transitions in the app (`03`).
 - Done: delete a seeded dev account and verify every table per the reach checklist; second-device queued write rejected after deletion.
 
 **W4.6 · Localization + legal pass**
