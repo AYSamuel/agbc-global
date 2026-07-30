@@ -53,7 +53,7 @@ Surfaced because they are live now, independent of the migration.
 
 | Severity | Finding |
 |---|---|
-| ERROR | **`public.notification_receipts` has RLS disabled.** The anon key is public and shipped in the retired app, so anyone holding it can read and write this table. 0 rows, so nothing is exposed today. Remediation is `ALTER TABLE public.notification_receipts ENABLE ROW LEVEL SECURITY;`, which blocks all access until policies exist. Ayo's call; not applied |
+| ERROR | **`public.notification_receipts` has RLS disabled.** The anon key is public and shipped in the retired app, so anyone holding it can read and write this table. 0 rows, so nothing is exposed today. **Decided 2026-07-30: not fixed, dropped instead.** Enabling RLS would be a production write ahead of the backup gate, on a 0-row table nothing reads, that the cleanup removes anyway. Do not re-raise as a finding; it leaves with the retired app in step 7 |
 | WARN | **`scheduled_notifications` has an always-true INSERT policy**, and a cron job processes that queue every minute. Anyone with the anon key could queue a push. 0 rows |
 | WARN | **45 SECURITY DEFINER functions are executable by `anon`** (and 45 by `authenticated`). This is Supabase's own linter independently confirming issue #96, which was found the same day on the local stack. 45 live instances, not a curiosity |
 | WARN | `avatars` bucket is public and allows listing |
