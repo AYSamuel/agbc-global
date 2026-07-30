@@ -21,10 +21,16 @@ select is((select count(*) from public.app_config)::int, 1,
   'anon reads app_config (pre-auth forced-update gate)');
 select is((select count(*) from public.giving_config)::int, 1,
   'anon reads giving_config (guest giving, docs/spec/12)');
+-- Pins the SHAPE the client contracts on, not merely that something is there. The
+-- previous version asserted `value ->> 0 is not null or value is not null`, which is true
+-- of any non-null jsonb and would have passed unchanged through the per-platform migration
+-- in either direction. The gate is a hard block with no dismiss, so the one thing worth
+-- asserting is that both platforms have a parseable floor (2026-07-30).
 select is(
-  (select value ->> 0 is not null or value is not null
+  (select (value ->> 'ios') || '/' || (value ->> 'android')
      from public.app_config where key = 'minimum_supported_version'),
-  true, 'minimum_supported_version is seeded');
+  '0.0.0/0.0.0',
+  'minimum_supported_version is seeded per platform, and both are parseable versions');
 
 select is((select count(*) from public.profiles)::int, 0,
   'anon sees no profiles');
