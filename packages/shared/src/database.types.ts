@@ -114,6 +114,61 @@ export type Database = {
         }
         Relationships: []
       }
+      branch_change_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          from_branch_id: string
+          id: string
+          profile_id: string
+          status: Database["public"]["Enums"]["branch_request_status"]
+          to_branch_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          from_branch_id: string
+          id?: string
+          profile_id: string
+          status?: Database["public"]["Enums"]["branch_request_status"]
+          to_branch_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          from_branch_id?: string
+          id?: string
+          profile_id?: string
+          status?: Database["public"]["Enums"]["branch_request_status"]
+          to_branch_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_change_requests_from_branch_id_fkey"
+            columns: ["from_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_change_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_change_requests_to_branch_id_fkey"
+            columns: ["to_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branch_services: {
         Row: {
           branch_id: string
@@ -695,6 +750,7 @@ export type Database = {
           id: number
           note: string | null
           occurred_at: string
+          request_id: string | null
           target_id: string | null
           target_redacted_at: string | null
         }
@@ -706,6 +762,7 @@ export type Database = {
           id?: never
           note?: string | null
           occurred_at?: string
+          request_id?: string | null
           target_id?: string | null
           target_redacted_at?: string | null
         }
@@ -717,6 +774,7 @@ export type Database = {
           id?: never
           note?: string | null
           occurred_at?: string
+          request_id?: string | null
           target_id?: string | null
           target_redacted_at?: string | null
         }
@@ -726,6 +784,13 @@ export type Database = {
             columns: ["actor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "privileged_actions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "branch_change_requests"
             referencedColumns: ["id"]
           },
           {
@@ -1393,6 +1458,7 @@ export type Database = {
       testimony_is_published: { Args: { target: string }; Returns: boolean }
     }
     Enums: {
+      branch_request_status: "pending" | "approved" | "rejected" | "cancelled"
       branch_status: "active" | "archived"
       content_status: "pending" | "approved" | "rejected" | "removed"
       device_platform: "ios" | "android"
@@ -1538,6 +1604,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      branch_request_status: ["pending", "approved", "rejected", "cancelled"],
       branch_status: ["active", "archived"],
       content_status: ["pending", "approved", "rejected", "removed"],
       device_platform: ["ios", "android"],
