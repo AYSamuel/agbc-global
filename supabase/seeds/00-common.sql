@@ -173,8 +173,15 @@ on conflict (id) do update set accounts = excluded.accounts;
 
 -- Forced-update gate placeholder (docs/spec/21 §8): W1.2 reads this on launch.
 -- 0.0.0 blocks nothing; raising it is a dashboard/config action, never a release.
+--
+-- PER-PLATFORM since 2026-07-30, because the two stores review independently and one
+-- global floor can hard-block every user of the platform whose replacement build is
+-- still in review. Raise the platforms separately, each once its own store is live.
 insert into public.app_config (key, value)
-values ('minimum_supported_version', '"0.0.0"'::jsonb)
+values (
+  'minimum_supported_version',
+  jsonb_build_object('ios', '0.0.0', 'android', '0.0.0')
+)
 on conflict (key) do nothing;
 
 -- Testimony categories (W1.5, docs/spec/02): a lookup table, not an enum, so the
