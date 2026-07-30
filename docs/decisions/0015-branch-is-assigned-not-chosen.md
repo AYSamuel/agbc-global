@@ -73,6 +73,17 @@ already moderate every branch.
 changes first; moderation and broadcasts migrate on as those surfaces are touched. Retained 7
 years, surviving erasure with the identity dropped and the governance record kept.
 
+**9. The refusal note survives erasure; the identity around it does not** (decided 2026-07-30,
+after the audit table landed). The note is free text a leader typed and may name the member, so
+this was left open in `20260729220000_privileged_actions.sql`, whose trigger deliberately
+permits either outcome. Wiping it would make closing an account a way to erase a safeguarding
+record, which is the same failure decision 8 rejects for audit rows generally. It is retained
+under Art. 17(3) (legal obligation, and the defence of legal claims) rather than the app's
+ordinary basis, and `20`'s retention schedule carries the carve-out and the leader-facing
+disclosure that goes with it. The landed migration's comment is left as written: it recorded the
+question honestly and predicted that either answer needed no second migration, which is what
+happened. No code changed.
+
 ## Consequences
 
 - **The escalation is closed and proven closed.** `018` was run against the pre-fix function
@@ -97,6 +108,21 @@ years, surviving erasure with the identity dropped and the governance record kep
 - **A second admin matters more than before.** The last-admin refusal, the 48-hour fallback
   and the erasure lockout all assume one eventually exists; today each has a single point of
   failure whose only recovery is a migration.
+- **The last-admin refusal cannot fire, and that was decided knowingly** (measured while
+  building `set_member_role`, 2026-07-30). The caller must be a live admin and cannot be the
+  target, so any target holding `admin` implies two live admins exist and demoting one leaves
+  one. What holds the invariant is the PAIR of refusals, not the count. The count stays as the
+  backstop for the next caller and takes `FOR UPDATE` on the rows it counts, because
+  count-then-act is a race the day a second admin does exist. pgTAP `020` states plainly that
+  removing it turns nothing red, so the sequence test is not mistaken for coverage of it.
+- **The fix for all three single points of failure is a break-glass admin, and it is not the
+  same thing as oversight** (decided 2026-07-30). A dedicated non-daily admin identity on the
+  church domain, seed and recovery codes held offline, added through the existing
+  `bootstrap_admins` migration path, removes the erasure lockout and gives the 48-hour fallback
+  two possible actors. It does NOT provide separation of duties: a second account held by the
+  same person cannot review that person's actions. A second HUMAN admin remains a governance
+  decision about who holds authority over other people's Art. 9 data, and is deliberately not
+  treated as a technical task.
 
 ## Alternatives considered
 

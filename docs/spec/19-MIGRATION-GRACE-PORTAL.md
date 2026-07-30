@@ -26,6 +26,23 @@ The stores do not care that the framework changes (Flutter to React Native); the
 
 ## Supabase: reuse plan (shared project!)
 
+> **Steps 1 and 2 are DONE (2026-07-30).** Full evidence and the ordered cleanup plan:
+> `docs/runbooks/prod-audit-2026-07-30.md`; the fenced list is in the project `CLAUDE.md`.
+> The audit corrected three things below and found four ordering hazards this section did not
+> anticipate, so read the runbook before acting on steps 3 to 6.
+>
+> Corrections: the website uses **2** tables (`donations`, `course_registrations`), not ~3.
+> The project is **already migration-managed** (35 migrations, Jan to Feb 2026), so step 6's
+> baseline works against an existing history. And there are **6 active cron jobs**, which this
+> document never mentions.
+>
+> Hazards, all measured: `donations`' admin policy references `public.users` and the
+> `user_role` enum, so a CASCADE drop silently deletes it; `donations.user_id` FKs to
+> `auth.users` with no ON DELETE and 4 of 12 rows point at users step 5 wants to delete, so
+> step 5 is refused as written; the cron jobs call functions on the drop list, so they must be
+> unscheduled BEFORE the drops or they fail every minute; and `public.daily_verses` collides by
+> name with the new schema in an incompatible shape, which fails the apply.
+
 The existing Supabase project is **shared**: the agbc website uses roughly 3 tables; everything else belongs to Grace Portal. This project becomes the app's **production** backend after cleanup. Order of operations:
 
 1. **Audit.** List every table, view, function, trigger, RLS policy, and storage bucket. Label each one `website`, `grace-portal`, or `unknown`. Confirm against the website codebase which objects it actually reads (never from memory).
@@ -55,7 +72,12 @@ Grace Portal used OneSignal; the new app uses Expo Push (APNs/FCM). Nothing to m
 - [x] Highest uploaded `versionCode` and iOS build number confirmed in Play Console / App Store Connect (both 19 on 1.0.0, 2026-07-18)
 - [ ] EAS credentials: existing Android upload keystore + Apple distribution cert configured
 - [ ] App config uses `com.oami.agbcapp` / `com.olayinkaademiluka.grace-portal`, `versionCode` >= 20
-- [ ] Supabase audit complete; website objects fenced and recorded in project CLAUDE.md
+- [x] Supabase audit complete; website objects fenced and recorded in project CLAUDE.md (2026-07-30, `docs/runbooks/prod-audit-2026-07-30.md`)
+- [ ] `donations`' admin policy rewritten against `public.profiles` BEFORE any drop (else CASCADE deletes it silently)
+- [ ] `donations_user_id_fkey` resolved for the 4 rows pointing at auth users due for deletion (never CASCADE: they are giving records)
+- [ ] All 6 cron jobs unscheduled BEFORE dropping the functions they call
+- [ ] Prod's `daily_verses` dropped (name collision with the new schema, incompatible shape). Content is NOT carried: the 57 rows are randomly sampled KJV, include a duplicate and several shame-framed verses, and `22` specifies WEB. Launch verses come from `22`'s "90 daily verses queued" checklist item
+- [ ] `notification_receipts` RLS decision made (currently disabled on a live project)
 - [ ] Nightly off-provider `db dump` pipeline live + one verified restore (HARD precondition before ANY destructive step, `21` §7 / `24`)
 - [ ] Cleanup rehearsed end to end on a restored prod dump (scratch project)
 - [ ] Backup taken; Grace Portal objects removed; stale auth users cleaned

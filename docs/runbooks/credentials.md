@@ -25,6 +25,33 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | UptimeRobot | Uptime monitors | Ayo | GitHub OAuth | TBC | Free (50 monitors) | Created 2026-07-18 |
 | Twilio | ~~OTP delivery~~ | n/a | n/a | n/a | n/a | DROPPED with email OTP (ADR 0011); no account created |
 
+## In-app admin identities (ADR 0015, 2026-07-30)
+
+Two admin grants exist, declared as data in `bootstrap_admins` and applied by trigger, so both are visible in git rather than hand-typed (migrations `20260729120000` and `20260730150000`). Nothing else in the schema can hand out `admin`: `set_member_role` refuses `target = auth.uid()`.
+
+| Address | Role | Purpose |
+|---|---|---|
+| `aysamuel007@gmail.com` | Daily admin | Ayo's ordinary account, the same identity he uses in the mobile app |
+| `oami.gospel@gmail.com` | **Break-glass admin** | Second identity so the erasure lockout and the 48-hour fallback approver are not one account |
+
+**The break-glass account is availability and recovery, not oversight.** A second account held by the same person cannot review that person's actions. Separation of duties needs a second HUMAN admin, which is still open (see the open action below and ADR 0015).
+
+### Activating the break-glass account
+
+**These steps belong to PRODUCTION, at Track P** (`25` §Track P), not to the PR that adds the allowlist row. The migration only declares the grant; the grant becomes real in whichever database the migration has been applied to, and it only *protects* anything in the one that holds real accounts. Doing it against local or dev proves the path works and nothing more.
+
+**The order is not optional, and it is not the obvious one:**
+
+1. [ ] **Onboard in the MOBILE app** with `oami.gospel@gmail.com` (email OTP, then AUTH-3: branch, name, age confirmation). This is what creates the `profiles` row, and the row is what the trigger promotes. The dashboard cannot do this step: it only ever READS `profiles` (`src/server/authorize.ts`), so signing in there first just yields `no_profile` and no promotion.
+2. [ ] **Confirm the promotion landed**: the account's `profiles.role` reads `admin`, and `privileged_actions` has one `role_changed` row for it with a **null** `actor_id` (server-owned, per the migration above). If `actor_id` names the account itself, the `20260730140000` migration has not been applied to that environment.
+3. [ ] **Enrol TOTP in the DASHBOARD** (`/mfa`). The mobile app deliberately never offers enrolment and stays at `aal1` (see the `[auth.mfa.totp]` comment in `supabase/config.toml`); the dashboard is the only surface that enrols, and it refuses every staff session below `aal2`, as does `set_member_role`. An admin with no second factor cannot assign roles at all.
+4. [ ] **Store that seed and its recovery codes offline**: password-manager vault plus a printed copy with the keystore in the church safe. A break-glass account whose second factor lives on the same phone as the daily account's is not a break-glass account. **Only store the seed enrolled against PRODUCTION.** A local or dev seed is a different Supabase project and `pnpm db:reset` wipes it, so keeping one is a false sense of having done this step.
+5. [ ] **Verify once, then leave it alone.** Sign in to the dashboard, confirm it admits the session, sign out. Its whole value is being unused and available. Do not use it for routine work.
+
+Until steps 1 to 3 are done in production, production still has functionally one admin and none of the protection above exists.
+
+**Custody caveat, accepted knowingly:** a personal-provider mailbox is controlled by whoever holds that Google account, not by the ministry, so it does not outlive its holder the way a church-domain mailbox would. Ayo's decision, 2026-07-30, having been offered the domain alternative. Moving it to a managed church domain later needs one more `bootstrap_admins` row plus a demotion of the old one.
+
 ## Keystore copies (from `21` §7)
 
 The Android upload keystore exists in: EAS credentials (at W0.11) + encrypted vault entry + offline USB in the church safe. Play App Signing means a lost upload key is recoverable via Google support, not fatal.
@@ -32,6 +59,8 @@ The Android upload keystore exists in: EAS credentials (at W0.11) + encrypted va
 ## Open actions
 
 - [ ] Name and add second owners (church officer) on: Supabase org, password-manager vault, Apple (once Ayo's Admin invite lands)
+- [ ] **Name a second HUMAN in-app admin** (a trustee or officer), which is the only thing that provides separation of duties over Art. 9 data. The break-glass account above covers availability, not oversight. Before Founding Members (ADR 0015)
+- [ ] Complete the five break-glass activation steps above, **in production, at Track P** (mobile onboarding, confirm the promotion, dashboard TOTP, seed offline, verify and leave)
 - [ ] Fill TBC sign-in methods as each account is next touched
 - [ ] Record domain renewal date from the registrar
 

@@ -1364,6 +1364,7 @@ export type Database = {
       in_audit_maintenance: { Args: never; Returns: boolean }
       in_bootstrap_promote: { Args: never; Returns: boolean }
       in_counter_write: { Args: never; Returns: boolean }
+      in_privileged_profile_write: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_publicly_visible: {
         Args: {
@@ -1378,6 +1379,14 @@ export type Database = {
       prayer_is_published: { Args: { target: string }; Returns: boolean }
       record_photo_validation: {
         Args: { content_type: string; object_name: string }
+        Returns: undefined
+      }
+      set_member_role: {
+        Args: {
+          new_branch?: string
+          new_role: Database["public"]["Enums"]["profile_role"]
+          target: string
+        }
         Returns: undefined
       }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
