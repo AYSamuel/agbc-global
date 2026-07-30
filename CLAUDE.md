@@ -44,9 +44,26 @@ Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church
 - **Destructive-work gate (hard rule):** no destructive step on prod before the nightly off-provider dump pipeline + one verified restore exist (Track P in `25`).
 - Daily loop is LOCAL (`supabase start`); a fresh free-tier project is dev. The migrations folder IS the schema; never change dev/prod directly.
 
-## FENCED SUPABASE OBJECTS (placeholder until the `19` audit fills it)
+## FENCED SUPABASE OBJECTS (audited 2026-07-30, `19` step 1-2 complete)
 
-The shared prod project contains ~3 tables belonging to the agbc website. Once the audit lists them, no migration, policy, or GRANT may reference or modify them; CI fence-guard enforces. Until the list exists, treat every pre-existing object in prod as fenced.
+No migration, policy, or GRANT may reference or modify anything below. CI fence-guard enforces. Full inventory and the ordered cleanup plan: `docs/runbooks/prod-audit-2026-07-30.md`.
+
+**Fenced: two tables, both belonging to the LIVE agbc website** (verified by grepping `Desktop/agbc`, not from memory: 6 files touch Supabase and reference only these two; no storage, no RPC).
+
+| Object | Rows | Why fenced |
+|---|---|---|
+| `public.donations` | 12 | Live website giving. Holds donor PII: `donor_name`, `donor_address`, `email`, `gift_aid_eligible`, Stripe ids |
+| `public.course_registrations` | 4 | Live website course sign-ups. Holds `full_name`, `email`, `city`, `country`, Stripe session |
+
+Their dependent objects are fenced too: indexes (`donations_pkey`, `donations_pi_uniq`, `donations_session_uniq`, `donations_stripe_invoice_id_key`, `donations_user_id_idx`, `course_registrations_pkey`, `course_registrations_stripe_session_id_key`), the FK `donations_user_id_fkey` -> `auth.users(id)`, and the two SELECT policies on `donations`.
+
+**Three traps on these fenced tables, all measured. Read before touching the cleanup:**
+
+1. **`donations`' policy `admins read all donations` references `public.users` and the `user_role` enum**, which are on the DROP list. Dropping `public.users` either refuses (dependency) or, with CASCADE, silently deletes that policy, and admin reads of donor records stop working with no error anywhere. Rewrite the policy against `public.profiles` BEFORE dropping anything.
+2. **`donations.user_id` FKs to `auth.users` with no ON DELETE, and 4 of the 12 rows point at existing auth users.** `19` step 5 ("remove stale Grace Portal auth users") is therefore refused by the database for those 4. Resolve the FK first; never force it with CASCADE, which would destroy giving records.
+3. **`anon` and `authenticated` currently hold SELECT/INSERT/UPDATE/DELETE/TRUNCATE on both tables** (issue #96's default privileges). What actually protects the rows today is RLS: `donations` has only SELECT policies and `course_registrations` has none, so writes are denied. Not reachable through PostgREST, which has no TRUNCATE verb, and the `anon` role has no published direct-connection credentials. The point is fragility, not a live breach: one careless permissive policy and the grants are already in place over donor PII. Fix with #96, and do not widen these grants meanwhile.
+
+**Everything else pre-existing in prod belongs to the retired app and is a drop candidate**, staged behind Track P's backup gate: 13 tables, 48 functions, 21 triggers, 42 policies, 1 view, 6 active cron jobs, the `avatars` bucket, 8 auth users, and the 35-migration history from Jan-Feb 2026.
 
 ## Conventions (enforced in review)
 
