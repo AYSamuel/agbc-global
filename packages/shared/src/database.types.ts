@@ -1421,7 +1421,12 @@ export type Database = {
         Args: { object_name: string }
         Returns: boolean
       }
+      current_audit_request: { Args: never; Returns: string }
       custom_access_token: { Args: { event: Json }; Returns: Json }
+      decide_branch_request: {
+        Args: { approve: boolean; note?: string; request: string }
+        Returns: undefined
+      }
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }
         Returns: string
