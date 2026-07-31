@@ -794,6 +794,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "privileged_actions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "branch_request_queue"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "privileged_actions_target_id_fkey"
             columns: ["target_id"]
             isOneToOne: false
@@ -1287,6 +1294,35 @@ export type Database = {
       }
     }
     Views: {
+      branch_request_queue: {
+        Row: {
+          created_at: string | null
+          decided_at: string | null
+          display_name: string | null
+          from_branch_id: string | null
+          from_branch_name: string | null
+          id: string | null
+          status: Database["public"]["Enums"]["branch_request_status"] | null
+          to_branch_id: string | null
+          to_branch_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_change_requests_from_branch_id_fkey"
+            columns: ["from_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_change_requests_to_branch_id_fkey"
+            columns: ["to_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moderation_queue: {
         Row: {
           author_id: string | null
