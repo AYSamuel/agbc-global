@@ -70,6 +70,9 @@ export function PersonForm({
     if (state.status === 'failed') alertRef.current?.focus();
   }, [state]);
 
+  // The heading belongs to the card rather than to the panel above it, because the card
+  // is what it names. Left outside, it went on saying "This person" over a success
+  // message about somebody who is no longer on screen (seen 2026-07-31, on the device).
   if (state.status === 'done') {
     return (
       <div className="mt-3">
@@ -89,147 +92,152 @@ export function PersonForm({
     onlyLeader && (role !== 'leader' || branchId !== person.branchId);
 
   return (
-    <article className="mt-3 rounded-card border border-cardline bg-card p-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <Avatar name={person.displayName} />
-        <div className="min-w-0">
-          <p className="font-display text-[1.05rem] leading-snug font-extrabold break-words">
-            {person.displayName}
-          </p>
-          <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[0.78rem] text-muted">
-            <span className="break-words">{person.branchName}</span>
-            <span aria-hidden="true">·</span>
-            <span>{copy.people.memberSince(year(person.joinedAt))}</span>
-          </p>
-        </div>
-        {/* The mockup gives authority the gold pill and an ordinary member the quiet one,
-            so who already holds something is readable before anything is chosen. */}
-        <span
-          className={`ml-auto rounded-full px-2.5 py-1 text-[0.62rem] font-extrabold tracking-wider whitespace-nowrap uppercase ${
-            person.role === 'member'
-              ? 'bg-alt text-muted'
-              : 'bg-[rgba(185,134,0,0.18)] text-gold-deep dark:text-accent'
-          }`}
-        >
-          {copy.people.roleNames[person.role]}
-        </span>
-      </div>
-
-      {state.status === 'failed' ? (
-        <div className="mt-4">
-          <Alert ref={alertRef} title={PROBLEMS[state.reason].title}>
-            {PROBLEMS[state.reason].body}
-          </Alert>
-        </div>
-      ) : null}
-
-      <form action={submit}>
-        <input type="hidden" name="targetId" value={person.id} />
-
-        <fieldset className={FIELD}>
-          <legend className={LABEL}>{copy.people.roleLabel}</legend>
-          <div className="mt-1.5 inline-flex flex-wrap gap-1 rounded-control bg-alt p-1">
-            {ROLES.map((option) => (
-              <label
-                key={option}
-                className={`flex min-h-11 cursor-pointer items-center rounded-control px-4 text-body font-bold has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-blue ${
-                  role === option
-                    ? 'bg-raised text-text shadow-sm'
-                    : 'text-muted'
-                }`}
-              >
-                {/* A real radio group: three buttons that look like a segmented control
-                    would leave a keyboard user with no way to know they are one choice. */}
-                <input
-                  type="radio"
-                  name="role"
-                  value={option}
-                  checked={role === option}
-                  onChange={() => {
-                    setRole(option);
-                  }}
-                  className="sr-only"
-                />
-                {copy.people.roleNames[option]}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        {leaderless ? (
-          <Notice
-            tone="bad"
-            live="polite"
-            title={copy.people.leaderlessTitle(person.branchName)}
-          >
-            {copy.people.leaderless(person.branchName)}
-          </Notice>
-        ) : null}
-
-        {role === 'leader' ? (
-          <div className={FIELD}>
-            <label htmlFor="people-branch" className={LABEL}>
-              {copy.people.branchLabel}
-            </label>
-            <select
-              id="people-branch"
-              name="branchId"
-              value={branchId}
-              aria-describedby="people-branch-hint"
-              onChange={(event) => {
-                setBranchId(event.target.value);
-              }}
-              className={CONTROL}
-            >
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-            <p id="people-branch-hint" className={HINT}>
-              {copy.people.branchHint}
+    <>
+      <h2 className="pt-5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
+        {copy.people.personLabel}
+      </h2>
+      <article className="mt-3 rounded-card border border-cardline bg-card p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Avatar name={person.displayName} />
+          <div className="min-w-0">
+            <p className="font-display text-[1.05rem] leading-snug font-extrabold break-words">
+              {person.displayName}
+            </p>
+            <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[0.78rem] text-muted">
+              <span className="break-words">{person.branchName}</span>
+              <span aria-hidden="true">·</span>
+              <span>{copy.people.memberSince(year(person.joinedAt))}</span>
             </p>
           </div>
+          {/* The mockup gives authority the gold pill and an ordinary member the quiet one,
+            so who already holds something is readable before anything is chosen. */}
+          <span
+            className={`ml-auto rounded-full px-2.5 py-1 text-[0.62rem] font-extrabold tracking-wider whitespace-nowrap uppercase ${
+              person.role === 'member'
+                ? 'bg-alt text-muted'
+                : 'bg-[rgba(185,134,0,0.18)] text-gold-deep dark:text-accent'
+            }`}
+          >
+            {copy.people.roleNames[person.role]}
+          </span>
+        </div>
+
+        {state.status === 'failed' ? (
+          <div className="mt-4">
+            <Alert ref={alertRef} title={PROBLEMS[state.reason].title}>
+              {PROBLEMS[state.reason].body}
+            </Alert>
+          </div>
         ) : null}
 
-        <div className={FIELD}>
-          <label htmlFor="people-code" className={LABEL}>
-            {copy.people.codeLabel}
-          </label>
-          <input
-            id="people-code"
-            name="code"
-            required
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            aria-describedby="people-code-hint"
-            aria-invalid={
-              state.status === 'failed' && state.reason === 'bad_code'
-            }
-            className={`${CONTROL} max-w-[11.875rem] font-mono font-bold tracking-[0.34em]`}
-          />
-          <p id="people-code-hint" className={HINT}>
-            {copy.people.codeHint}
-          </p>
-        </div>
+        <form action={submit}>
+          <input type="hidden" name="targetId" value={person.id} />
 
-        <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-cardline pt-3.5">
-          <Button type="submit" disabled={saving}>
-            {saving
-              ? copy.people.submitting
-              : copy.people.submit(
-                  firstName(person.displayName),
-                  copy.people.grants[role],
-                )}
-          </Button>
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            {copy.people.cancel}
-          </Button>
-        </div>
-      </form>
-    </article>
+          <fieldset className={FIELD}>
+            <legend className={LABEL}>{copy.people.roleLabel}</legend>
+            <div className="mt-1.5 inline-flex flex-wrap gap-1 rounded-control bg-alt p-1">
+              {ROLES.map((option) => (
+                <label
+                  key={option}
+                  className={`flex min-h-11 cursor-pointer items-center rounded-control px-4 text-body font-bold has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-blue ${
+                    role === option
+                      ? 'bg-raised text-text shadow-sm'
+                      : 'text-muted'
+                  }`}
+                >
+                  {/* A real radio group: three buttons that look like a segmented control
+                    would leave a keyboard user with no way to know they are one choice. */}
+                  <input
+                    type="radio"
+                    name="role"
+                    value={option}
+                    checked={role === option}
+                    onChange={() => {
+                      setRole(option);
+                    }}
+                    className="sr-only"
+                  />
+                  {copy.people.roleNames[option]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {leaderless ? (
+            <Notice
+              tone="bad"
+              live="polite"
+              title={copy.people.leaderlessTitle(person.branchName)}
+            >
+              {copy.people.leaderless(person.branchName)}
+            </Notice>
+          ) : null}
+
+          {role === 'leader' ? (
+            <div className={FIELD}>
+              <label htmlFor="people-branch" className={LABEL}>
+                {copy.people.branchLabel}
+              </label>
+              <select
+                id="people-branch"
+                name="branchId"
+                value={branchId}
+                aria-describedby="people-branch-hint"
+                onChange={(event) => {
+                  setBranchId(event.target.value);
+                }}
+                className={CONTROL}
+              >
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+              <p id="people-branch-hint" className={HINT}>
+                {copy.people.branchHint}
+              </p>
+            </div>
+          ) : null}
+
+          <div className={FIELD}>
+            <label htmlFor="people-code" className={LABEL}>
+              {copy.people.codeLabel}
+            </label>
+            <input
+              id="people-code"
+              name="code"
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              aria-describedby="people-code-hint"
+              aria-invalid={
+                state.status === 'failed' && state.reason === 'bad_code'
+              }
+              className={`${CONTROL} max-w-[11.875rem] font-mono font-bold tracking-[0.34em]`}
+            />
+            <p id="people-code-hint" className={HINT}>
+              {copy.people.codeHint}
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-cardline pt-3.5">
+            <Button type="submit" disabled={saving}>
+              {saving
+                ? copy.people.submitting
+                : copy.people.submit(
+                    firstName(person.displayName),
+                    copy.people.grants[role],
+                  )}
+            </Button>
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              {copy.people.cancel}
+            </Button>
+          </div>
+        </form>
+      </article>
+    </>
   );
 }
 

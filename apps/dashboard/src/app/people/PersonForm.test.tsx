@@ -261,8 +261,11 @@ test('a change that lands says what it means for the person', async () => {
   expect(await screen.findByRole('status')).toHaveTextContent(
     'Tolu Adeyemi leads AGBC Emmen now.',
   );
-  // The form is gone rather than sitting there showing a role that is no longer true.
+  // The form is gone rather than sitting there showing a role that is no longer true,
+  // and its heading goes with it: "This person" sitting over a success message about
+  // somebody no longer on screen is how it read before the heading moved in here.
   expect(screen.queryByRole('radio', { name: 'Leader' })).toBeNull();
+  expect(screen.queryByText('This person')).toBeNull();
 
   await user.click(screen.getByRole('button', { name: 'Find someone else' }));
   expect(onFinished).toHaveBeenCalledTimes(1);

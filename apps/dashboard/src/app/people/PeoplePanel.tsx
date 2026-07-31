@@ -131,22 +131,17 @@ export function PeoplePanel({
       )}
 
       {state.status === 'found' ? (
-        <>
-          <h2 className="pt-5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
-            {copy.people.personLabel}
-          </h2>
-          <PersonForm
-            // Keyed on the person: looking somebody else up must not inherit the last
-            // one's chosen role.
-            key={state.person.id}
-            person={state.person}
-            branches={branches}
-            onlyLeader={state.onlyLeader}
-            assign={assign}
-            onFinished={startOver}
-            onCancel={startOver}
-          />
-        </>
+        <PersonForm
+          // Keyed on the person: looking somebody else up must not inherit the last
+          // one's chosen role.
+          key={state.person.id}
+          person={state.person}
+          branches={branches}
+          onlyLeader={state.onlyLeader}
+          assign={assign}
+          onFinished={startOver}
+          onCancel={startOver}
+        />
       ) : null}
 
       {state.status === 'failed' ? (

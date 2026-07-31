@@ -236,6 +236,24 @@ export async function stepUpCode(caller: TestCaller): Promise<string> {
 
 const usedWindows = new Map<string, number>();
 
+/**
+ * Best effort, and the case where it fails is worth knowing about.
+ *
+ * A caller who was ever GIVEN A ROLE cannot be deleted from here at all. Their profile has
+ * `privileged_actions` rows, whose FK is `on delete set null`, and that update is refused
+ * outside `agbc.audit_maintenance` by the append-only trigger. So the delete raises, this
+ * swallows it, and the account stays on the local stack (measured 2026-07-31, after 81
+ * leaders had quietly accumulated in the seeded Glasgow branch).
+ *
+ * The refusal is the audit log working, not a defect: a leaked service key must not be
+ * able to erase who was granted authority. The product path is the deletion job, which
+ * sets the maintenance flag and stamps `target_redacted_at` (decision 10, acceptance 12);
+ * it is a later item, and nothing in this repo can erase such an account until it lands.
+ *
+ * What this costs tests: nothing, PROVIDED every assertion is scoped to ids the test
+ * created. Anything that counts rows across a seeded branch will eventually fail for
+ * reasons that have nothing to do with the code. `pnpm db:reset` clears the debris.
+ */
 export async function deleteCaller(caller: TestCaller): Promise<void> {
   await admin().auth.admin.deleteUser(caller.userId);
 }
