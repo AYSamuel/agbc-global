@@ -81,7 +81,9 @@ type Tone = 'testimony' | 'prayer' | 'lang' | 'late';
 
 const TONES: Record<Tone, string> = {
   // Values from the mockup's .pill rules; the tonal washes are the same ones the app uses.
-  testimony: 'bg-[rgba(185,134,0,0.18)] text-[#b98600] dark:text-accent',
+  // The gold now has a name in the theme (`--t-gold-deep`), so the hex that used to sit
+  // here is gone. Same computed value; the People pill reads the same token.
+  testimony: 'bg-[rgba(185,134,0,0.18)] text-gold-deep dark:text-accent',
   prayer: 'bg-[rgba(47,111,237,0.14)] text-blue',
   lang: 'bg-alt text-muted',
   late: 'bg-[rgba(224,52,44,0.14)] text-danger',

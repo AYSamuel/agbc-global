@@ -50,7 +50,16 @@ export type DashboardAction =
   /** Reach the dashboard at all. Not branch-scoped. */
   | 'access_dashboard'
   /** Approve, reject or remove a piece of content. Branch-scoped (W2.7 slice 3). */
-  | 'moderate_content';
+  | 'moderate_content'
+  /**
+   * Hand out a role, or move somebody between branches (W2.7 people slice).
+   *
+   * Admin-only and deliberately NOT branch-scoped: an admin moderates every branch, and
+   * a leader gets no version of this at all. It lives here rather than as a
+   * `role === 'admin'` line in the page for the reason at the top of this file: one
+   * place, one answer, so no future route can be written that forgets it.
+   */
+  | 'assign_role';
 
 export interface AuthorizationRequest {
   action: DashboardAction;
@@ -78,7 +87,9 @@ export type DenialReason =
   /** A factor exists but this session has not cleared it, or cleared it too long ago. */
   | 'mfa_challenge_required'
   /** A leader reaching outside their branch. */
-  | 'wrong_branch';
+  | 'wrong_branch'
+  /** Staff, but not a ministry admin, on an admin-only action. */
+  | 'not_admin';
 
 export type Verdict =
   | { ok: true; caller: Caller }
@@ -149,6 +160,14 @@ export async function authorize(
     request.branchId !== caller.branchId
   ) {
     return { ok: false, reason: 'wrong_branch', caller };
+  }
+
+  // The caller comes back with the refusal so the page can keep them inside the shell
+  // and point at the queue they DO have, rather than bouncing a working leader out to a
+  // bare refusal screen. `role` here is the live table's answer, read above, so a leader
+  // still holding an admin's stale claim does not get through.
+  if (request.action === 'assign_role' && caller.role !== 'admin') {
+    return { ok: false, reason: 'not_admin', caller };
   }
 
   return { ok: true, caller };

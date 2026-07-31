@@ -164,7 +164,107 @@ export const copy = {
       'That is on us, not you. Nothing has been approved or rejected in the meantime.',
   },
 
+  people: {
+    title: 'People',
+    scope: 'Roles and branch moves',
+    // The rule sits where the work happens, like the queue's safeguarding note. It is
+    // shown before a lookup and drops away afterwards, per the approved frames: by then
+    // it has been read, and the answer is what matters.
+    guideTitle: 'Exact email address only.',
+    guide:
+      'There is no member list and no partial search, so no one can sweep for which addresses belong to the ministry. Handing out a role asks for a fresh code from your authenticator.',
+    emailLabel: 'Email address',
+    emailHint: 'Type the address exactly as they sign in with it.',
+    find: 'Find',
+    finding: 'Looking…',
+    lookAgain: 'Look again',
+    findSomeoneElse: 'Find someone else',
+    personLabel: 'This person',
+    memberSince: (year: string) => `Member since ${year}`,
+    roleLabel: 'Role',
+    // Short forms, for the segmented control and the current-role pill. The long forms
+    // in `identity.roles` name a job ("Branch leader"); these name a choice.
+    roleNames: { member: 'Member', leader: 'Leader', admin: 'Admin' },
+    branchLabel: 'Branch they will lead',
+    branchHint: 'A leader moderates this branch and nothing else.',
+    codeLabel: 'Code from your authenticator',
+    codeHint:
+      'Handing out authority is the irreversible act here, so it is asked for every time.',
+    grants: { member: 'a member', leader: 'a leader', admin: 'an admin' },
+    submit: (name: string, grant: string) => `Make ${name} ${grant}`,
+    submitting: 'Saving…',
+    cancel: 'Cancel',
+
+    // The branch this change would leave with nobody leading it. A warning and not a
+    // refusal: the database allows it, and a ministry that cannot demote its only leader
+    // is worse off than one that is briefly without one. It says so out loud.
+    leaderlessTitle: (branch: string) => `${branch} would have no leader`,
+    leaderless: (branch: string) =>
+      `Nobody would be left to review ${branch}'s testimonies and prayers, and its branch requests would wait for an admin. You can still do this.`,
+
+    // What the lookup found, said plainly (reversed 2026-07-31: this surface is reached
+    // only by an admin who can already read every profile, so a uniform refusal would
+    // protect nobody and hide a typo).
+    noAccountTitle: (email: string) => `No account for ${email}`,
+    noAccount:
+      'Nobody has signed in with that address yet. Check the spelling, or ask them to open the app and sign in once, then look again.',
+    closedTitle: 'That account has been closed',
+    closed:
+      'A closed account cannot hold a role, so there is nothing to change here.',
+    notOnboardedTitle: 'They have not finished joining yet',
+    notOnboarded:
+      'They have signed in, but have not finished the welcome in the app. Ask them to finish it, then look again: a branch given now would be overwritten when they do.',
+    yourselfTitle: 'You cannot change your own role',
+    yourself:
+      'A role change is never self-service, admins included. Ask another ministry admin if yours needs to change.',
+    invalidTitle: 'That does not look like an email address',
+    invalid: 'Check the spelling and look again.',
+    goneTitle: 'That account is no longer there',
+    gone: 'It was closed or removed while this page was open, so nothing was changed. Look them up again.',
+
+    // Assignment refusals. Each one names what happened and what to do next.
+    badCodeTitle: 'That code did not work',
+    badCode:
+      'Codes change every 30 seconds: open your authenticator app and try the current one. Nothing was changed.',
+    noFactorTitle: 'Your account has no authenticator',
+    noFactor:
+      'Roles are handed out with a fresh code, so this needs an authenticator app on your account. Set one up, then come back.',
+    lastAdminTitle: 'The last ministry admin cannot be demoted',
+    lastAdmin:
+      'Somebody has to be able to hand out roles. Make someone else an admin first, then change this one.',
+    archivedBranchTitle: 'That branch has been archived',
+    archivedBranch:
+      'Nobody is assigned into an archived branch, and leading one is authority over nothing. Pick a branch that is still active.',
+    noBranchTitle: 'That branch no longer exists',
+    noBranch: 'Look them up again and pick from the list.',
+    refusedTitle: 'That is not yours to change',
+    refused:
+      'Only a ministry admin assigns roles, and your own role may have changed since this page loaded.',
+    offlineTitle: 'You appear to be offline',
+    offline: 'Check your connection and try again. Nothing was changed.',
+    failedTitle: 'Something went wrong',
+    failed:
+      'Nothing was changed. Try again, and tell Ayo if it keeps happening.',
+
+    // Done. Named rather than generic, because the admin needs to know which of the three
+    // things they just did, and what it means for the person.
+    doneTitle: 'Done',
+    done: {
+      member: (name: string) =>
+        `${name} is a member now. They no longer moderate anything.`,
+      leader: (name: string, branch: string) =>
+        `${name} leads ${branch} now. They can sign in to the dashboard and start clearing that branch's queue.`,
+      admin: (name: string) =>
+        `${name} is a ministry admin now: every branch's queue, and roles too.`,
+    },
+    // No error entry here on purpose: a screen that cannot load at all is the segment
+    // error boundary's job (`app/error.tsx`), which is where the queue leaves it too.
+  },
+
   refused: {
+    notAdminTitle: 'Roles are handed out by a ministry admin',
+    notAdminBody:
+      'This part of People is not yours, and nothing is wrong with your account. Your branch’s queue is where your work is, under Moderation.',
     notStaffTitle: 'This dashboard is for branch leaders',
     notStaffBody:
       'Your AGBC account is in good standing, it simply does not moderate a branch. If that is a mistake, ask your branch leader or a ministry admin to update your role.',

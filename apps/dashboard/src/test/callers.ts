@@ -99,6 +99,13 @@ export interface CallerOptions {
 export interface TestCaller {
   userId: string;
   email: string;
+  /**
+   * The enrolled factor's secret, for tests that have to produce a code the way the
+   * leader's phone would: role assignment asks for one at the moment of the change, so a
+   * test of it without a real code would only be testing the mock. Undefined when the
+   * caller was minted with `mfa: 'none'`.
+   */
+  totpSecret?: string;
   /** The session's cookies, in the form a browser would send them. */
   cookieHeader: string;
   /**
@@ -168,8 +175,9 @@ export async function createCaller(
   await signIn(browser, service, email);
 
   const mfa = options.mfa ?? 'none';
+  let totpSecret: string | undefined;
   if (mfa !== 'none') {
-    await enrolTotp(browser, mfa !== 'half-enrolled');
+    totpSecret = await enrolTotp(browser, mfa !== 'half-enrolled');
   }
   if (mfa === 'unchallenged') {
     // Sign in again from scratch. The factor is verified on the ACCOUNT, but this new
@@ -190,10 +198,43 @@ export async function createCaller(
   return {
     userId,
     email,
+    totpSecret,
     cookieHeader: serializeJar(jar),
     serverClient: () => clientOverJar(jar),
   };
 }
+
+/**
+ * A code this caller's factor has not answered with yet.
+ *
+ * Supabase refuses a TOTP code it has already accepted, which is correct of it (a code
+ * seen once must not work twice) and is a trap for a test: enrolling the factor uses a
+ * code, and a step-up in the same 30-second window would then fail as a REPLAY and read
+ * as "assignRole rejects a valid code". Every use is recorded here, and the next one
+ * waits for the window to turn over rather than lying about the reason.
+ *
+ * The wait is real time, up to 30 seconds, which is why the tests that need one say so in
+ * their timeout. Faking the clock would not help: the auth server keeps its own.
+ */
+export async function stepUpCode(caller: TestCaller): Promise<string> {
+  const secret = caller.totpSecret;
+  if (!secret) {
+    throw new Error('this caller was minted without an authenticator');
+  }
+
+  const windowOf = (at: number) => Math.floor(at / 30_000);
+  if (usedWindows.get(secret) === windowOf(Date.now())) {
+    const nextWindow = (windowOf(Date.now()) + 1) * 30_000;
+    await new Promise((resolve) =>
+      setTimeout(resolve, nextWindow - Date.now() + 250),
+    );
+  }
+
+  usedWindows.set(secret, windowOf(Date.now()));
+  return totpCode(secret);
+}
+
+const usedWindows = new Map<string, number>();
 
 export async function deleteCaller(caller: TestCaller): Promise<void> {
   await admin().auth.admin.deleteUser(caller.userId);
@@ -226,14 +267,17 @@ async function signIn(
     throw new Error(`could not sign in: ${verified.error.message}`);
 }
 
+/** Returns the factor's secret, so a test can play the authenticator later. */
 async function enrolTotp(
   browser: SupabaseClient<Database>,
   verify: boolean,
-): Promise<void> {
+): Promise<string> {
   const enrolled = await browser.auth.mfa.enroll({ factorType: 'totp' });
   if (enrolled.error)
     throw new Error(`could not enrol TOTP: ${enrolled.error.message}`);
-  if (!verify) return;
+
+  const secret = enrolled.data.totp.secret;
+  if (!verify) return secret;
 
   const challenge = await browser.auth.mfa.challenge({
     factorId: enrolled.data.id,
@@ -244,10 +288,15 @@ async function enrolTotp(
   const result = await browser.auth.mfa.verify({
     factorId: enrolled.data.id,
     challengeId: challenge.data.id,
-    code: totpCode(enrolled.data.totp.secret),
+    code: totpCode(secret),
   });
   if (result.error)
     throw new Error(`could not verify TOTP: ${result.error.message}`);
+
+  // This code is now spent. stepUpCode() reads this so a later step-up in the same
+  // window waits rather than being refused as a replay.
+  usedWindows.set(secret, Math.floor(Date.now() / 30_000));
+  return secret;
 }
 
 type Jar = Map<string, string>;

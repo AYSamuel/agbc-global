@@ -22,6 +22,9 @@
   --color-btn-text: var(--t-btn-text);
   --color-danger: var(--t-danger);
   --color-success: var(--t-success);
+  --color-navy: var(--t-navy);
+  --color-on-ink: var(--t-on-ink);
+  --color-gold-deep: var(--t-gold-deep);
 
   /* The 05 type scale, in rem so it follows the reader's own font-size setting. */
   --text-hero: var(--t-text-hero);

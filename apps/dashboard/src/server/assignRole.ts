@@ -14,7 +14,7 @@ import type { Caller } from './authorize';
  */
 
 type Client = SupabaseClient<Database>;
-type Role = Database['public']['Enums']['profile_role'];
+export type Role = Database['public']['Enums']['profile_role'];
 
 export interface FoundPerson {
   id: string;
@@ -24,6 +24,14 @@ export interface FoundPerson {
   branchId: string;
   branchName: string;
   onboarded: boolean;
+  /** When their profile was created. The frame shows the year, as "Member since". */
+  joinedAt: string;
+}
+
+/** One option in the branch chooser. */
+export interface BranchOption {
+  id: string;
+  name: string;
 }
 
 /**
@@ -74,7 +82,7 @@ export async function findMemberByEmail(
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, display_name, role, branch_id, deleted_at, onboarded_at, branches(name)',
+      'id, email, display_name, role, branch_id, created_at, deleted_at, onboarded_at, branches(name)',
     )
     .eq('email', email)
     .maybeSingle<{
@@ -83,6 +91,7 @@ export async function findMemberByEmail(
       display_name: string;
       role: Role;
       branch_id: string;
+      created_at: string;
       deleted_at: string | null;
       onboarded_at: string | null;
       branches: { name: string } | null;
@@ -106,8 +115,67 @@ export async function findMemberByEmail(
       branchId: data.branch_id,
       branchName: data.branches?.name ?? '',
       onboarded: true,
+      joinedAt: data.created_at,
     },
   };
+}
+
+/**
+ * The branches the chooser may offer.
+ *
+ * Active only, because `set_member_role` refuses an archived destination outright:
+ * archiving moves people OUT of a branch (`17` module 5), and leadership of an archived
+ * branch is authority over nothing. Offering one would be an option that always fails.
+ *
+ * Read through the caller's own client like everything else here, though this one is
+ * public data: `branches` is anon-readable (`02`), which is what lets the app draw the
+ * family map before anybody signs in.
+ */
+export async function listActiveBranches(
+  supabase: Client,
+): Promise<BranchOption[]> {
+  const { data, error } = await supabase
+    .from('branches')
+    .select('id, name')
+    .eq('status', 'active')
+    .order('name');
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+/**
+ * Is this person the last leader their branch has?
+ *
+ * Drives the warning the frame shows, and NOTHING else: `set_member_role` allows the
+ * change either way, because a ministry that cannot demote its only leader is worse off
+ * than one that is briefly leaderless. `17` module 5 raises the same concern about
+ * archiving a branch; this is that concern in miniature, at the moment of the decision.
+ *
+ * Reads the live table rather than reasoning from what the form knows, because "the only
+ * leader" is a fact about other people's rows that nothing on this screen can see.
+ */
+export async function isOnlyLeaderOfBranch(
+  supabase: Client,
+  person: FoundPerson,
+): Promise<boolean> {
+  if (person.role !== 'leader') return false;
+
+  const { count, error } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('branch_id', person.branchId)
+    .eq('role', 'leader')
+    .is('deleted_at', null)
+    .neq('id', person.id);
+
+  // A failure here means the warning is not shown. Deliberate, and the least-bad of the
+  // three options: this read cannot refuse anything, so raising would break a lookup that
+  // otherwise worked, and warning anyway would tell an admin a branch is losing its
+  // leader when it may not be. The admin's own lookup succeeded a moment earlier through
+  // the same client, so a failure here is a stack problem they will meet again.
+  if (error || count === null) return false;
+  return count === 0;
 }
 
 /**
