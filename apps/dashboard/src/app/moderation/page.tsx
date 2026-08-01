@@ -6,6 +6,7 @@ import { QueueItem } from '@/components/QueueItem';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
+import { loadBranchRequests } from '@/server/branchRequests';
 import { loadModerationQueue, type QueueKind } from '@/server/moderationQueue';
 
 export const dynamic = 'force-dynamic';
@@ -47,13 +48,25 @@ export default async function ModerationPage({
 
   // The queue reports the instant it was read at, so the overdue count and the relative
   // times on the cards cannot disagree.
-  const queue = await loadModerationQueue(supabase, caller, { kind });
+  //
+  // The branch requests are read alongside it for the rail count, and only for that:
+  // decision 12 says a leader learns of waiting requests from the dashboard, on the same
+  // visit as their moderation queue, because nothing about them is emailed. A badge only
+  // on the requests page would be a notice you have to already be reading.
+  const [queue, requests] = await Promise.all([
+    loadModerationQueue(supabase, caller, { kind }),
+    loadBranchRequests(supabase, caller),
+  ]);
   const scope =
     caller.role === 'admin' ? copy.queue.allBranches : caller.branchName;
   const outcome = readOutcome(params.outcome);
 
   return (
-    <DashboardShell caller={caller} current="moderation">
+    <DashboardShell
+      caller={caller}
+      current="moderation"
+      waiting={requests.waiting.length}
+    >
       <header>
         <h1 className="font-display text-[1.5rem] leading-tight font-extrabold">
           {copy.queue.title}
