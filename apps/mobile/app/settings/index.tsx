@@ -16,6 +16,7 @@ import {
   SegmentedControl,
 } from '@/components/ui';
 import { LANGUAGE_AUTONYMS, type SupportedLanguage } from '@/i18n';
+import { useAuthStore } from '@/state/auth';
 import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
 import { useTheme } from '@/theme';
 import { useThemePrefStore, type ThemePref } from '@/theme/store';
@@ -34,6 +35,10 @@ export default function Settings() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const themePref = useThemePrefStore((s) => s.pref);
+  // The member rows this hub was always going to grow (docs/spec/16). Profile is the
+  // first, and it is the ONLY route to a home-branch change (ADR 0015): the branch chip
+  // on Home changes what you BROWSE and never where you belong.
+  const isMember = useAuthStore((s) => s.status === 'member');
   const setThemePref = useThemePrefStore((s) => s.setPref);
 
   const currentLanguage = LANGUAGE_AUTONYMS[i18n.language as SupportedLanguage];
@@ -49,6 +54,21 @@ export default function Settings() {
         }}
       />
       <View style={{ paddingHorizontal: spacing.lg }}>
+        {isMember ? (
+          <>
+            <MenuLabel label={t('settings:youSection')} />
+            <MenuCard>
+              <MenuRow
+                icon="🙂"
+                label={t('settings:profileRow')}
+                onPress={() => {
+                  router.push('/settings/profile');
+                }}
+              />
+            </MenuCard>
+          </>
+        ) : null}
+
         <MenuLabel label={t('settings:appearance')} />
         <MenuCard>
           {/* Mockup .setseg: a plain row label above the segmented control. */}
