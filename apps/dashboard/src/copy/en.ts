@@ -94,6 +94,9 @@ export const copy = {
     insights: 'Insights',
     // Screen-reader text on the dimmed rows, so "Phase B" is not conveyed by dimming alone.
     notYet: (phase: string) => `not built yet, arrives in Phase ${phase}`,
+    // And on the count, so a badge is not conveyed by a bare number alone.
+    waiting: (count: number) =>
+      `${String(count)} ${count === 1 ? 'person is' : 'people are'} waiting on you`,
   },
 
   queue: {
@@ -259,6 +262,62 @@ export const copy = {
     },
     // No error entry here on purpose: a screen that cannot load at all is the segment
     // error boundary's job (`app/error.tsx`), which is where the queue leaves it too.
+  },
+
+  requests: {
+    title: 'Branch requests',
+    scopeJoining: (branch: string) => `Joining ${branch}`,
+    allBranches: 'All branches',
+    stats: {
+      waiting: 'Waiting on you',
+      joined: 'Joined this year',
+      left: 'Left this year',
+    },
+    // The rule where the decision is made, like the queue's safeguarding note.
+    guideTitle: (branch: string) => `You decide who joins ${branch}.`,
+    guide:
+      'The branch someone is leaving is told afterwards and cannot block them. Approving takes effect immediately, so approve when you know they are actually gathering with you.',
+    waitingLabel: 'Waiting for you · oldest first',
+    wantsToJoin: 'Wants to join',
+    approve: 'Approve',
+    refuseOpen: 'Refuse with a reason',
+
+    refusingLabel: (name: string) => `Refusing ${name}`,
+    noteLabel: 'Why, for the ministry record',
+    notePlaceholder: 'Required. Written for whoever reviews this later.',
+    // Said before they write it, not after: the note's whole shape depends on knowing who
+    // will read it, and that the person it is about never will.
+    privateTitle: (name: string) =>
+      `${name} will not see this, and will not see your name`,
+    private: (branch: string) =>
+      `They are told only that it was not approved, and pointed at ${branch}'s contact address. The note is kept for 7 years and can be read by an admin. You will not be able to read it back.`,
+    refuseSubmit: 'Refuse this request',
+    cancel: 'Cancel',
+
+    emptyTitle: 'Nobody is waiting',
+    emptyBody: (branch: string) => `Requests to join ${branch} appear here.`,
+    leftLabel: (branch: string) => `Members who left ${branch}`,
+    leftPill: 'Left',
+    // Read-only, and after the fact. Said out loud so the absence of buttons reads as a
+    // decision rather than as something missing.
+    leftNote:
+      'You are told after the fact and cannot block someone leaving. Refused requests never appear here.',
+
+    outcome: {
+      approved: 'Approved. They are in your branch now.',
+      refused:
+        'Refused, and your note is in the ministry record. They are told only that it was not approved.',
+      alreadyDecided:
+        'That request had already been decided, so nothing changed. The queue below is up to date.',
+      notYours:
+        'That is not yours to decide. It may belong to another branch, or your role may have changed since this page loaded.',
+      leaderFirst:
+        'The branch being joined has 48 hours to decide this first. It becomes yours to decide after that.',
+      reasonRequired:
+        'A refusal needs a reason for the ministry record, so nothing was changed.',
+      gone: 'That request is no longer there. It may have been cancelled.',
+      failed: 'Something went wrong and nothing was changed. Try again.',
+    },
   },
 
   refused: {

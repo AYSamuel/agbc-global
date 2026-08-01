@@ -116,8 +116,13 @@ select is(
 
 set local request.jwt.claims to
   '{"sub": "e0000000-0000-4000-8000-0000000000a4", "role": "authenticated", "user_role": "leader", "branch_id": "00000000-0000-4000-8000-000000000003"}';
+-- Scoped to this file's two requests, like every other count here. An unscoped one passed
+-- on a fresh stack and failed the moment a developer had ANY Emmen move in their local
+-- database, which is the ambient-data lesson this suite already carries in its header and
+-- which this line got wrong first time (2026-08-01).
 select is(
-  (select count(*)::int from public.branch_request_queue),
+  (select count(*)::int from public.branch_request_queue
+    where id in ('e0000000-0000-4000-8000-0000000000b1', 'e0000000-0000-4000-8000-0000000000b2')),
   0, 'a leader of neither branch sees nothing at all');
 
 -- The member reads their own request from the BASE TABLE (`022`), never from here. Two
@@ -125,7 +130,8 @@ select is(
 set local request.jwt.claims to
   '{"sub": "e0000000-0000-4000-8000-0000000000a1", "role": "authenticated", "user_role": "member", "branch_id": "00000000-0000-4000-8000-000000000001"}';
 select is(
-  (select count(*)::int from public.branch_request_queue),
+  (select count(*)::int from public.branch_request_queue
+    where id in ('e0000000-0000-4000-8000-0000000000b1', 'e0000000-0000-4000-8000-0000000000b2')),
   0, 'and the requester themselves sees nothing here, not even their own request');
 
 select is(

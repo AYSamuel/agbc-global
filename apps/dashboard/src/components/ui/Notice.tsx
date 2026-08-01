@@ -44,7 +44,10 @@ const TONES: Record<
 > = {
   plain: { border: 'border-cardline', icon: 'text-danger', glyph: 'ℹ' },
   bad: { border: 'border-danger', icon: 'text-danger', glyph: '⚠' },
-  off: { border: 'border-cardline', icon: 'text-muted', glyph: '◯' },
+  // ℹ muted, not the mockup's ◯. That glyph belongs to its OFFLINE banner, where a hollow
+  // circle reads as "disconnected"; next to a sentence it reads as an unfinished radio
+  // button, which is what it looked like on the refusal screen (seen 2026-08-01).
+  off: { border: 'border-cardline', icon: 'text-muted', glyph: 'ℹ' },
 };
 
 export function Notice({
