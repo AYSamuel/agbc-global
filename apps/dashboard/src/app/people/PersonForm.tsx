@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Notice } from '@/components/ui/Notice';
+import { Pill } from '@/components/ui/Pill';
 import { copy } from '@/copy/en';
 import type { BranchOption, FoundPerson, Role } from '@/server/assignRole';
 
@@ -111,14 +112,10 @@ export function PersonForm({
           </div>
           {/* The mockup gives authority the gold pill and an ordinary member the quiet one,
             so who already holds something is readable before anything is chosen. */}
-          <span
-            className={`ml-auto rounded-full px-2.5 py-1 text-[0.62rem] font-extrabold tracking-wider whitespace-nowrap uppercase ${
-              person.role === 'member'
-                ? 'bg-alt text-muted'
-                : 'bg-[rgba(185,134,0,0.18)] text-gold-deep dark:text-accent'
-            }`}
-          >
-            {copy.people.roleNames[person.role]}
+          <span className="ml-auto">
+            <Pill tone={person.role === 'member' ? 'quiet' : 'notice'}>
+              {copy.people.roleNames[person.role]}
+            </Pill>
           </span>
         </div>
 

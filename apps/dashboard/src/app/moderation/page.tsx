@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { Alert } from '@/components/ui/Alert';
 import { DashboardShell } from '@/components/DashboardShell';
+import { PageHeader } from '@/components/PageHeader';
 import { QueueItem } from '@/components/QueueItem';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
@@ -67,12 +68,7 @@ export default async function ModerationPage({
       current="moderation"
       waiting={requests.waiting.length}
     >
-      <header>
-        <h1 className="font-display text-[1.5rem] leading-tight font-extrabold">
-          {copy.queue.title}
-        </h1>
-        <p className="mt-1 text-body font-bold text-sub">{scope}</p>
-      </header>
+      <PageHeader title={copy.queue.title} scope={scope} />
 
       {outcome ? (
         // The result of the last decision, carried back as a query parameter so it

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { DashboardShell } from '@/components/DashboardShell';
+import { PageHeader } from '@/components/PageHeader';
 import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
@@ -67,12 +68,7 @@ export default async function PeoplePage() {
 function Frame({ caller, children }: { caller: Caller; children: ReactNode }) {
   return (
     <DashboardShell caller={caller} current="people">
-      <header>
-        <h1 className="font-display text-[1.5rem] leading-tight font-extrabold">
-          {copy.people.title}
-        </h1>
-        <p className="mt-1 text-body font-bold text-sub">{copy.people.scope}</p>
-      </header>
+      <PageHeader title={copy.people.title} scope={copy.people.scope} />
       {children}
     </DashboardShell>
   );

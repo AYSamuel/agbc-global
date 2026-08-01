@@ -1,5 +1,6 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { Pill } from '@/components/ui/Pill';
 import { copy } from '@/copy/en';
 import {
   WAITING_TOO_LONG_MS,
@@ -140,27 +141,6 @@ function Arrow() {
       <path d="M5 12h14" />
       <path d="M13 6l6 6-6 6" />
     </svg>
-  );
-}
-
-type Tone = 'notice' | 'urgent' | 'quiet';
-
-const TONES: Record<Tone, string> = {
-  // The mockup's `.pill.review`, `.late` and `.lang`. Third private copy of this element in
-  // this app; promoting it needs a tone vocabulary that spans queue kinds, roles and
-  // requests, which is a design decision rather than something to invent here.
-  notice: 'bg-[rgba(185,134,0,0.18)] text-gold-deep dark:text-accent',
-  urgent: 'bg-[rgba(224,52,44,0.14)] text-danger',
-  quiet: 'bg-alt text-muted',
-};
-
-function Pill({ tone, children }: { tone: Tone; children: React.ReactNode }) {
-  return (
-    <span
-      className={`rounded-full px-2.5 py-1 text-[0.62rem] font-extrabold tracking-wider whitespace-nowrap uppercase ${TONES[tone]}`}
-    >
-      {children}
-    </span>
   );
 }
 

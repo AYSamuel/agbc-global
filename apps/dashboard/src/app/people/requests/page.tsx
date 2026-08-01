@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/DashboardShell';
+import { PageHeader } from '@/components/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
@@ -65,14 +66,12 @@ export default async function BranchRequestsPage({
       current="people"
       waiting={board.waiting.length}
     >
-      <header>
-        <h1 className="font-display text-[1.5rem] leading-tight font-extrabold">
-          {copy.requests.title}
-        </h1>
-        <p className="mt-1 text-body font-bold text-sub">
-          {caller.role === 'admin' ? scope : copy.requests.scopeJoining(scope)}
-        </p>
-      </header>
+      <PageHeader
+        title={copy.requests.title}
+        scope={
+          caller.role === 'admin' ? scope : copy.requests.scopeJoining(scope)
+        }
+      />
 
       {outcome ? (
         <div className="mt-4">
