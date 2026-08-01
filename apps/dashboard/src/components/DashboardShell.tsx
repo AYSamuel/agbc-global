@@ -48,10 +48,20 @@ const LATER: Destination[] = [
 export function DashboardShell({
   caller,
   current,
+  waiting = 0,
   children,
 }: {
   caller: Caller;
   current: string;
+  /**
+   * Branch requests waiting on this caller (decision 12). It rides the rail so a leader
+   * meets it on the same visit as their moderation queue, which is the whole mechanism:
+   * nothing is emailed about a waiting request.
+   *
+   * The ACTIONABLE queue only. History never contributes to a badge, because a number that
+   * counts things you cannot act on trains people to ignore the number.
+   */
+  waiting?: number;
   children: ReactNode;
 }) {
   return (
@@ -70,6 +80,7 @@ export function DashboardShell({
             key={destination.key}
             destination={destination}
             current={current}
+            count={destination.key === 'people' ? waiting : 0}
           />
         ))}
 
@@ -110,9 +121,11 @@ function RailSection({ title }: { title: string }) {
 function RailRow({
   destination,
   current,
+  count = 0,
 }: {
   destination: Destination;
   current: string;
+  count?: number;
 }) {
   const active = destination.key === current;
   const base =
@@ -155,6 +168,14 @@ function RailRow({
         {destination.icon}
       </span>
       {destination.label}
+      {count > 0 ? (
+        // The number is not the message: it is read out as part of the link's name, so a
+        // screen reader hears "People, 2 waiting" rather than "People 2".
+        <span className="ml-auto min-w-5 rounded-full bg-btn px-1.5 py-0.5 text-center text-[0.66rem] font-extrabold text-btn-text">
+          <span aria-hidden="true">{count}</span>
+          <span className="sr-only">{copy.nav.waiting(count)}</span>
+        </span>
+      ) : null}
     </a>
   );
 }
