@@ -16,6 +16,7 @@ export {
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { Eyebrow } from './Eyebrow';
 export { Fab, type FabProps } from './Fab';
+export { ActionSheet, type ActionSheetProps } from './ActionSheet';
 export { GateSheet, type GateSheetProps } from './GateSheet';
 export {
   GradientFill,

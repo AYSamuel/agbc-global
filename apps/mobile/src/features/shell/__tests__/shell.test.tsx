@@ -16,6 +16,21 @@ jest.mock(
 );
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
+// SETTINGS now reads the auth store to decide whether to show its member rows (W2.7),
+// and the store's module scope reaches the real Supabase client, which refuses to build
+// without env. Same stub the family screen tests use; the real store stays.
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null } }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
+    from: () => ({}),
+  },
+}));
+
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 jest.mock('expo-router', () => ({

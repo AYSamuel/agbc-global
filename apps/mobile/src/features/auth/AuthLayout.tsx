@@ -24,6 +24,12 @@ export interface AuthLayoutProps extends PropsWithChildren {
   lead?: string;
   leadNode?: ReactNode;
   showMailIcon?: boolean;
+  /**
+   * Any other glyph in the same gold tile (the mockup's `.authicon`), for the screens
+   * outside auth that borrow this layout: BRANCH-CHANGE puts a house there. Wins over
+   * `showMailIcon`, which stays because every auth call site reads better for it.
+   */
+  icon?: ReactNode;
   backLabel: string;
   onBack: () => void;
 }
@@ -33,6 +39,7 @@ export function AuthLayout({
   lead,
   leadNode,
   showMailIcon = false,
+  icon,
   backLabel,
   onBack,
   children,
@@ -70,7 +77,7 @@ export function AuthLayout({
           >
             <ChevronLeftIcon size={20} color={colors.text} strokeWidth={2} />
           </Pressable>
-          {showMailIcon ? (
+          {icon !== undefined || showMailIcon ? (
             <View
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
@@ -85,7 +92,9 @@ export function AuthLayout({
                 marginBottom: 18,
               }}
             >
-              <MailIcon size={28} color={palette.navy} strokeWidth={1.8} />
+              {icon ?? (
+                <MailIcon size={28} color={palette.navy} strokeWidth={1.8} />
+              )}
             </View>
           ) : null}
           <Text
