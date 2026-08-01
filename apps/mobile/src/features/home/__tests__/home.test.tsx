@@ -76,6 +76,15 @@ jest.mock('@/features/onboarding/useBranches', () => ({
   useBranchesQuery: () => ({ data: undefined, isError: true }),
 }));
 
+// W2.7: Home carries the quiet line while a branch request is open, and the welcome once
+// one is approved. These compositions are about neither, so the member has no requests.
+jest.mock('@/features/branch-change/queries', () => ({
+  useMyBranchRequests: () => ({
+    data: { pending: null, lastApproved: null, lastRejected: null },
+    isPending: false,
+  }),
+}));
+
 function renderHome() {
   return render(
     <ThemeScope name="light">

@@ -66,6 +66,20 @@ jest.mock('../useAskToJoin', () => ({
   useCancelRequest: () => ({ mutate: mockCancel, isPending: false }),
 }));
 
+// Profile reads the branch list for the refused branch's published contact address.
+jest.mock('@/features/onboarding/useBranches', () => ({
+  useBranchesQuery: () => ({
+    data: [
+      {
+        id: 'branch-berlin',
+        name: 'AGBC Lighthouse Berlin',
+        email: 'agbc.lighthouse@gmail.com',
+      },
+    ],
+    isError: false,
+  }),
+}));
+
 jest.mock('@/features/family/useBranchNames', () => ({
   useBranchNames: () => ({
     'branch-glasgow': 'AGBC Glasgow',

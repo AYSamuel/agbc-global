@@ -317,6 +317,14 @@
   .linkbanner .lic{color:var(--green);flex:none;margin-top:1px}
   .linkbanner .lt{font-size:13px;line-height:1.4;color:var(--text)}
   .linkbanner .lt b{color:var(--green);font-weight:700}
+  /* Gold variant, for an informational line that is not about an answered prayer: the
+     open branch request on HOME (W2.7). Same shape, same restraint; --eye keeps it
+     readable in both themes (deep gold on light, bright gold on dark). Replaced the
+     taller .notecard treatment after it read as a card demanding attention rather than
+     as a line you can ignore (Ayo, on device, 2026-08-01). */
+  .linkbanner.gold{background:rgba(185,134,0,.14);border-color:rgba(185,134,0,.42)}
+  .linkbanner.gold .lic,.linkbanner.gold .lt b{color:var(--eye)}
+  .linkbanner .dismiss{margin-left:auto;flex:none;align-self:center;background:none;border:none;padding:2px 0 2px 12px;font-family:var(--font);font-weight:800;font-size:13px;color:var(--eye);cursor:pointer}
   .ribbon{margin:8px 20px 14px;background:rgba(31,138,91,.10);border:1px solid rgba(31,138,91,.32);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:9px;color:var(--green);font-size:13px;font-weight:700}
   .quotemark{width:44px;height:44px;border-radius:13px;background:rgba(255,207,74,.18);color:#b98600;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:34px;margin:8px 20px 10px}
   .tquote{font-family:var(--disp);font-weight:700;font-size:20px;line-height:1.5;color:var(--text);padding:0 20px;margin-bottom:16px}
@@ -891,10 +899,10 @@
               <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Glasgow <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
               <div class="rt"><span class="avatar">A</span></div>
             </div>
-            <div class="notecard" style="margin-top:8px">
-              <div class="nt">ASKED TO JOIN BERLIN</div>
-              <div class="nb">Your request is with the team at AGBC Lighthouse Berlin.</div>
-              <div style="margin-top:12px"><button class="btn outline sm">Dismiss</button></div>
+            <div class="linkbanner gold" style="margin:8px 18px 12px">
+              <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+              <span class="lt"><b>Asked to join Berlin.</b> Your request is with the team at AGBC Lighthouse Berlin.</span>
+              <button class="dismiss">Dismiss</button>
             </div>
             <div class="verse">
               <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 5v16"/></svg><span class="eye">Verse of the day</span></div>

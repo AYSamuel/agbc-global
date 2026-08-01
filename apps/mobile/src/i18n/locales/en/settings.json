@@ -50,6 +50,17 @@
     "errorSameBranch": "That is already your home branch.",
     "errorBranchClosed": "That branch is not taking new members just now.",
     "errorOffline": "You appear to be offline, so nothing was sent. Try again when you are back.",
-    "errorGeneric": "We could not send that just now. Nothing was changed."
+    "errorGeneric": "We could not send that just now. Nothing was changed.",
+    "welcomeTitle": "Welcome to {{branch}}",
+    "welcomeBodyBefore": "You're part of ",
+    "welcomeBodyAfter": " now. Your services, events and reminders follow you here.",
+    "welcomeContinue": "Continue",
+    "notePending": "Asked to join {{branch}}.",
+    "noteBody": "Your request is with the team at {{branch}}.",
+    "noteDismiss": "Dismiss",
+    "refusedTitle": "Not approved",
+    "refusedBody": "{{branch}} did not approve this move, and we cannot share the reason here. If you would like to talk it through, they are at {{email}}. You are welcome to ask again whenever you are ready.",
+    "refusedEmail": "Email {{branch}}",
+    "refusedClose": "Close"
   }
 }

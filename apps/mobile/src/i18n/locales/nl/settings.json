@@ -50,6 +50,17 @@
     "errorSameBranch": "Dat is al jouw gemeente.",
     "errorBranchClosed": "Deze gemeente neemt nu geen nieuwe leden aan.",
     "errorOffline": "Je lijkt offline te zijn, er is niets verzonden. Probeer het opnieuw zodra je weer verbinding hebt.",
-    "errorGeneric": "Dat kon nu niet worden verzonden. Er is niets gewijzigd."
+    "errorGeneric": "Dat kon nu niet worden verzonden. Er is niets gewijzigd.",
+    "welcomeTitle": "Welkom bij {{branch}}",
+    "welcomeBodyBefore": "Je hoort nu bij ",
+    "welcomeBodyAfter": ". Je diensten, activiteiten en herinneringen gaan met je mee.",
+    "welcomeContinue": "Verder",
+    "notePending": "Aanmelding bij {{branch}} gevraagd.",
+    "noteBody": "Je verzoek ligt bij het team van {{branch}}.",
+    "noteDismiss": "Sluiten",
+    "refusedTitle": "Niet goedgekeurd",
+    "refusedBody": "{{branch}} heeft deze wissel niet goedgekeurd, en de reden kunnen we hier niet delen. Wil je erover praten, dan zijn ze bereikbaar op {{email}}. Je mag altijd opnieuw vragen.",
+    "refusedEmail": "Mail {{branch}}",
+    "refusedClose": "Sluiten"
   }
 }

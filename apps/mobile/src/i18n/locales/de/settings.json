@@ -50,6 +50,17 @@
     "errorSameBranch": "Das ist bereits deine Gemeinde.",
     "errorBranchClosed": "Diese Gemeinde nimmt gerade keine neuen Mitglieder auf.",
     "errorOffline": "Du scheinst offline zu sein, es wurde nichts gesendet. Versuche es erneut, sobald du wieder online bist.",
-    "errorGeneric": "Das konnte gerade nicht gesendet werden. Es wurde nichts geändert."
+    "errorGeneric": "Das konnte gerade nicht gesendet werden. Es wurde nichts geändert.",
+    "welcomeTitle": "Willkommen in {{branch}}",
+    "welcomeBodyBefore": "Du gehörst jetzt zu ",
+    "welcomeBodyAfter": ". Deine Gottesdienste, Termine und Erinnerungen kommen mit.",
+    "welcomeContinue": "Weiter",
+    "notePending": "Beitritt zu {{branch}} angefragt.",
+    "noteBody": "Deine Anfrage liegt beim Team von {{branch}}.",
+    "noteDismiss": "Ausblenden",
+    "refusedTitle": "Nicht bestätigt",
+    "refusedBody": "{{branch}} hat diesen Wechsel nicht bestätigt, und den Grund können wir hier nicht teilen. Wenn du darüber sprechen möchtest: {{email}}. Du kannst jederzeit wieder anfragen.",
+    "refusedEmail": "{{branch}} schreiben",
+    "refusedClose": "Schließen"
   }
 }
