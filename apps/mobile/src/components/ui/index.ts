@@ -34,6 +34,7 @@ export {
   type SegmentedControlProps,
 } from './SegmentedControl';
 export { Skeleton, type SkeletonProps } from './Skeleton';
+export { SuccessScreen, type SuccessScreenProps } from './SuccessScreen';
 export { TabBar, type TabBarProps, type TabItem } from './TabBar';
 export { TextArea, type TextAreaProps } from './TextArea';
 export { TextField, type TextFieldProps } from './TextField';

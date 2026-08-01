@@ -29,11 +29,14 @@ const PHASE_A: Destination[] = [
   },
   { key: 'reports', label: copy.nav.reports, icon: '⚑' },
   { key: 'verses', label: copy.nav.verses, icon: '✎' },
-  // Linked for every staff caller, not only admins: `/people` refuses a leader honestly
-  // (it says so, inside the shell), and the requests queue that lands under the same
-  // destination next is theirs. A row that appears the day someone's role changes is a
-  // rail that reshapes itself, which is exactly what the dimmed-but-visible pattern
-  // above exists to avoid.
+  // ONE People row, two destinations, because People means different work depending on
+  // who you are: an admin hands out roles, a leader decides who joins their branch. The
+  // frames draw a single rail row for both, so the row points at whichever surface is
+  // actually the caller's.
+  //
+  // It was `/people` for everyone until 2026-08-01, when a leader following it landed on
+  // "roles are handed out by an admin" with no route onward and their own queue
+  // unreachable, while the badge beside the row counted the very requests it was hiding.
   { key: 'people', label: copy.nav.people, href: '/people', icon: '☺' },
 ];
 
@@ -78,7 +81,11 @@ export function DashboardShell({
         {PHASE_A.map((destination) => (
           <RailRow
             key={destination.key}
-            destination={destination}
+            destination={
+              destination.key === 'people'
+                ? { ...destination, href: peopleHref(caller.role) }
+                : destination
+            }
             current={current}
             count={destination.key === 'people' ? waiting : 0}
           />
@@ -108,6 +115,16 @@ export function DashboardShell({
       </main>
     </div>
   );
+}
+
+/**
+ * Where People goes for this caller.
+ *
+ * An admin's People is role assignment, which links on to the queue; a leader's People IS
+ * the queue, because `/people` has nothing for them but a refusal.
+ */
+function peopleHref(role: Caller['role']): string {
+  return role === 'admin' ? '/people' : '/people/requests';
 }
 
 function RailSection({ title }: { title: string }) {

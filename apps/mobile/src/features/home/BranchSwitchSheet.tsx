@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
@@ -58,6 +58,12 @@ export function BranchSwitchSheet({
           paddingTop: spacing.md,
           paddingBottom: insets.bottom + spacing.xl,
           gap: spacing.md,
+          // CAPPED, so the sheet stays a sheet. Without this the content grows until it
+          // squeezes the scrim above it to nothing, and then there is no scrim to tap and
+          // no scroll either: the whole screen is an unscrollable list you can only leave
+          // with the hardware back button (found on device 2026-08-01, with more branches
+          // than the frame ever drew, and reachable at large text scale with four).
+          maxHeight: '80%',
         }}
       >
         {/* Mockup .grab handle. */}
@@ -84,7 +90,17 @@ export function BranchSwitchSheet({
         >
           {t('home:switchBranch')}
         </Text>
-        <View accessibilityRole="radiogroup" style={{ gap: spacing.md }}>
+        {/* The list is the only part that scrolls: the title stays put and "See all
+            branches" stays reachable below it, per the pinned-actions rule. */}
+        <ScrollView
+          // A testID because there is no semantic handle for "the scrolling region"
+          // (frontend.md allows one as the last resort), and a regression here is
+          // invisible until somebody meets it on a phone.
+          testID="branch-switch-list"
+          accessibilityRole="radiogroup"
+          style={{ flexShrink: 1 }}
+          contentContainerStyle={{ gap: spacing.md }}
+        >
           {branches.map((branch) => (
             <SelectRow
               key={branch.id}
@@ -116,7 +132,7 @@ export function BranchSwitchSheet({
               accessibilityLabel={branch.name}
             />
           ))}
-        </View>
+        </ScrollView>
         <Button
           label={t('home:seeAllBranches')}
           variant="ghost"

@@ -12,7 +12,7 @@ export const branchesQueryOptions = {
     const { data, error } = await supabase
       .from('branches')
       .select(
-        'id, slug, name, city, country, is_hq, youtube_channel_id, timezone, address, service_times, lat, lng, order',
+        'id, slug, name, city, country, is_hq, email, youtube_channel_id, timezone, address, service_times, lat, lng, order',
       )
       .eq('status', 'active')
       .order('order');

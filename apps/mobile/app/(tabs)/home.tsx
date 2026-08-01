@@ -24,6 +24,13 @@ import { useBranchColors } from '@/features/family/useBranchColors';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { resolveAddressLine } from '@/features/home/address';
 import { BranchSwitchSheet } from '@/features/home/BranchSwitchSheet';
+import {
+  BranchWelcome,
+  shortBranchName,
+} from '@/features/branch-change/BranchWelcome';
+import { PendingBranchNote } from '@/features/branch-change/PendingBranchNote';
+import { useMyBranchRequests } from '@/features/branch-change/queries';
+import { useBranchOutcomeStore } from '@/features/branch-change/seen';
 import { NextServiceCard } from '@/features/home/NextServiceCard';
 import { resolveNextService } from '@/features/home/nextService';
 import { QuickActions } from '@/features/home/QuickActions';
@@ -136,6 +143,28 @@ export default function Home() {
     currentBranch?.service_times?.classes,
     currentBranch?.service_times?.midweek,
   ].filter((s): s is string => Boolean(s));
+
+  // The branch-change outcomes a member meets on Home (docs/spec/16, ADR 0015): the
+  // quiet line while a request is open, and the welcome once one has been approved.
+  // Both are keyed by request id in a local store; `seen.ts` says why that is local.
+  const branchRequests = useMyBranchRequests();
+  const acknowledged = useBranchOutcomeStore((s) => s.acknowledged);
+  const dismissed = useBranchOutcomeStore((s) => s.dismissed);
+  const acknowledge = useBranchOutcomeStore((s) => s.acknowledge);
+  const dismissNote = useBranchOutcomeStore((s) => s.dismiss);
+
+  const openRequest = branchRequests.data?.pending ?? null;
+  const dismissedNote =
+    openRequest !== null && dismissed.includes(openRequest.id);
+  const arrived = branchRequests.data?.lastApproved ?? null;
+  const unwelcomed =
+    arrived !== null && !acknowledged.includes(arrived.id) ? arrived : null;
+  const branchNameOf = (id: string | undefined) =>
+    branches.find((option) => option.id === id)?.name ?? '';
+  const askedBranchName = branchNameOf(openRequest?.toBranchId);
+  // Named from `arrived` rather than `unwelcomed`, because acknowledging empties the
+  // second one immediately and the welcome would spend its fade-out saying "Welcome to".
+  const arrivedBranchName = branchNameOf(arrived?.toBranchId);
 
   const now = new Date();
   const next = resolveNextService(
@@ -262,6 +291,16 @@ export default function Home() {
           </Pressable>
         </View>
       </View>
+
+      {openRequest && !dismissedNote ? (
+        <PendingBranchNote
+          shortName={shortBranchName(askedBranchName)}
+          branchName={askedBranchName}
+          onDismiss={() => {
+            dismissNote(openRequest.id);
+          }}
+        />
+      ) : null}
 
       <View style={{ paddingHorizontal: spacing.lg, gap: spacing.lg }}>
         {servicesQuery.data === undefined && !servicesQuery.isError ? (
@@ -467,6 +506,19 @@ export default function Home() {
           </Pressable>
         </Card>
       </View>
+
+      {/* Arriving takes the whole screen, tab bar included, which is why it is a Modal
+          over Home rather than Home's own content: `BranchWelcome` says why. Home still
+          renders underneath, so Continue reveals a screen already painted with the new
+          branch instead of a blank one filling in. */}
+      <BranchWelcome
+        visible={unwelcomed !== null}
+        branchName={arrivedBranchName}
+        shortName={shortBranchName(arrivedBranchName)}
+        onContinue={() => {
+          if (unwelcomed) acknowledge(unwelcomed.id);
+        }}
+      />
 
       <BranchSwitchSheet
         visible={switcherOpen}

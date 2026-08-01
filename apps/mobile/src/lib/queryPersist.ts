@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { QueryClient } from '@tanstack/react-query';
+import { focusManager, QueryClient } from '@tanstack/react-query';
 import type { PersistQueryClientProviderProps } from '@tanstack/react-query-persist-client';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { shouldPersistQuery } from './queryMeta';
 
@@ -14,6 +15,27 @@ export const queryClient = new QueryClient({
       retry: 1,
     },
   },
+});
+
+/**
+ * Coming back to the app counts as focus.
+ *
+ * React Query refetches stale data when a window regains focus, and on the web that is
+ * automatic. In React Native there is no window, so the setup step is this one: hand it
+ * AppState. Without it, `refetchOnWindowFocus` is dead code and nothing ever refetches
+ * except on mount, on an explicit pull-to-refresh, or on an interval nothing sets.
+ *
+ * Found on device 2026-08-01, in the place it hurts most: a leader approved a branch
+ * request on the dashboard, the member returned to the app, and the arrival welcome did
+ * not appear until the app was force-restarted. Every query in the app was affected; that
+ * one was simply the first where the change came from OUTSIDE the phone and somebody was
+ * waiting for it.
+ *
+ * The cost is bounded by `staleTime`: a foreground within 60 seconds of the last read
+ * refetches nothing at all.
+ */
+AppState.addEventListener('change', (status: AppStateStatus) => {
+  focusManager.setFocused(status === 'active');
 });
 
 // Offline persistence (docs/spec/04 "offline: cached view or retry"; W1.6 GIVE-BANK

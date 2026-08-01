@@ -1,26 +1,32 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Linking, Text, View } from 'react-native';
 
-import { fontFamily, spacing } from '@agbc/shared/theme';
+import { fontFamily, palette, spacing } from '@agbc/shared/theme';
 
 import {
   ActionPill,
+  ActionSheet,
   AppHeader,
+  MailIcon,
   Button,
   MenuCard,
   MenuLabel,
   MenuRow,
   Screen,
   Skeleton,
+  useToast,
 } from '@/components/ui';
 import { AwaitingPanel } from '@/features/branch-change/AwaitingPanel';
+import { shortBranchName } from '@/features/branch-change/BranchWelcome';
 import { useMyBranchRequests } from '@/features/branch-change/queries';
+import { useBranchOutcomeStore } from '@/features/branch-change/seen';
 import { useCancelRequest } from '@/features/branch-change/useAskToJoin';
 import { useBranchNames } from '@/features/family/useBranchNames';
+import { BRANCHES_SNAPSHOT } from '@/features/onboarding/branches-snapshot';
+import { useBranchesQuery } from '@/features/onboarding/useBranches';
 import { useMyProfile } from '@/features/profile/queries';
 import { ProfileHead } from '@/features/profile/ProfileHead';
-import { useToast } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 /**
@@ -49,7 +55,22 @@ export default function ProfileScreen() {
   const branchNames = useBranchNames();
   const cancel = useCancelRequest();
 
+  const branches = useBranchesQuery();
+  const acknowledged = useBranchOutcomeStore((state) => state.acknowledged);
+  const acknowledge = useBranchOutcomeStore((state) => state.acknowledge);
+
   const pending = requests.data?.pending ?? null;
+  // A refusal is told once, here, because Profile is where the member asked (decision 3:
+  // they learn the outcome and nothing else, and are pointed at the BRANCH, never a
+  // person). Acknowledged on close, keyed by request id.
+  const refused = requests.data?.lastRejected ?? null;
+  const unseenRefusal =
+    refused !== null && !acknowledged.includes(refused.id) ? refused : null;
+  // Found from `refused` rather than `unseenRefusal`: acknowledging empties the second one
+  // at once, and the sheet would spend its slide-out with no branch name and no address.
+  const refusedBranch = (branches.data ?? BRANCHES_SNAPSHOT).find(
+    (branch) => branch.id === refused?.toBranchId,
+  );
   const homeBranchName = profile.data
     ? (branchNames[profile.data.branchId] ?? '')
     : '';
@@ -172,6 +193,30 @@ export default function ProfileScreen() {
           </View>
         </>
       ) : null}
+
+      <ActionSheet
+        visible={unseenRefusal !== null}
+        icon={<MailIcon size={26} color={palette.navy} strokeWidth={1.8} />}
+        title={t('settings:branchChange.refusedTitle')}
+        body={t('settings:branchChange.refusedBody', {
+          branch: refusedBranch?.name ?? '',
+          email: refusedBranch?.email ?? '',
+        })}
+        primaryLabel={t('settings:branchChange.refusedEmail', {
+          branch: shortBranchName(refusedBranch?.name ?? ''),
+        })}
+        secondaryLabel={t('settings:branchChange.refusedClose')}
+        dismissAnnouncement={t('settings:branchChange.dismissed')}
+        onPrimary={() => {
+          if (unseenRefusal) acknowledge(unseenRefusal.id);
+          if (refusedBranch?.email) {
+            void Linking.openURL(`mailto:${refusedBranch.email}`);
+          }
+        }}
+        onDismiss={() => {
+          if (unseenRefusal) acknowledge(unseenRefusal.id);
+        }}
+      />
     </Screen>
   );
 }

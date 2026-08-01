@@ -11,6 +11,9 @@ export interface BranchSummary {
   city: string;
   country: string;
   is_hq: boolean;
+  /** Published contact address (`02`: anon-readable). The branch-change refusal points
+   *  a member at the branch that decided, never at a person (ADR 0015 decision 3). */
+  email: string;
   /** Public channel id (docs/spec/01 §4); Watch's See-more link reads it. */
   youtube_channel_id: string | null;
   /** IANA id; Home's next-service math runs in this zone (docs/spec/07). */
@@ -35,6 +38,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
   {
     id: '00000000-0000-4000-8000-000000000001',
     slug: 'glasgow',
+    email: 'oami.gospel@gmail.com',
     name: 'AGBC Glasgow',
     city: 'Glasgow',
     country: 'Scotland, UK',
@@ -52,6 +56,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
   {
     id: '00000000-0000-4000-8000-000000000002',
     slug: 'berlin',
+    email: 'agbc.lighthouse@gmail.com',
     name: 'AGBC Lighthouse Berlin',
     city: 'Berlin',
     country: 'Germany',
@@ -66,6 +71,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
   {
     id: '00000000-0000-4000-8000-000000000003',
     slug: 'emmen',
+    email: 'oami.gospel@gmail.com',
     name: 'AGBC Emmen',
     city: 'Emmen',
     country: 'Netherlands',
@@ -80,6 +86,7 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
   {
     id: '00000000-0000-4000-8000-000000000004',
     slug: 'ogbomosho',
+    email: 'oami.gospel@gmail.com',
     name: 'Miracle center Ogbomosho',
     city: 'Ogbomosho',
     country: 'Nigeria',

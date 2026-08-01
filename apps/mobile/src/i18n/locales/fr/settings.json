@@ -50,6 +50,17 @@
     "errorSameBranch": "C'est déjà votre assemblée.",
     "errorBranchClosed": "Cette assemblée n'accueille pas de nouveaux membres pour le moment.",
     "errorOffline": "Vous semblez hors ligne, rien n'a été envoyé. Réessayez une fois reconnecté.",
-    "errorGeneric": "Nous n'avons pas pu envoyer cela. Rien n'a été modifié."
+    "errorGeneric": "Nous n'avons pas pu envoyer cela. Rien n'a été modifié.",
+    "welcomeTitle": "Bienvenue à {{branch}}",
+    "welcomeBodyBefore": "Vous faites maintenant partie de ",
+    "welcomeBodyAfter": ". Vos cultes, vos événements et vos rappels vous suivent ici.",
+    "welcomeContinue": "Continuer",
+    "notePending": "Demande envoyée à {{branch}}.",
+    "noteBody": "Votre demande est entre les mains de l'équipe de {{branch}}.",
+    "noteDismiss": "Masquer",
+    "refusedTitle": "Non approuvée",
+    "refusedBody": "{{branch}} n'a pas approuvé ce changement, et nous ne pouvons pas en partager la raison ici. Si vous souhaitez en parler, vous pouvez les joindre à {{email}}. Vous pourrez redemander quand vous le souhaiterez.",
+    "refusedEmail": "Écrire à {{branch}}",
+    "refusedClose": "Fermer"
   }
 }
