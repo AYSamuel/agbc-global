@@ -41,7 +41,20 @@ export default async function PeoplePage() {
     if (verdict.reason === 'not_admin' && verdict.caller) {
       return (
         <Frame caller={verdict.caller}>
-          <Notice tone="off" title={copy.refused.notAdminTitle}>
+          <Notice
+            tone="off"
+            title={copy.refused.notAdminTitle}
+            action={
+              // Never a dead end: a leader who follows the rail here is handed the
+              // surface that IS theirs, rather than being told what is not.
+              <a
+                href="/people/requests"
+                className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+              >
+                {copy.refused.notAdminAction}
+              </a>
+            }
+          >
             {copy.refused.notAdminBody}
           </Notice>
         </Frame>
@@ -59,6 +72,17 @@ export default async function PeoplePage() {
 
   return (
     <Frame caller={verdict.caller}>
+      {/* An admin decides branch requests too, immediately when the destination has no
+          leader and after 48 hours when it does, so their People screen has to reach
+          that queue rather than leaving it to a typed URL. */}
+      <p className="mt-3">
+        <a
+          href="/people/requests"
+          className="text-body font-semibold text-blue underline-offset-4 hover:underline"
+        >
+          {copy.people.toRequests}
+        </a>
+      </p>
       <PeoplePanel branches={branches} find={find} assign={assign} />
     </Frame>
   );

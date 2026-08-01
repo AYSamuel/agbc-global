@@ -183,6 +183,9 @@ export const copy = {
     lookAgain: 'Look again',
     findSomeoneElse: 'Find someone else',
     personLabel: 'This person',
+    // An admin is the 48-hour fallback approver, so their People screen has to reach the
+    // queue they are the fallback for.
+    toRequests: 'Branch requests waiting',
     memberSince: (year: string) => `Member since ${year}`,
     roleLabel: 'Role',
     // Short forms, for the segmented control and the current-role pill. The long forms
@@ -323,7 +326,8 @@ export const copy = {
   refused: {
     notAdminTitle: 'Roles are handed out by a ministry admin',
     notAdminBody:
-      'This part of People is not yours, and nothing is wrong with your account. Your branch’s queue is where your work is, under Moderation.',
+      'Roles are handed out by a ministry admin, and nothing is wrong with your account. What is yours is deciding who joins your branch.',
+    notAdminAction: 'Go to branch requests',
     notStaffTitle: 'This dashboard is for branch leaders',
     notStaffBody:
       'Your AGBC account is in good standing, it simply does not moderate a branch. If that is a mistake, ask your branch leader or a ministry admin to update your role.',
