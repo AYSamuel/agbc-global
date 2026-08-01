@@ -1,4 +1,5 @@
 import { QueueActions } from '@/components/QueueActions';
+import { Pill } from '@/components/ui/Pill';
 import { copy } from '@/copy/en';
 import type { QueueItem as Item } from '@/server/moderationQueue';
 
@@ -27,12 +28,12 @@ export function QueueItem({
   return (
     <article className="mb-3 rounded-card border border-cardline bg-card p-4">
       <div className="mb-2.5 flex flex-wrap items-center gap-2">
-        <Pill tone={item.kind === 'prayer' ? 'prayer' : 'testimony'}>
+        <Pill tone={item.kind === 'prayer' ? 'info' : 'notice'}>
           {copy.queue.kind[item.kind]}
         </Pill>
-        <Pill tone="lang">{item.language.toUpperCase()}</Pill>
+        <Pill tone="quiet">{item.language.toUpperCase()}</Pill>
         {overdue ? (
-          <Pill tone="late">{copy.queue.waitingDays(waitedDays)}</Pill>
+          <Pill tone="urgent">{copy.queue.waitingDays(waitedDays)}</Pill>
         ) : null}
         <time
           dateTime={item.createdAt}
@@ -74,28 +75,6 @@ export function QueueItem({
 
       <QueueActions item={item} filter={filter} />
     </article>
-  );
-}
-
-type Tone = 'testimony' | 'prayer' | 'lang' | 'late';
-
-const TONES: Record<Tone, string> = {
-  // Values from the mockup's .pill rules; the tonal washes are the same ones the app uses.
-  // The gold now has a name in the theme (`--t-gold-deep`), so the hex that used to sit
-  // here is gone. Same computed value; the People pill reads the same token.
-  testimony: 'bg-[rgba(185,134,0,0.18)] text-gold-deep dark:text-accent',
-  prayer: 'bg-[rgba(47,111,237,0.14)] text-blue',
-  lang: 'bg-alt text-muted',
-  late: 'bg-[rgba(224,52,44,0.14)] text-danger',
-};
-
-function Pill({ tone, children }: { tone: Tone; children: React.ReactNode }) {
-  return (
-    <span
-      className={`rounded-full px-2.5 py-1 text-[0.62rem] font-extrabold tracking-wider whitespace-nowrap uppercase ${TONES[tone]}`}
-    >
-      {children}
-    </span>
   );
 }
 
