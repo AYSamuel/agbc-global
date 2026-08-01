@@ -1,5 +1,6 @@
 import {
   color,
+  onInk,
   palette,
   radius,
   typeScale,
@@ -34,6 +35,17 @@ function brandVariables(): string {
   return declarations({
     '--t-danger': palette.red,
     '--t-success': palette.green,
+    // The avatar disc (mockup `.avatar`): a fixed navy, and white lettering on top of
+    // it. Brand rather than theme, because that disc is the same colour in the mockup's
+    // dark strip as in its light one, and `onInk` exists for exactly this: content
+    // sitting on ink, where the surface underneath never changes.
+    '--t-navy': palette.navy,
+    '--t-on-ink': onInk.text,
+    // The gold that carries on a light surface. `05`'s contrast rule: gold itself fails
+    // on light, so the pills and the guideline icon use this deeper one there and the
+    // plain accent on dark. It was being typed as a hex in two components before it had
+    // a name here.
+    '--t-gold-deep': palette.goldDeep,
     '--t-radius-control': `${String(radius.control)}px`,
     '--t-radius-button': `${String(radius.button)}px`,
     '--t-radius-card': `${String(radius.card)}px`,

@@ -99,7 +99,7 @@ export default async function ModerationPage({
       <div className="mt-4 flex items-start gap-3 rounded-card border border-[rgba(185,134,0,0.34)] bg-[rgba(255,207,74,0.14)] px-4 py-3">
         <span
           aria-hidden="true"
-          className="mt-px text-[#b98600] dark:text-accent"
+          className="mt-px text-gold-deep dark:text-accent"
         >
           ⚠
         </span>

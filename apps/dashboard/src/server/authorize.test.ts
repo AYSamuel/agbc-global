@@ -270,6 +270,78 @@ describe('branch scope', () => {
   });
 });
 
+describe('handing out roles', () => {
+  test('an admin may assign roles', async () => {
+    const ministryAdmin = await caller({
+      role: 'admin',
+      branchId: BRANCH.glasgow,
+      mfa: 'verified',
+    });
+
+    const verdict = await authorize(ministryAdmin.serverClient(), {
+      action: 'assign_role',
+    });
+
+    expect(verdict.ok).toBe(true);
+  });
+
+  test('a leader may not, in any branch, including their own', async () => {
+    // Not branch-scoped, unlike moderation: there is no branch a leader may hand out
+    // authority in. The refusal carries the caller so /people can keep them in the shell
+    // and point at the queue that IS theirs.
+    const leader = await caller({
+      role: 'leader',
+      branchId: BRANCH.glasgow,
+      mfa: 'verified',
+    });
+
+    const verdict = await authorize(leader.serverClient(), {
+      action: 'assign_role',
+    });
+
+    expect(verdict).toMatchObject({ ok: false, reason: 'not_admin' });
+    expect(verdict.caller?.branchId).toBe(BRANCH.glasgow);
+  });
+
+  test('an admin who has not cleared their factor is challenged, not refused outright', async () => {
+    // Order matters: the second factor is asked for before the role question is
+    // answered, so an admin on a fresh session is sent to /mfa rather than being told
+    // this page is not theirs.
+    const ministryAdmin = await caller({
+      role: 'admin',
+      branchId: BRANCH.glasgow,
+      mfa: 'unchallenged',
+    });
+
+    const verdict = await authorize(ministryAdmin.serverClient(), {
+      action: 'assign_role',
+    });
+
+    expect(verdict).toMatchObject({
+      ok: false,
+      reason: 'mfa_challenge_required',
+    });
+  });
+
+  test('a demoted admin loses it on their next request, token or no token', async () => {
+    const ministryAdmin = await caller({
+      role: 'admin',
+      branchId: BRANCH.glasgow,
+      mfa: 'verified',
+    });
+    await admin()
+      .from('profiles')
+      .update({ role: 'leader' })
+      .eq('id', ministryAdmin.userId);
+
+    const verdict = await authorize(ministryAdmin.serverClient(), {
+      action: 'assign_role',
+    });
+
+    expect(verdict).toMatchObject({ ok: false, reason: 'not_admin' });
+  });
+});
+
 describe('authority comes from the database, not the token', () => {
   test('a leader demoted after signing in is refused on their next request', async () => {
     // docs/spec/02's named caveat: the custom access token hook stamps user_role into

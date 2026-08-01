@@ -1,5 +1,26 @@
 @import 'tailwindcss';
 
+/* `dark:` has to mean the same thing the TOKENS mean, or the two disagree the day a theme
+   is chosen rather than inherited. cssVariables.ts resolves a theme in this order: an
+   explicit `data-theme` on <html> first, the operating system otherwise. Tailwind's stock
+   `dark:` variant only knows the second half, so a page forced to light on a dark machine
+   kept its `dark:` colours while every token switched: the People role pill went pale gold
+   on a pale wash (seen 2026-07-31, verifying this screen in light).
+
+   It changes nothing today, because nothing sets `data-theme` yet. It is what makes the
+   claim in cssVariables.ts true, that a stored preference can arrive later "without
+   touching a single component". */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme='light'], [data-theme='light'] *)) {
+      @slot;
+    }
+  }
+}
+
 /* Tailwind's theme, mapped onto the design tokens injected by src/theme/cssVariables.ts.
    `inline` means Tailwind emits the reference, not the value, so every utility follows
    whichever theme block is live. No colour, radius or font value is written here: the
@@ -22,6 +43,9 @@
   --color-btn-text: var(--t-btn-text);
   --color-danger: var(--t-danger);
   --color-success: var(--t-success);
+  --color-navy: var(--t-navy);
+  --color-on-ink: var(--t-on-ink);
+  --color-gold-deep: var(--t-gold-deep);
 
   /* The 05 type scale, in rem so it follows the reader's own font-size setting. */
   --text-hero: var(--t-text-hero);

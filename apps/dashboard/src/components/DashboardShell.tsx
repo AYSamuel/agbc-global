@@ -29,7 +29,12 @@ const PHASE_A: Destination[] = [
   },
   { key: 'reports', label: copy.nav.reports, icon: '⚑' },
   { key: 'verses', label: copy.nav.verses, icon: '✎' },
-  { key: 'people', label: copy.nav.people, icon: '☺' },
+  // Linked for every staff caller, not only admins: `/people` refuses a leader honestly
+  // (it says so, inside the shell), and the requests queue that lands under the same
+  // destination next is theirs. A row that appears the day someone's role changes is a
+  // rail that reshapes itself, which is exactly what the dimmed-but-visible pattern
+  // above exists to avoid.
+  { key: 'people', label: copy.nav.people, href: '/people', icon: '☺' },
 ];
 
 const LATER: Destination[] = [
