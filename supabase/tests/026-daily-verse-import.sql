@@ -11,6 +11,15 @@
 -- Fixtures use French and dates offset from current_date, because the dev seeds stock
 -- English only (measured 2026-08-02: en 83 days, de/nl/fr zero) and a test that shares a
 -- language with the seeds would be reading their data, not its own.
+--
+-- WHAT THIS FILE CANNOT SEE, so nobody reads it as full coverage: it runs as `postgres`,
+-- and PostgREST connects as `authenticator`, which alone preloads `safeupdate`. An
+-- unqualified UPDATE is therefore legal here and refused on the only road the app takes;
+-- that is exactly how 20260802140000 shipped an import that could not run once, with this
+-- file green (fixed in 20260803120000). `load 'safeupdate'` is denied to `postgres`, so the
+-- gap cannot be closed from inside pgTAP. What closes it is the dashboard's own server test
+-- (apps/dashboard/src/server/verses.test.ts), which calls this function through PostgREST
+-- as a real signed-in admin and runs in CI.
 
 begin;
 select plan(29);

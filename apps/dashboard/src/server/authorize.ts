@@ -34,6 +34,15 @@ import type { Database } from '@agbc/shared/database';
 /** How long an aal2 session stays privileged before the code is asked for again. */
 export const MFA_FRESHNESS_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * The actions no leader has a version of, listed once.
+ *
+ * A set rather than a chain of `||` in the verdict below, so adding the next admin-only
+ * action is one entry here and cannot be half-added: the refusal, the caller it carries
+ * and the reason code all follow from membership.
+ */
+const ADMIN_ONLY = new Set<DashboardAction>(['assign_role', 'manage_verses']);
+
 export type StaffRole = 'leader' | 'admin';
 
 export interface Caller {
@@ -59,7 +68,16 @@ export type DashboardAction =
    * `role === 'admin'` line in the page for the reason at the top of this file: one
    * place, one answer, so no future route can be written that forgets it.
    */
-  | 'assign_role';
+  | 'assign_role'
+  /**
+   * Keep the daily-verse schedule (W2.7 slice 4).
+   *
+   * Admin-only for a product reason rather than a safety one: one verse goes to every
+   * branch each day, so there is no branch-shaped version of this job. Asked for by name
+   * here, and not as a `role === 'admin'` line inside `/verses`, because the schedule now
+   * spans four routes and a form; one of them would eventually be written without it.
+   */
+  | 'manage_verses';
 
 export interface AuthorizationRequest {
   action: DashboardAction;
@@ -166,7 +184,7 @@ export async function authorize(
   // and point at the queue they DO have, rather than bouncing a working leader out to a
   // bare refusal screen. `role` here is the live table's answer, read above, so a leader
   // still holding an admin's stale claim does not get through.
-  if (request.action === 'assign_role' && caller.role !== 'admin') {
+  if (ADMIN_ONLY.has(request.action) && caller.role !== 'admin') {
     return { ok: false, reason: 'not_admin', caller };
   }
 

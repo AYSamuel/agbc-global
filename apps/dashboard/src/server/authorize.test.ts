@@ -342,6 +342,36 @@ describe('handing out roles', () => {
   });
 });
 
+describe('keeping the verse schedule', () => {
+  test('an admin may', async () => {
+    const ministryAdmin = await caller({ role: 'admin', mfa: 'verified' });
+
+    const verdict = await authorize(ministryAdmin.serverClient(), {
+      action: 'manage_verses',
+    });
+
+    expect(verdict.ok).toBe(true);
+  });
+
+  test('a leader may not, and comes back with their own branch attached', async () => {
+    // One verse goes out to every branch each day, so there is no branch-shaped version
+    // of this job to scope a leader to. The caller rides back on the refusal so /verses
+    // can keep them inside the shell and point at the queue that IS theirs.
+    const leader = await caller({
+      role: 'leader',
+      branchId: BRANCH.berlin,
+      mfa: 'verified',
+    });
+
+    const verdict = await authorize(leader.serverClient(), {
+      action: 'manage_verses',
+    });
+
+    expect(verdict).toMatchObject({ ok: false, reason: 'not_admin' });
+    expect(verdict.caller?.branchId).toBe(BRANCH.berlin);
+  });
+});
+
 describe('authority comes from the database, not the token', () => {
   test('a leader demoted after signing in is refused on their next request', async () => {
     // docs/spec/02's named caveat: the custom access token hook stamps user_role into
