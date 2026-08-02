@@ -1,12 +1,12 @@
 {
   "name": "agbc-global",
   "private": true,
-  "packageManager": "pnpm@11.15.0",
+  "packageManager": "pnpm@11.17.0",
   "engines": {
-    "node": "\u003e=24.14.0"
+    "node": ">=24.14.0"
   },
   "devDependencies": {
-    "prettier": "^3.9.5"
+    "prettier": "^3.9.6"
   },
   "scripts": {
     "lint": "pnpm -r lint",
