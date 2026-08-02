@@ -1449,9 +1449,11 @@ export type Database = {
         Args: { target_prayer: string }
         Returns: undefined
       }
+      caller_branch_live: { Args: never; Returns: string }
       caller_is_admin_live: { Args: never; Returns: boolean }
       caller_is_onboarded: { Args: never; Returns: boolean }
       caller_profile_is_live: { Args: never; Returns: boolean }
+      caller_role_live: { Args: never; Returns: string }
       can_moderate_branch: { Args: { target_branch: string }; Returns: boolean }
       can_read_testimony_photo: {
         Args: { object_name: string }
@@ -1471,7 +1473,6 @@ export type Database = {
       in_bootstrap_promote: { Args: never; Returns: boolean }
       in_counter_write: { Args: never; Returns: boolean }
       in_privileged_profile_write: { Args: never; Returns: boolean }
-      is_admin: { Args: never; Returns: boolean }
       is_publicly_visible: {
         Args: {
           row_deleted_at: string
