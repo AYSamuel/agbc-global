@@ -28,7 +28,11 @@ const PHASE_A: Destination[] = [
     icon: '▢',
   },
   { key: 'reports', label: copy.nav.reports, icon: '⚑' },
-  { key: 'verses', label: copy.nav.verses, icon: '✎' },
+  // Linked for every staff caller rather than admins only, on the same reasoning as the
+  // People row below: `/verses` refuses a leader honestly, inside the shell, and points them
+  // at their own queue. A row that appears the day someone's role changes is a rail that
+  // reshapes itself, which the dimmed-but-visible pattern above exists to avoid.
+  { key: 'verses', label: copy.nav.verses, href: '/verses', icon: '✎' },
   // ONE People row, two destinations, because People means different work depending on
   // who you are: an admin hands out roles, a leader decides who joins their branch. The
   // frames draw a single rail row for both, so the row points at whichever surface is

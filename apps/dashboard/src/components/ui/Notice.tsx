@@ -73,7 +73,14 @@ export function Notice({
       <span aria-hidden="true" className={`mt-px flex-none ${style.icon}`}>
         {style.glyph}
       </span>
-      <div className="min-w-0 flex-1">
+      {/* A floor on the text column, not `min-w-0`. The row wraps, but with no floor the
+          action beside it never wrapped: the sentence shrank to a five-character ribbon
+          instead, which is what "German has no verses at all" looked like at 390px
+          (seen 2026-08-02). Below this width the action drops to its own line.
+          `min(14rem, 100%)` and not a flat 14rem, because rem follows the reader's own
+          font size: at 200% text on a small window a flat floor is wider than the card it
+          sits in, and the page scrolls sideways (measured the same afternoon). */}
+      <div className="min-w-[min(14rem,100%)] flex-1">
         <h2 className="font-display text-body font-extrabold text-text">
           {title}
         </h2>

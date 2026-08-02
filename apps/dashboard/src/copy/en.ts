@@ -323,6 +323,182 @@ export const copy = {
     },
   },
 
+  verses: {
+    title: 'Daily verses',
+    scope: 'Every branch · four languages',
+    depthLabel: 'Days queued ahead',
+    // Read out on a language under the floor. The frame flags those cards in red and
+    // nothing else, which is a fact carried by colour alone; this says it in words for
+    // anyone who cannot see the colour (`05` accessibility contract).
+    depthLow: 'running out',
+    // Named for what a reader would call them, not for the ISO codes the table stores.
+    // Typed as possibly-missing on purpose: the lookup key is a language code out of the
+    // database, and a fifth language added there before this file knows about it should
+    // render as its code rather than as nothing (see `nameOf` in verses/format.ts).
+    languageNames: {
+      en: 'English',
+      de: 'German',
+      nl: 'Dutch',
+      fr: 'French',
+    } as Record<string, string | undefined>,
+    // The banner that appears the moment any language drops under the 14-day floor. It
+    // names the DATE rather than the count, because "runs out on 14 August" is a thing a
+    // person can act on and "12 days" is a number they will discount.
+    runningOutTitle: (language: string, date: string) =>
+      `${language} runs out on ${date}`,
+    runningOutBody: (language: string, date: string) =>
+      `After that, ${language} members keep seeing the verse from ${date} rather than an empty card, so no one will tell you it has stopped.`,
+    runningOutAction: (language: string) => `Import ${language}`,
+    // The worse case: not running out, already out. Split into a title and a body of its
+    // own rather than borrowing the guide's sentence, which sits three inches below and
+    // would print the same words twice on one screen (seen 2026-08-02, in the browser).
+    emptyLanguage: (language: string) => `${language} has no verses at all`,
+    emptyLanguageBody: (language: string) =>
+      `${language} members are seeing nothing on Home today, and there is nothing older for the app to fall back on. A quarter is 90 days.`,
+    // The guide, in the place the decision is made (17 §1's pattern, borrowed here because
+    // the fact is just as invisible as a safeguarding one).
+    guideTitle: 'A missing day is invisible to members.',
+    guide:
+      'The app shows the most recent verse on or before today in their own language, so a gap repeats yesterday instead of showing nothing. Keep every language above 14 days.',
+    importAction: 'Import a batch',
+    addAction: 'Add one verse',
+    filterAll: 'All',
+    scheduledLabel: 'Scheduled · soonest first',
+    today: 'Today',
+    edit: 'Edit',
+    // Several hundred rows carry that link, so its accessible name has to say WHICH day it
+    // opens rather than leaving a screen-reader user a list of identical "Edit"s. It keeps
+    // the visible word first, which is what WCAG's label-in-name rule asks for.
+    editOn: (date: string, language: string) => `Edit ${date} ${language}`,
+    emptyTitle: 'No verses scheduled yet',
+    emptyBody:
+      'Members are seeing nothing on Home until the first day is queued. A quarter is 90 days in each of the four languages.',
+    errorTitle: 'We could not load the schedule',
+    errorBody:
+      'That is on us, not you. Nothing has been imported or removed in the meantime.',
+    notAdminTitle: 'The verse schedule is kept by a ministry admin',
+    notAdminBody:
+      'One verse goes out to every branch each day, so it is set centrally rather than per branch. Nothing is wrong with your account.',
+    notAdminAction: 'Go to your queue',
+
+    import: {
+      title: 'Import a batch',
+      scope: 'Daily verses',
+      guideTitle: 'A quarter is 90 days in each language.',
+      guide:
+        'Paste one language at a time or all four together; the language column decides. Nothing is saved until you have seen what it will do.',
+      pasteLabel: 'Paste from your spreadsheet',
+      pasteHint:
+        'Five columns, in any order, with a header row: date, language, reference, text, translation. Tabs or commas both work. Translation defaults to WEB when the column is missing.',
+      // The frame's own placeholder: a header row and one example, tab separated, which is
+      // exactly what a spreadsheet selection pastes as.
+      pastePlaceholder:
+        'date\tlanguage\treference\ttext\ttranslation\n2026-08-14\tde\tPsalm 23,1\tDer HERR ist mein Hirte…\tWEB',
+      check: 'Check this batch',
+      checking: 'Checking…',
+      cancel: 'Cancel',
+      previewTitle: 'Check this batch',
+      previewScope: (rows: number) =>
+        `${String(rows)} ${rows === 1 ? 'row' : 'rows'} pasted · nothing saved yet`,
+      statNew: 'New days',
+      statExisting: 'Already scheduled',
+      statInvalid: 'Cannot be read',
+      conflictLabel: (existing: number) =>
+        existing === 1
+          ? 'The day you already have'
+          : `The ${String(existing)} days you already have`,
+      keep: 'Keep what is there',
+      replace: 'Replace them',
+      conflictHint:
+        'Keeping is the safe answer. Replace only if this paste is the correction, since it overwrites verses already queued for those days.',
+      problemsLabel: 'Rows that cannot be read · these are skipped either way',
+      problemRow: (line: number) => `Row ${String(line)}`,
+      apply: (count: number) =>
+        `Import ${String(count)} ${count === 1 ? 'verse' : 'verses'}`,
+      applying: 'Importing…',
+      back: 'Back to the paste',
+      nothingToImport: 'Nothing in that paste can be imported.',
+      // The normal shape of a re-paste: a corrected spreadsheet whose days are all queued
+      // already. Not an error, and it names the choice that makes it do something.
+      allExisting:
+        'Every one of those days is already scheduled, so keeping what is there would change nothing. Choose “Replace them” if this paste is the correction.',
+      emptyPaste: 'Paste some rows first.',
+      offline:
+        'You appear to be offline. Check your connection and try again. Nothing was saved.',
+      // Reason codes come from the database as stable identifiers; the English lives here.
+      reasons: {
+        date_missing: 'No date given.',
+        date_not_iso: 'That date is not written as YYYY-MM-DD.',
+        date_impossible: 'That date does not exist.',
+        language_missing: 'No language given.',
+        language_unknown: 'Not one of English, German, Dutch or French.',
+        text_blank: 'The verse text is empty.',
+        reference_blank: 'The reference is empty.',
+        duplicate_in_batch: 'This day appears twice in the paste.',
+        // Possibly-missing for the same reason as languageNames: the key is the database's
+        // stable identifier, and a reason code added there before this file knows about it
+        // falls back to `unknownReason` rather than rendering an empty line.
+      } as Record<string, string | undefined>,
+      // The one reason that needs the offending value: the row carries no language pill
+      // when the language is not one of the four, so without this the reader is told
+      // something is wrong with a column they cannot see.
+      languageUnknown: (value: string) =>
+        `Language “${value}” is not one of English, German, Dutch or French.`,
+      unknownReason: 'That row could not be read.',
+      outcome: {
+        imported: (count: number) =>
+          count === 1
+            ? 'That verse is scheduled. Members will see it on the day.'
+            : `${String(count)} verses are scheduled. Members will see them on the day.`,
+        nothing: 'Nothing was imported, so nothing changed.',
+        failed: 'Something went wrong and nothing was imported. Try again.',
+      },
+    },
+
+    verse: {
+      editTitle: 'Edit a verse',
+      addTitle: 'Add a verse',
+      // The scope line under the title: which day and language this form is standing on.
+      // The year is spelled out here where the list rows omit it, because this screen is
+      // one verse and the list is a queue of months.
+      editScope: (date: string, language: string) => `${date} · ${language}`,
+      addScope: 'Daily verses',
+      date: 'Date',
+      // Shown as the box's placeholder and as the browser's own message when the pattern
+      // does not match. ISO only, for the reason `try_iso_date()` exists: 01/02/2026 is
+      // two different days depending on who is reading it, and a verse on the wrong day is
+      // invisible rather than broken.
+      datePlaceholder: 'YYYY-MM-DD',
+      dateHint: 'Write the day as YYYY-MM-DD, for example 2026-08-14.',
+      language: 'Language',
+      reference: 'Reference',
+      text: 'Verse text',
+      translation: 'Translation',
+      // "a verse in English", not the frame's "a English verse": the article the frame
+      // could hard-code for German is wrong for the one language in four that starts with
+      // a vowel, and would be wrong again for a fifth.
+      uniqueHint: (language: string) =>
+        `One verse per day per language. Saving onto a day that already has a verse in ${language} replaces it.`,
+      save: 'Save',
+      saving: 'Saving…',
+      cancel: 'Cancel',
+      remove: 'Remove',
+      outcome: {
+        saved: 'That verse is scheduled.',
+        removed: 'That verse was removed.',
+        // A save that moved the verse to another day or language, where clearing the day
+        // it came from did not go through. Said out loud rather than reported as success:
+        // the verse now exists twice and only the reader can decide which day is right.
+        movedPartly:
+          'The verse was saved on its new day, but the day it came from could not be cleared, so it may still be scheduled there. Check the list below.',
+        gone: 'That verse was already gone, so nothing changed.',
+        invalid:
+          'That verse could not be saved. Check the date is YYYY-MM-DD and nothing is blank.',
+        failed: 'Something went wrong and nothing was changed. Try again.',
+      },
+    },
+  },
+
   refused: {
     notAdminTitle: 'Roles are handed out by a ministry admin',
     notAdminBody:
