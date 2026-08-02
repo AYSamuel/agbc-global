@@ -69,6 +69,11 @@
   .stats .ps{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
   .stats .ps .n{font-family:var(--disp);font-weight:800;font-size:22px;color:var(--text)}
   .stats .ps .l{font-size:10.5px;color:var(--muted);font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+  /* A count that is ALREADY a problem, not merely small (W2.7 verses: a language under the
+     14-day floor `21` §5 alerts on). Red is this file's "something is late" wash, the same
+     one .pill.late carries, because a language running dry is the same kind of fact. */
+  .stats .ps.low{border-color:rgba(224,52,44,.42)}
+  .stats .ps.low .n{color:var(--red)}
 
   .seg{display:inline-flex;gap:4px;margin:18px 0 0;background:var(--alt);border-radius:13px;padding:4px}
   .seg button{border:none;background:transparent;color:var(--muted);font-family:var(--font);font-weight:700;font-size:13px;padding:8px 16px;border-radius:10px;cursor:pointer}
@@ -99,6 +104,10 @@
   .pill.prayer{background:rgba(47,111,237,.14);color:var(--blue)}
   .pill.late{background:rgba(224,52,44,.14);color:var(--red)}
   .pill.lang{background:var(--alt);color:var(--muted)}
+  /* Blue, the file's neutral classification wash (same as .pill.prayer): it marks WHICH row
+     is live right now without implying anything is wrong. Named for the fact, not the
+     content type, because verses have no types. */
+  .pill.today{background:rgba(47,111,237,.14);color:var(--blue)}
   .t-dark .pill.review{color:var(--gold)}
   .time{font-size:11.5px;color:var(--muted);font-weight:700}
 
@@ -541,6 +550,422 @@
   <p class="ghead">W2.7 &middot; PEOPLE &middot; dark</p>
   <div class="gallery t-dark" id="w27dDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
   <script>(function(){var l=document.getElementById('w27dLight'),d=document.getElementById('w27dDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
+  <p class="ghead">W2.7 slice 4 &middot; DAILY VERSES &middot; admin only, four languages, batch first</p>
+  <p class="gnote"><span>The one Phase A surface with an outside clock on it (<b>22</b> §1): a comms
+    volunteer queues a quarter at a time, and the failure when they do not is silent. The app asks
+    for <i>the newest verse dated on or before today</i>, per language, so an empty day never blanks
+    the card: it repeats an older verse instead. Nobody reports a bug, the daily touchpoint just
+    quietly dies. Every decision below follows from that one fact, which is why depth is counted
+    PER LANGUAGE and never as a single number.</span></p>
+  <div class="gallery" id="w27vLight">
+
+    <div class="device">
+      <p class="name"><b>VERSES</b> &middot; the schedule &middot; German is running out and the screen says so</p>
+      <!-- Depth is four numbers, not one. English/Dutch/French are a quarter deep here and German
+           is 12 days from empty, which is the realistic shape: an importer fixes one language's
+           spreadsheet and forgets another. A single "88 queued" stat would read as healthy and
+           hide exactly the case this screen exists to catch. 14 is the floor `21` §5 alerts on,
+           so the screen shows what the alert will fire about BEFORE the email arrives. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <div class="sect">Phase A</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a class="on" href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Daily verses</h2>
+                <p class="scope">Every branch &middot; four languages</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>German runs out on 14 August</h4>
+                <p>After that, German members keep seeing the verse from 14 August rather than an
+                  empty card, so no one will tell you it has stopped.</p>
+              </div>
+              <span class="act"><button class="btn outline">Import German</button></span>
+            </div>
+
+            <div class="mlabel">Days queued ahead</div>
+            <div class="stats" style="margin-top:0">
+              <div class="ps"><div class="n">88</div><div class="l">English</div></div>
+              <div class="ps low"><div class="n">12</div><div class="l">German</div></div>
+              <div class="ps"><div class="n">88</div><div class="l">Dutch</div></div>
+              <div class="ps"><div class="n">88</div><div class="l">French</div></div>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>A missing day is invisible to members.</b> The app shows the most recent verse on
+                or before today in their own language, so a gap repeats yesterday instead of showing
+                nothing. Keep every language above 14 days.</p>
+            </div>
+
+            <div class="actions" style="border:none;padding-top:18px">
+              <button class="btn primary">Import a batch</button>
+              <button class="btn outline">Add one verse</button>
+            </div>
+
+            <div class="seg">
+              <button class="on">All</button>
+              <button>English 88</button>
+              <button>German 12</button>
+              <button>Dutch 88</button>
+              <button>French 88</button>
+            </div>
+
+            <div class="mlabel">Scheduled &middot; soonest first</div>
+
+            <!-- No per-row action bar, unlike the moderation queue. That screen holds three
+                 items and deciding on them IS the work; this one is 90 days times four
+                 languages and the work is scanning it. A .actions row on every card would
+                 repeat a destructive Remove several hundred times down a list somebody is
+                 only reading. Edit is the one affordance, and Remove lives on the screen
+                 Edit opens, where the verse being destroyed is on screen to see. -->
+            <div class="item">
+              <div class="top">
+                <span class="pill today">Today</span>
+                <span class="pill lang">EN</span>
+                <span class="spacer"></span>
+                <span class="time">2 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Edit</button>
+              </div>
+              <div class="body">&#8220;The Lord is my shepherd; I shall lack nothing.&#8221;</div>
+              <div class="meta">
+                <span>Psalm 23:1</span><span class="dot"></span><span>WEB</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill lang">DE</span>
+                <span class="spacer"></span>
+                <span class="time">3 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Edit</button>
+              </div>
+              <div class="body">&#8220;Der HERR ist mein Hirte, mir wird nichts mangeln.&#8221;</div>
+              <div class="meta">
+                <span>Psalm 23,1</span><span class="dot"></span><span>WEB</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill lang">NL</span>
+                <span class="spacer"></span>
+                <span class="time">3 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Edit</button>
+              </div>
+              <div class="body">&#8220;De HEER is mijn herder, het ontbreekt mij aan niets.&#8221;</div>
+              <div class="meta">
+                <span>Psalm 23:1</span><span class="dot"></span><span>WEB</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>VERSES-IMPORT</b> &middot; paste a quarter &middot; the volunteer works in a spreadsheet</p>
+      <!-- Paste, not upload. The owner (`22` §1) keeps these in a spreadsheet and a paste box
+           accepts a copied selection with no export step, no file dialog and no encoding
+           question. A file input can join it later; it cannot replace it, because "select all,
+           copy" is the action this person already performs. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses/import</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <div class="sect">Phase A</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a class="on" href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Import a batch</h2>
+                <p class="scope">Daily verses</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9998;</span>
+              <p><b>A quarter is 90 days in each language.</b> Paste one language at a time or all
+                four together; the language column decides. Nothing is saved until you have seen
+                what it will do.</p>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">Paste from your spreadsheet</span>
+              <div class="inp area ph">date&#9;language&#9;reference&#9;text&#9;translation<br>2026-08-14&#9;de&#9;Psalm 23,1&#9;Der HERR ist mein Hirte&#8230;&#9;WEB</div>
+              <div class="hint">Five columns, in any order, with a header row: date, language,
+                reference, text, translation. Tabs or commas both work. Translation defaults to WEB
+                when the column is missing.</div>
+            </div>
+
+            <div class="actions" style="border:none;padding-top:18px">
+              <button class="btn primary">Check this batch</button>
+              <button class="btn ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>VERSES-IMPORT</b> &middot; what it will do, before it does it</p>
+      <!-- The whole point of the step. An importer pasting a corrected spreadsheet is USUALLY
+           overlapping days they already queued, so "36 already scheduled" is the normal case and
+           not an error. The choice is explicit and defaults to the safe side: keep what is there.
+           Replacing is offered because a typo in a queued verse is fixed by re-pasting, which is
+           how this person will reach for it. Rows that cannot be understood are listed
+           individually, because "12 problems" with no line numbers is a dead end in a 360-row
+           paste. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses/import</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <div class="sect">Phase A</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a class="on" href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Check this batch</h2>
+                <p class="scope">360 rows pasted &middot; nothing saved yet</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="stats">
+              <div class="ps"><div class="n">312</div><div class="l">New days</div></div>
+              <div class="ps"><div class="n">36</div><div class="l">Already scheduled</div></div>
+              <div class="ps low"><div class="n">12</div><div class="l">Cannot be read</div></div>
+            </div>
+
+            <div class="field">
+              <span class="lab">The 36 days you already have</span>
+              <div class="seg" style="margin:0"><button class="on">Keep what is there</button><button>Replace them</button></div>
+              <div class="hint">Keeping is the safe answer. Replace only if this paste is the
+                correction, since it overwrites verses already queued for those days.</div>
+            </div>
+
+            <div class="mlabel">Rows that cannot be read &middot; these are skipped either way</div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill late">Row 84</span>
+                <span class="pill lang">DE</span>
+                <span class="spacer"></span>
+                <span class="time">2026-08-32</span>
+              </div>
+              <div class="body">That date does not exist.</div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill late">Row 119</span>
+                <span class="spacer"></span>
+                <span class="time">2026-09-07</span>
+              </div>
+              <div class="body">Language &#8220;ge&#8221; is not one of English, German, Dutch or French.</div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill late">Row 203</span>
+                <span class="pill lang">FR</span>
+                <span class="spacer"></span>
+                <span class="time">2026-09-30</span>
+              </div>
+              <div class="body">The verse text is empty.</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary">Import 312 verses</button>
+              <button class="btn ghost">Back to the paste</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>VERSE-EDIT</b> &middot; one day, one language</p>
+      <!-- Reached from Edit on a row and from "Add one verse". The same form does both, because
+           the table's key is (date, language) and saving onto an occupied pair IS the edit. The
+           hint says that out loud rather than letting a save surprise someone. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses/2026-08-14/de</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>Edit a verse</h2>
+                <p class="scope">14 August 2026 &middot; German</p>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">Date</span>
+              <div class="inp">2026-08-14</div>
+            </div>
+            <div class="field">
+              <span class="lab">Language</span>
+              <div class="seg" style="margin:0"><button>English</button><button class="on">German</button><button>Dutch</button><button>French</button></div>
+            </div>
+            <div class="field">
+              <span class="lab">Reference</span>
+              <div class="inp">Psalm 23,1</div>
+            </div>
+            <div class="field" style="max-width:640px">
+              <span class="lab">Verse text</span>
+              <div class="inp area">Der HERR ist mein Hirte, mir wird nichts mangeln.</div>
+            </div>
+            <div class="field">
+              <span class="lab">Translation</span>
+              <div class="inp">WEB</div>
+              <div class="hint">One verse per day per language. Saving onto a day that already has
+                a German verse replaces it.</div>
+            </div>
+            <div class="actions">
+              <button class="btn primary">Save</button>
+              <button class="btn ghost">Cancel</button>
+              <span class="spacer"></span>
+              <button class="btn danger">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>VERSES</b> &middot; the four states &middot; empty, loading, error, offline</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead"><div><h2>Daily verses</h2><p class="scope">Every branch &middot; four languages</p></div></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 5v16"/></svg></div>
+              <h3>No verses scheduled yet</h3>
+              <p>Members are seeing nothing on Home until the first day is queued. A quarter is 90
+                days in each of the four languages.</p>
+              <div class="actions" style="border:none;justify-content:center"><button class="btn primary">Import a batch</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>VERSES-LOADING</b> and <b>VERSES-ERROR</b> &middot; the depth numbers never guess</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:200px;height:26px"></div>
+            <div class="skel" style="width:170px;height:14px;margin-top:9px"></div>
+            <div class="stats" style="margin-top:18px">
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+            </div>
+            <div class="mlabel">Scheduled &middot; soonest first</div>
+            <div class="item">
+              <div class="skel" style="width:96px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:100%;height:14px;margin-top:12px"></div>
+              <div class="skel" style="width:60%;height:14px;margin-top:8px"></div>
+            </div>
+            <div class="banner bad" style="margin-top:20px">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>We could not load the schedule</h4>
+                <p>That is on us, not you. Nothing has been imported or removed in the meantime.</p>
+              </div>
+              <span class="act"><button class="btn outline">Try again</button></span>
+            </div>
+            <div class="banner off" style="margin-top:12px">
+              <span class="bi">&#9711;</span>
+              <div>
+                <h4>You are offline</h4>
+                <p>Showing the schedule as it was 6 minutes ago. Importing is disabled until you are
+                  back, so a batch cannot be half sent.</p>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:16px 2px 0">The depth counts are
+              hidden while loading rather than shown as zero: a "0 German" that turns into "88" a
+              second later is the one wrong number this screen must never print.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>VERSES-REFUSED</b> &middot; a leader followed the rail &middot; never a dead end</p>
+      <!-- The rail shows Daily verses to every staff caller, and verses are admin-only (`17` §23,
+           and the table's "admins manage daily verses" policy). PR #116 fixed exactly this shape on
+           People: a row that leads somewhere the caller cannot act, with no route onward. So the
+           refusal names what IS theirs and links to it. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/verses</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead"><div><h2>Daily verses</h2><p class="scope">Every branch &middot; four languages</p></div></div>
+            <div class="banner off">
+              <span class="bi">&#9711;</span>
+              <div>
+                <h4>The verse schedule is kept by a ministry admin</h4>
+                <p>One verse goes out to every branch each day, so it is set centrally rather than
+                  per branch. Nothing is wrong with your account.</p>
+              </div>
+              <span class="act"><button class="btn outline">Go to your queue</button></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="ghead">W2.7 slice 4 &middot; DAILY VERSES &middot; dark</p>
+  <div class="gallery t-dark" id="w27vDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
+  <script>(function(){var l=document.getElementById('w27vLight'),d=document.getElementById('w27vDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
   <p class="ghead">1 · QUEUE (leader) &middot; scoped to one branch</p>
   <p class="gnote">A leader sees only their own branch, and the scope line says so out loud rather
