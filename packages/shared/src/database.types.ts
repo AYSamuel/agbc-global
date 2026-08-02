@@ -1461,6 +1461,15 @@ export type Database = {
       }
       current_audit_request: { Args: never; Returns: string }
       custom_access_token: { Args: { event: Json }; Returns: Json }
+      daily_verse_depth: {
+        Args: never
+        Returns: {
+          days_queued: number
+          language: string
+          runs_out_on: string
+          stale_from: string
+        }[]
+      }
       decide_branch_request: {
         Args: { approve: boolean; note?: string; request: string }
         Returns: undefined
@@ -1468,6 +1477,10 @@ export type Database = {
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }
         Returns: string
+      }
+      import_daily_verses: {
+        Args: { batch: Json; dry_run?: boolean; replace_existing?: boolean }
+        Returns: Json
       }
       in_audit_maintenance: { Args: never; Returns: boolean }
       in_bootstrap_promote: { Args: never; Returns: boolean }
@@ -1498,6 +1511,7 @@ export type Database = {
       }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
+      try_iso_date: { Args: { raw: string }; Returns: string }
     }
     Enums: {
       branch_request_status: "pending" | "approved" | "rejected" | "cancelled"
