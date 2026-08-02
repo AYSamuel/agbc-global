@@ -8,7 +8,7 @@
     "./strict-rules": "./strict-rules.js"
   },
   "dependencies": {
-    "typescript-eslint": "^8.64.0"
+    "typescript-eslint": "^8.65.0"
   },
   "peerDependencies": {
     "eslint": ">=9"
