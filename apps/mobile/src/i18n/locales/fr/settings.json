@@ -29,7 +29,9 @@
     "cancelRequest": "Annuler la demande",
     "cancelled": "Demande annulée.",
     "cancelFailed": "Cela n'a pas fonctionné à l'instant. Réessayez dans un moment.",
-    "errorLoad": "Nous n'avons pas pu charger votre profil. Vérifiez votre connexion et réessayez."
+    "errorLoad": "Nous n'avons pas pu charger votre profil. Vérifiez votre connexion et réessayez.",
+    "activitySection": "Votre activité",
+    "myPosts": "Mes publications"
   },
   "branchChange": {
     "title": "Votre assemblée",

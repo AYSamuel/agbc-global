@@ -29,7 +29,9 @@
     "cancelRequest": "Verzoek intrekken",
     "cancelled": "Verzoek ingetrokken.",
     "cancelFailed": "Dat lukte even niet. Probeer het zo nog eens.",
-    "errorLoad": "We konden je profiel even niet laden. Controleer je verbinding en probeer het opnieuw."
+    "errorLoad": "We konden je profiel even niet laden. Controleer je verbinding en probeer het opnieuw.",
+    "activitySection": "Jouw activiteit",
+    "myPosts": "Mijn berichten"
   },
   "branchChange": {
     "title": "Jouw gemeente",

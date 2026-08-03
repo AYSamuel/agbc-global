@@ -29,7 +29,9 @@
     "cancelRequest": "Cancel request",
     "cancelled": "Request cancelled.",
     "cancelFailed": "We could not cancel that just now. Try again in a moment.",
-    "errorLoad": "We could not load your profile just now. Check your connection and try again."
+    "errorLoad": "We could not load your profile just now. Check your connection and try again.",
+    "activitySection": "Your activity",
+    "myPosts": "My posts"
   },
   "branchChange": {
     "title": "Your home branch",

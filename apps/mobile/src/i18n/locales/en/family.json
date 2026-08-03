@@ -114,5 +114,23 @@
     "family": "Family",
     "restoration": "Restoration",
     "thanksgiving": "Thanksgiving"
+  },
+  "myPosts": {
+    "title": "My posts",
+    "status": {
+      "approved": "Live",
+      "pending": "In review",
+      "rejected": "Needs changes",
+      "removed": "Removed"
+    },
+    "rejectedPrefix": "A leader asked: {{reason}}",
+    "editAndResubmit": "Edit and resubmit",
+    "removedBody": "Removed by a leader after review. If you believe this is a mistake, contact your branch leader.",
+    "contactLeader": "Contact your branch leader ›",
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "What you share with the family, and how it is getting on, will live here.",
+    "emptyAction": "Share a testimony",
+    "guestTitle": "Sign in to see your posts",
+    "guestBody": "Your testimonies and prayer requests, and how each one is getting on, live here once you are signed in."
   }
 }

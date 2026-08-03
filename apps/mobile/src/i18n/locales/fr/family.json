@@ -114,5 +114,23 @@
     "family": "Famille",
     "restoration": "Restauration",
     "thanksgiving": "Reconnaissance"
+  },
+  "myPosts": {
+    "title": "Mes publications",
+    "status": {
+      "approved": "En ligne",
+      "pending": "En relecture",
+      "rejected": "À modifier",
+      "removed": "Retiré"
+    },
+    "rejectedPrefix": "Un responsable demande : {{reason}}",
+    "editAndResubmit": "Modifier et renvoyer",
+    "removedBody": "Retiré par un responsable après relecture. Si vous pensez que c est une erreur, contactez le responsable de votre branche.",
+    "contactLeader": "Contacter votre responsable ›",
+    "emptyTitle": "Rien ici pour le moment",
+    "emptyBody": "Ce que vous partagez avec la famille, et ce qu il en advient, se trouvera ici.",
+    "emptyAction": "Partager un témoignage",
+    "guestTitle": "Connectez-vous pour voir vos publications",
+    "guestBody": "Vos témoignages et sujets de prière, et où ils en sont, apparaissent ici une fois connecté."
   }
 }

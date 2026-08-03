@@ -52,6 +52,14 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       );
       return Promise.resolve('done');
     }
+    case 'my_posts': {
+      // The gated action WAS "show me my posts", so replaying it is the screen. `replace`
+      // and not `push`: AUTH-4 has already returned them to /(tabs)/more, which is where
+      // they started, and a pushed screen would leave a back stack of the sign-in they
+      // just finished.
+      router.replace('/my-posts');
+      return Promise.resolve('done');
+    }
     // Executors land with their work items: rsvp (W2.9), im_here (W2.8),
     // save/notes/resume (W3.1), notifications (W3.3).
     default:

@@ -149,6 +149,20 @@ export default function ProfileScreen() {
             }}
           />
         </MenuCard>
+
+        {/* The frame's activity card (PROFILE · member): My posts, then Saved messages
+            and My rhythm as their own items land (W3.1, W2.8). MY-POSTS is the first,
+            and the consent step has been promising it by name since W2.3. */}
+        <MenuLabel label={t('settings:profile.activitySection')} />
+        <MenuCard>
+          <MenuRow
+            icon="📝"
+            label={t('settings:profile.myPosts')}
+            onPress={() => {
+              router.push('/my-posts');
+            }}
+          />
+        </MenuCard>
       </View>
 
       {pending ? (

@@ -114,5 +114,23 @@
     "family": "Familie",
     "restoration": "Wiederherstellung",
     "thanksgiving": "Dankbarkeit"
+  },
+  "myPosts": {
+    "title": "Meine Beiträge",
+    "status": {
+      "approved": "Live",
+      "pending": "In Prüfung",
+      "rejected": "Änderungen nötig",
+      "removed": "Entfernt"
+    },
+    "rejectedPrefix": "Eine Leitung bittet: {{reason}}",
+    "editAndResubmit": "Bearbeiten und neu einreichen",
+    "removedBody": "Nach der Prüfung von einer Leitung entfernt. Wenn du meinst, das ist ein Fehler, wende dich an deine Gemeindeleitung.",
+    "contactLeader": "Gemeindeleitung kontaktieren ›",
+    "emptyTitle": "Noch nichts hier",
+    "emptyBody": "Was du mit der Familie teilst und wie es damit weitergeht, steht hier.",
+    "emptyAction": "Zeugnis teilen",
+    "guestTitle": "Melde dich an, um deine Beiträge zu sehen",
+    "guestBody": "Deine Zeugnisse und Gebetsanliegen und wie es mit ihnen weitergeht, findest du hier, sobald du angemeldet bist."
   }
 }

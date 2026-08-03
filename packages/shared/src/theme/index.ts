@@ -63,6 +63,17 @@ export const tonal = {
     bg: 'rgba(31,138,91,0.10)',
     border: 'rgba(31,138,91,0.35)',
   },
+  /**
+   * The mockup's `.pill.changes` (MY-POSTS): something is waiting on the author.
+   *
+   * The frame writes its foreground as `#d0483b`, a hair off `palette.red`. The wash below
+   * is the frame's verbatim; the text uses the palette rather than minting a fifth red for
+   * a difference nobody can see.
+   */
+  red: {
+    bg: 'rgba(192,57,43,0.14)',
+    border: 'rgba(192,57,43,0.40)',
+  },
 } as const;
 
 // Colors for content sitting on ink or on a photo (splash, photo heroes). Identical

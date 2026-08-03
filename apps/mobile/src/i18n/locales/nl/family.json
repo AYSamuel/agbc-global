@@ -114,5 +114,23 @@
     "family": "Familie",
     "restoration": "Herstel",
     "thanksgiving": "Dankbaarheid"
+  },
+  "myPosts": {
+    "title": "Mijn berichten",
+    "status": {
+      "approved": "Live",
+      "pending": "In beoordeling",
+      "rejected": "Aanpassing nodig",
+      "removed": "Verwijderd"
+    },
+    "rejectedPrefix": "Een leider vroeg: {{reason}}",
+    "editAndResubmit": "Bewerken en opnieuw indienen",
+    "removedBody": "Na beoordeling verwijderd door een leider. Denk je dat dit een vergissing is, neem dan contact op met je gemeenteleider.",
+    "contactLeader": "Neem contact op met je leider ›",
+    "emptyTitle": "Nog niets hier",
+    "emptyBody": "Wat je met de familie deelt, en hoe het ermee gaat, staat hier.",
+    "emptyAction": "Deel een getuigenis",
+    "guestTitle": "Log in om je berichten te zien",
+    "guestBody": "Je getuigenissen en gebedspunten, en hoe het met elk ervan gaat, staan hier zodra je bent ingelogd."
   }
 }

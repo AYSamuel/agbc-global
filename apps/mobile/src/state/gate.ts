@@ -18,7 +18,13 @@ export type GateAction =
   | { kind: 'sermon_notes'; sermonId: string }
   | { kind: 'resume_playback'; sermonId: string }
   | { kind: 'notifications' }
-  | { kind: 'im_here' };
+  | { kind: 'im_here' }
+  /**
+   * Reaching MY-POSTS (W2.6). The only NAVIGATION-shaped gate so far: the others complete
+   * something the member tapped, this one opens the screen they were trying to reach, which
+   * is the same promise (docs/spec/04 rule 9) with nothing to write at the end of it.
+   */
+  | { kind: 'my_posts' };
 
 export type GateActionKind = GateAction['kind'];
 
