@@ -1517,6 +1517,28 @@
       </div>
     </div>
 
+    <!-- MY-POSTS · nothing shared yet -->
+    <div class="device">
+      <p class="name"><b>MY-POSTS</b> &middot; nothing shared yet</p>
+      <!-- Composed W2.6 (2026-08-03): the pipeline frame beside this one draws four posts and
+           the screen has to answer for a member who has none, which is every member until
+           they share once. It is not a failure state and does not apologise; it is the same
+           invitation the Family tab makes, in the one place a person came looking for their
+           own words. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My posts</span><span style="width:40px"></span></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></div>
+            <h3>Nothing here yet</h3>
+            <p>What you share with the family, and how it is getting on, will live here.</p>
+            <button class="btn primary" style="max-width:230px">Share a testimony</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- FAMILY PRAYER -->
     <div class="device">
       <p class="name"><b>Family</b> · Prayer (member)</p>
@@ -2014,6 +2036,118 @@
           <div class="actrow">Report post</div>
           <div class="actrow danger">Block this member</div>
           <div class="actrow">Cancel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT · the reason -->
+    <div class="device">
+      <p class="name"><b>REPORT</b> &middot; the reason, in the reporter&#39;s words</p>
+      <!-- Composed W2.6 (2026-08-03): "Report post" above had nowhere to go. `reports.reason`
+           is NOT NULL with a not-blank CHECK, so something must be collected, and a free text
+           box would ask a distressed person to write an essay about somebody else's post.
+           Four choices, in the order a leader needs to see them: the one that may mean a
+           person is in danger is first and says out loud that it is treated differently.
+
+           The chosen row IS the reason: it is stored as a stable key (at_risk,
+           private_details, hurtful, not_for_this_space) and the dashboard owns the English,
+           exactly as the verse importer does with its reason codes. There is deliberately no
+           free-text box in v1: `reports` has one text column, and a note would need a second
+           one plus a moderation surface that reads it.
+
+           `is_safeguarding` is NOT set from here. The guard forces it false on insert
+           (docs/spec/02: "leader-set, never reporter-set"), so the first option describes
+           what the reporter saw and a leader still makes the classification.
+
+           After Send: the sheet closes and a toast says "Thank you. A leader will look at
+           this." Reporting the same post twice lands on the same toast and writes nothing
+           (the partial uniques in the family migration make it a no-op), because telling
+           somebody "you already reported this" only invites them to wonder why nothing has
+           happened yet. -->
+      <div class="phone gatephone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="chead"><span style="width:40px"></span><span class="ct">Testimony</span><span style="width:40px"></span></div>
+          <div class="testi"><div class="who"><span class="av">T</span><div><div class="nm">Tunde A.</div><div class="mt">Miracle Centre, Ogbomosho &middot; 5h</div></div></div><div class="body">&#8220;Our daughter&#39;s surgery was a success. Glory to God for His mercy.&#8221;</div></div>
+        </div>
+        <div class="gatedim"></div>
+        <div class="gatesheet">
+          <div class="grab"></div>
+          <div class="sheettitle">Report this post</div>
+          <div style="text-align:left">
+            <div class="radiorow on"><span class="rc"></span><div class="rg"><div class="rt">Someone may be at risk</div><div class="rd">Abuse, self-harm, or a child in danger. This one reaches a leader first.</div></div></div>
+            <div class="radiorow"><span class="rc"></span><div class="rg"><div class="rt">Private details about someone</div><div class="rd">A name, a photo, or something about their health that was not theirs to share.</div></div></div>
+            <div class="radiorow"><span class="rc"></span><div class="rg"><div class="rt">Hurtful or abusive</div><div class="rd">Words that attack or shame a person.</div></div></div>
+            <div class="radiorow" style="border-bottom:none"><span class="rc"></span><div class="rg"><div class="rt">Not for this space</div><div class="rd">Selling something, spam, or nothing to do with the church.</div></div></div>
+          </div>
+          <button class="btn primary" style="margin-top:14px">Send to a leader</button>
+          <div class="actrow">Cancel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCK · the confirm -->
+    <div class="device">
+      <p class="name"><b>BLOCK</b> &middot; what blocking actually does</p>
+      <!-- Composed W2.6 (2026-08-03). Blocking is two-way and silent, and neither half is
+           guessable from a button that says "Block this member", so the sheet says both
+           before it happens. It is not a report: the copy sends anyone who wants a leader to
+           see the post back to Report, or the two get confused and the queue never hears
+           about content that needed review. Reversible, and the copy says where from. -->
+      <div class="phone gatephone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="chead"><span style="width:40px"></span><span class="ct">Testimony</span><span style="width:40px"></span></div>
+          <div class="testi"><div class="who"><span class="av">T</span><div><div class="nm">Tunde A.</div><div class="mt">Miracle Centre, Ogbomosho &middot; 5h</div></div></div><div class="body">&#8220;Our daughter&#39;s surgery was a success. Glory to God for His mercy.&#8221;</div></div>
+        </div>
+        <div class="gatedim"></div>
+        <div class="gatesheet">
+          <div class="grab"></div>
+          <h3>Block Tunde A.?</h3>
+          <p>You will not see each other&#39;s testimonies or prayers, and they are not told.
+            You can undo this in Settings under Blocked members. If you want a leader to look
+            at this post, report it instead.</p>
+          <button class="btn danger">Block Tunde A.</button>
+          <div class="actrow">Cancel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCKED-MEMBERS -->
+    <div class="device">
+      <p class="name"><b>BLOCKED-MEMBERS</b> &middot; Settings &rsaquo; Blocked members</p>
+      <!-- Composed W2.6 (2026-08-03): `16` names this screen and the tablet Settings frame
+           already lists the row, but the screen itself was never drawn. A list and one action
+           each, because that is the whole of it. The line under the title repeats what
+           blocking does, since somebody arriving here weeks later is deciding whether to
+           undo it and cannot be expected to remember. No count of what they are missing, and
+           no "blocked on 3 August": both invite second-guessing a decision the member has
+           already made. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Blocked members</span><span style="width:40px"></span></div>
+          <div class="subhead">You and these members do not see each other&#39;s posts. They are not told.</div>
+          <div style="height:10px"></div>
+          <div class="copyrow"><div><div class="cv">Tunde A.</div></div><span class="copy">Unblock</span></div>
+          <div class="copyrow"><div><div class="cv">Daniel K.</div></div><span class="copy">Unblock</span></div>
+          <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCKED-MEMBERS · empty -->
+    <div class="device">
+      <p class="name"><b>BLOCKED-MEMBERS</b> &middot; nobody blocked</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Blocked members</span><span style="width:40px"></span></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></div>
+            <h3>Nobody is blocked</h3>
+            <p>If you ever need to, you can block a member from the &#8943; menu on their post.</p>
+          </div>
         </div>
       </div>
     </div>
