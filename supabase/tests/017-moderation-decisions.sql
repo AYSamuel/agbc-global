@@ -2,7 +2,7 @@
 -- compare-and-set actually protects, and the private note.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(18);
 
 insert into auth.users (id, email) values
   ('40000000-0000-4000-8000-0000000000a1', 't017-author@test.local'),
@@ -41,6 +41,80 @@ select is(
       and table_name in ('testimony_feed', 'prayer_feed')
       and column_name = 'moderation_note')::int,
   0, 'moderation_note is absent from both feed views');
+
+-- --- and it never reaches the AUTHOR either ---------------------------------------
+--
+-- The feed check above is how STRANGERS read. This is the other half, and the half that
+-- was wrong until 20260803140000: "authors read their own testimonies" grants the whole
+-- ROW, so the columns that come back are a matter of privilege, not of policy. A member
+-- could read the safeguarding note on their own removed post (measured 2026-08-03).
+
+select ok(
+  not has_column_privilege('authenticated', 'public.testimonies', 'moderation_note', 'SELECT'),
+  'authenticated cannot select a testimony''s moderation_note, on any row');
+
+select ok(
+  not has_column_privilege('authenticated', 'public.prayers', 'moderation_note', 'SELECT'),
+  'nor a prayer''s');
+
+-- `moderated_by` is NOT on this side of the line, and the reason is recorded here because
+-- it was tried the other way first: every human on this system is the same database role,
+-- so revoking who-decided from `authenticated` takes it from the moderators too, and the
+-- assertion further down this file (a leader reads the audit trail) is the one that says
+-- so. Moving it needs a moderator-only read path, not a grant.
+
+-- The privileges above are the mechanism; this is the behaviour they exist for, asked
+-- from the one context that has the row: its author.
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub": "40000000-0000-4000-8000-0000000000a1", "role": "authenticated", "user_role": "member", "branch_id": "00000000-0000-4000-8000-000000000002"}';
+
+select throws_ok(
+  $$select moderation_note from public.testimonies
+     where id = '41000000-0000-4000-8000-000000000003'$$,
+  '42501',
+  null,
+  'the author of a post cannot read the private note about it');
+
+-- The positive control, because a revoke that took too much would pass every assertion
+-- above and quietly break MY-POSTS (W2.6): what the author IS owed still arrives.
+select is(
+  (select status::text || ' / ' || body from public.testimonies
+    where id = '41000000-0000-4000-8000-000000000003'),
+  'pending / Pending, for the note',
+  'and still reads their own post: status, body, and the reason they are given');
+
+-- THE INVENTORY, in the spirit of `022`'s: a column-by-column grant means a column added
+-- later is invisible until somebody names it, and this is where they are made to decide.
+-- Failing here is not a bug in the test; it means a new column needs a home on one side
+-- of the line or the other.
+select is(
+  (select array_agg(column_name::text order by column_name)
+     from information_schema.columns
+    where table_schema = 'public' and table_name = 'testimonies'
+      and has_column_privilege('authenticated', 'public.testimonies', column_name, 'SELECT')),
+  array[
+    'author_id', 'body', 'branch_id', 'category_id', 'consent_version', 'consented_at',
+    'created_at', 'deleted_at', 'from_prayer_id', 'glory_count', 'id', 'image_path',
+    'language', 'moderated_at', 'moderated_by', 'rejection_reason', 'status', 'updated_at'
+  ],
+  'the testimony columns a member may read are exactly the ones written down');
+
+select is(
+  (select array_agg(column_name::text order by column_name)
+     from information_schema.columns
+    where table_schema = 'public' and table_name = 'prayers'
+      and has_column_privilege('authenticated', 'public.prayers', column_name, 'SELECT')),
+  array[
+    'answered_at', 'author_id', 'body', 'branch_id', 'consent_version', 'consented_at',
+    'created_at', 'deleted_at', 'id', 'is_anonymous', 'language', 'moderated_at',
+    'moderated_by', 'prayed_count', 'praying_count', 'rejection_reason', 'status',
+    'updated_at'
+  ],
+  'and the prayer columns likewise');
+
+reset role;
+reset request.jwt.claims;
 
 -- --- a leader decides in their own branch ----------------------------------------
 

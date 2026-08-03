@@ -359,3 +359,62 @@ describe('removed is terminal until an admin says otherwise', () => {
     expect(await statusOf(item.id)).toBe('approved');
   });
 });
+
+describe('the private note, over the wire the app actually uses', () => {
+  /**
+   * pgTAP proves the privilege; this proves the ROAD. Yesterday's `safeupdate` bug was a
+   * statement that was legal as `postgres` and refused as `authenticator`, so a claim
+   * about what a member can read is only worth what it is worth through PostgREST, asked
+   * by a real signed-in member with their own token.
+   */
+  test('the author of a removed post cannot read the note about it', async () => {
+    const item = await pendingItem();
+    await moderateItem(leaderA.serverClient(), {
+      kind: 'testimony',
+      id: item.id,
+      reviewedUpdatedAt: item.updatedAt,
+      decision: 'remove',
+      moderationNote: 'SAFEGUARDING: routed to the branch lead pastor.',
+    });
+
+    const refused = await author
+      .serverClient()
+      .from('testimonies')
+      .select('id, moderation_note')
+      .eq('id', item.id)
+      .maybeSingle();
+
+    // 42501: the column privilege, not the policy. The row is theirs and they may have
+    // it; this one column is the ministry's record of a safeguarding decision, and
+    // handing it back is the thing 20260803140000 exists to stop.
+    expect(refused.error?.code).toBe('42501');
+    expect(refused.data).toBeNull();
+  });
+
+  test('and still reads everything the same removal owes them', async () => {
+    const item = await pendingItem();
+    await moderateItem(leaderA.serverClient(), {
+      kind: 'testimony',
+      id: item.id,
+      reviewedUpdatedAt: item.updatedAt,
+      decision: 'reject',
+      rejectionReason: 'Please take the surname out and resubmit.',
+    });
+
+    // The positive control. A revoke that took one column too many would pass the test
+    // above and quietly break MY-POSTS, where this is the whole screen.
+    const own = await author
+      .serverClient()
+      .from('testimonies')
+      .select('id, status, body, rejection_reason, moderated_at')
+      .eq('id', item.id)
+      .single();
+
+    expect(own.error).toBeNull();
+    expect(own.data?.status).toBe('rejected');
+    expect(own.data?.rejection_reason).toBe(
+      'Please take the surname out and resubmit.',
+    );
+    expect(own.data?.moderated_at).not.toBeNull();
+  });
+});
