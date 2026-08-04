@@ -14,10 +14,14 @@ import {
   Button,
   Checkbox,
   Chip,
+  LinkIcon,
+  NoteBanner,
   Screen,
   TextArea,
 } from '@/components/ui';
 import { useTheme } from '@/theme';
+
+import { excerpt } from './format';
 
 import type { PhotoFailure } from './photo';
 import { PhotoField } from './PhotoField';
@@ -43,6 +47,12 @@ export interface ComposeStepProps {
    * IS the submit because an edit runs no consent step (see ComposeFlow's `editId`).
    */
   editing?: boolean;
+  /**
+   * The answered request this testimony is being written from (W2.5). Its words go in the
+   * link banner, truncated, so the author can see WHICH prayer they are answering: the
+   * frame quotes the request rather than naming it, because a request has no title.
+   */
+  originPrayerBody?: string | null;
   control: Control<ComposeForm>;
   bodyError: string | null;
   /** Editing only: the consent step usually carries this, and an edit has none. */
@@ -68,6 +78,7 @@ export interface ComposeStepProps {
 export function ComposeStep({
   target,
   editing = false,
+  originPrayerBody = null,
   control,
   bodyError,
   submitErrorMessage = null,
@@ -113,6 +124,20 @@ export function ComposeStep({
             paddingBottom: spacing.lg,
           }}
         >
+          {/* Mockup .linkbanner (green): the request this testimony answers, above the
+              box, so the link is visible before a word is written. */}
+          {originPrayerBody === null ? null : (
+            <View style={{ marginBottom: spacing.md }}>
+              <NoteBanner
+                icon={(accent) => <LinkIcon size={18} color={accent} />}
+                lead={t('answered.linkBannerLead')}
+                body={t('answered.linkBannerQuote', {
+                  excerpt: excerpt(originPrayerBody),
+                })}
+              />
+            </View>
+          )}
+
           <Controller
             control={control}
             name="body"

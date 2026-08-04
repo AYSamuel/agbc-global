@@ -202,5 +202,31 @@
   "editSaveResubmit": "Opslaan en opnieuw indienen",
   "editUnavailableTitle": "Dit kan niet bewerkt worden",
   "editGone": "Misschien is het al verwijderd.",
-  "editRemoved": "Een leider heeft dit bericht verwijderd, dus het kan niet meer bewerkt worden. Denk je dat dit een vergissing is, neem dan contact op met je gemeenteleider."
+  "editRemoved": "Een leider heeft dit bericht verwijderd, dus het kan niet meer bewerkt worden. Denk je dat dit een vergissing is, neem dan contact op met je gemeenteleider.",
+  "answered": {
+    "markAnswered": "Markeer als verhoord",
+    "markNotAnswered": "Markeer als niet verhoord",
+    "writeTestimony": "Schrijf een getuigenis",
+    "successTitle": "Verhoord! Glorie aan God",
+    "successBody": "Je gebed is als verhoord gemarkeerd. Wil je als getuigenis voor de familie delen hoe God antwoordde?",
+    "notNow": "Nu niet",
+    "undone": "Gemarkeerd als niet verhoord.",
+    "failed": "Dat is niet gelukt. Probeer het opnieuw.",
+    "undoTitle": "Markeren als niet verhoord?",
+    "undoBody": "Het label Verhoord verdwijnt van je verzoek en de familie kan er weer voor bidden. Je kunt het altijd opnieuw als verhoord markeren.",
+    "blockedTitle": "Je getuigenis hoort hierbij",
+    "blockedBody": "De getuigenis die je schreef is uit dit verzoek ontstaan, dus het blijft verhoord zolang die getuigenis er is. Verwijder eerst de getuigenis als je dit ongedaan wilt maken.",
+    "goToMyPosts": "Naar Mijn berichten",
+    "dismissed": "Gesloten",
+    "linkBannerLead": "Ontstaan uit een verhoord gebed.",
+    "linkBannerQuote": "‘{{excerpt}}’",
+    "linked": {
+      "pendingLead": "Je getuigenis ligt bij een leider.",
+      "pendingBody": "Zodra die is goedgekeurd verschijnt hij in de familiefeed. Je vindt hem bij Mijn berichten.",
+      "rejectedLead": "Je getuigenis heeft een aanpassing nodig.",
+      "rejectedBody": "Een leider heeft om een wijziging gevraagd. Bij Mijn berichten kun je hem aanpassen en opnieuw indienen.",
+      "removedLead": "Je getuigenis is verwijderd.",
+      "removedBody": "Een leider heeft hem na beoordeling verwijderd. Je vindt hem bij Mijn berichten, en je gemeenteleider kan uitleggen waarom."
+    }
+  }
 }

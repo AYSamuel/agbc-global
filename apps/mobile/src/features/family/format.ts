@@ -66,3 +66,21 @@ export function initials(name: string | null): string {
 export function joinMeta(parts: (string | null)[]): string {
   return parts.filter((p): p is string => p !== null && p !== '').join(' · ');
 }
+
+/** The one-line ellipsis in the mockup's `.linkbanner`: "Please pray for my mother's
+ * recovery…". A prayer request has no title, so the composer quotes the request itself to
+ * say WHICH one is being answered (W2.5).
+ *
+ * Cut on a word boundary where there is one within reach, because a hard cut mid-word
+ * reads as a rendering bug rather than as an excerpt. Newlines collapse first: the banner
+ * is a single line and a request can be several paragraphs. */
+export function excerpt(body: string, max = 40): string {
+  const flat = body.trim().replace(/\s+/g, ' ');
+  if (flat.length <= max) return flat;
+  const cut = flat.slice(0, max);
+  const lastSpace = cut.lastIndexOf(' ');
+  // Only honour the word boundary if it keeps most of the excerpt; a long first word
+  // would otherwise leave almost nothing.
+  const kept = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut.trimEnd();
+  return `${kept}…`;
+}

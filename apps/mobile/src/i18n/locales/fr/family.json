@@ -202,5 +202,31 @@
   "editSaveResubmit": "Enregistrer et renvoyer",
   "editUnavailableTitle": "Ceci ne peut pas être modifié",
   "editGone": "Cela a peut-être déjà été supprimé.",
-  "editRemoved": "Un responsable a retiré cette publication, elle ne peut donc plus être modifiée. Si vous pensez que c'est une erreur, contactez le responsable de votre branche."
+  "editRemoved": "Un responsable a retiré cette publication, elle ne peut donc plus être modifiée. Si vous pensez que c'est une erreur, contactez le responsable de votre branche.",
+  "answered": {
+    "markAnswered": "Marquer comme exaucée",
+    "markNotAnswered": "Marquer comme non exaucée",
+    "writeTestimony": "Écrire un témoignage",
+    "successTitle": "Exaucée ! Gloire à Dieu",
+    "successBody": "Votre prière est marquée comme exaucée. Souhaitez-vous partager comment Dieu a répondu, en témoignage pour la famille ?",
+    "notNow": "Pas maintenant",
+    "undone": "Marquée comme non exaucée.",
+    "failed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+    "undoTitle": "Marquer comme non exaucée ?",
+    "undoBody": "La mention Exaucée disparaît de votre demande et la famille peut de nouveau s’engager à prier. Vous pourrez la marquer comme exaucée à tout moment.",
+    "blockedTitle": "Votre témoignage y est lié",
+    "blockedBody": "Le témoignage que vous avez écrit est né de cette demande : elle reste donc exaucée tant que ce témoignage existe. Supprimez d’abord le témoignage si vous voulez annuler cela.",
+    "goToMyPosts": "Aller à Mes publications",
+    "dismissed": "Fermé",
+    "linkBannerLead": "Née d’une prière exaucée.",
+    "linkBannerQuote": "« {{excerpt}} »",
+    "linked": {
+      "pendingLead": "Votre témoignage est chez un responsable.",
+      "pendingBody": "Il rejoint le fil de la famille dès qu’il est approuvé. Vous le retrouvez dans Mes publications.",
+      "rejectedLead": "Votre témoignage demande une modification.",
+      "rejectedBody": "Un responsable a demandé un changement. Vous pouvez le modifier et le renvoyer depuis Mes publications.",
+      "removedLead": "Votre témoignage a été retiré.",
+      "removedBody": "Un responsable l’a retiré après examen. Vous le retrouvez dans Mes publications, et le responsable de votre branche peut vous en expliquer la raison."
+    }
+  }
 }

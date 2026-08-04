@@ -202,5 +202,31 @@
   "editSaveResubmit": "Speichern und neu einreichen",
   "editUnavailableTitle": "Das lässt sich nicht bearbeiten",
   "editGone": "Vielleicht wurde es schon gelöscht.",
-  "editRemoved": "Eine Leitung hat diesen Beitrag entfernt, daher lässt er sich nicht mehr bearbeiten. Wenn du meinst, das ist ein Fehler, wende dich an deine Gemeindeleitung."
+  "editRemoved": "Eine Leitung hat diesen Beitrag entfernt, daher lässt er sich nicht mehr bearbeiten. Wenn du meinst, das ist ein Fehler, wende dich an deine Gemeindeleitung.",
+  "answered": {
+    "markAnswered": "Als erhört markieren",
+    "markNotAnswered": "Als nicht erhört markieren",
+    "writeTestimony": "Zeugnis schreiben",
+    "successTitle": "Erhört! Ehre sei Gott",
+    "successBody": "Dein Gebet ist als erhört markiert. Möchtest du als Zeugnis für die Familie teilen, wie Gott geantwortet hat?",
+    "notNow": "Jetzt nicht",
+    "undone": "Als nicht erhört markiert.",
+    "failed": "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "undoTitle": "Als nicht erhört markieren?",
+    "undoBody": "Die Markierung „Erhört“ wird von deinem Anliegen entfernt, und die Familie kann wieder dafür beten. Du kannst es jederzeit wieder als erhört markieren.",
+    "blockedTitle": "Dein Zeugnis ist damit verknüpft",
+    "blockedBody": "Das Zeugnis, das du geschrieben hast, ist aus diesem Anliegen entstanden. Solange es besteht, bleibt das Anliegen erhört. Lösche zuerst das Zeugnis, wenn du das rückgängig machen möchtest.",
+    "goToMyPosts": "Zu „Meine Beiträge“",
+    "dismissed": "Geschlossen",
+    "linkBannerLead": "Aus einem erhörten Gebet entstanden.",
+    "linkBannerQuote": "„{{excerpt}}“",
+    "linked": {
+      "pendingLead": "Dein Zeugnis liegt bei einer Leitung.",
+      "pendingBody": "Sobald es freigegeben ist, erscheint es im Feed der Familie. Du findest es unter „Meine Beiträge“.",
+      "rejectedLead": "Dein Zeugnis braucht eine Änderung.",
+      "rejectedBody": "Eine Leitung hat um eine Anpassung gebeten. Unter „Meine Beiträge“ kannst du es bearbeiten und erneut einreichen.",
+      "removedLead": "Dein Zeugnis wurde entfernt.",
+      "removedBody": "Eine Leitung hat es nach der Prüfung entfernt. Du findest es unter „Meine Beiträge“, und deine Gemeindeleitung kann dir den Grund erklären."
+    }
+  }
 }

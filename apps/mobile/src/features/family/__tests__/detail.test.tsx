@@ -18,6 +18,10 @@ jest.mock(
 );
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
+// The mark-answered write (W2.5). Mocked at the client, like the composer's insert,
+// because the payload PRAYER-DETAIL sends is part of what these tests pin down.
+const mockUpdate = jest.fn<Promise<{ error: unknown }>, [unknown]>();
+
 // TESTIMONY-DETAIL renders the optional photo, which reaches the storage client
 // through useSignedPhotoUrl. These fixtures carry no photo, so nothing signs
 // anything; the mock exists only so importing the screen does not construct a
@@ -29,6 +33,11 @@ jest.mock('@/lib/supabase', () => ({
         data: { subscription: { unsubscribe: () => undefined } },
       }),
     },
+    from: () => ({
+      update: (values: unknown) => ({
+        eq: () => mockUpdate(values),
+      }),
+    }),
     storage: {
       from: () => ({
         createSignedUrl: () =>
@@ -121,6 +130,7 @@ function prayer(o: Partial<PrayerFeedItem> = {}): PrayerFeedItem {
     author_name: 'Daniel Kern',
     author_avatar_url: null,
     answer_testimony_id: null,
+    my_answer_testimony_status: null,
     my_intercession_state: null,
     is_mine: false,
     ...o,
@@ -140,11 +150,19 @@ function renderScreen(ui: React.ReactElement) {
   );
 }
 
+/** Press the LAST element carrying this text. Used where a sheet's confirm button repeats
+ * the words of the control that opened it, which is the frame's own wording. */
+async function pressLast(text: string) {
+  const matches = screen.getAllByText(text);
+  await fireEvent.press(matches[matches.length - 1]);
+}
+
 beforeAll(async () => {
   await i18n.changeLanguage('en');
 });
 beforeEach(() => {
   jest.clearAllMocks();
+  mockUpdate.mockResolvedValue({ error: null });
   mockTestimony.mockReturnValue({
     data: testimony(),
     isError: false,
@@ -244,6 +262,7 @@ describe('PRAYER-DETAIL (mockup frame)', () => {
       data: prayer({
         answered_at: '2026-07-23T10:00:00Z',
         answer_testimony_id: 't7',
+        my_answer_testimony_status: null,
       }),
       isError: false,
       refetch: jest.fn(),
@@ -255,5 +274,120 @@ describe('PRAYER-DETAIL (mockup frame)', () => {
       pathname: '/testimony/[id]',
       params: { id: 't7' },
     });
+  });
+});
+
+// W2.5 · the loop, on the author's own request. Each state is what the ROW says, and the
+// column that decides is `my_answer_testimony_status`: it reports a linked testimony in
+// any state, while `answer_testimony_id` waits for a leader.
+describe('PRAYER-DETAIL · own request (the loop)', () => {
+  const mine = (o: Partial<PrayerFeedItem> = {}) =>
+    prayer({ is_mine: true, author_id: 'me', author_name: 'You', ...o });
+
+  function showPrayer(row: PrayerFeedItem) {
+    mockPrayer.mockReturnValue({
+      data: row,
+      isError: false,
+      refetch: jest.fn(),
+    });
+  }
+
+  test('offers the loop, not the commitment', async () => {
+    showPrayer(mine());
+    await renderScreen(<PrayerDetail />);
+
+    expect(screen.getByText('Mark as answered')).toBeTruthy();
+    expect(screen.getByText('Share')).toBeTruthy();
+    // You do not commit to pray for yourself, and Edit lives in the `...` menu (W2.6).
+    expect(screen.queryByText('I will pray')).toBeNull();
+    expect(screen.queryByText('Edit request')).toBeNull();
+  });
+
+  test('marking answered writes the timestamp and celebrates, then opens the linked composer', async () => {
+    showPrayer(mine());
+    await renderScreen(<PrayerDetail />);
+    await fireEvent.press(screen.getByText('Mark as answered'));
+
+    // A real timestamp, not just any truthy value: `answered_at` is what the ANSWERED tag
+    // and the feed's ordering read.
+    const payload = mockUpdate.mock.calls[0][0] as { answered_at: unknown };
+    expect(typeof payload.answered_at).toBe('string');
+    expect(Date.parse(String(payload.answered_at))).not.toBeNaN();
+    // MARK-ANSWERED, the loop's celebration (docs/spec/09).
+    expect(await screen.findByText('Answered! Glory to God')).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('Write a testimony'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/testimony/compose',
+      params: { fromPrayer: 'x1' },
+    });
+  });
+
+  test('answered with no testimony keeps the invitation open, and the undo works', async () => {
+    showPrayer(mine({ answered_at: '2026-07-23T10:00:00Z' }));
+    await renderScreen(<PrayerDetail />);
+
+    expect(screen.getByText('Write a testimony')).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('Mark as not answered'));
+    expect(screen.getByText('Mark as not answered?')).toBeTruthy();
+
+    // The sheet's own button, not the link that opened it: the frame gives both the
+    // same words, so they are told apart by which came last.
+    await pressLast('Mark as not answered');
+    expect(mockUpdate).toHaveBeenCalledWith({ answered_at: null });
+  });
+
+  test('a testimony still in the queue replaces the offer and explains the refusal', async () => {
+    showPrayer(
+      mine({
+        answered_at: '2026-07-23T10:00:00Z',
+        // Not approved, so the public reverse link is still empty...
+        answer_testimony_id: null,
+        // ...but the guard counts it, so the screen must too.
+        my_answer_testimony_status: 'pending',
+      }),
+    );
+    await renderScreen(<PrayerDetail />);
+
+    // Offering it again would be a unique-constraint violation on from_prayer_id.
+    expect(screen.queryByText('Write a testimony')).toBeNull();
+    expect(screen.getByText(/Your testimony is with a leader/)).toBeTruthy();
+
+    // docs/spec/09: "the confirm sheet says so". It explains rather than acting.
+    await fireEvent.press(screen.getByText('Mark as not answered'));
+    expect(screen.getByText('Your testimony is linked to this')).toBeTruthy();
+    expect(screen.queryByText('Mark as not answered?')).toBeNull();
+
+    await fireEvent.press(screen.getByText('Go to My posts'));
+    expect(mockPush).toHaveBeenCalledWith('/my-posts');
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  test('a rejected testimony says so rather than borrowing the queue copy', async () => {
+    showPrayer(
+      mine({
+        answered_at: '2026-07-23T10:00:00Z',
+        my_answer_testimony_status: 'rejected',
+      }),
+    );
+    await renderScreen(<PrayerDetail />);
+    expect(screen.getByText(/needs a change/)).toBeTruthy();
+    expect(screen.queryByText(/with a leader/)).toBeNull();
+  });
+
+  test('once the testimony is approved the request links to it and asks for nothing more', async () => {
+    showPrayer(
+      mine({
+        answered_at: '2026-07-23T10:00:00Z',
+        answer_testimony_id: 't7',
+        my_answer_testimony_status: 'approved',
+      }),
+    );
+    await renderScreen(<PrayerDetail />);
+
+    expect(screen.getByText('Read how God answered')).toBeTruthy();
+    expect(screen.queryByText('Write a testimony')).toBeNull();
+    expect(screen.queryByText(/with a leader/)).toBeNull();
   });
 });

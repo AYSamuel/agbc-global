@@ -61,6 +61,17 @@ export interface PrayerFeedItem {
   author_name: string | null;
   author_avatar_url: string | null;
   answer_testimony_id: string | null;
+  /**
+   * The AUTHOR's view of the testimony this request produced, in any state (W2.5). Null
+   * for everyone else, and for an author who has not written one.
+   *
+   * Distinct from `answer_testimony_id` above, which waits for a leader because it drives
+   * the public reverse link. This one matches `prayer_has_live_testimony()`, the guard that
+   * refuses "Mark as not answered", so the screen and the database agree about whether the
+   * undo is available and the confirm sheet can say why it is not.
+   */
+  my_answer_testimony_status:
+    'pending' | 'approved' | 'rejected' | 'removed' | null;
   /** This member's own commitment: null until they tap "I will pray". On the row
    * beside the counts it belongs with, so a card cannot hold one without the
    * other (W2.4). Read by the two-step controls in slice 3. */
@@ -75,7 +86,9 @@ const TESTIMONY_FIELDS =
   'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id, reacted_by_me, is_mine';
 
 const PRAYER_FIELDS =
-  'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id, my_intercession_state, is_mine';
+  'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id, my_answer_testimony_status, my_intercession_state, is_mine';
+
+const POST_STATUSES = ['pending', 'approved', 'rejected', 'removed'] as const;
 
 const FEED_LIMIT = 50;
 
@@ -147,6 +160,15 @@ function mapPrayer(row: PrayerRow): PrayerFeedItem | null {
     author_name: str(row.author_name),
     author_avatar_url: str(row.author_avatar_url),
     answer_testimony_id: str(row.answer_testimony_id),
+    // An unrecognised status reads as "no testimony linked", which is the direction that
+    // fails safe on the screen: the author is offered the loop's next step and the
+    // database, which is the one that actually decides, refuses it if a testimony does
+    // exist. The opposite default would hide the offer from someone who never wrote one.
+    my_answer_testimony_status: POST_STATUSES.includes(
+      row.my_answer_testimony_status as (typeof POST_STATUSES)[number],
+    )
+      ? (row.my_answer_testimony_status as PrayerFeedItem['my_answer_testimony_status'])
+      : null,
     // Anything the app does not recognise reads as "no commitment": a card that
     // cannot tell must offer the forward step, never a fulfilled one.
     my_intercession_state:
@@ -320,9 +342,17 @@ export function useLatestTestimonyQuery() {
   return useQuery(latestTestimonyQueryOptions());
 }
 
-export function usePrayerQuery(id: string) {
+/**
+ * One request, by id.
+ *
+ * `enabled` exists for the composer (W2.5), which asks for the origin prayer only when it
+ * was opened from one. An id of '' is not a uuid, so firing this unconditionally would
+ * spend a failing round trip on every ordinary testimony somebody writes.
+ */
+export function usePrayerQuery(id: string, enabled = true) {
   return useQuery({
     queryKey: ['family', 'prayer', id] as const,
+    enabled: enabled && id !== '',
     queryFn: async (): Promise<PrayerFeedItem | null> => {
       const startedAt = Date.now();
       const { data, error } = await supabase

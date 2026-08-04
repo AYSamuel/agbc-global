@@ -49,6 +49,11 @@ jest.mock('@/lib/queryPersist', () => ({
 // Screen tests mock the query module rather than Supabase reads (the family
 // convention); the WRITE is mocked at the client, because the payload the
 // composer sends is exactly what these tests exist to pin down.
+/** The origin request a linked composer reads (W2.5). Set per test; undefined means the
+ * composer was not opened from a prayer, which is every other test in this file. */
+let mockOriginPrayer:
+  { id: string; body: string; is_mine: boolean } | undefined;
+
 jest.mock('../queries', () => ({
   // The composer refreshes only the surfaces its post belongs to (W2.4).
   TESTIMONY_SURFACE_KEYS: [['family', 'testimonies']],
@@ -59,6 +64,7 @@ jest.mock('../queries', () => ({
       { id: '40000000-0000-4000-8000-000000000002', key: 'provision' },
     ],
   }),
+  usePrayerQuery: () => ({ data: mockOriginPrayer }),
 }));
 
 // The photo pipeline is mocked at its own seam rather than at the picker: what
@@ -106,12 +112,15 @@ async function press(element: Parameters<typeof fireEvent.press>[0]) {
   await fireEvent.press(element);
 }
 
-async function renderFlow(target: 'testimony' | 'prayer') {
+async function renderFlow(
+  target: 'testimony' | 'prayer',
+  fromPrayerId?: string,
+) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
       <ThemeScope name="light">
         <ToastProvider>
-          <ComposeFlow target={target} />
+          <ComposeFlow target={target} fromPrayerId={fromPrayerId} />
         </ToastProvider>
       </ThemeScope>
     </QueryClientProvider>,
@@ -130,6 +139,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   jest.clearAllMocks();
   await AsyncStorage.clear();
+  mockOriginPrayer = undefined;
   mockInsert.mockResolvedValue({ error: null });
   useAuthStore.setState({
     status: 'member',
@@ -291,6 +301,98 @@ describe('TESTIMONY-COMPOSE', () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByText('Sent for review')).toBeNull();
+  });
+});
+
+describe('TESTIMONY-COMPOSE from an answered prayer (W2.5)', () => {
+  const PRAYER_ID = '83000000-0000-4000-8000-00000000000a';
+  const MINE = {
+    id: PRAYER_ID,
+    body: "Please pray for my mother's recovery after her surgery this week.",
+    is_mine: true,
+  };
+
+  test('the banner quotes the request, and the row carries the link', async () => {
+    mockOriginPrayer = MINE;
+    await renderFlow('testimony', PRAYER_ID);
+
+    // The frame's banner: the lead, then the request's own words truncated to one line.
+    expect(
+      await screen.findByText('Born from an answered prayer.', {
+        exact: false,
+      }),
+    ).toBeTruthy();
+    // The frame's own excerpt, verbatim: cut on a word boundary, then an ellipsis.
+    expect(
+      screen.getByText("“Please pray for my mother's recovery…”"),
+    ).toBeTruthy();
+
+    await writeBody('Share a testimony', 'God answered! She is recovering.');
+    await press(screen.getByText('Continue'));
+    await press(screen.getByLabelText('I agree to share this publicly.'));
+    await press(screen.getByText('Post testimony'));
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalled();
+    });
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: 'God answered! She is recovering.',
+        from_prayer_id: PRAYER_ID,
+      }),
+    );
+  });
+
+  test("someone else's request composes a plain testimony, with no claim on it", async () => {
+    // `assert_prayer_link_allowed` refuses this link server-side, so the honest thing on
+    // screen is a composer with no banner rather than one that fails on Post.
+    mockOriginPrayer = { ...MINE, is_mine: false };
+    await renderFlow('testimony', PRAYER_ID);
+
+    await writeBody('Share a testimony', 'Not my prayer to answer.');
+    expect(screen.queryByText('Born from an answered prayer.')).toBeNull();
+
+    await press(screen.getByText('Continue'));
+    await press(screen.getByLabelText('I agree to share this publicly.'));
+    await press(screen.getByText('Post testimony'));
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalled();
+    });
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ from_prayer_id: null }),
+    );
+  });
+
+  // A linked draft has its own key. Restored into a PLAIN composer it would publish the
+  // same words with no ribbon and no way for the author to see what was lost, so the two
+  // halves are asserted separately: it does not leak out, and it does come back.
+  async function storeLinkedDraft() {
+    await AsyncStorage.setItem(
+      draftKey('testimony', undefined, PRAYER_ID),
+      JSON.stringify({
+        body: 'Half an answer.',
+        categoryId: null,
+        isAnonymous: false,
+        savedAt: 1,
+      }),
+    );
+  }
+
+  test('a linked draft does not leak into a plain composer', async () => {
+    await storeLinkedDraft();
+    await renderFlow('testimony');
+
+    expect(await screen.findByLabelText('Share a testimony')).toBeTruthy();
+    expect(screen.queryByDisplayValue('Half an answer.')).toBeNull();
+  });
+
+  test('and comes back when the same request is answered again', async () => {
+    await storeLinkedDraft();
+    mockOriginPrayer = MINE;
+    await renderFlow('testimony', PRAYER_ID);
+
+    expect(await screen.findByDisplayValue('Half an answer.')).toBeTruthy();
   });
 });
 

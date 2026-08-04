@@ -30,11 +30,21 @@ export interface ComposeDraft {
  * are not the words of the new post somebody started yesterday, and sharing one key would
  * let a restored edit overwrite an untouched draft, or worse, put one post's words in
  * another post's box.
+ *
+ * A testimony written FROM a prayer gets its own too (W2.5), for the sharper version of the
+ * same reason: the link is not part of the draft, so an abandoned linked draft restored
+ * into a plain composer would publish "God answered my mother's surgery" with no ribbon
+ * and no way for the author to see what was lost. Keying on the prayer keeps each answer
+ * with the request it answers.
  */
-export function draftKey(target: ComposeTarget, editId?: string): string {
-  return editId
-    ? `agbc.compose.draft.${target}.${editId}`
-    : `agbc.compose.draft.${target}`;
+export function draftKey(
+  target: ComposeTarget,
+  editId?: string,
+  fromPrayerId?: string,
+): string {
+  if (editId) return `agbc.compose.draft.${target}.${editId}`;
+  if (fromPrayerId) return `agbc.compose.draft.${target}.from.${fromPrayerId}`;
+  return `agbc.compose.draft.${target}`;
 }
 
 /** Pure for tests: anything malformed reads as "no draft" rather than throwing
@@ -64,9 +74,12 @@ export function parseDraft(raw: string | null): ComposeDraft | null {
 export async function loadDraft(
   target: ComposeTarget,
   editId?: string,
+  fromPrayerId?: string,
 ): Promise<ComposeDraft | null> {
   try {
-    return parseDraft(await AsyncStorage.getItem(draftKey(target, editId)));
+    return parseDraft(
+      await AsyncStorage.getItem(draftKey(target, editId, fromPrayerId)),
+    );
   } catch {
     // Storage unavailable is not a reason to block someone from writing.
     return null;
@@ -77,10 +90,11 @@ export async function saveDraft(
   target: ComposeTarget,
   draft: Omit<ComposeDraft, 'savedAt'>,
   editId?: string,
+  fromPrayerId?: string,
 ): Promise<void> {
   try {
     await AsyncStorage.setItem(
-      draftKey(target, editId),
+      draftKey(target, editId, fromPrayerId),
       JSON.stringify({ ...draft, savedAt: Date.now() }),
     );
   } catch {
@@ -91,9 +105,10 @@ export async function saveDraft(
 export async function clearDraft(
   target: ComposeTarget,
   editId?: string,
+  fromPrayerId?: string,
 ): Promise<void> {
   try {
-    await AsyncStorage.removeItem(draftKey(target, editId));
+    await AsyncStorage.removeItem(draftKey(target, editId, fromPrayerId));
   } catch {
     // Nothing to do; a stale draft is recoverable, a crash here is not.
   }

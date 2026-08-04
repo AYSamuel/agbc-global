@@ -60,6 +60,11 @@ jest.mock('../queries', () => ({
   TESTIMONY_SURFACE_KEYS: [['family', 'testimonies']],
   PRAYER_SURFACE_KEYS: [['family', 'prayers']],
   useTestimonyCategoriesQuery: () => ({ data: [] }),
+  // An EDIT never carries a prayer link (W2.5: `from_prayer_id` counts as content on
+  // update, and there is no frame for adding one), so the composer disables this read
+  // outright. It is here because the mock has to answer the call, not because an edit
+  // has an answer.
+  usePrayerQuery: () => ({ data: undefined }),
 }));
 
 jest.mock('../photo', () => ({
