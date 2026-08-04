@@ -1,12 +1,6 @@
 import { Controller, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 
 import {
   composeBodyMax,
@@ -88,11 +82,16 @@ export function ComposeStep({
   const max = composeBodyMax(target);
 
   return (
-    <Screen widthClass="capped" padded={false} scroll={false}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
+    // `padding` on BOTH platforms, and OUTSIDE `Screen`, which is the pattern
+    // contact.tsx already uses. Android has been edge-to-edge since SDK 57, so the
+    // window no longer resizes for the keyboard, and this is the one screen that PINS
+    // its primary action below a scroll view: with no behavior at all, Continue sat
+    // under the keyboard from the moment the body autofocused, on a phone as well as a
+    // tablet (found 2026-08-04). Inside `Screen` it was still short, because Screen has
+    // already taken the bottom safe-area inset off the height that KeyboardAvoidingView
+    // then pads against the window. Outside it, the frame and the measurement agree.
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <Screen widthClass="capped" padded={false} scroll={false}>
         <AppHeader
           title={t(
             editing
@@ -256,7 +255,7 @@ export function ComposeStep({
             />
           )}
         </View>
-      </KeyboardAvoidingView>
-    </Screen>
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
