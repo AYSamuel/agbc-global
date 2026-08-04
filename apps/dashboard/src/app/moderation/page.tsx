@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/Alert';
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
 import { QueueItem } from '@/components/QueueItem';
+import { Stat } from '@/components/ui/Stat';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
@@ -175,17 +176,6 @@ function readKind(value: string | string[] | undefined): QueueKind | undefined {
   return candidate === 'testimony' || candidate === 'prayer'
     ? candidate
     : undefined;
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="min-w-36 flex-1 rounded-card border border-cardline bg-card px-4 py-3">
-      <dd className="font-display text-[1.35rem] font-extrabold">{value}</dd>
-      <dt className="mt-0.5 text-label font-bold tracking-wide text-muted uppercase">
-        {label}
-      </dt>
-    </div>
-  );
 }
 
 function FilterTab({

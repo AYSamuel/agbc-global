@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@agbc/shared/database';
 
 import type { Caller } from './authorize';
+import { lookupAuthorNames, lookupBranchNames } from './lookups';
 
 /**
  * Reading the moderation queue (docs/spec/17 §1, W2.7 slice 2).
@@ -141,39 +142,6 @@ export async function loadModerationQueue(
       (item) => now - new Date(item.createdAt).getTime() > OVERDUE_AFTER_MS,
     ).length,
   };
-}
-
-async function lookupBranchNames(
-  supabase: Client,
-  ids: (string | null)[],
-): Promise<Map<string, string>> {
-  const unique = [...new Set(ids.filter((id): id is string => Boolean(id)))];
-  if (unique.length === 0) return new Map();
-
-  const { data } = await supabase
-    .from('branches')
-    .select('id, name')
-    .in('id', unique);
-  return new Map((data ?? []).map((branch) => [branch.id, branch.name]));
-}
-
-async function lookupAuthorNames(
-  supabase: Client,
-  ids: (string | null)[],
-): Promise<Map<string, string>> {
-  const unique = [...new Set(ids.filter((id): id is string => Boolean(id)))];
-  if (unique.length === 0) return new Map();
-
-  // Read through the caller's client, so "leaders read profiles in their branch" is what
-  // grants this. An id the caller may not read simply returns no row, and the item shows
-  // no name rather than leaking one.
-  const { data } = await supabase
-    .from('profiles')
-    .select('id, display_name')
-    .in('id', unique);
-  return new Map(
-    (data ?? []).map((profile) => [profile.id, profile.display_name]),
-  );
 }
 
 async function signPhotos(

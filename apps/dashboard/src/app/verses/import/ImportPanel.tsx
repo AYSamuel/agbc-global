@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Pill } from '@/components/ui/Pill';
+import { Stat } from '@/components/ui/Stat';
 import { copy } from '@/copy/en';
 import {
   LANGUAGES,
@@ -193,7 +194,7 @@ function Preview({
         <Stat
           label={copy.verses.import.statInvalid}
           value={result.invalid}
-          bad={result.invalid > 0}
+          tone={result.invalid > 0 ? 'low' : 'normal'}
         />
       </dl>
 
@@ -287,35 +288,6 @@ const CONFLICT_CHOICES = [
   { value: 'keep', replace: false, label: copy.verses.import.keep },
   { value: 'replace', replace: true, label: copy.verses.import.replace },
 ];
-
-function Stat({
-  label,
-  value,
-  bad = false,
-}: {
-  label: string;
-  value: number;
-  bad?: boolean;
-}) {
-  return (
-    <div
-      className={`min-w-36 flex-1 rounded-card border bg-card px-4 py-3 ${
-        bad ? 'border-[rgba(224,52,44,0.42)]' : 'border-cardline'
-      }`}
-    >
-      <dd
-        className={`font-display text-[1.35rem] font-extrabold ${
-          bad ? 'text-danger' : ''
-        }`}
-      >
-        {value}
-      </dd>
-      <dt className="mt-0.5 text-label font-bold tracking-wide text-muted uppercase">
-        {label}
-      </dt>
-    </div>
-  );
-}
 
 /**
  * One row that cannot be read, named by its line number in the reader's own spreadsheet.
