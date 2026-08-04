@@ -84,5 +84,6 @@
     "fr": "French"
   },
   "weeks_one": "{{count}} week",
-  "weeks_other": "{{count}} weeks"
+  "weeks_other": "{{count}} weeks",
+  "cancel": "Cancel"
 }

@@ -64,5 +64,16 @@
     "refusedBody": "{{branch}} hat diesen Wechsel nicht bestätigt, und den Grund können wir hier nicht teilen. Wenn du darüber sprechen möchtest: {{email}}. Du kannst jederzeit wieder anfragen.",
     "refusedEmail": "{{branch}} schreiben",
     "refusedClose": "Schließen"
+  },
+  "communitySection": "Gemeinschaft",
+  "blocked": {
+    "title": "Blockierte Mitglieder",
+    "subhead": "Ihr seht die Beiträge des anderen nicht. Die Mitglieder erfahren nichts davon.",
+    "unblock": "Freigeben",
+    "unblockNamed": "{{name}} freigeben",
+    "unblocked": "{{name}} ist wieder freigegeben.",
+    "unblockFailed": "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "emptyTitle": "Niemand ist blockiert",
+    "emptyBody": "Falls du es einmal brauchst: Du kannst ein Mitglied über die Beitragsaktionen an seinem Beitrag blockieren."
   }
 }

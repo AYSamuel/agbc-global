@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
-import { spacing, typeScale } from '@agbc/shared/theme';
+import { radius, spacing, typeScale } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
 import { Button } from './Button';
+import type { IconProps } from './icons';
 
 export interface EmptyStateProps {
   title: string;
@@ -60,6 +61,31 @@ export function EmptyState({
       {actionLabel && onAction ? (
         <Button label={actionLabel} variant="primary" onPress={onAction} />
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * The mockup's `.empty .ei`: a 66px alt circle around a 30px muted glyph, which is what
+ * every drawn empty state puts above its title (MY-POSTS, BLOCKED-MEMBERS).
+ *
+ * Distinct from `features/shell/StubIcon`, which is the smaller `.authicon` circle the
+ * not-built-yet placeholders use. Same idea, two sizes, and the frames pick per screen.
+ */
+export function EmptyGlyph({ Icon }: { Icon: ComponentType<IconProps> }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        width: 66,
+        height: 66,
+        borderRadius: radius.full,
+        backgroundColor: colors.alt,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Icon size={30} color={colors.muted} />
     </View>
   );
 }

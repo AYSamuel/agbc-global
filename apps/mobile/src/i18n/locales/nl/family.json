@@ -132,5 +132,62 @@
     "emptyAction": "Deel een getuigenis",
     "guestTitle": "Log in om je berichten te zien",
     "guestBody": "Je getuigenissen en gebedspunten, en hoe het met elk ervan gaat, staan hier zodra je bent ingelogd."
+  },
+  "actions": {
+    "open": "Berichtacties",
+    "mine": "Jouw bericht",
+    "theirs": "Dit bericht",
+    "edit": "Bewerken",
+    "editSub": "Bewerken stuurt dit terug naar de beoordeling",
+    "delete": "Verwijderen",
+    "report": "Bericht melden",
+    "block": "Dit lid blokkeren",
+    "dismissed": "Menu gesloten",
+    "gateReportTitle": "Meld je aan om dit bericht te melden",
+    "gateBlockTitle": "Meld je aan om dit lid te blokkeren",
+    "gateBody": "Meldingen en blokkeringen horen bij je account, zodat een leider weet dat een echt mens ze heeft gedaan."
+  },
+  "report": {
+    "title": "Dit bericht melden",
+    "reasons": {
+      "at_risk": {
+        "title": "Iemand loopt misschien gevaar",
+        "body": "Misbruik, zelfbeschadiging of een kind in gevaar. Dit bereikt eerst een leider."
+      },
+      "private_details": {
+        "title": "Privégegevens over iemand",
+        "body": "Een naam, een foto of iets over hun gezondheid dat niet gedeeld had mogen worden."
+      },
+      "hurtful": {
+        "title": "Kwetsend of beledigend",
+        "body": "Woorden die iemand aanvallen of vernederen."
+      },
+      "not_for_this_space": {
+        "title": "Hoort hier niet",
+        "body": "Iets verkopen, spam, of niets met de kerk te maken."
+      }
+    },
+    "send": "Naar een leider sturen",
+    "thanks": "Dank je. Een leider kijkt hiernaar.",
+    "failed": "Dat is niet verzonden. Probeer het opnieuw.",
+    "dismissed": "Melding gesloten"
+  },
+  "block": {
+    "title": "{{name}} blokkeren?",
+    "body": "Jullie zien elkaars getuigenissen en gebeden niet meer, en diegene hoort er niets over. Je kunt dit ongedaan maken bij Instellingen onder Geblokkeerde leden. Wil je dat een leider naar dit bericht kijkt, meld het dan.",
+    "confirm": "{{name}} blokkeren",
+    "done": "{{name}} is geblokkeerd.",
+    "failed": "Dat is niet gelukt. Probeer het opnieuw.",
+    "dismissed": "Blokkeren gesloten"
+  },
+  "deletePost": {
+    "titleTestimony": "Dit getuigenis verwijderen?",
+    "titlePrayer": "Dit gebedsverzoek verwijderen?",
+    "bodyTestimony": "Het verdwijnt uit de familiefeed en uit Mijn berichten. Dit kan niet ongedaan worden gemaakt, en de eer die anderen eraan gaven gaat mee.",
+    "bodyPrayer": "Het verdwijnt uit de familiefeed en uit Mijn berichten. Dit kan niet ongedaan worden gemaakt.",
+    "confirm": "Verwijderen",
+    "done": "Verwijderd.",
+    "failed": "Dat is niet gelukt. Probeer het opnieuw.",
+    "dismissed": "Gesloten"
   }
 }

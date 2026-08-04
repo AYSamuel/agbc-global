@@ -43,6 +43,7 @@ const ROW: PrayerFeedItem = {
   author_avatar_url: null,
   answer_testimony_id: null,
   my_intercession_state: null,
+  is_mine: false,
 };
 
 function row(): PrayerFeedItem {

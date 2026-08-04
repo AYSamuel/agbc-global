@@ -64,5 +64,16 @@
     "refusedBody": "{{branch}} did not approve this move, and we cannot share the reason here. If you would like to talk it through, they are at {{email}}. You are welcome to ask again whenever you are ready.",
     "refusedEmail": "Email {{branch}}",
     "refusedClose": "Close"
+  },
+  "communitySection": "Community",
+  "blocked": {
+    "title": "Blocked members",
+    "subhead": "You and these members do not see each other's posts. They are not told.",
+    "unblock": "Unblock",
+    "unblockNamed": "Unblock {{name}}",
+    "unblocked": "{{name}} is unblocked.",
+    "unblockFailed": "That did not work. Please try again.",
+    "emptyTitle": "Nobody is blocked",
+    "emptyBody": "If you ever need to, you can block a member from the post actions menu on their post."
   }
 }

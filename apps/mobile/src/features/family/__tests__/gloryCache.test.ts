@@ -39,6 +39,7 @@ const ROW: TestimonyFeedItem = {
   from_prayer_id: null,
   origin_prayer_id: null,
   reacted_by_me: false,
+  is_mine: false,
 };
 
 const FEED = testimonyFeedKey('everywhere', null);

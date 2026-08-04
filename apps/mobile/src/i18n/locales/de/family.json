@@ -132,5 +132,62 @@
     "emptyAction": "Zeugnis teilen",
     "guestTitle": "Melde dich an, um deine Beiträge zu sehen",
     "guestBody": "Deine Zeugnisse und Gebetsanliegen und wie es mit ihnen weitergeht, findest du hier, sobald du angemeldet bist."
+  },
+  "actions": {
+    "open": "Beitragsaktionen",
+    "mine": "Dein Beitrag",
+    "theirs": "Dieser Beitrag",
+    "edit": "Bearbeiten",
+    "editSub": "Bearbeiten schickt den Beitrag zurück in die Prüfung",
+    "delete": "Löschen",
+    "report": "Beitrag melden",
+    "block": "Dieses Mitglied blockieren",
+    "dismissed": "Menü geschlossen",
+    "gateReportTitle": "Melde dich an, um diesen Beitrag zu melden",
+    "gateBlockTitle": "Melde dich an, um dieses Mitglied zu blockieren",
+    "gateBody": "Meldungen und Blockierungen gehören zu deinem Konto, damit eine Leitung weiß, dass ein echter Mensch sie ausgelöst hat."
+  },
+  "report": {
+    "title": "Diesen Beitrag melden",
+    "reasons": {
+      "at_risk": {
+        "title": "Jemand könnte in Gefahr sein",
+        "body": "Missbrauch, Selbstverletzung oder ein Kind in Gefahr. Das erreicht zuerst eine Leitung."
+      },
+      "private_details": {
+        "title": "Private Angaben über jemanden",
+        "body": "Ein Name, ein Foto oder etwas über die Gesundheit, das nicht zum Teilen gedacht war."
+      },
+      "hurtful": {
+        "title": "Verletzend oder beleidigend",
+        "body": "Worte, die einen Menschen angreifen oder beschämen."
+      },
+      "not_for_this_space": {
+        "title": "Gehört nicht hierher",
+        "body": "Werbung, Spam oder etwas ohne Bezug zur Gemeinde."
+      }
+    },
+    "send": "An eine Leitung senden",
+    "thanks": "Danke. Eine Leitung sieht sich das an.",
+    "failed": "Das wurde nicht gesendet. Bitte versuche es erneut.",
+    "dismissed": "Meldung geschlossen"
+  },
+  "block": {
+    "title": "{{name}} blockieren?",
+    "body": "Ihr seht die Zeugnisse und Gebete des anderen nicht mehr, und die Person erfährt nichts davon. Du kannst das in den Einstellungen unter Blockierte Mitglieder rückgängig machen. Wenn eine Leitung den Beitrag ansehen soll, melde ihn stattdessen.",
+    "confirm": "{{name}} blockieren",
+    "done": "{{name}} ist blockiert.",
+    "failed": "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "dismissed": "Blockieren geschlossen"
+  },
+  "deletePost": {
+    "titleTestimony": "Dieses Zeugnis löschen?",
+    "titlePrayer": "Dieses Gebetsanliegen löschen?",
+    "bodyTestimony": "Es verschwindet aus dem Feed der Familie und aus Meine Beiträge. Das lässt sich nicht rückgängig machen, und die Ehre, die andere ihm gegeben haben, geht mit.",
+    "bodyPrayer": "Es verschwindet aus dem Feed der Familie und aus Meine Beiträge. Das lässt sich nicht rückgängig machen.",
+    "confirm": "Löschen",
+    "done": "Gelöscht.",
+    "failed": "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "dismissed": "Geschlossen"
   }
 }

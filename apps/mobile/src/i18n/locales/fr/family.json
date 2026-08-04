@@ -125,12 +125,69 @@
     },
     "rejectedPrefix": "Un responsable demande : {{reason}}",
     "editAndResubmit": "Modifier et renvoyer",
-    "removedBody": "Retiré par un responsable après relecture. Si vous pensez que c est une erreur, contactez le responsable de votre branche.",
+    "removedBody": "Retiré par un responsable après relecture. Si vous pensez que c'est une erreur, contactez le responsable de votre branche.",
     "contactLeader": "Contacter votre responsable ›",
     "emptyTitle": "Rien ici pour le moment",
-    "emptyBody": "Ce que vous partagez avec la famille, et ce qu il en advient, se trouvera ici.",
+    "emptyBody": "Ce que vous partagez avec la famille, et ce qu'il en advient, se trouvera ici.",
     "emptyAction": "Partager un témoignage",
     "guestTitle": "Connectez-vous pour voir vos publications",
     "guestBody": "Vos témoignages et sujets de prière, et où ils en sont, apparaissent ici une fois connecté."
+  },
+  "actions": {
+    "open": "Actions sur la publication",
+    "mine": "Votre publication",
+    "theirs": "Cette publication",
+    "edit": "Modifier",
+    "editSub": "Modifier renvoie la publication en relecture",
+    "delete": "Supprimer",
+    "report": "Signaler la publication",
+    "block": "Bloquer ce membre",
+    "dismissed": "Menu fermé",
+    "gateReportTitle": "Connectez-vous pour signaler cette publication",
+    "gateBlockTitle": "Connectez-vous pour bloquer ce membre",
+    "gateBody": "Les signalements et les blocages sont liés à votre compte, afin qu'un responsable sache qu'une vraie personne les a faits."
+  },
+  "report": {
+    "title": "Signaler cette publication",
+    "reasons": {
+      "at_risk": {
+        "title": "Quelqu un est peut-être en danger",
+        "body": "Maltraitance, automutilation ou un enfant en danger. Ce motif atteint un responsable en premier."
+      },
+      "private_details": {
+        "title": "Des informations privées sur quelqu un",
+        "body": "Un nom, une photo ou un détail de santé qu'il ne fallait pas partager."
+      },
+      "hurtful": {
+        "title": "Blessant ou insultant",
+        "body": "Des mots qui attaquent ou humilient une personne."
+      },
+      "not_for_this_space": {
+        "title": "N a pas sa place ici",
+        "body": "De la vente, du spam, ou rien à voir avec l'église."
+      }
+    },
+    "send": "Envoyer à un responsable",
+    "thanks": "Merci. Un responsable va regarder cela.",
+    "failed": "Cela n'a pas été envoyé. Veuillez réessayer.",
+    "dismissed": "Signalement fermé"
+  },
+  "block": {
+    "title": "Bloquer {{name}} ?",
+    "body": "Vous ne verrez plus les témoignages ni les prières l'un de l'autre, et cette personne n'en est pas informée. Vous pouvez annuler cela dans Réglages, sous Membres bloqués. Si vous souhaitez qu'un responsable examine cette publication, signalez-la plutôt.",
+    "confirm": "Bloquer {{name}}",
+    "done": "{{name}} est bloqué.",
+    "failed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+    "dismissed": "Blocage fermé"
+  },
+  "deletePost": {
+    "titleTestimony": "Supprimer ce témoignage ?",
+    "titlePrayer": "Supprimer cette demande de prière ?",
+    "bodyTestimony": "Il disparaîtra du fil de la famille et de Mes publications. C est définitif, et la gloire que d autres lui ont donnée disparaît avec.",
+    "bodyPrayer": "Elle disparaîtra du fil de la famille et de Mes publications. C est définitif.",
+    "confirm": "Supprimer",
+    "done": "Supprimé.",
+    "failed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+    "dismissed": "Fermé"
   }
 }

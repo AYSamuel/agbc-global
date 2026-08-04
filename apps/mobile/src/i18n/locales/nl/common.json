@@ -84,5 +84,6 @@
     "fr": "Frans"
   },
   "weeks_one": "{{count}} week",
-  "weeks_other": "{{count}} weken"
+  "weeks_other": "{{count}} weken",
+  "cancel": "Annuleren"
 }

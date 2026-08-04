@@ -85,5 +85,6 @@
   },
   "weeks_one": "{{count}} semaine",
   "weeks_many": "{{count}} semaines",
-  "weeks_other": "{{count}} semaines"
+  "weeks_other": "{{count}} semaines",
+  "cancel": "Annuler"
 }

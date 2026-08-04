@@ -332,3 +332,31 @@ export function UndoIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/**
+ * The post-actions affordance (docs/spec/09: `...` on the DETAIL header, never on the
+ * feed card). Three filled dots rather than the stroked glyph the rest of this file
+ * draws: at 20px a stroked circle of radius 1 renders as a ring, and the frames draw
+ * solid dots. `fill` is set per-dot because `base()` hands the Svg `fill="none"`.
+ */
+export function MoreIcon({ color, size = 20, ...rest }: IconProps) {
+  return (
+    <Svg {...base({ color, size, ...rest })}>
+      <Circle cx={5} cy={12} r={1.6} fill={color} stroke="none" />
+      <Circle cx={12} cy={12} r={1.6} fill={color} stroke="none" />
+      <Circle cx={19} cy={12} r={1.6} fill={color} stroke="none" />
+    </Svg>
+  );
+}
+
+// BLOCKED-MEMBERS · nobody blocked (the frame's `.ei` glyph): a circle with a stroke
+// through it. Not a person with a cross, which reads as a person being removed rather
+// than as the absence of anyone.
+export function BlockedIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Circle cx={12} cy={12} r={9} />
+      <Path d="M5.6 5.6l12.8 12.8" />
+    </Svg>
+  );
+}
