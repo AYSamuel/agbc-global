@@ -126,7 +126,19 @@ export interface ComposeForm {
   consentAgreed: boolean;
 }
 
-export function composeSchema(target: ComposeTarget) {
+/**
+ * `create` is a first submission and requires the consent tick. `edit` (W2.6) is an
+ * author changing a post they already published, where there is no tick to require:
+ * `consent_version` and `consented_at` are immutable on update, so a second agreement
+ * has nowhere to be recorded and asking for one would be theatre. The rest of the shape
+ * is identical, because it is the same words in the same box.
+ */
+export type ComposeMode = 'create' | 'edit';
+
+export function composeSchema(
+  target: ComposeTarget,
+  mode: ComposeMode = 'create',
+) {
   return z.strictObject({
     body: z.string().trim().min(1).max(composeBodyMax(target)),
     categoryId: z.uuid().nullable(),
@@ -138,7 +150,8 @@ export function composeSchema(target: ComposeTarget) {
         ? z.string().regex(TESTIMONY_PHOTO_PATH_PATTERN).nullable()
         : z.null(),
     isAnonymous: z.boolean(),
-    consentAgreed: z.boolean().refine((agreed) => agreed),
+    consentAgreed:
+      mode === 'create' ? z.boolean().refine((agreed) => agreed) : z.boolean(),
   });
 }
 

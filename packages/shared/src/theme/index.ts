@@ -63,6 +63,30 @@ export const tonal = {
     bg: 'rgba(31,138,91,0.10)',
     border: 'rgba(31,138,91,0.35)',
   },
+  /**
+   * The mockup's `.pill.changes` (MY-POSTS): something is waiting on the author.
+   *
+   * The frame writes its foreground as `#d0483b`, a hair off `palette.red`. The wash below
+   * is the frame's verbatim; the text uses the palette rather than minting a fifth red for
+   * a difference nobody can see.
+   */
+  red: {
+    bg: 'rgba(192,57,43,0.14)',
+    border: 'rgba(192,57,43,0.40)',
+  },
+  /**
+   * The mockup's `.actrow.danger` (W2.6): the destructive row in a bottom sheet, Delete
+   * or Block this member. `palette.red` at 10%, the frame's value verbatim.
+   *
+   * A second red wash rather than a reuse of the one above, because they are drawn from
+   * different reds at different alphas in the mockup and they sit on different things:
+   * that one is a small status pill carrying its own text, this one is the full width of
+   * a row a thumb is about to land on. It carries no border, because the frame draws
+   * none: an `.actrow` is a filled row, never an outlined one.
+   */
+  redRow: {
+    bg: 'rgba(224,52,44,0.10)',
+  },
 } as const;
 
 // Colors for content sitting on ink or on a photo (splash, photo heroes). Identical

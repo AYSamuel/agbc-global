@@ -29,7 +29,9 @@
     "cancelRequest": "Verzoek intrekken",
     "cancelled": "Verzoek ingetrokken.",
     "cancelFailed": "Dat lukte even niet. Probeer het zo nog eens.",
-    "errorLoad": "We konden je profiel even niet laden. Controleer je verbinding en probeer het opnieuw."
+    "errorLoad": "We konden je profiel even niet laden. Controleer je verbinding en probeer het opnieuw.",
+    "activitySection": "Jouw activiteit",
+    "myPosts": "Mijn berichten"
   },
   "branchChange": {
     "title": "Jouw gemeente",
@@ -62,5 +64,16 @@
     "refusedBody": "{{branch}} heeft deze wissel niet goedgekeurd, en de reden kunnen we hier niet delen. Wil je erover praten, dan zijn ze bereikbaar op {{email}}. Je mag altijd opnieuw vragen.",
     "refusedEmail": "Mail {{branch}}",
     "refusedClose": "Sluiten"
+  },
+  "communitySection": "Gemeenschap",
+  "blocked": {
+    "title": "Geblokkeerde leden",
+    "subhead": "Jij en deze leden zien elkaars berichten niet. Zij horen er niets over.",
+    "unblock": "Deblokkeren",
+    "unblockNamed": "{{name}} deblokkeren",
+    "unblocked": "{{name}} is gedeblokkeerd.",
+    "unblockFailed": "Dat is niet gelukt. Probeer het opnieuw.",
+    "emptyTitle": "Niemand is geblokkeerd",
+    "emptyBody": "Als het ooit nodig is, kun je een lid blokkeren via de berichtacties bij hun bericht."
   }
 }

@@ -1294,6 +1294,21 @@ export type Database = {
       }
     }
     Views: {
+      blocked_members: {
+        Row: {
+          blocked_id: string | null
+          display_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_users_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branch_request_queue: {
         Row: {
           created_at: string | null
@@ -1353,6 +1368,7 @@ export type Database = {
           created_at: string | null
           id: string | null
           is_anonymous: boolean | null
+          is_mine: boolean | null
           language: string | null
           my_intercession_state:
             | Database["public"]["Enums"]["intercession_state"]
@@ -1385,6 +1401,7 @@ export type Database = {
           glory_count: number | null
           id: string | null
           image_path: string | null
+          is_mine: boolean | null
           language: string | null
           origin_prayer_id: string | null
           reacted_by_me: boolean | null

@@ -24,6 +24,7 @@ import {
   WhatsAppIcon,
 } from '@/components/ui';
 import { initials, joinMeta } from '@/features/family/format';
+import { PostActionsMenu } from '@/features/family/PostActionsMenu';
 import { useTestimonyQuery } from '@/features/family/queries';
 import { shareToWhatsApp, testimonyShareText } from '@/features/family/share';
 import { TestimonyPhoto } from '@/features/family/TestimonyPhoto';
@@ -36,9 +37,8 @@ import { useTheme } from '@/theme';
 
 // TESTIMONY-DETAIL (mockup frame + docs/spec/09): the answered-prayer ribbon at
 // the top, a quote-mark tile, the body as a large display quote, the author with
-// an avatar below it, a big Glory pill, and a WhatsApp share. Read-only in W1.5;
-// the ⋯ actions menu (edit/delete/report/block) arrives with W2.6, and Glory
-// completes through gate-return in W2.2.
+// an avatar below it, a big Glory pill, and a WhatsApp share. The ⋯ actions menu
+// (edit/delete for the author, report/block otherwise) landed with W2.6.
 const QUOTE_MARK = '“';
 
 export default function TestimonyDetail() {
@@ -66,17 +66,37 @@ export default function TestimonyDetail() {
     },
   );
 
+  // Back, and also where a post goes when it stops being this member's to see: deleted,
+  // or its author blocked. Same destination either way, because there is nothing left on
+  // this screen to return to.
+  const leave = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)/family');
+  };
+
   return (
     <Screen widthClass="capped" padded={false}>
       <AppHeader
         title={t('family:detailTestimony')}
         // A share/notification deep link opens this with no history: fall back to
         // Family so back is never an inert dead end (docs/spec/04).
-        onBack={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/(tabs)/family');
-        }}
+        onBack={leave}
         backLabel={t('common:back')}
+        // The `...` waits for the row: which menu it opens is the row's answer
+        // (`is_mine`), and a menu that appears first and changes shape a moment later
+        // is a menu somebody taps the wrong item on.
+        trailing={
+          testimony === null ? undefined : (
+            <PostActionsMenu
+              target="testimony"
+              postId={testimony.id}
+              isMine={testimony.is_mine}
+              authorId={testimony.author_id}
+              authorName={testimony.author_name}
+              onGone={leave}
+            />
+          )
+        }
       />
 
       {query.data === undefined && !query.isError ? (

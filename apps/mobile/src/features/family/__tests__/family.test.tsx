@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui';
@@ -104,6 +105,7 @@ function testimony(
     from_prayer_id: null,
     origin_prayer_id: null,
     reacted_by_me: false,
+    is_mine: false,
     ...overrides,
   };
 }
@@ -124,6 +126,7 @@ function prayer(overrides: Partial<PrayerFeedItem> = {}): PrayerFeedItem {
     author_avatar_url: null,
     answer_testimony_id: null,
     my_intercession_state: null,
+    is_mine: false,
     ...overrides,
   };
 }
@@ -137,12 +140,16 @@ const loading: FeedResult<never> = {
 // Awaited render is this repo's convention (matches the watch suite): React 19's
 // async act must flush before the global `screen` is populated.
 async function renderScreen() {
+  // A real QueryClient: the tab reads the blocked list to filter live broadcasts
+  // (W2.6), and the feed queries themselves are mocked at the module boundary above.
   return render(
-    <ThemeScope name="light">
-      <ToastProvider>
-        <Family />
-      </ToastProvider>
-    </ThemeScope>,
+    <QueryClientProvider client={new QueryClient()}>
+      <ThemeScope name="light">
+        <ToastProvider>
+          <Family />
+        </ToastProvider>
+      </ThemeScope>
+    </QueryClientProvider>,
   );
 }
 

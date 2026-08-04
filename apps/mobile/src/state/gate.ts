@@ -18,7 +18,27 @@ export type GateAction =
   | { kind: 'sermon_notes'; sermonId: string }
   | { kind: 'resume_playback'; sermonId: string }
   | { kind: 'notifications' }
-  | { kind: 'im_here' };
+  | { kind: 'im_here' }
+  /**
+   * Reaching MY-POSTS (W2.6). The only NAVIGATION-shaped gate so far: the others complete
+   * something the member tapped, this one opens the screen they were trying to reach, which
+   * is the same promise (docs/spec/04 rule 9) with nothing to write at the end of it.
+   */
+  | { kind: 'my_posts' }
+  /**
+   * Reporting a post and blocking a member (W2.6), both of which need an account: the
+   * report policy requires an onboarded caller, and a block is by definition a fact about
+   * somebody, so a guest has nobody to be.
+   *
+   * DELIBERATELY WITHOUT AN EXECUTOR. Every other gate replays a write or a route; these
+   * two replay a modal on the screen the member is already standing on, because AUTH-4
+   * returns them in place (docs/spec/03). Reopening that sheet from here would mean a
+   * cross-screen channel to carry it, to save one tap on a menu that is right there. They
+   * are still real pending actions so the lifetime rules (background clear, sign-in
+   * abandonment) hold, and `replayGateAction`'s default returns 'noop' for them.
+   */
+  | { kind: 'report' }
+  | { kind: 'block' };
 
 export type GateActionKind = GateAction['kind'];
 

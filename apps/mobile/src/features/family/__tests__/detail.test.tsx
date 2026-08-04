@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { ToastProvider } from '@/components/ui';
 import i18n from '@/i18n';
 import { ThemeScope } from '@/theme';
 
@@ -99,6 +101,7 @@ function testimony(o: Partial<TestimonyFeedItem> = {}): TestimonyFeedItem {
     from_prayer_id: null,
     origin_prayer_id: null,
     reacted_by_me: false,
+    is_mine: false,
     ...o,
   };
 }
@@ -119,12 +122,22 @@ function prayer(o: Partial<PrayerFeedItem> = {}): PrayerFeedItem {
     author_avatar_url: null,
     answer_testimony_id: null,
     my_intercession_state: null,
+    is_mine: false,
     ...o,
   };
 }
 
+// Both detail headers carry the `...` menu since W2.6, which reaches for the toast and
+// for react-query's cache to do its work. Both are real here rather than stubbed: the
+// screens' claim is that they use those libraries correctly.
 function renderScreen(ui: React.ReactElement) {
-  return render(<ThemeScope name="light">{ui}</ThemeScope>);
+  return render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ThemeScope name="light">
+        <ToastProvider>{ui}</ToastProvider>
+      </ThemeScope>
+    </QueryClientProvider>,
+  );
 }
 
 beforeAll(async () => {

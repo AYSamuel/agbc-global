@@ -40,6 +40,10 @@ export interface TestimonyFeedItem {
    * than in a second query, so a card's count and its own reaction state can
    * never disagree mid-refetch (W2.4). Always false for a guest. */
   reacted_by_me: boolean;
+  /** Whether the CALLING member wrote it: which `...` menu the detail header
+   * opens (W2.6). Server-answered rather than compared client-side, for the same
+   * reason as above and because a prayer's author may not be on the row at all. */
+  is_mine: boolean;
 }
 
 export interface PrayerFeedItem {
@@ -61,13 +65,17 @@ export interface PrayerFeedItem {
    * beside the counts it belongs with, so a card cannot hold one without the
    * other (W2.4). Read by the two-step controls in slice 3. */
   my_intercession_state: 'committed' | 'prayed' | null;
+  /** Whether the CALLING member wrote it (W2.6). The ONLY way the author of an
+   * anonymous request is handed it back: `author_id` above is null for everyone,
+   * including for them. */
+  is_mine: boolean;
 }
 
 const TESTIMONY_FIELDS =
-  'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id, reacted_by_me';
+  'id, branch_id, body, language, category_key, image_path, glory_count, created_at, author_id, author_name, author_avatar_url, from_prayer_id, origin_prayer_id, reacted_by_me, is_mine';
 
 const PRAYER_FIELDS =
-  'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id, my_intercession_state';
+  'id, branch_id, body, language, is_anonymous, answered_at, praying_count, prayed_count, created_at, author_id, author_name, author_avatar_url, answer_testimony_id, my_intercession_state, is_mine';
 
 const FEED_LIMIT = 50;
 
@@ -112,6 +120,10 @@ function mapTestimony(row: TestimonyRow): TestimonyFeedItem | null {
     // The view returns null for a guest; the app's answer for "has this member
     // reacted" when there is no member is simply no.
     reacted_by_me: row.reacted_by_me === true,
+    // Same shape, and the same direction of failure: anything the app cannot read as
+    // a definite yes is a no, so an unreadable row never opens the author's menu on
+    // somebody else's post.
+    is_mine: row.is_mine === true,
   };
 }
 
@@ -142,6 +154,7 @@ function mapPrayer(row: PrayerRow): PrayerFeedItem | null {
       row.my_intercession_state === 'prayed'
         ? row.my_intercession_state
         : null,
+    is_mine: row.is_mine === true,
   };
 }
 

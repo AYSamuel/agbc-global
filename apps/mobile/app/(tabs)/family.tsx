@@ -17,6 +17,7 @@ import {
 } from '@/components/ui';
 import { FamilyMap } from '@/features/family/FamilyMap';
 import { joinMeta } from '@/features/family/format';
+import { useBlockedAuthorIds } from '@/features/family/moderation';
 import { AnsweredPrayerCard, PrayerCard } from '@/features/family/PrayerCard';
 import {
   usePrayerFeedQuery,
@@ -83,7 +84,11 @@ export default function Family() {
   const branchNames = useBranchNames();
   const branchColorFor = useBranchColors();
   const mapBranches = useMapBranches();
-  useFamilyRealtime(branchId);
+  // The feed VIEWS already filter blocked authors both ways; a broadcast cannot,
+  // because one payload goes to every subscriber (docs/spec/02). So the live drop is
+  // the client's last step, and its list is the same query the Blocked members screen
+  // reads rather than a second copy of who is blocked.
+  useFamilyRealtime(branchId, useBlockedAuthorIds());
 
   const testimonies = useTestimonyFeedQuery(effectiveScope, branchId);
   const prayers = usePrayerFeedQuery(effectiveScope, branchId);

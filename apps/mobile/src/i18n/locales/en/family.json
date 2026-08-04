@@ -32,6 +32,13 @@
   "ageHours_other": "{{count}}h",
   "ageDays_one": "{{count}}d",
   "ageDays_other": "{{count}}d",
+  "ageMinutesAgo_one": "{{count}} min ago",
+  "ageMinutesAgo_other": "{{count}} min ago",
+  "ageHoursAgo_one": "{{count}} hour ago",
+  "ageHoursAgo_other": "{{count}} hours ago",
+  "ageYesterday": "Yesterday",
+  "ageDaysAgo_one": "{{count}} day ago",
+  "ageDaysAgo_other": "{{count}} days ago",
   "emptyTestimoniesTitle": "Be the first to share",
   "emptyTestimoniesBody": "No testimonies here yet. Tell the family what God has done.",
   "shareTestimony": "Share a testimony",
@@ -114,5 +121,86 @@
     "family": "Family",
     "restoration": "Restoration",
     "thanksgiving": "Thanksgiving"
-  }
+  },
+  "myPosts": {
+    "title": "My posts",
+    "status": {
+      "approved": "Live",
+      "pending": "In review",
+      "rejected": "Needs changes",
+      "removed": "Removed"
+    },
+    "rejectedPrefix": "A leader asked: {{reason}}",
+    "editAndResubmit": "Edit and resubmit",
+    "removedBody": "Removed by a leader after review. If you believe this is a mistake, contact your branch leader.",
+    "contactLeader": "Contact your branch leader ›",
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "What you share with the family, and how it is getting on, will live here.",
+    "emptyAction": "Share a testimony",
+    "guestTitle": "Sign in to see your posts",
+    "guestBody": "Your testimonies and prayer requests, and how each one is getting on, live here once you are signed in."
+  },
+  "actions": {
+    "open": "Post actions",
+    "mine": "Your post",
+    "theirs": "This post",
+    "edit": "Edit",
+    "editSub": "Editing sends this back for review",
+    "delete": "Delete",
+    "report": "Report post",
+    "block": "Block this member",
+    "dismissed": "Menu closed",
+    "gateReportTitle": "Sign in to report this post",
+    "gateBlockTitle": "Sign in to block this member",
+    "gateBody": "Reports and blocks belong to your account, so a leader knows a real person raised it."
+  },
+  "report": {
+    "title": "Report this post",
+    "reasons": {
+      "at_risk": {
+        "title": "Someone may be at risk",
+        "body": "Abuse, self-harm, or a child in danger. This one reaches a leader first."
+      },
+      "private_details": {
+        "title": "Private details about someone",
+        "body": "A name, a photo, or something about their health that was not theirs to share."
+      },
+      "hurtful": {
+        "title": "Hurtful or abusive",
+        "body": "Words that attack or shame a person."
+      },
+      "not_for_this_space": {
+        "title": "Not for this space",
+        "body": "Selling something, spam, or nothing to do with the church."
+      }
+    },
+    "send": "Send to a leader",
+    "thanks": "Thank you. A leader will look at this.",
+    "failed": "That did not send. Please try again.",
+    "dismissed": "Report closed"
+  },
+  "block": {
+    "title": "Block {{name}}?",
+    "body": "You will not see each other's testimonies or prayers, and they are not told. You can undo this in Settings under Blocked members. If you want a leader to look at this post, report it instead.",
+    "confirm": "Block {{name}}",
+    "done": "{{name}} is blocked.",
+    "failed": "That did not work. Please try again.",
+    "dismissed": "Block closed"
+  },
+  "deletePost": {
+    "titleTestimony": "Delete this testimony?",
+    "titlePrayer": "Delete this prayer request?",
+    "bodyTestimony": "It will be removed from the family feed and from My posts. This cannot be undone, and the Glory others gave it goes with it.",
+    "bodyPrayer": "It will be removed from the family feed and from My posts. This cannot be undone.",
+    "confirm": "Delete",
+    "done": "Deleted.",
+    "failed": "That did not work. Please try again.",
+    "dismissed": "Closed"
+  },
+  "editTestimonyTitle": "Edit testimony",
+  "editPrayerTitle": "Edit request",
+  "editSaveResubmit": "Save and resubmit",
+  "editUnavailableTitle": "This cannot be edited",
+  "editGone": "It may have been deleted already.",
+  "editRemoved": "A leader removed this post, so it can no longer be edited. If you believe this is a mistake, contact your branch leader."
 }

@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
@@ -53,8 +54,16 @@ jest.mock('expo-web-browser', () => ({
   openBrowserAsync: (url: string) => mockOpenBrowser(url),
 }));
 
+// SETTINGS reads server state since W2.6 (the count on the Blocked members row), so a
+// real QueryClient stands here rather than a stub of one: the claim under test is that
+// these screens use the library correctly, and a hand-rolled cache would only prove the
+// screens match our belief about it (~/.claude/standards/qa-testing.md).
 function inTheme(ui: React.ReactElement) {
-  return render(<ThemeScope name="light">{ui}</ThemeScope>);
+  return render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ThemeScope name="light">{ui}</ThemeScope>
+    </QueryClientProvider>,
+  );
 }
 
 beforeEach(() => {

@@ -29,7 +29,9 @@
     "cancelRequest": "Annuler la demande",
     "cancelled": "Demande annulée.",
     "cancelFailed": "Cela n'a pas fonctionné à l'instant. Réessayez dans un moment.",
-    "errorLoad": "Nous n'avons pas pu charger votre profil. Vérifiez votre connexion et réessayez."
+    "errorLoad": "Nous n'avons pas pu charger votre profil. Vérifiez votre connexion et réessayez.",
+    "activitySection": "Votre activité",
+    "myPosts": "Mes publications"
   },
   "branchChange": {
     "title": "Votre assemblée",
@@ -62,5 +64,16 @@
     "refusedBody": "{{branch}} n'a pas approuvé ce changement, et nous ne pouvons pas en partager la raison ici. Si vous souhaitez en parler, vous pouvez les joindre à {{email}}. Vous pourrez redemander quand vous le souhaiterez.",
     "refusedEmail": "Écrire à {{branch}}",
     "refusedClose": "Fermer"
+  },
+  "communitySection": "Communauté",
+  "blocked": {
+    "title": "Membres bloqués",
+    "subhead": "Ces membres et vous ne voyez pas vos publications respectives. Ils n'en sont pas informés.",
+    "unblock": "Débloquer",
+    "unblockNamed": "Débloquer {{name}}",
+    "unblocked": "{{name}} est débloqué.",
+    "unblockFailed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+    "emptyTitle": "Personne n'est bloqué",
+    "emptyBody": "Si vous en avez besoin un jour, vous pouvez bloquer un membre depuis les actions de sa publication."
   }
 }

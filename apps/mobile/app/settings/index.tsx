@@ -15,6 +15,7 @@ import {
   Screen,
   SegmentedControl,
 } from '@/components/ui';
+import { useBlockedMembers } from '@/features/family/moderation';
 import { LANGUAGE_AUTONYMS, type SupportedLanguage } from '@/i18n';
 import { useAuthStore } from '@/state/auth';
 import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
@@ -40,6 +41,10 @@ export default function Settings() {
   // on Home changes what you BROWSE and never where you belong.
   const isMember = useAuthStore((s) => s.status === 'member');
   const setThemePref = useThemePrefStore((s) => s.setPref);
+  // The frame's `.val` on the Blocked members row. The same query the screen behind it
+  // reads, so the number in the row and the list it opens are one fact; zero shows
+  // nothing rather than a "0", which would read as a score.
+  const blockedCount = useBlockedMembers().data?.length ?? 0;
 
   const currentLanguage = LANGUAGE_AUTONYMS[i18n.language as SupportedLanguage];
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
@@ -63,6 +68,22 @@ export default function Settings() {
                 label={t('settings:profileRow')}
                 onPress={() => {
                   router.push('/settings/profile');
+                }}
+              />
+            </MenuCard>
+
+            {/* The frame gives Blocked members its own section, labelled Community, and
+                a count in the value slot. Member-only, and not because the screen would
+                break for a guest: a guest has blocked nobody, so the row would lead to
+                an empty state explaining a control they were never offered. */}
+            <MenuLabel label={t('settings:communitySection')} />
+            <MenuCard>
+              <MenuRow
+                icon="🚫"
+                label={t('settings:blocked.title')}
+                value={blockedCount > 0 ? String(blockedCount) : undefined}
+                onPress={() => {
+                  router.push('/settings/blocked');
                 }}
               />
             </MenuCard>

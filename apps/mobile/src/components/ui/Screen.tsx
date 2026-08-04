@@ -9,7 +9,12 @@ import { useTheme } from '@/theme';
 // Width classes per docs/spec/05 tablet rules: 'full' spans the viewport (feeds, rails);
 // 'capped' centers content at a readable measure (~680, forms/Home) so large screens
 // never stretch awkwardly.
-const CAPPED_MAX_WIDTH = 680;
+/**
+ * The 'capped' measure. Exported because a bottom `Sheet` renders in a Modal, outside
+ * any screen's width class, and has to hold the same column by itself (found on a
+ * 1000dp tablet, W2.6). One number, one place.
+ */
+export const CAPPED_MAX_WIDTH = 680;
 
 export interface ScreenProps extends PropsWithChildren {
   /** Scrollable by default; static screens (players, maps) opt out. */

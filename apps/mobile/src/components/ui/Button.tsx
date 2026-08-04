@@ -22,9 +22,12 @@ import { useTheme } from '@/theme';
 // gold in dark); 'accent' = gold fill with navy text on any theme; 'outline' sits on
 // card; 'ghost' is muted text only; 'glass' is the translucent white button the
 // mockup uses ON ink/photo surfaces (.btn.glass), where 'outline' would paint a
-// light card-colored block.
+// light card-colored block; 'danger' is `.btn.danger`, a solid red with white text,
+// for the button that ends something (Block, Delete). Red in BOTH themes: the mockup
+// keeps --red constant, and a destructive action is the one control that should not
+// change temperature with the theme.
 export type ButtonVariant =
-  'primary' | 'accent' | 'outline' | 'ghost' | 'glass';
+  'primary' | 'accent' | 'outline' | 'ghost' | 'glass' | 'danger';
 
 export interface ButtonProps extends Omit<
   PressableProps,
@@ -66,9 +69,11 @@ export function Button({
           ? colors.card
           : variant === 'glass'
             ? 'rgba(255,255,255,0.16)'
-            : 'transparent';
+            : variant === 'danger'
+              ? palette.red
+              : 'transparent';
   // Accent (gold) always carries navy text, both themes (05 contrast rule);
-  // glass sits on ink/photo, so its text is always white.
+  // glass sits on ink/photo, so its text is always white; danger is white on red.
   const foreground =
     variant === 'primary'
       ? colors.btnText
@@ -76,7 +81,7 @@ export function Button({
         ? palette.navy
         : variant === 'outline'
           ? colors.text
-          : variant === 'glass'
+          : variant === 'glass' || variant === 'danger'
             ? onInk.text
             : colors.muted;
 

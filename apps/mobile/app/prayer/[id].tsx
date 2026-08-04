@@ -23,6 +23,7 @@ import {
   Skeleton,
 } from '@/components/ui';
 import { joinMeta } from '@/features/family/format';
+import { PostActionsMenu } from '@/features/family/PostActionsMenu';
 import { usePrayerQuery, type PrayerFeedItem } from '@/features/family/queries';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { useBranchNames } from '@/features/family/useBranchNames';
@@ -32,10 +33,9 @@ import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // PRAYER-DETAIL (mockup frame + docs/spec/09): the request in a card (meta, the
-// body as a display quote, the two counts), then the actions. Read-only in W1.5,
-// so the guest sees the "someone else's request" layout, "I will pray" (gated) +
-// the reminder explainer + Share. Mark-answered / Edit for the author arrive with
-// W2.5 / W2.6.
+// body as a display quote, the two counts), then the actions: "I will pray"
+// (gated for a guest) + the reminder explainer + Share. The ⋯ menu (edit/delete
+// for the author, report/block otherwise) landed with W2.6; mark-answered is W2.5.
 export default function PrayerDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -59,17 +59,36 @@ export default function PrayerDetail() {
   const branchName = prayer ? (branchNames[prayer.branch_id] ?? null) : null;
   const age = useRelativeAgeLabel(prayer?.created_at ?? '');
 
+  // Back, and also where a request goes when it stops being this member's to see:
+  // deleted, or its author blocked.
+  const leave = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)/family');
+  };
+
   return (
     <Screen widthClass="capped" padded={false}>
       <AppHeader
         title={t('family:detailPrayer')}
         // A share/notification deep link opens this with no history: fall back to
         // Family so back is never an inert dead end (docs/spec/04).
-        onBack={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/(tabs)/family');
-        }}
+        onBack={leave}
         backLabel={t('common:back')}
+        // `is_mine` and not `author_id`: an anonymous request carries no author for
+        // anyone, its writer included, and this is what still hands them Edit and
+        // Delete on their own words (migration 20260803170000).
+        trailing={
+          prayer === null ? undefined : (
+            <PostActionsMenu
+              target="prayer"
+              postId={prayer.id}
+              isMine={prayer.is_mine}
+              authorId={prayer.author_id}
+              authorName={prayer.author_name}
+              onGone={leave}
+            />
+          )
+        }
       />
 
       {query.data === undefined && !query.isError ? (
@@ -372,4 +391,5 @@ const PLACEHOLDER_PRAYER: PrayerFeedItem = {
   author_avatar_url: null,
   answer_testimony_id: null,
   my_intercession_state: null,
+  is_mine: false,
 };
