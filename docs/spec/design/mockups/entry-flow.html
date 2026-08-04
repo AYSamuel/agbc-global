@@ -183,7 +183,11 @@
   .scopep button.on{background:var(--btnBg);color:var(--btnText)}
   .prayer{margin:0 16px 12px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px}
   .answered{margin:0 16px 12px;background:rgba(31,138,91,.10);border:1px solid rgba(31,138,91,.35);border-radius:18px;padding:16px 18px}
-  .answered .tag{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#fff;border-radius:100px;padding:4px 11px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  /* The ANSWERED tag also sits inside .pcard on PRAYER-DETAIL, where the author sees
+     their own answered request (W2.5). Same pill, same values: an answered request
+     should read the same wherever it is met. */
+  .answered .tag,.pcard .tag{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#fff;border-radius:100px;padding:4px 11px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .pcard .tag{margin-bottom:12px}
   .answered .body{font-size:14.5px;line-height:1.45;margin-top:9px}
   .fab{position:absolute;left:16px;right:16px;bottom:82px;z-index:5}
   .fab .btn{box-shadow:0 10px 24px -8px var(--dshadow)}
@@ -1629,6 +1633,11 @@
     <!-- PRAYER-DETAIL -->
     <div class="device">
       <p class="name"><b>PRAYER-DETAIL</b> · own request</p>
+      <!-- Synced W2.5 (2026-08-04): the second button was "Edit request", drawn before W2.6
+           moved every post action (Edit, Delete) into the header's `...` menu. Two Edits on
+           one screen is exactly the drift that menu exists to prevent, so the action region
+           now carries what only this screen offers: the loop's next step, and Share.
+           "I will pray" is deliberately absent on your own request. -->
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
@@ -1640,7 +1649,7 @@
           </div>
           <div class="pactions">
             <button class="btn primary">Mark as answered</button>
-            <button class="btn outline">Edit request</button>
+            <button class="btn outline">Share</button>
           </div>
         </div>
       </div>
@@ -1678,6 +1687,135 @@
           <p>Your prayer is marked as answered. Would you like to share how God answered, as a testimony for the family?</p>
           <button class="btn primary" style="max-width:250px">Write a testimony</button>
           <div style="margin-top:16px"><span class="authlink">Not now</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRAYER-DETAIL · answered, no testimony yet -->
+    <div class="device">
+      <p class="name"><b>PRAYER-DETAIL</b> &middot; answered, testimony not written yet</p>
+      <!-- Composed W2.5 (2026-08-04): MARK-ANSWERED's "Not now" had nowhere to land. The
+           testimony prompt is optional (docs/spec/09: "answered without testimony" is an
+           allowed end state), so the offer has to survive being declined once, and this is
+           the screen the author comes back to.
+
+           The ANSWERED pill moves inside .pcard rather than swapping the whole card for the
+           feed's green .answered treatment: on the detail screen the request itself is still
+           the content, and re-washing it would leave nothing to read the state against.
+
+           "Mark as not answered" is a text link, not a third button (Ayo, 2026-08-04). It is
+           a correction, and giving it the same weight as the loop's next step would invite
+           the tap. Its confirm sheet is the frame after this one. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Prayer</span><span style="width:40px"></span></div>
+          <div class="pcard">
+            <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Answered</span>
+            <div class="meta">You &middot; AGBC Berlin &middot; 3 days ago</div>
+            <div class="qbody">&#8220;Please pray for my mother&#39;s recovery after her surgery this week.&#8221;</div>
+            <div class="praystats" style="margin-top:16px"><span class="pi praying"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> 24 praying</span><span class="pi prayed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 9 prayed</span></div>
+          </div>
+          <div class="pactions">
+            <button class="btn primary">Write a testimony</button>
+            <button class="btn outline">Share</button>
+            <div style="text-align:center;padding-top:2px"><span class="authlink">Mark as not answered</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRAYER-DETAIL · answered, testimony awaiting review -->
+    <div class="device">
+      <p class="name"><b>PRAYER-DETAIL</b> &middot; answered, testimony awaiting review</p>
+      <!-- Composed W2.5 (2026-08-04). The gap this frame closes is the one the database
+           already had an opinion about: `from_prayer_id` is UNIQUE, so once a testimony is
+           linked there is no second one to write, and the prayer stays answered until that
+           testimony is deleted. Between writing it and a leader approving it, the author
+           would otherwise see the SAME screen as the frame above and tap "Write a testimony"
+           straight into a unique violation.
+
+           So the offer is replaced by the gold .linkbanner, the "informational line you can
+           ignore" (2026-08-01), saying where the testimony actually is. Once approved, this
+           becomes the green "Read how God answered" button that already exists. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Prayer</span><span style="width:40px"></span></div>
+          <div class="pcard">
+            <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Answered</span>
+            <div class="meta">You &middot; AGBC Berlin &middot; 3 days ago</div>
+            <div class="qbody">&#8220;Please pray for my mother&#39;s recovery after her surgery this week.&#8221;</div>
+            <div class="praystats" style="margin-top:16px"><span class="pi praying"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg> 24 praying</span><span class="pi prayed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 9 prayed</span></div>
+          </div>
+          <div class="linkbanner gold" style="margin-top:14px"><span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="lt"><b>Your testimony is with a leader.</b> It joins the family feed once it is approved. You can see it in My posts.</span></div>
+          <div class="pactions" style="padding-top:4px">
+            <button class="btn outline">Share</button>
+            <div style="text-align:center;padding-top:2px"><span class="authlink">Mark as not answered</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOT-ANSWERED · the confirm -->
+    <div class="device">
+      <p class="name"><b>NOT-ANSWERED</b> &middot; the confirm behind the undo</p>
+      <!-- Composed W2.5 (2026-08-04), same sheet as the DELETE confirm beside it. Undoing is
+           not destructive here (nothing is lost, and it can be marked answered again), so the
+           button is primary rather than danger, and the copy says what the family sees
+           change rather than warning about a cost that does not exist. -->
+      <div class="phone gatephone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="chead"><span style="width:40px"></span><span class="ct">Prayer</span><span style="width:40px"></span></div>
+          <div class="pcard">
+            <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Answered</span>
+            <div class="meta">You &middot; AGBC Berlin &middot; 3 days ago</div>
+            <div class="qbody">&#8220;Please pray for my mother&#39;s recovery after her surgery this week.&#8221;</div>
+          </div>
+        </div>
+        <div class="gatedim"></div>
+        <div class="gatesheet">
+          <div class="grab"></div>
+          <h3>Mark as not answered?</h3>
+          <p>The Answered tag comes off your request and the family can commit to pray for it
+            again. You can mark it answered whenever God comes through.</p>
+          <button class="btn primary">Mark as not answered</button>
+          <div class="actrow">Cancel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOT-ANSWERED · blocked by the linked testimony -->
+    <div class="device">
+      <p class="name"><b>NOT-ANSWERED</b> &middot; a testimony is linked to it</p>
+      <!-- Composed W2.5 (2026-08-04). docs/spec/09: "once one exists, undo requires deleting
+           that testimony first, and the confirm sheet says so." The database refuses this
+           update, so the sheet explains instead of acting: the same sheet, with the reason
+           where the consequence sits and a way to the testimony where the button sits.
+
+           MY POSTS and not TESTIMONY-DETAIL, deliberately: the linked testimony is often
+           still pending, and TESTIMONY-DETAIL reads the approved-only feed, so it would greet
+           its own author with "no longer available". MY-POSTS holds a post in every state. -->
+      <div class="phone gatephone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="chead"><span style="width:40px"></span><span class="ct">Prayer</span><span style="width:40px"></span></div>
+          <div class="pcard">
+            <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg> Answered</span>
+            <div class="meta">You &middot; AGBC Berlin &middot; 3 days ago</div>
+            <div class="qbody">&#8220;Please pray for my mother&#39;s recovery after her surgery this week.&#8221;</div>
+          </div>
+        </div>
+        <div class="gatedim"></div>
+        <div class="gatesheet">
+          <div class="grab"></div>
+          <h3>Your testimony is linked to this</h3>
+          <p>&#8220;God answered! My mother came through her surgery&hellip;&#8221; was born from
+            this request, so it stays answered while that testimony stands. Delete the
+            testimony first if you want to undo this.</p>
+          <button class="btn outline">Go to My posts</button>
+          <div class="actrow">Close</div>
         </div>
       </div>
     </div>
