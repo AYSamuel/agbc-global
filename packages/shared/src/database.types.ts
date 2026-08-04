@@ -1218,14 +1218,14 @@ export type Database = {
           {
             foreignKeyName: "testimonies_from_prayer_id_fkey"
             columns: ["from_prayer_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "prayer_feed"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "testimonies_from_prayer_id_fkey"
             columns: ["from_prayer_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "prayers"
             referencedColumns: ["id"]
           },
@@ -1370,6 +1370,9 @@ export type Database = {
           is_anonymous: boolean | null
           is_mine: boolean | null
           language: string | null
+          my_answer_testimony_status:
+            | Database["public"]["Enums"]["content_status"]
+            | null
           my_intercession_state:
             | Database["public"]["Enums"]["intercession_state"]
             | null
@@ -1432,14 +1435,14 @@ export type Database = {
           {
             foreignKeyName: "testimonies_from_prayer_id_fkey"
             columns: ["from_prayer_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "prayer_feed"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "testimonies_from_prayer_id_fkey"
             columns: ["from_prayer_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "prayers"
             referencedColumns: ["id"]
           },

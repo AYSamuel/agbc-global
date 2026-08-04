@@ -35,6 +35,11 @@ export {
 } from './Gradient';
 export * from './icons';
 export { MenuCard, MenuLabel, MenuRow, type MenuRowProps } from './Menu';
+export {
+  NoteBanner,
+  type NoteBannerProps,
+  type NoteBannerTone,
+} from './NoteBanner';
 export { OtpInput, type OtpInputProps } from './OtpInput';
 export { RadioRow, type RadioRowProps } from './RadioRow';
 export { SelectRow, type SelectRowProps } from './SelectRow';

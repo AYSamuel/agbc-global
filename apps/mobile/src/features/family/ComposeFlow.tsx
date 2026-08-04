@@ -30,8 +30,10 @@ import { mapComposeError, type ComposeErrorKey } from './composeErrors';
 import { ComposeStep } from './ComposeStep';
 import { ConsentStep } from './ConsentStep';
 import { clearDraft, loadDraft, saveDraft } from './drafts';
+import { surfacesTouchedByTestimony } from './markAnswered';
 import { myPostsKey } from './myPosts';
 import { useEditablePost } from './ownPost';
+import { usePrayerQuery } from './queries';
 import {
   discardTestimonyPhoto,
   photoPickingAvailable,
@@ -82,6 +84,20 @@ export interface ComposeFlowProps {
    * The save itself re-pends the post: that is a trigger, not this screen (docs/spec/02).
    */
   editId?: string;
+  /**
+   * The answered prayer this testimony is being written FROM (W2.5, the last step of the
+   * loop). Frame: `TESTIMONY-COMPOSE · from answered prayer (prefilled)`.
+   *
+   * It adds the link banner and puts `from_prayer_id` on the row, and it is dropped
+   * silently for a request that is not the author's own: `assert_prayer_link_allowed`
+   * refuses that link anyway, and the honest thing on screen is to compose a plain
+   * testimony rather than to display a claim the database will not accept.
+   *
+   * Never offered on an EDIT. `from_prayer_id` counts as content on update, so changing it
+   * re-pends the post, and the composer has no frame for adding a link to a testimony that
+   * was published without one. The only way in is from the request itself.
+   */
+  fromPrayerId?: string;
 }
 
 /** The post's language tag: what the author is composing in, as far as we can
@@ -91,13 +107,30 @@ function currentContentLanguage(): string {
   return i18n.language.split('-')[0] || 'en';
 }
 
-export function ComposeFlow({ target, editId }: ComposeFlowProps) {
+export function ComposeFlow({
+  target,
+  editId,
+  fromPrayerId,
+}: ComposeFlowProps) {
   const router = useRouter();
   const { t } = useTranslation('family');
   const toast = useToast();
   const profile = useAuthStore((s) => s.profile);
   const editing = editId !== undefined;
   const existing = useEditablePost(target, editId ?? null);
+
+  // The request being answered, for the banner's excerpt. Through the feed view like every
+  // other read: it is approved (mark-answered requires that), so the author can see it, and
+  // an anonymous one still yields its own words.
+  const originPrayer = usePrayerQuery(fromPrayerId ?? '', !editing);
+  // `is_mine` decides whether the link is real, not the id in the URL. The row answers it
+  // even for an anonymous request, which is exactly the case where the author has no
+  // author_id to compare against (migration 20260803170000).
+  const origin =
+    !editing && fromPrayerId && originPrayer.data?.is_mine === true
+      ? originPrayer.data
+      : null;
+  const linkId = origin ? fromPrayerId : undefined;
 
   const [stage, setStage] = useState<ComposeStage>('compose');
   const [errorKey, setErrorKey] = useState<ComposeErrorKey | null>(null);
@@ -153,7 +186,7 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
   useEffect(() => {
     if (editing && existingPost === null) return undefined;
     let cancelled = false;
-    void loadDraft(target, editId).then((draft) => {
+    void loadDraft(target, editId, linkId).then((draft) => {
       if (cancelled) return;
       const start = draft ?? existingPost;
       if (start && getValues('body') === '') {
@@ -173,7 +206,17 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
     return () => {
       cancelled = true;
     };
-  }, [target, editId, editing, existingPost, getValues, reset, toast, t]);
+  }, [
+    target,
+    editId,
+    linkId,
+    editing,
+    existingPost,
+    getValues,
+    reset,
+    toast,
+    t,
+  ]);
 
   // Save on every change, debounced. Gated on `hydrated` so the empty default
   // state cannot overwrite a stored draft in the window before it loads, and on
@@ -187,6 +230,7 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
         target,
         { body, categoryId, imagePath, isAnonymous },
         editId,
+        linkId,
       );
     }, DRAFT_DEBOUNCE_MS);
     return () => {
@@ -197,6 +241,7 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
     stage,
     target,
     editId,
+    linkId,
     body,
     categoryId,
     imagePath,
@@ -346,6 +391,9 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
             ...common,
             category_id: form.categoryId,
             image_path: form.imagePath,
+            // The loop's last link (W2.5). Null unless this composer was opened from the
+            // author's own answered request; the guard refuses anything else.
+            from_prayer_id: linkId ?? null,
           })
         : await supabase
             .from('prayers')
@@ -356,14 +404,16 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
       return;
     }
     // The words are safely on the server now; the local copy has done its job.
-    await clearDraft(target, editId);
+    await clearDraft(target, editId, linkId);
     // The author's own pending row is not in the public feed, but a refetch
     // keeps counts and any concurrent approval honest when they land back.
-    // Only the surfaces this post belongs to: a new testimony has nothing to say
-    // about the prayer feed, and a blanket sweep also re-signs every photo.
+    // Only the surfaces this post belongs to: a blanket sweep also re-signs every photo.
+    // A LINKED testimony is the exception to "a new testimony has nothing to say about
+    // the prayer feed": it is written onto the request's row too, and without this
+    // PRAYER-DETAIL keeps offering to write the testimony that now exists (W2.5).
     await Promise.all(
       (target === 'testimony'
-        ? TESTIMONY_SURFACE_KEYS
+        ? surfacesTouchedByTestimony(linkId)
         : PRAYER_SURFACE_KEYS
       ).map((queryKey) => queryClient.invalidateQueries({ queryKey })),
     );
@@ -401,6 +451,10 @@ export function ComposeFlow({ target, editId }: ComposeFlowProps) {
       <ComposeStep
         target={target}
         editing={editing}
+        // The banner waits for the row. Showing "Born from an answered prayer" before the
+        // request has arrived would mean showing it and then taking it away for anyone
+        // whose link turns out not to be theirs.
+        originPrayerBody={origin?.body ?? null}
         control={control}
         bodyError={
           errors.body

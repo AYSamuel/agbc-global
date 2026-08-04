@@ -202,5 +202,31 @@
   "editSaveResubmit": "Save and resubmit",
   "editUnavailableTitle": "This cannot be edited",
   "editGone": "It may have been deleted already.",
-  "editRemoved": "A leader removed this post, so it can no longer be edited. If you believe this is a mistake, contact your branch leader."
+  "editRemoved": "A leader removed this post, so it can no longer be edited. If you believe this is a mistake, contact your branch leader.",
+  "answered": {
+    "markAnswered": "Mark as answered",
+    "markNotAnswered": "Mark as not answered",
+    "writeTestimony": "Write a testimony",
+    "successTitle": "Answered! Glory to God",
+    "successBody": "Your prayer is marked as answered. Would you like to share how God answered, as a testimony for the family?",
+    "notNow": "Not now",
+    "undone": "Marked as not answered.",
+    "failed": "That did not work. Please try again.",
+    "undoTitle": "Mark as not answered?",
+    "undoBody": "The Answered tag comes off your request and the family can commit to pray for it again. You can mark it answered whenever God comes through.",
+    "blockedTitle": "Your testimony is linked to this",
+    "blockedBody": "The testimony you wrote was born from this request, so it stays answered while that testimony stands. Delete the testimony first if you want to undo this.",
+    "goToMyPosts": "Go to My posts",
+    "dismissed": "Closed",
+    "linkBannerLead": "Born from an answered prayer.",
+    "linkBannerQuote": "“{{excerpt}}”",
+    "linked": {
+      "pendingLead": "Your testimony is with a leader.",
+      "pendingBody": "It joins the family feed once it is approved. You can see it in My posts.",
+      "rejectedLead": "Your testimony needs a change.",
+      "rejectedBody": "A leader has asked for something to be updated. You can edit and resubmit it from My posts.",
+      "removedLead": "Your testimony was removed.",
+      "removedBody": "A leader removed it after review. You can see it in My posts, and your branch leader can explain why."
+    }
+  }
 }

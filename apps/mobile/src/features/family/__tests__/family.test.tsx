@@ -125,6 +125,7 @@ function prayer(overrides: Partial<PrayerFeedItem> = {}): PrayerFeedItem {
     author_name: 'Daniel Kern',
     author_avatar_url: null,
     answer_testimony_id: null,
+    my_answer_testimony_status: null,
     my_intercession_state: null,
     is_mine: false,
     ...overrides,

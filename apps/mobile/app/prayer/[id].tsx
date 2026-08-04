@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { BackHandler, Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
@@ -23,6 +23,8 @@ import {
   Skeleton,
 } from '@/components/ui';
 import { joinMeta } from '@/features/family/format';
+import { MarkAnsweredStep } from '@/features/family/MarkAnsweredStep';
+import { OwnPrayerActions } from '@/features/family/OwnPrayerActions';
 import { PostActionsMenu } from '@/features/family/PostActionsMenu';
 import { usePrayerQuery, type PrayerFeedItem } from '@/features/family/queries';
 import { shareText, testimonyShareText } from '@/features/family/share';
@@ -42,6 +44,10 @@ export default function PrayerDetail() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [gateVisible, setGateVisible] = useState(false);
+  // MARK-ANSWERED is a stage of this screen rather than a route of its own, the way
+  // POST-PENDING is a stage of the composer: "Not now" belongs back on the request it
+  // celebrates, and that is this screen with one different branch.
+  const [celebrating, setCelebrating] = useState(false);
 
   const query = usePrayerQuery(id);
   const branchNames = useBranchNames();
@@ -65,6 +71,50 @@ export default function PrayerDetail() {
     if (router.canGoBack()) router.back();
     else router.replace('/(tabs)/family');
   };
+
+  // Hardware back mirrors "Not now" while the celebration is up, the same way the
+  // composer's back returns from consent to compose: without it, Android back would leave
+  // the request entirely, which is not where somebody who just answered a prayer meant to
+  // go (docs/spec/04, no surprising exits).
+  useEffect(() => {
+    if (!celebrating) return undefined;
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        setCelebrating(false);
+        return true;
+      },
+    );
+    return () => {
+      subscription.remove();
+    };
+  }, [celebrating]);
+
+  const shareRequest = () => {
+    if (!prayer) return;
+    void shareText(testimonyShareText(prayer.body, branchName, t('appName')));
+  };
+
+  const writeTestimony = () => {
+    // Clear the celebration first: coming back from the composer should land on the
+    // request, not on a success screen for something already done.
+    setCelebrating(false);
+    router.push({
+      pathname: '/testimony/compose',
+      params: { fromPrayer: id },
+    });
+  };
+
+  if (celebrating) {
+    return (
+      <MarkAnsweredStep
+        onWriteTestimony={writeTestimony}
+        onNotNow={() => {
+          setCelebrating(false);
+        }}
+      />
+    );
+  }
 
   return (
     <Screen widthClass="capped" padded={false}>
@@ -258,93 +308,110 @@ export default function PrayerDetail() {
               />
             )}
 
-            {/* The two-step (docs/spec/09). The forward promise first; once made, the
+            {prayer.is_mine ? (
+              // Your own request: the loop, not the commitment. Frames
+              // `PRAYER-DETAIL · own request` and the two answered states.
+              <OwnPrayerActions
+                prayer={prayer}
+                onShare={shareRequest}
+                onMarkedAnswered={() => {
+                  setCelebrating(true);
+                }}
+                onWriteTestimony={writeTestimony}
+                onGoToMyPosts={() => {
+                  router.push('/my-posts');
+                }}
+              />
+            ) : (
+              <>
+                {/* The two-step (docs/spec/09). The forward promise first; once made, the
                 pill becomes "I prayed", and once fulfilled it stops being a
                 button at all, because there is nothing further to ask of them. */}
-            <Button
-              label={
-                commitment === 'none'
-                  ? t('family:iWillPray')
-                  : commitment === 'committed'
-                    ? t('family:iPrayed')
-                    : t('family:youPrayed')
-              }
-              variant={commitment === 'prayed' ? 'outline' : 'primary'}
-              fullWidth
-              disabled={commitment === 'prayed'}
-              icon={
-                commitment === 'prayed' ? (
-                  <CheckIcon
-                    size={17}
-                    color={palette.green}
-                    strokeWidth={2.5}
-                  />
-                ) : (
-                  <HeartIcon
-                    size={17}
-                    color={
-                      commitment === 'committed' ? colors.eye : colors.btnText
-                    }
-                  />
-                )
-              }
-              onPress={onCommit ?? (() => undefined)}
-            />
-            <Text
-              accessibilityLiveRegion="polite"
-              style={{
-                fontFamily: fontFamily.body.regular,
-                fontSize: 12.5,
-                lineHeight: 18.75,
-                color: commitment === 'committed' ? colors.eye : colors.muted,
-                textAlign: 'center',
-              }}
-            >
-              {/* Once committed, the explainer becomes the promise the app is
-                  now keeping: gentle reminders until they mark "I prayed"
-                  (docs/spec/09; the reminders themselves land with W3.4). */}
-              {commitment === 'committed'
-                ? t('family:willRemindYou')
-                : t('family:prayCommitExplain')}
-            </Text>
-            {/* The same 5s way back as the feed card, as a plain text action so
-                it never competes with the primary button above it. */}
-            {onUndo ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('family:undoCommitment')}
-                onPress={onUndo}
-                hitSlop={{ top: 10, bottom: 10 }}
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 5,
-                  opacity: pressed ? 0.6 : 1,
-                })}
-              >
-                <UndoIcon size={13} color={colors.blue} strokeWidth={2} />
+                <Button
+                  label={
+                    commitment === 'none'
+                      ? t('family:iWillPray')
+                      : commitment === 'committed'
+                        ? t('family:iPrayed')
+                        : t('family:youPrayed')
+                  }
+                  variant={commitment === 'prayed' ? 'outline' : 'primary'}
+                  fullWidth
+                  disabled={commitment === 'prayed'}
+                  icon={
+                    commitment === 'prayed' ? (
+                      <CheckIcon
+                        size={17}
+                        color={palette.green}
+                        strokeWidth={2.5}
+                      />
+                    ) : (
+                      <HeartIcon
+                        size={17}
+                        color={
+                          commitment === 'committed'
+                            ? colors.eye
+                            : colors.btnText
+                        }
+                      />
+                    )
+                  }
+                  onPress={onCommit ?? (() => undefined)}
+                />
                 <Text
+                  accessibilityLiveRegion="polite"
                   style={{
-                    fontFamily: fontFamily.body.bold,
+                    fontFamily: fontFamily.body.regular,
                     fontSize: 12.5,
-                    color: colors.blue,
+                    lineHeight: 18.75,
+                    color:
+                      commitment === 'committed' ? colors.eye : colors.muted,
+                    textAlign: 'center',
                   }}
                 >
-                  {t('family:undo')}
+                  {/* Once committed, the explainer becomes the promise the app is
+                  now keeping: gentle reminders until they mark "I prayed"
+                  (docs/spec/09; the reminders themselves land with W3.4). */}
+                  {commitment === 'committed'
+                    ? t('family:willRemindYou')
+                    : t('family:prayCommitExplain')}
                 </Text>
-              </Pressable>
-            ) : null}
-            <Button
-              label={t('family:share')}
-              variant="outline"
-              fullWidth
-              onPress={() => {
-                void shareText(
-                  testimonyShareText(prayer.body, branchName, t('appName')),
-                );
-              }}
-            />
+                {/* The same 5s way back as the feed card, as a plain text action so
+                it never competes with the primary button above it. */}
+                {onUndo ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('family:undoCommitment')}
+                    onPress={onUndo}
+                    hitSlop={{ top: 10, bottom: 10 }}
+                    style={({ pressed }) => ({
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 5,
+                      opacity: pressed ? 0.6 : 1,
+                    })}
+                  >
+                    <UndoIcon size={13} color={colors.blue} strokeWidth={2} />
+                    <Text
+                      style={{
+                        fontFamily: fontFamily.body.bold,
+                        fontSize: 12.5,
+                        color: colors.blue,
+                      }}
+                    >
+                      {t('family:undo')}
+                    </Text>
+                  </Pressable>
+                ) : null}
+                <Button
+                  label={t('family:share')}
+                  variant="outline"
+                  fullWidth
+                  onPress={shareRequest}
+                />
+              </>
+            )}
           </View>
         </View>
       )}
@@ -390,6 +457,7 @@ const PLACEHOLDER_PRAYER: PrayerFeedItem = {
   author_name: null,
   author_avatar_url: null,
   answer_testimony_id: null,
+  my_answer_testimony_status: null,
   my_intercession_state: null,
   is_mine: false,
 };
