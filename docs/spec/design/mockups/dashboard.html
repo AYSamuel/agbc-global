@@ -104,6 +104,11 @@
   .pill.prayer{background:rgba(47,111,237,.14);color:var(--blue)}
   .pill.late{background:rgba(224,52,44,.14);color:var(--red)}
   .pill.lang{background:var(--alt);color:var(--muted)}
+  .pill.flagged{background:rgba(224,52,44,.14);color:var(--red)}
+  .reasons{margin-top:12px;border-top:1px solid var(--border);padding-top:11px;display:flex;flex-direction:column;gap:7px}
+  .reasons .rr{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--sub)}
+  .reasons .rc{min-width:22px;height:22px;border-radius:7px;background:var(--alt);color:var(--text);font-weight:800;font-size:11.5px;display:grid;place-items:center;flex:none}
+  .flagnote{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(224,52,44,.08);font-size:12.5px;line-height:1.5;color:var(--sub)}
   /* Blue, the file's neutral classification wash (same as .pill.prayer): it marks WHICH row
      is live right now without implying anything is wrong. Named for the fact, not the
      content type, because verses have no types. */
@@ -1298,6 +1303,164 @@
       </div>
     </div>
   </div>
+
+  <p class="ghead">4 &middot; REPORTS &middot; grouped by the post, not by the report</p>
+  <!-- Composed 2026-08-04, ahead of W2.7 slice 4's second half. The note at the top of this
+       file calls the reports list "conventional" and says it gets no frame; that was written
+       before W2.6 shipped reporting, and it turns out not to be true. `reports` carries a
+       partial unique per (reporter, item), so ONE post can hold several reports with DIFFERENT
+       reasons, and `is_safeguarding` is a leader's classification that decides whether the
+       auto-resolve sweep may ever close them (`02`). Both are density decisions, which is what
+       earns a frame. Shape chosen by Ayo, 2026-08-04.
+
+       ONE CARD PER POST, not per report. A leader reads the words once and decides once; a row
+       per report would put the same testimony in front of them three times and ask three times.
+       The count and the reasons ride inside the card instead.
+
+       The reasons render in STAFF wording from the stored key (at_risk, private_details,
+       hurtful, not_for_this_space). The app shows the reporter its own phrasing and the
+       dashboard owns this side, the same split the verse importer's reason codes use.
+
+       Four actions on one row rather than the two rows of the sketch: the main column is wide
+       enough, and the queue beside it already established a single action row. Dismiss and
+       Remove are the two resolutions; Reject with reason routes to the flow the queue already
+       has; Flag safeguarding is a CLASSIFICATION and not a resolution, which is why it sits
+       with the others and does not close the card.
+
+       Oldest first, matching the queue, and the time shown is the FIRST report, because that is
+       how long somebody has been waiting for an answer. -->
+  <div class="gallery" id="w27rLight">
+
+    <div class="device">
+      <p class="name"><b>REPORTS</b> &middot; leader, AGBC Lighthouse Berlin</p>
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/reports</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <div class="sect">Phase A</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a class="on" href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9634;</span>Library &amp; courses<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9647;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Branch leader &middot; Lighthouse Berlin</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Reports</h2>
+                <p class="scope">AGBC Lighthouse Berlin</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="stats">
+              <div class="ps"><div class="n">2</div><div class="l">Open</div></div>
+              <div class="ps low"><div class="n">1</div><div class="l">Safeguarding</div></div>
+              <div class="ps"><div class="n">6</div><div class="l">Resolved this month</div></div>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>A report is not a verdict.</b> Read the post before the reasons. Anything
+                describing abuse, self-harm or a child at risk is flagged and routed to the branch
+                lead pastor through the church&#39;s safeguarding process, whatever you decide
+                about the post itself.</p>
+            </div>
+
+            <div class="mlabel">Reported &middot; first report first</div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill review">Testimony</span>
+                <span class="pill lang">DE</span>
+                <span class="pill late">3 reports</span>
+                <span class="spacer"></span>
+                <span class="time">First reported 2 days ago</span>
+              </div>
+              <div class="body">&#8220;Gott hat nach acht Monaten des Wartens eine Stelle gegeben.
+                Meine Schwester Anna hat mich getragen, auch als es ihr selbst schlecht ging.&#8221;</div>
+              <div class="reasons">
+                <div class="rr"><span class="rc">2</span><span>Private details about someone</span></div>
+                <div class="rr"><span class="rc">1</span><span>Not for this space</span></div>
+              </div>
+              <div class="meta">
+                <span class="avatar">SO</span>
+                <span>Sarah O.</span><span class="dot"></span>
+                <span>AGBC Lighthouse Berlin</span><span class="dot"></span>
+                <span>Posted 24 July</span>
+              </div>
+              <div class="actions">
+                <button class="btn outline">Dismiss reports</button>
+                <button class="btn outline">Reject with reason</button>
+                <button class="btn outline">Flag safeguarding</button>
+                <span class="spacer"></span>
+                <button class="btn danger">Remove</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill prayer">Prayer</span>
+                <span class="pill lang">EN</span>
+                <span class="pill flagged">Safeguarding</span>
+                <span class="spacer"></span>
+                <span class="time">First reported 6 hours ago</span>
+              </div>
+              <div class="body">&#8220;Please pray for my neighbour&#39;s little boy. Things at home
+                are not safe for him and I do not know who else to tell.&#8221;</div>
+              <div class="reasons">
+                <div class="rr"><span class="rc">1</span><span>Someone may be at risk</span></div>
+              </div>
+              <div class="meta">
+                <span class="avatar anon">&#9679;</span><span>Shared anonymously</span>
+                <span class="dot"></span><span>AGBC Lighthouse Berlin</span>
+                <span class="dot"></span><span>Posted 2 August</span>
+              </div>
+              <div class="flagnote">Flagged by you &middot; 6 hours ago. This stays open until the
+                safeguarding process closes it, and the automatic sweep will not touch it.</div>
+              <div class="actions">
+                <button class="btn outline">Reject with reason</button>
+                <span class="spacer"></span>
+                <button class="btn danger">Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>REPORTS-EMPTY</b> &middot; nothing reported, which is the normal state</p>
+      <!-- Deliberately not celebratory. An empty moderation queue means a leader is on top of
+           their work and the copy can say well done; an empty reports list means nothing has
+           gone wrong, which is not an achievement to congratulate anybody for. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/reports</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead"><div><h2>Reports</h2><p class="scope">AGBC Lighthouse Berlin</p></div></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H7l-3 3z"/></svg></div>
+              <h3>Nothing reported</h3>
+              <p>When a member reports a testimony or a prayer in Berlin, it appears here with what
+                they told us. Reports about content in other branches go to their leaders.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="ghead">4 &middot; REPORTS &middot; dark</p>
+  <div class="gallery t-dark" id="w27rDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
+  <script>(function(){var l=document.getElementById('w27rLight'),d=document.getElementById('w27rDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 </div>
 
 <div class="stage t-dark">
