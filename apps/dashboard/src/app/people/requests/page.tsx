@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
 import { Alert } from '@/components/ui/Alert';
+import { Stat } from '@/components/ui/Stat';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { loadBranchRequests } from '@/server/branchRequests';
@@ -179,15 +180,4 @@ function readOutcome(
 
 function readParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="min-w-36 flex-1 rounded-card border border-cardline bg-card px-4 py-3">
-      <dd className="font-display text-[1.35rem] font-extrabold">{value}</dd>
-      <dt className="mt-0.5 text-label font-bold tracking-wide text-muted uppercase">
-        {label}
-      </dt>
-    </div>
-  );
 }
