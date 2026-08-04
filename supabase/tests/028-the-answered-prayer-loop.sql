@@ -22,7 +22,7 @@
 -- setup, leaving the writes actually under test to fail for the wrong reason.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(26);
 
 -- Cast: the author who walks the loop, a stranger who must learn nothing from it, the
 -- Glasgow leader who approves, and an admin, who is the one caller allowed to link a
@@ -220,6 +220,49 @@ select is(
   (select answered_at from public.prayer_feed
     where id = '8a000000-0000-4000-8000-00000000000a'),
   null::timestamptz, 'and the family sees the request back among the unanswered');
+
+-- Found on a device, 2026-08-04, and the reason 20260804160000 exists. Every rule about the
+-- link is scoped to LIVE rows, so the screen offers to write another testimony here. A
+-- table-wide UNIQUE on from_prayer_id made that offer a 23505: the deleted row still held
+-- the link. Deleting your own testimony has to give the prayer back.
+--
+-- This cast member has spent their rolling day by now (five posts per 24h, docs/spec/09), so
+-- the fixtures are aged out of that window first. Without it the next insert fails on the
+-- quota and quietly stops testing the constraint it was written for.
+reset role;
+set local request.jwt.claims to '{}';
+update public.testimonies set created_at = now() - interval '2 days'
+  where author_id = '94000000-0000-4000-8000-00000000000a';
+update public.prayers set created_at = now() - interval '2 days'
+  where author_id = '94000000-0000-4000-8000-00000000000a';
+
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub":"94000000-0000-4000-8000-00000000000a","role":"authenticated","user_role":"member","branch_id":"00000000-0000-4000-8000-000000000001"}';
+
+select lives_ok(
+  $$update public.prayers set answered_at = now()
+    where id = '8a000000-0000-4000-8000-00000000000a'$$,
+  'the author marks the same request answered a second time');
+select lives_ok(
+  $$insert into public.testimonies
+      (id, author_id, branch_id, body, consent_version, from_prayer_id)
+    values ('8b000000-0000-4000-8000-00000000000f',
+            '94000000-0000-4000-8000-00000000000a',
+            '00000000-0000-4000-8000-000000000001',
+            'loop the answer, written again', 'content-share-v1',
+            '8a000000-0000-4000-8000-00000000000a')$$,
+  'and may write a new testimony for it: the deleted one stopped holding the link');
+select throws_ok(
+  $$insert into public.testimonies
+      (id, author_id, branch_id, body, consent_version, from_prayer_id)
+    values ('8b000000-0000-4000-8000-000000000010',
+            '94000000-0000-4000-8000-00000000000a',
+            '00000000-0000-4000-8000-000000000001',
+            'loop a second live answer', 'content-share-v1',
+            '8a000000-0000-4000-8000-00000000000a')$$,
+  '23505', null,
+  'but still only ONE live answer per request, which is what the constraint is for');
 
 -- ===========================================================================
 -- 4. The two callers the column's shape was decided by.
