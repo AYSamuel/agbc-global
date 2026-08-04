@@ -27,7 +27,7 @@ const PHASE_A: Destination[] = [
     href: '/moderation',
     icon: '▢',
   },
-  { key: 'reports', label: copy.nav.reports, icon: '⚑' },
+  { key: 'reports', label: copy.nav.reports, href: '/reports', icon: '⚑' },
   // Linked for every staff caller rather than admins only, on the same reasoning as the
   // People row below: `/verses` refuses a leader honestly, inside the shell, and points them
   // at their own queue. A row that appears the day someone's role changes is a rail that

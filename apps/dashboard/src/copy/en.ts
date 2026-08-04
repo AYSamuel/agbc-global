@@ -9,6 +9,12 @@
  * and a second language stays a swap of this module rather than a rewrite.
  *
  * Grace-framed: a refusal explains and offers the way forward, and never scolds.
+ *
+ * Nothing unused lives here. Three `errorTitle`/`errorBody` pairs were deleted on
+ * 2026-08-04 after the reports inbox nearly added a fourth: a page that cannot load at all
+ * is the segment error boundary's job (`app/error.tsx`, which reads `errors.*`), so those
+ * strings had never been rendered by anything. A file that claims to be every string in
+ * the product is only useful while that is true in both directions.
  */
 export const copy = {
   app: {
@@ -162,9 +168,93 @@ export const copy = {
     emptyTitle: 'Nothing waiting',
     emptyBody: (branch: string) =>
       `${branch} is fully reviewed. New testimonies and prayers land here as soon as members post them.`,
-    errorTitle: 'We could not load the queue',
-    errorBody:
-      'That is on us, not you. Nothing has been approved or rejected in the meantime.',
+  },
+
+  reports: {
+    title: 'Reports',
+    allBranches: 'All branches',
+    stats: {
+      open: 'Open',
+      safeguarding: 'Safeguarding',
+      resolved: 'Resolved this month',
+    },
+    // Same placement as the queue's safeguarding note and the verses one: the rule sits
+    // where the decision is made. This one says the quiet part out loud, that a report is
+    // a member's alarm and not a finding of fact.
+    guideTitle: 'A report is not a verdict.',
+    guide:
+      'Read the post before the reasons. Anything describing abuse, self-harm or a child at risk is flagged and routed to the branch lead pastor through the church safeguarding process, whatever you decide about the post itself.',
+    listLabel: 'Reported · first report first',
+    // The member's own wording, not a staff paraphrase. The four reasons are already
+    // written plainly in the app (`family.json`), and a leader who says "private details"
+    // while the reporter was shown the same three words is reading the same screen they
+    // are. Keyed by what the database stores, so the copy moves without a migration.
+    reasons: {
+      at_risk: 'Someone may be at risk',
+      private_details: 'Private details about someone',
+      hurtful: 'Hurtful or abusive',
+      not_for_this_space: 'Not for this space',
+    } as Record<string, string | undefined>,
+    // A reason code added to the app before this file knows about it renders as something
+    // rather than as an empty row.
+    unknownReason: 'Another reason',
+    reportCount: (count: number) =>
+      `${String(count)} ${count === 1 ? 'report' : 'reports'}`,
+    // Read out before each reason, where the visible badge is a bare number in a box and
+    // says nothing on its own. The colon is deliberate: it is a prefix to the reason that
+    // follows it, not a sentence.
+    reasonCount: (count: number) =>
+      `${String(count)} ${count === 1 ? 'report' : 'reports'}:`,
+    firstReported: (when: string) => `First reported ${when}`,
+    posted: (when: string) => `Posted ${when}`,
+    anonymous: 'Shared anonymously',
+    kind: { testimony: 'Testimony', prayer: 'Prayer' },
+    safeguardingPill: 'Safeguarding',
+    // Said on the flagged card, where the missing Dismiss button would otherwise read as
+    // an oversight. It is a rule, and rules are better stated than inferred.
+    flagged:
+      'Flagged for safeguarding. This stays open until the safeguarding process closes it, and neither dismissing nor removing the post will close it.',
+    // The post's own state, for the case the frame does not show: reports can outlive a
+    // decision on the content, so a card may be sitting on something already gone.
+    contentStatus: {
+      pending: 'Still waiting for review',
+      approved: 'Live in the feed',
+      rejected: 'Sent back to the author',
+      removed: 'Already removed',
+    },
+    actions: {
+      dismiss: 'Dismiss reports',
+      flag: 'Flag safeguarding',
+      reject: 'Reject with reason',
+      remove: 'Remove',
+    },
+    outcome: {
+      dismissed:
+        'Reports closed, and the post is untouched. Nobody is told their report was dismissed.',
+      flagged:
+        'Flagged. Tell the branch lead pastor through the safeguarding process: this screen does not notify anybody.',
+      rejected: 'Sent back to the author, and the reports are closed.',
+      removed:
+        'Removed, and the reports are closed. Only a ministry admin can restore it.',
+      // The rule, met head on. Not a failure: the leader did the right thing and the
+      // answer is still no.
+      safeguardingStaysOpen:
+        'That report is flagged for safeguarding, so it stays open until the safeguarding process closes it. Nothing else was changed.',
+      contentChanged:
+        'That post changed while you were reading it, so nothing was decided. Read the author’s new words below and decide again.',
+      refused:
+        'That is not yours to decide. It may belong to another branch, or your role may have changed since this page loaded.',
+      missingReason: 'A reason is required, so nothing was changed.',
+      failed: 'Something went wrong and nothing was changed. Try again.',
+    },
+    // Deliberately not congratulatory. An empty moderation queue means a leader is on top
+    // of their work; an empty reports list means nothing has gone wrong, which is not an
+    // achievement to praise anybody for.
+    emptyTitle: 'Nothing reported',
+    emptyBody: (branch: string) =>
+      `When a member reports a testimony or a prayer in ${branch}, it appears here with what they told us. Reports about content in other branches go to their leaders.`,
+    emptyBodyAll:
+      'When a member reports a testimony or a prayer, it appears here with what they told us.',
   },
 
   people: {
@@ -373,9 +463,6 @@ export const copy = {
     emptyTitle: 'No verses scheduled yet',
     emptyBody:
       'Members are seeing nothing on Home until the first day is queued. A quarter is 90 days in each of the four languages.',
-    errorTitle: 'We could not load the schedule',
-    errorBody:
-      'That is on us, not you. Nothing has been imported or removed in the meantime.',
     notAdminTitle: 'The verse schedule is kept by a ministry admin',
     notAdminBody:
       'One verse goes out to every branch each day, so it is set centrally rather than per branch. Nothing is wrong with your account.',
