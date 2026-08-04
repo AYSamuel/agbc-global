@@ -4,7 +4,14 @@ import { View } from 'react-native';
 
 import { spacing } from '@agbc/shared/theme';
 
-import { AppHeader, EmptyState, Screen, Skeleton } from '@/components/ui';
+import {
+  AppHeader,
+  EmptyGlyph,
+  EmptyState,
+  PlusIcon,
+  Screen,
+  Skeleton,
+} from '@/components/ui';
 import { MyPostCard } from '@/features/family/MyPostCard';
 import { useMyPostsQuery, type MyPost } from '@/features/family/myPosts';
 import { useAuthStore } from '@/state/auth';
@@ -39,7 +46,10 @@ export default function MyPostsScreen() {
         backLabel={t('common:back')}
       />
 
-      <View style={{ paddingHorizontal: spacing.gutter }}>
+      {/* `.post` sits at a 16px inset, not the 20px screen gutter: the cards are the
+          screen's content rather than text set against its edge. The empty and error
+          states below bring their own padding, so this wrapper only insets the list. */}
+      <View style={{ paddingHorizontal: spacing.lg }}>
         {!signedIn ? (
           // Reachable by deep link rather than by tapping, since the row that leads here
           // gates first. Same machine either way: remember the destination, sign in, land
@@ -69,7 +79,11 @@ export default function MyPostsScreen() {
             }}
           />
         ) : query.data.length === 0 ? (
+          // The frame's `nothing shared yet`: the `.empty .ei` circle with a plus, then
+          // the same invitation the Family tab makes, in the one place a person came
+          // looking for their own words.
           <EmptyState
+            icon={<EmptyGlyph Icon={PlusIcon} />}
             title={t('family:myPosts.emptyTitle')}
             body={t('family:myPosts.emptyBody')}
             actionLabel={t('family:myPosts.emptyAction')}

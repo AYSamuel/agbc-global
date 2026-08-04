@@ -32,6 +32,13 @@
   "ageHours_other": "{{count}} h",
   "ageDays_one": "{{count}} j",
   "ageDays_other": "{{count}} j",
+  "ageMinutesAgo_one": "il y a {{count}} min",
+  "ageMinutesAgo_other": "il y a {{count}} min",
+  "ageHoursAgo_one": "il y a {{count}} heure",
+  "ageHoursAgo_other": "il y a {{count}} heures",
+  "ageYesterday": "Hier",
+  "ageDaysAgo_one": "il y a {{count}} jour",
+  "ageDaysAgo_other": "il y a {{count}} jours",
   "emptyTestimoniesTitle": "Soyez le premier à partager",
   "emptyTestimoniesBody": "Aucun témoignage pour le moment. Racontez à la famille ce que Dieu a fait.",
   "shareTestimony": "Partager un témoignage",
@@ -189,5 +196,11 @@
     "done": "Supprimé.",
     "failed": "Cela n'a pas fonctionné. Veuillez réessayer.",
     "dismissed": "Fermé"
-  }
+  },
+  "editTestimonyTitle": "Modifier le témoignage",
+  "editPrayerTitle": "Modifier la demande",
+  "editSaveResubmit": "Enregistrer et renvoyer",
+  "editUnavailableTitle": "Ceci ne peut pas être modifié",
+  "editGone": "Cela a peut-être déjà été supprimé.",
+  "editRemoved": "Un responsable a retiré cette publication, elle ne peut donc plus être modifiée. Si vous pensez que c'est une erreur, contactez le responsable de votre branche."
 }

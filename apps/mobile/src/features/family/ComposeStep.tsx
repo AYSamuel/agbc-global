@@ -13,7 +13,7 @@ import {
   type ComposeForm,
   type ComposeTarget,
 } from '@agbc/shared';
-import { spacing, typeScale } from '@agbc/shared/theme';
+import { palette, spacing, typeScale } from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -43,8 +43,17 @@ import { useTestimonyCategoriesQuery } from './queries';
 
 export interface ComposeStepProps {
   target: ComposeTarget;
+  /**
+   * Editing an existing post (W2.6). The frame is the same one: a composer is a composer,
+   * and what changes is the title, the verb on the button, and the fact that the button
+   * IS the submit because an edit runs no consent step (see ComposeFlow's `editId`).
+   */
+  editing?: boolean;
   control: Control<ComposeForm>;
   bodyError: string | null;
+  /** Editing only: the consent step usually carries this, and an edit has none. */
+  submitErrorMessage?: string | null;
+  submitting?: boolean;
   /** Photo state, owned by ComposeFlow (the form holds the path; the preview and
    * the in-flight flag are session-only and never reach a draft). */
   photo: {
@@ -64,8 +73,11 @@ export interface ComposeStepProps {
 
 export function ComposeStep({
   target,
+  editing = false,
   control,
   bodyError,
+  submitErrorMessage = null,
+  submitting = false,
   photo,
   onClose,
   onContinue,
@@ -83,9 +95,13 @@ export function ComposeStep({
       >
         <AppHeader
           title={t(
-            target === 'testimony'
-              ? 'composeTestimonyTitle'
-              : 'composePrayerTitle',
+            editing
+              ? target === 'testimony'
+                ? 'editTestimonyTitle'
+                : 'editPrayerTitle'
+              : target === 'testimony'
+                ? 'composeTestimonyTitle'
+                : 'composePrayerTitle',
           )}
           leading="close"
           backLabel={t('common:close')}
@@ -210,14 +226,32 @@ export function ComposeStep({
             paddingBottom: spacing.md,
           }}
         >
+          {/* An edit has no consent step to carry a failed save, so it lands here. */}
+          {submitErrorMessage ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              style={[
+                typeScale.body,
+                {
+                  fontSize: 12.5,
+                  lineHeight: 18,
+                  color: palette.red,
+                  marginBottom: spacing.sm,
+                },
+              ]}
+            >
+              {submitErrorMessage}
+            </Text>
+          ) : null}
           {/* Hidden, not disabled, while the photo is in flight: continuing would
               carry a half-attached photo, and a dead button under a busy overlay
               is exactly what the project convention forbids. */}
           {photo.busy ? null : (
             <Button
-              label={t('composeContinue')}
+              label={t(editing ? 'editSaveResubmit' : 'composeContinue')}
               variant="primary"
               fullWidth
+              loading={submitting}
               onPress={onContinue}
             />
           )}

@@ -32,6 +32,13 @@
   "ageHours_other": "{{count}}h",
   "ageDays_one": "{{count}}d",
   "ageDays_other": "{{count}}d",
+  "ageMinutesAgo_one": "{{count}} min ago",
+  "ageMinutesAgo_other": "{{count}} min ago",
+  "ageHoursAgo_one": "{{count}} hour ago",
+  "ageHoursAgo_other": "{{count}} hours ago",
+  "ageYesterday": "Yesterday",
+  "ageDaysAgo_one": "{{count}} day ago",
+  "ageDaysAgo_other": "{{count}} days ago",
   "emptyTestimoniesTitle": "Be the first to share",
   "emptyTestimoniesBody": "No testimonies here yet. Tell the family what God has done.",
   "shareTestimony": "Share a testimony",
@@ -189,5 +196,11 @@
     "done": "Deleted.",
     "failed": "That did not work. Please try again.",
     "dismissed": "Closed"
-  }
+  },
+  "editTestimonyTitle": "Edit testimony",
+  "editPrayerTitle": "Edit request",
+  "editSaveResubmit": "Save and resubmit",
+  "editUnavailableTitle": "This cannot be edited",
+  "editGone": "It may have been deleted already.",
+  "editRemoved": "A leader removed this post, so it can no longer be edited. If you believe this is a mistake, contact your branch leader."
 }

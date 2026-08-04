@@ -32,6 +32,13 @@
   "ageHours_other": "{{count}} Std.",
   "ageDays_one": "{{count}} Tag",
   "ageDays_other": "{{count}} Tage",
+  "ageMinutesAgo_one": "vor {{count}} Min.",
+  "ageMinutesAgo_other": "vor {{count}} Min.",
+  "ageHoursAgo_one": "vor {{count}} Stunde",
+  "ageHoursAgo_other": "vor {{count}} Stunden",
+  "ageYesterday": "Gestern",
+  "ageDaysAgo_one": "vor {{count}} Tag",
+  "ageDaysAgo_other": "vor {{count}} Tagen",
   "emptyTestimoniesTitle": "Teile als Erste(r)",
   "emptyTestimoniesBody": "Hier gibt es noch keine Zeugnisse. Erzähl der Familie, was Gott getan hat.",
   "shareTestimony": "Zeugnis teilen",
@@ -189,5 +196,11 @@
     "done": "Gelöscht.",
     "failed": "Das hat nicht geklappt. Bitte versuche es erneut.",
     "dismissed": "Geschlossen"
-  }
+  },
+  "editTestimonyTitle": "Zeugnis bearbeiten",
+  "editPrayerTitle": "Anliegen bearbeiten",
+  "editSaveResubmit": "Speichern und neu einreichen",
+  "editUnavailableTitle": "Das lässt sich nicht bearbeiten",
+  "editGone": "Vielleicht wurde es schon gelöscht.",
+  "editRemoved": "Eine Leitung hat diesen Beitrag entfernt, daher lässt er sich nicht mehr bearbeiten. Wenn du meinst, das ist ein Fehler, wende dich an deine Gemeindeleitung."
 }

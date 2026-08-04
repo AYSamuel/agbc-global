@@ -25,8 +25,16 @@ export interface ComposeDraft {
   savedAt: number;
 }
 
-export function draftKey(target: ComposeTarget): string {
-  return `agbc.compose.draft.${target}`;
+/**
+ * One key per thing being written. An EDIT gets its own (W2.6): the words being changed
+ * are not the words of the new post somebody started yesterday, and sharing one key would
+ * let a restored edit overwrite an untouched draft, or worse, put one post's words in
+ * another post's box.
+ */
+export function draftKey(target: ComposeTarget, editId?: string): string {
+  return editId
+    ? `agbc.compose.draft.${target}.${editId}`
+    : `agbc.compose.draft.${target}`;
 }
 
 /** Pure for tests: anything malformed reads as "no draft" rather than throwing
@@ -55,9 +63,10 @@ export function parseDraft(raw: string | null): ComposeDraft | null {
 
 export async function loadDraft(
   target: ComposeTarget,
+  editId?: string,
 ): Promise<ComposeDraft | null> {
   try {
-    return parseDraft(await AsyncStorage.getItem(draftKey(target)));
+    return parseDraft(await AsyncStorage.getItem(draftKey(target, editId)));
   } catch {
     // Storage unavailable is not a reason to block someone from writing.
     return null;
@@ -67,10 +76,11 @@ export async function loadDraft(
 export async function saveDraft(
   target: ComposeTarget,
   draft: Omit<ComposeDraft, 'savedAt'>,
+  editId?: string,
 ): Promise<void> {
   try {
     await AsyncStorage.setItem(
-      draftKey(target),
+      draftKey(target, editId),
       JSON.stringify({ ...draft, savedAt: Date.now() }),
     );
   } catch {
@@ -78,9 +88,12 @@ export async function saveDraft(
   }
 }
 
-export async function clearDraft(target: ComposeTarget): Promise<void> {
+export async function clearDraft(
+  target: ComposeTarget,
+  editId?: string,
+): Promise<void> {
   try {
-    await AsyncStorage.removeItem(draftKey(target));
+    await AsyncStorage.removeItem(draftKey(target, editId));
   } catch {
     // Nothing to do; a stale draft is recoverable, a crash here is not.
   }

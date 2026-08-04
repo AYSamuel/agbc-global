@@ -32,6 +32,13 @@
   "ageHours_other": "{{count}} uur",
   "ageDays_one": "{{count}} dag",
   "ageDays_other": "{{count}} dagen",
+  "ageMinutesAgo_one": "{{count}} min geleden",
+  "ageMinutesAgo_other": "{{count}} min geleden",
+  "ageHoursAgo_one": "{{count}} uur geleden",
+  "ageHoursAgo_other": "{{count}} uur geleden",
+  "ageYesterday": "Gisteren",
+  "ageDaysAgo_one": "{{count}} dag geleden",
+  "ageDaysAgo_other": "{{count}} dagen geleden",
   "emptyTestimoniesTitle": "Deel als eerste",
   "emptyTestimoniesBody": "Hier staan nog geen getuigenissen. Vertel de familie wat God heeft gedaan.",
   "shareTestimony": "Getuigenis delen",
@@ -189,5 +196,11 @@
     "done": "Verwijderd.",
     "failed": "Dat is niet gelukt. Probeer het opnieuw.",
     "dismissed": "Gesloten"
-  }
+  },
+  "editTestimonyTitle": "Getuigenis bewerken",
+  "editPrayerTitle": "Verzoek bewerken",
+  "editSaveResubmit": "Opslaan en opnieuw indienen",
+  "editUnavailableTitle": "Dit kan niet bewerkt worden",
+  "editGone": "Misschien is het al verwijderd.",
+  "editRemoved": "Een leider heeft dit bericht verwijderd, dus het kan niet meer bewerkt worden. Denk je dat dit een vergissing is, neem dan contact op met je gemeenteleider."
 }

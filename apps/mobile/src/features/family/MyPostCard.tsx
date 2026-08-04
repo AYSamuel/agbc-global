@@ -13,7 +13,7 @@ import {
 import { useTheme } from '@/theme';
 
 import type { MyPost, PostStatus } from './myPosts';
-import { useRelativeAgeLabel } from './useRelativeAgeLabel';
+import { useVerboseAgeLabel } from './useRelativeAgeLabel';
 
 /**
  * One post in the author's pipeline (frame: `MY-POSTS · author pipeline`).
@@ -35,7 +35,8 @@ export function MyPostCard({
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const age = useRelativeAgeLabel(post.createdAt);
+  // The frame writes MY-POSTS' times out in words where a feed card abbreviates them.
+  const age = useVerboseAgeLabel(post.createdAt);
   const tone = TONES[post.status];
   // The frame sets every body in curly quotes: these are somebody's words, and the card
   // is quoting them back.
@@ -43,14 +44,17 @@ export function MyPostCard({
 
   return (
     <View
+      // `.post`: radius 16, padding 15/16, 12 between cards. Diffed against the frame's
+      // CSS at W2.6 and corrected there (this card shipped at radius 18, padding 12 and
+      // an 8px gap, which read tighter than every other card in the app).
       style={{
         backgroundColor: colors.card,
         borderColor: colors.cardline,
         borderWidth: 1,
-        borderRadius: radius.card,
-        paddingHorizontal: spacing.md,
+        borderRadius: radius.cardTight,
+        paddingHorizontal: spacing.lg,
         paddingVertical: 15,
-        marginBottom: spacing.sm,
+        marginBottom: spacing.md,
       }}
     >
       <View
@@ -121,7 +125,7 @@ export function MyPostCard({
               onEdit(post);
             }}
             style={({ pressed }) => ({
-              marginTop: spacing.sm,
+              marginTop: 10,
               minHeight: hitTarget.preferred,
               borderRadius: radius.control,
               backgroundColor: colors.btnBg,
@@ -153,7 +157,7 @@ export function MyPostCard({
             onPress={onContact}
             hitSlop={spacing.xs}
             style={{
-              marginTop: spacing.sm,
+              marginTop: 10,
               minHeight: hitTarget.min,
               justifyContent: 'center',
             }}
@@ -185,7 +189,7 @@ function Reason({
   return (
     <Text
       style={{
-        marginTop: spacing.sm,
+        marginTop: 10,
         backgroundColor: colors.alt,
         borderRadius: radius.control,
         paddingHorizontal: 12,
