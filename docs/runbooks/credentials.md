@@ -21,7 +21,7 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Expo / EAS | Builds, credentials store, push | TBC (created at W0.11) | TBC | TBC | Free until Starter ($19/mo) at launch | Will hold the Android keystore + FCM key + APNs key |
 | PostHog (EU) | Analytics | Ayo | GitHub OAuth | TBC | Free (1M events/mo) | Region-locked eu.posthog.com (created 2026-07-18) |
 | Sentry (EU) | Crash reporting | Ayo | GitHub OAuth | TBC | Free (5k errors/mo) | Data Storage Location = EU, unchangeable |
-| healthchecks.io | Dead-man pings for jobs | Ayo | Email magic link | TBC | Free (20 checks) | Created 2026-07-18 |
+| healthchecks.io | Dead-man pings for jobs | Ayo | Email magic link | TBC | Free (20 checks) | Created 2026-07-18. Checks are per job and per environment; each ping URL is a function secret (`HEALTHCHECK_URL_*`, `21` §6.2). Two jobs are scheduled as of W2.7 slice 5: `moderation-alerts` (hourly) and `verse-monitor` (daily) |
 | UptimeRobot | Uptime monitors | Ayo | GitHub OAuth | TBC | Free (50 monitors) | Created 2026-07-18 |
 | Twilio | ~~OTP delivery~~ | n/a | n/a | n/a | n/a | DROPPED with email OTP (ADR 0011); no account created |
 
@@ -51,6 +51,35 @@ Two admin grants exist, declared as data in `bootstrap_admins` and applied by tr
 Until steps 1 to 3 are done in production, production still has functionally one admin and none of the protection above exists.
 
 **Custody caveat, accepted knowingly:** a personal-provider mailbox is controlled by whoever holds that Google account, not by the ministry, so it does not outlive its holder the way a church-domain mailbox would. Ayo's decision, 2026-07-30, having been offered the domain alternative. Moving it to a managed church domain later needs one more `bootstrap_admins` row plus a demotion of the old one.
+
+## Arming the scheduled jobs in a hosted environment (W2.7 slice 5, ADR 0016)
+
+The schedules ship in migrations and are the same everywhere. What is per-environment is two
+vault secrets and the function secrets; without them the jobs are registered and do nothing,
+which is deliberate (a fresh database and every CI run stay silent). Do this once per hosted
+project, after the migrations are applied.
+
+1. [ ] **Vault**, in that project's SQL editor. `project_url` has no trailing slash and no
+       `/functions/v1`; `jobs.invoke_edge_function` appends it:
+
+   ```sql
+   select vault.create_secret('https://<ref>.supabase.co', 'project_url', '<env>');
+   select vault.create_secret('<that project''s service_role key>', 'service_role_key', '<env>');
+   ```
+
+2. [ ] **Function secrets** (`supabase secrets set`, per env): `RESEND_API_KEY`,
+       `ALERTS_FROM_EMAIL` (a verified sender on the domain), `DASHBOARD_URL`, and the two
+       healthchecks ping URLs `HEALTHCHECK_URL_MODERATION_ALERTS` +
+       `HEALTHCHECK_URL_VERSE_MONITOR`. Missing email config is not a silent no-op: the jobs
+       log, ping FAILURE and answer 503.
+3. [ ] **healthchecks.io checks**, one per job per environment, with periods matching the
+       schedules (hourly / daily) and a grace of one period.
+4. [ ] **Verify**: `select jobs.invoke_edge_function('verse-monitor');` then read
+       `net._http_response` for a 200 and the check for a ping. Re-running sends nothing the
+       second time; that is `job_alerts`, not a failure.
+5. [ ] **Prod only, and only at Track P**: the six pre-existing cron jobs belong to the
+       retired Grace Portal app (`prod-audit-2026-07-30.md`). They are dropped by that
+       cleanup, not by this step, and none of them shares a name with ours.
 
 ## Keystore copies (from `21` §7)
 
