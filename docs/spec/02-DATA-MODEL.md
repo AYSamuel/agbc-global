@@ -459,6 +459,8 @@ Seed courses from `agbc/src/content/courses/*.json` + `academy/*.json` via a con
 
 ### `notifications` (in-app center)
 Localization model: automated notifications store a **template key + params**, rendered per recipient `profiles.language` at send time and at display time (never baked English strings: the lock screen is the most visible localized surface). Partitioned by month so the 12-month retention purge (`20`) is a partition drop, not a giant DELETE.
+
+> **OPEN CONFLICT, for W3.3 to resolve deliberately (raised 2026-08-06, W2.7 slice 5).** Monthly partitioning and the two uniqueness rules below cannot both hold as written: Postgres requires every unique constraint on a partitioned table to include the partition key, so neither `unique(profile_id, broadcast_id)` nor the partial unique on `(profile_id, dedupe_key)` can exist on the parent. Enforced per partition instead, both weaken at a month boundary (a fan-out re-run or a re-scheduled reminder that straddles midnight on the 1st is deduped against nothing). The options are a partition-key-inclusive key, an unpartitioned side table holding the dedupe keys, or dropping partitioning and paying for retention with batched deletes. **Not decided here**, and it is the reason W2.7's staff alerts use their own small ledger (`job_alerts`) rather than this table: those recipients are staff whose surface is email and the dashboard, so nothing was gained by answering this question in a hurry.
 | field | type | notes |
 |-------|------|-------|
 | id | uuid PK | |
