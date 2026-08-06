@@ -195,6 +195,13 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
   another member's profile, so both halves now need the same `SECURITY DEFINER` path, the
   same audit table and the same step-up. This slice reaches the APP as well as the
   dashboard. Its mockup frames do not exist yet and composing them is a blocking gate.
+- Amended 2026-08-06 (slice 5, the last): this item also lands the project's FIRST scheduled
+  work, so it carries the pattern the items above inherit rather than only its own two jobs
+  (ADR [0016](../decisions/0016-pg-cron-plus-edge-functions-for-scheduled-work.md), `21` §5
+  corrected in the same PR). Delivery is email + the dashboard's own queue: push is W3.3, and
+  a leader's moderation work has no screen in the app to deep-link to at all, which is why
+  these alerts do not go through `notifications` (that table stays W3.3's, with the
+  partition-vs-unique conflict in `02` for it to resolve).
 
 **W2.8 · Member Home + Rhythm slice**
 - Refs: `10`, `07` (member Home, branch-context model), `02` (attendance/streaks/milestones).
@@ -235,7 +242,8 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W3.4 · Reminder jobs slice**
 - Refs: `21` §5 (jobs table), `15` (tiers), `09`/`02` (prayer reminders).
-- Build: service reminders (15-min scan, dedupe keys embedding occurrence), RSVP reminders (hourly), prayer reminders (gentle cadence, hard cap, stop conditions), verse-queue monitor, counter reconciliation, retention purges; every job idempotent + healthchecks ping; pgTAP/deno tests on dedupe-key behavior (rescheduled event mints a new key).
+- Build: service reminders (15-min scan, dedupe keys embedding occurrence), RSVP reminders (hourly), prayer reminders (gentle cadence, hard cap, stop conditions), counter reconciliation, retention purges; every job idempotent + healthchecks ping; pgTAP/deno tests on dedupe-key behavior (rescheduled event mints a new key).
+- **The verse-queue monitor is already built** (W2.7 slice 5, 2026-08-06), along with the whole scheduling pattern this item inherits: `cron.schedule` in the job's own migration, `jobs.invoke_edge_function` reading its two values from the vault, a lease per job, and the ledger/idempotency shape (`21` §5, ADR 0016). These jobs are new schedules on an existing mechanism, not new infrastructure. What W3.4 still owns for the verse monitor is the weekly **Resend canary** (`21` §6.8), which its daily run is the natural home for.
 - Done: each job runs on schedule in dev, re-runs without double-sends, and its dead-man check is registered.
 
 **W3.5 · Broadcasts + Dashboard Phase B** (multi-session)

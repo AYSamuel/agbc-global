@@ -508,6 +508,53 @@ export type Database = {
           },
         ]
       }
+      job_alerts: {
+        Row: {
+          id: string
+          kind: string
+          recipient_id: string
+          sent_at: string
+          subject: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          recipient_id: string
+          sent_at?: string
+          subject: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          recipient_id?: string
+          sent_at?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_alerts_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_leases: {
+        Row: {
+          job: string
+          leased_until: string
+        }
+        Insert: {
+          job: string
+          leased_until: string
+        }
+        Update: {
+          job?: string
+          leased_until?: string
+        }
+        Relationships: []
+      }
       notification_prefs: {
         Row: {
           branch_updates: boolean
@@ -1479,6 +1526,10 @@ export type Database = {
         Args: { object_name: string }
         Returns: boolean
       }
+      claim_job_lease: {
+        Args: { job_name: string; lease?: string }
+        Returns: boolean
+      }
       current_audit_request: { Args: never; Returns: string }
       custom_access_token: { Args: { event: Json }; Returns: Json }
       daily_verse_depth: {
@@ -1515,12 +1566,31 @@ export type Database = {
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      moderation_alert_batch: {
+        Args: { overdue_after?: string }
+        Returns: {
+          branch_id: string
+          branch_name: string
+          is_safeguarding: boolean
+          item_kind: string
+          kind: string
+          recipient_email: string
+          recipient_id: string
+          recipient_name: string
+          recipient_role: Database["public"]["Enums"]["profile_role"]
+          subject: string
+          waiting_since: string
+        }[]
+      }
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
+      prune_job_alerts: { Args: never; Returns: number }
+      record_job_alerts: { Args: { alerts: Json }; Returns: number }
       record_photo_validation: {
         Args: { content_type: string; object_name: string }
         Returns: undefined
       }
+      release_job_lease: { Args: { job_name: string }; Returns: undefined }
       set_member_role: {
         Args: {
           new_branch?: string
@@ -1532,6 +1602,19 @@ export type Database = {
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
+      verse_alert_batch: {
+        Args: { floor_days?: number }
+        Returns: {
+          days_queued: number
+          language: string
+          recipient_email: string
+          recipient_id: string
+          recipient_name: string
+          runs_out_on: string
+          stale_from: string
+          subject: string
+        }[]
+      }
     }
     Enums: {
       branch_request_status: "pending" | "approved" | "rejected" | "cancelled"

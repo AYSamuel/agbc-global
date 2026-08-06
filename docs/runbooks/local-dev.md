@@ -106,6 +106,56 @@ reload the app.
   `netstat -ano | findstr :8081` then `taskkill /F /PID <pid>`.
 - Supabase: `supabase stop` (data survives; a later `supabase start` resumes).
 
+## Scheduled jobs on the local stack (W2.7 slice 5)
+
+`pnpm db:reset` also runs `scripts/arm-local-jobs.mjs`, which writes `project_url`
+and `service_role_key` into the local vault. Without them the schedules exist and
+do nothing (by design, ADR 0016). Re-arm alone with `pnpm jobs:arm-local`.
+
+`project_url` is `http://kong:8000`, not `127.0.0.1:55321`: pg_net runs inside the
+postgres container, where the API gateway answers on that name.
+
+```powershell
+# What is scheduled, and what the last runs did
+docker exec supabase_db_agbc-global psql -U postgres -d postgres -c "select jobname, schedule from cron.job;"
+docker exec supabase_db_agbc-global psql -U postgres -d postgres -c "select id, status_code, content from net._http_response order by id desc limit 5;"
+
+# Run one now, exactly as cron would (no need to wait for the tick)
+docker exec supabase_db_agbc-global psql -U postgres -d postgres -c "select jobs.invoke_edge_function('moderation-alerts');"
+```
+
+**New functions need a stack restart, not a container restart:** the edge runtime is
+given its function list at `supabase start`, so a newly added function answers 404
+until `supabase stop && supabase start`.
+
+### Watching the alert emails without a Resend key
+
+There is no Resend key locally, so the jobs answer `503 email not configured`. To
+see the real mail, point them at a catcher:
+
+1. Run any local HTTP server that answers 200 on `POST /emails` (a ten-line
+   `node:http` script does it) on port 5599.
+2. Add to `supabase/functions/.env` (gitignored), then restart the stack:
+
+   ```
+   RESEND_API_KEY=local-no-key
+   RESEND_API_URL=http://host.docker.internal:5599/emails
+   ALERTS_FROM_EMAIL=AGBC <alerts@example.test>
+   DASHBOARD_URL=http://localhost:3000
+   ```
+
+3. Give the jobs something to say. A fresh reset has no admin, so escalation has
+   nobody to reach:
+
+   ```sql
+   update public.profiles set role = 'admin' where email = 'dev.tobi@example.test';
+   update public.prayers set created_at = now() - interval '3 days' where status = 'pending';
+   ```
+
+Remove the `RESEND_*` lines afterwards. Re-running a job sends nothing the second
+time: that is `job_alerts` doing its job, so `delete from public.job_alerts;` to
+replay.
+
 ## Guest smoke journey (Maestro)
 
 The W1.8 exit smoke test walks a guest through Home > Watch > Family > Give bank
