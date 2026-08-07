@@ -355,7 +355,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | field | type | notes |
 |-------|------|-------|
 | profile_id | uuid PK/FK | |
-| current_weeks | int | consecutive ISO weeks with attendance. A streak week is **the ISO week of `attendance.service_date`, nothing else** (the timezone acted once, at write time, in the attended branch); `service_date` is immutable, so branch-timezone edits and home-branch changes never re-bucket history |
+| current_weeks | int | weeks in the member's current run. **Grace covers ONE missed week; two consecutive misses start a new run** (decided 2026-08-07, W2.8: this column said "consecutive ISO weeks" and `10` said a missed week pauses and resumes, which are different rules. `10`'s promise wins, because "Grace covers this week" is the copy the product actually makes). A streak week is **the ISO week of `attendance.service_date`, nothing else** (the timezone acted once, at write time, in the attended branch); `service_date` is immutable, so branch-timezone edits and home-branch changes never re-bucket history. **The stored value is the run as of the last attendance, and whether that run is still LIVE is decided at read time** by `rhythm_state()`, because a member who stops attending would otherwise keep showing five weeks until some job got round to them |
 | longest_weeks | int | monotonic |
 | last_service_date | date | |
 

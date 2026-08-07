@@ -208,6 +208,12 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Build BE: attendance + streaks + milestones migrations, `client_taken_at` clamp trigger, streak recompute trigger + weekly cron safety net, milestone inserts; pgTAP (backdating fails, service_date derivation, ISO-week math incl. DST cases in unit tests).
 - Build FE: member Home (named greeting, streak strip, inline Glory); "I'm here" on next-service card (idempotent second tap copy) + visiting-branch semantics; RHYTHM screen (streak, milestones, history, grace-framed pauses); milestone celebration overlay (reduced-motion variant); in-context notification pre-permission sheet on first "I'm here"/RSVP per `06`.
 - Done: `10` acceptance criteria minus the plan (Phase 4); streak math unit tests cover the DST/timezone matrix; live-watch credit deferred to W3.2 and noted.
+- **Backend landed 2026-08-07** (`20260807120000`, pgTAP `030`), with the plan doc
+  `docs/spec/plans/W2.8-member-home-and-rhythm.md`. Two things to know before the screens: the
+  DST matrix lives in **pgTAP rather than in mobile unit tests**, because the maths is
+  server-side (the timezone is applied in exactly one SQL function and the app never repeats
+  it); and the grace-versus-consecutive conflict between `02` and `10` was resolved in favour
+  of `10` (one missed week is covered), with both docs corrected.
 
 **W2.9 · RSVP + Academy + profile slice**
 - Refs: `11` (RSVP), `13`, `02` (courses tables), `16` (profile edit).

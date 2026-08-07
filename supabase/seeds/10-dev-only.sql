@@ -221,3 +221,44 @@ on conflict (id) do update set
   location = excluded.location,
   status = excluded.status,
   rsvp_enabled = excluded.rsvp_enabled;
+
+-- --- rhythm (W2.8) --------------------------------------------------------------------------
+--
+-- Attendance history, so RHYTHM and Home's streak strip have something true to draw on device
+-- rather than an empty state that looks like a bug. Three shapes on purpose, because the three
+-- states the screens must render are exactly these (docs/spec/10):
+--
+--   Grace   (Glasgow leader)  six Sundays with one missed: the grace-covered run
+--   Tobi    (Glasgow member)  last Sunday only: a rhythm just beginning
+--   Marieke (Emmen member)    a month ago and nothing since: lapsed, longest remembered
+--
+-- Written with explicit service_date, which the insert guard allows only for a trusted writer
+-- (no auth.uid()): as a member every one of these would be clamped to today, which is the
+-- whole point of the clamp. Streaks and milestones are NOT seeded; the triggers derive them,
+-- so a seeded database exercises the same path a real tap does.
+insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
+select
+  p.id,
+  p.branch_id,
+  (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
+  now(),
+  'here_button'
+from public.profiles p
+cross join unnest(array[6, 5, 4, 3, 1]) as w
+where p.email = 'dev.grace@example.test'
+on conflict (profile_id, service_date) do nothing;
+
+insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
+select p.id, p.branch_id, (date_trunc('week', current_date) - interval '1 week')::date + 6,
+       now(), 'here_button'
+from public.profiles p
+where p.email = 'dev.tobi@example.test'
+on conflict (profile_id, service_date) do nothing;
+
+insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
+select p.id, p.branch_id, (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
+       now(), 'here_button'
+from public.profiles p
+cross join unnest(array[5, 4]) as w
+where p.email = 'dev.marieke@example.test'
+on conflict (profile_id, service_date) do nothing;
