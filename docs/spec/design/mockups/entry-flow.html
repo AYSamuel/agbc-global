@@ -742,6 +742,40 @@
   .pl-video .over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:0 20px}
   .pl-video .over .lbl{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9aa6bd}
   .pl-video .over .cd{font-family:var(--disp);font-weight:800;font-size:32px;color:#fff;margin-top:8px}
+
+  /* ---- W2.8 · Member Home + Rhythm --------------------------------------------------- */
+  /* "I'm here", once the tap has landed. The action quietens rather than disappearing: the
+     same tinted-gold treatment .glory.on and .glorybig.on use for a reaction the member has
+     already made, so "done" reads the same way wherever the app says it. It keeps its place
+     in the row because the card still has to state plainly that today is handled. */
+  .hero .btns .btn.gold.on{background:rgba(255,207,74,.20);border:1px solid var(--gold);color:#fff;padding:11px}
+  /* The browsed branch is not the member's home branch (`07`). The card names where the tap
+     will count, because attendance follows the branch you are standing in and a member who
+     travels should never have to guess. Same onInk sub colour as .hero .where. */
+  .hero .visitnote{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.45;color:#9aa6bd;margin-top:12px}
+  .hero .visitnote b{color:var(--gold);font-weight:800}
+  .hero .visitnote svg{flex:none;margin-top:1px;color:var(--gold)}
+  /* The milestone celebration (`10`): the one overlay in the app that asks for nothing.
+     Centred rather than a bottom sheet, because a .gatesheet's whole shape says "choose"
+     and this says "look what happened". Card values are the sheet's and the disc is AUTH-4's
+     arrival disc, so the app celebrates in a voice it already has. */
+  .celebrate{position:absolute;inset:0;z-index:4;display:grid;place-items:center;padding:0 26px}
+  .celebrate .celcard{width:100%;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:26px 22px 20px;text-align:center}
+  .celebrate .celdisc{position:relative;width:88px;height:88px;border-radius:50%;background:var(--gold);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 0 0 10px rgba(255,207,74,.15);font-size:38px}
+  .celebrate .goldeye{color:var(--eye)}
+  .celebrate h3{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--text);margin:9px 0 8px}
+  .celebrate p{font-size:14.5px;color:var(--sub);line-height:1.5;margin:0 0 18px}
+  .celebrate .btn{margin-bottom:8px}
+  /* Burst's six dots (components/ui/Burst), drawn at rest. Under the OS reduce-motion setting
+     they are not rendered at all, which is the contract 05 §Motion states and the one Burst
+     already keeps for Glory: the celebration still arrives, it simply arrives still. */
+  .celburst{position:absolute;inset:0;pointer-events:none}
+  .celburst i{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--gold);opacity:.8}
+  /* A milestone not reached yet, on RHYTHM's empty state. Muted like .dayrow.up rather than
+     faded with opacity, so it keeps its contrast in both themes: this is a preview of what is
+     ahead, never a locked achievement. */
+  .mbadge.up .mi{background:var(--alt);color:var(--muted)}
+  .mbadge.up .ml{color:var(--muted)}
 </style>
 
 <main class="stage">
@@ -939,6 +973,367 @@
   <h2 class="ghead">&#127769; W2.7 &middot; Branch change &middot; dark</h2>
   <div class="gallery t-dark" id="w27Dark"></div>
   <script>(function(){var l=document.getElementById('w27Light'),d=document.getElementById('w27Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
+  <h2 class="ghead" id="w28">&#128337; W2.8 &middot; Member Home + Rhythm &middot; light</h2>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Home</b> &#8594; <b>I'm here</b> &#8594; <b>checked in</b> &#8594; <b>celebration</b> (only on a milestone) &#8594; <b>reminder sheet</b> (only the first time) &nbsp;|&nbsp; <b>RHYTHM</b> renders the four states of <code>rhythm_state()</code>, and the app never works out which one it is.</p>
+  <div class="gallery t-light" id="w28Light">
+
+      <!-- HOME · checked in -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; checked in (the tap has landed)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot"></span></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
+            </div>
+            <div class="quick">
+              <div class="qtile"><span class="ic g4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="lb">Visit</span></div>
+              <div class="qtile"><span class="ic g2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg></span><span class="lb">Watch</span></div>
+              <div class="qtile"><span class="ic g1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg></span><span class="lb">Give</span></div>
+              <div class="qtile"><span class="ic g3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5"/></svg></span><span class="lb">Academy</span></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 5v16"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Saved &#10003;</span></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next milestone: 12 weeks</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+            <div class="sectitle">From the family <a>See all</a></div>
+            <div class="testi">
+              <div class="who"><span class="av">S</span><div><div class="nm">Sarah O.</div><div class="mt">AGBC Glasgow &middot; 2h</div></div></div>
+              <div class="body">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+              <div class="acts"><span class="glory on"><span class="st">&#10022;</span> Glory to God &middot; 15</span><span class="shr">Share</span></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M15.5 8.5a2.6 2.6 0 1 0 0 4"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M15 19a5.2 5.2 0 0 1 5.5-4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · visiting another branch -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; visiting another branch (the tap counts where you stand)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Glasgow <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 12:00 PM</h2><div class="where">AGBC Glasgow &middot; Summerlee Museum, Coatbridge</div><div class="btns"><button class="btn gold" style="width:auto">I'm here</button><button class="btn glass" style="width:auto">Plan a visit</button></div><div class="visitnote"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Visiting <b>AGBC Glasgow</b> today? &#8220;I'm here&#8221; counts right here, and your rhythm carries on the same.</span></div></div>
+            </div>
+            <div class="quick">
+              <div class="qtile"><span class="ic g4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="lb">Visit</span></div>
+              <div class="qtile"><span class="ic g2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg></span><span class="lb">Watch</span></div>
+              <div class="qtile"><span class="ic g1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg></span><span class="lb">Give</span></div>
+              <div class="qtile"><span class="ic g3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5"/></svg></span><span class="lb">Academy</span></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 5v16"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Save</span></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">4-week rhythm</div><div class="next">Next milestone: 12 weeks</div></div>
+              <div class="ring"><i>4</i></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M15.5 8.5a2.6 2.6 0 1 0 0 4"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M15 19a5.2 5.2 0 0 1 5.5-4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS · pre-permission sheet -->
+      <div class="device">
+        <p class="name"><b>NOTIF-ASK</b> &middot; pre-permission sheet, after the first &#8220;I'm here&#8221;</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">1-week rhythm</div><div class="next">Next milestone: 4 weeks</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 90deg,rgba(255,255,255,.16) 90deg 360deg)"><i>1</i></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet">
+            <div class="grab"></div>
+            <div class="gi">&#128276;</div>
+            <h3>Want a reminder before service?</h3>
+            <p>We can send a gentle nudge before your service, and let you know when someone prays with you. Nothing else, and you can turn it off any time.</p>
+            <button class="btn primary">Yes, remind me</button>
+            <button class="btn ghost">Not now</button>
+            <div class="authnote" style="margin-top:2px">You're checked in either way. Settings has the switch whenever you want it.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MILESTONE · celebration -->
+      <div class="device">
+        <p class="name"><b>MILESTONE</b> &middot; celebration overlay (4-week rhythm)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
+            </div>
+            <div class="quick">
+              <div class="qtile"><span class="ic g4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="lb">Visit</span></div>
+              <div class="qtile"><span class="ic g2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg></span><span class="lb">Watch</span></div>
+              <div class="qtile"><span class="ic g1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg></span><span class="lb">Give</span></div>
+              <div class="qtile"><span class="ic g3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5"/></svg></span><span class="lb">Academy</span></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">4-week rhythm</div><div class="next">Next milestone: 12 weeks</div></div>
+              <div class="ring"><i>4</i></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="celebrate">
+            <div class="celcard">
+              <div class="celdisc">
+                <span class="celburst"><i style="left:100.5px;top:40.5px"></i><i style="left:70.5px;top:92.5px"></i><i style="left:10.5px;top:92.5px"></i><i style="left:-19.5px;top:40.5px"></i><i style="left:10.5px;top:-11.5px"></i><i style="left:70.5px;top:-11.5px"></i></span>
+                &#128293;
+              </div>
+              <span class="goldeye">Milestone</span>
+              <h3>Four weeks of rhythm</h3>
+              <p>You've gathered with the family four Sundays running. We love having you here.</p>
+              <button class="btn gold">Share the joy</button>
+              <button class="btn ghost">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MILESTONE · celebration, reduce motion -->
+      <div class="device">
+        <p class="name"><b>MILESTONE</b> &middot; celebration with reduce motion ON (it arrives still)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
+            </div>
+            <div class="quick">
+              <div class="qtile"><span class="ic g4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="lb">Visit</span></div>
+              <div class="qtile"><span class="ic g2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg></span><span class="lb">Watch</span></div>
+              <div class="qtile"><span class="ic g1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg></span><span class="lb">Give</span></div>
+              <div class="qtile"><span class="ic g3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5"/></svg></span><span class="lb">Academy</span></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">4-week rhythm</div><div class="next">Next milestone: 12 weeks</div></div>
+              <div class="ring"><i>4</i></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="celebrate">
+            <div class="celcard">
+              <div class="celdisc">&#128293;</div>
+              <span class="goldeye">Milestone</span>
+              <h3>Four weeks of rhythm</h3>
+              <p>You've gathered with the family four Sundays running. We love having you here.</p>
+              <button class="btn gold">Share the joy</button>
+              <button class="btn ghost">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · the strip in all four states -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; the rhythm strip, all four states of <code>rhythm_state()</code></p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="mlabel" style="padding-top:52px">state: none &middot; nothing recorded yet</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">It starts this Sunday</div><div class="next">Tap &#8220;I'm here&#8221; when you gather and we'll keep it with you</div></div>
+            </div>
+            <div class="mlabel">state: active &middot; attended this week or last</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next milestone: 12 weeks</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+            <div class="mlabel">state: grace &middot; one week missed, the run carries</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Grace covers last week. We'd love to see you Sunday.</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+            <div class="mlabel">state: lapsed &middot; the longest is never taken away</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">Your longest: 11 weeks</div><div class="next">Whenever you're back, we pick it up right there</div></div>
+            </div>
+            <p class="alwayson" style="padding:18px 20px 0">The ring is progress toward the next milestone, so it appears only when a run is actually in progress. A big <b>0</b> would be the scold <code>10</code> forbids.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · none -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; nothing recorded yet (state: none)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></div>
+              <h3>Your rhythm starts here</h3>
+              <p>Tap &#8220;I'm here&#8221; at your next service and we'll keep the rhythm with you. Grace covers the weeks you miss.</p>
+              <button class="btn gold" style="max-width:230px">See service times</button>
+            </div>
+            <div class="mlabel">What's ahead</div>
+            <div class="mbadges">
+              <div class="mbadge up"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+              <div class="mbadge up"><div class="mi">&#128293;</div><div class="ml">4-week rhythm</div></div>
+              <div class="mbadge up"><div class="mi">&#128591;</div><div class="ml">First prayer</div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · grace -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; grace covers last week (state: grace)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="streakhero"><div class="num">5</div><div class="unit">week rhythm</div><p class="hl">Five weeks of showing up. Your rhythm carries right on.</p><div class="lo">Longest rhythm: 11 weeks</div></div>
+            <div class="linkbanner gold" style="margin:12px 16px 0">
+              <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg></span>
+              <div class="lt"><b>We missed you last week.</b> Nothing is lost, and we'd love to see you Sunday.</div>
+            </div>
+            <div class="mlabel">Milestones</div>
+            <div class="mbadges">
+              <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+              <div class="mbadge"><div class="mi">&#128293;</div><div class="ml">4-week rhythm</div></div>
+              <div class="mbadge"><div class="mi">&#128591;</div><div class="ml">First prayer</div></div>
+            </div>
+            <div class="nextm"><div class="nt"><span>Next: 12-week rhythm</span><span class="ng">7 to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:42%"></i></div></div>
+            <div class="mlabel">Attendance</div>
+            <div class="atlist">
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></span><div class="ag"><div class="an">Sun 26 Jul</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow live"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="10 8 16 12 10 16 10 8"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg></span><div class="ag"><div class="an">Sun 19 Jul</div><div class="as">Watched live</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></span><div class="ag"><div class="an">Sun 12 Jul</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · lapsed -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; a while away (state: lapsed)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="streakhero"><div class="num">11</div><div class="unit">weeks, your longest</div><p class="hl">It's been a few weeks, and you're still family. Whenever you're back, we'll pick the rhythm up right where it was.</p><div class="lo">Last gathered: Sunday 5 July</div></div>
+            <div class="todaycard"><div class="te">Whenever you're ready</div><div class="tt">Sundays &middot; 11:00 AM</div><div class="tr">AGBC Emmen &middot; Flintstraat 29C05</div><button class="btn outline">Branch details</button></div>
+            <div class="mlabel">Milestones</div>
+            <div class="mbadges">
+              <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+              <div class="mbadge"><div class="mi">&#128293;</div><div class="ml">4-week rhythm</div></div>
+              <div class="mbadge"><div class="mi">&#10022;</div><div class="ml">First testimony</div></div>
+            </div>
+            <div class="mlabel">Attendance</div>
+            <div class="atlist">
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></span><div class="ag"><div class="an">Sun 5 Jul</div><div class="as">AGBC Emmen &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></span><div class="ag"><div class="an">Sun 28 Jun</div><div class="as">AGBC Emmen &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></span><div class="ag"><div class="an">Sun 21 Jun</div><div class="as">AGBC Emmen &middot; In person</div></div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · tablet landscape, member -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; tablet landscape &middot; member (checked in, rhythm in the right column)</p>
+        <div class="tablet land">
+          <div class="tstatus"><span>9:41</span><span class="mid">Sunday 9 August</span><span class="rt"><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="tbody">
+            <nav class="railnav">
+              <div class="rlogo">A</div>
+              <button class="ritem on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</button>
+              <button class="ritem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg>Watch</button>
+              <button class="ritem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M15.5 8.5a2.6 2.6 0 1 0 0 4"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M15 19a5.2 5.2 0 0 1 5.5-4"/></svg>Family</button>
+              <button class="ritem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg>Give</button>
+              <button class="ritem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>More</button>
+              <div class="rspacer"></div>
+              <div class="rav">A</div>
+            </nav>
+            <div class="tcontent">
+              <div class="tcenter">
+                <div style="padding:22px 26px 0;max-width:1000px;margin:0 auto"><div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Lighthouse Berlin</div></div></div>
+                <div class="dash">
+                  <div class="col">
+                    <div class="hero" style="margin:0"><div class="bg"></div><div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on sm"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're here</button><button class="btn glass sm">Plan a visit</button></div></div></div>
+                    <div class="verse" style="margin:0"><div class="row1"><span class="eye">Verse of the day</span></div><div class="txt">And my God will supply every need of yours according to his riches in glory in Christ Jesus.</div><div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Saved &#10003;</span></div></div>
+                  </div>
+                  <div class="col">
+                    <div class="quick" style="margin:0;padding:0;grid-template-columns:repeat(2,1fr)"><div class="qtile"><span class="ic g4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="lb">Visit</span></div><div class="qtile"><span class="ic g2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg></span><span class="lb">Watch</span></div><div class="qtile"><span class="ic g1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z"/></svg></span><span class="lb">Give</span></div><div class="qtile"><span class="ic g3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5"/></svg></span><span class="lb">Academy</span></div></div>
+                    <div class="rhythm" style="margin:4px 0 0"><div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next milestone: 12 weeks</div></div><div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div></div>
+                    <div><div class="sectitle" style="margin:4px 4px 10px">Latest message</div><div class="sermon" style="margin:0"><span class="thumb"><span class="play"></span></span><div><div class="t">The Grace That Finds You</div><div class="s">Pastor Olayinka &middot; 42 min</div></div></div></div>
+                  </div>
+                </div>
+                <div style="height:20px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+  <p class="note"><b>What the screens draw from.</b> Every value above comes from <code>rhythm_state(branch)</code> and <code>record_attendance(branch)</code>: <code>today</code>, <code>checked_in</code>, <code>state</code>, <code>current_weeks</code>, <code>longest_weeks</code>, <code>last_service_date</code>. The app never decides what day it is and never keeps a checked-in flag of its own, so the card and the write cannot disagree. Milestones and attendance history are own-row selects.</p>
+  <p class="note"><b>The toast</b> (no frame: the app's <code>Toast</code> primitive, announced through a live region). First tap: &#8220;You're here. Lovely to have you.&#8221; A tap that recorded nothing because the day already had a row, which happens on a second device or when the offline queue replays: &#8220;You're already checked in.&#8221; Offline: the tap is queued, the card shows checked-in immediately and the toast says &#8220;Saved. We'll record this when you're back online.&#8221;</p>
+  <p class="note"><b>Milestone copy</b>, one headline per kind the backend awards: <code>first_service</code> &#8220;Your first Sunday with us&#8221; &#127881; &middot; <code>4_week_rhythm</code> &#8220;Four weeks of rhythm&#8221; &#128293; &middot; <code>12_week_rhythm</code> &#8220;Twelve weeks of rhythm&#8221; &#128330; &middot; <code>first_testimony</code> &#8220;Your first testimony is live&#8221; &#10022; &middot; <code>first_prayer</code> &#8220;Your first prayer request is live&#8221; &#128591;. The overlay is shown once per milestone, when the app first sees a row it has not celebrated.</p>
+  <p class="note"><b>The pre-permission sheet</b> is the same sheet for the first RSVP (&#8220;Want a reminder before this event?&#8221;), per <code>06</code>. It always arrives AFTER the action it accompanies has completed, so declining costs the member nothing.</p>
+
+  <h2 class="ghead">&#127769; W2.8 &middot; Member Home + Rhythm &middot; dark</h2>
+  <div class="gallery t-dark" id="w28Dark"></div>
+  <script>(function(){var l=document.getElementById('w28Light'),d=document.getElementById('w28Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>
   <div class="gallery t-light" id="lightGallery">
