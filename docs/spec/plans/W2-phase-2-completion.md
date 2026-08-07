@@ -58,7 +58,11 @@ Notes for whoever picks it up:
   `live-detection`.
 - Jobs must be idempotent and safe to re-run; assert that in tests rather than assuming it.
 
-### 2. W2.8 (#134) · Member Home + Rhythm · **START HERE**
+### 2. W2.8 (#134) · Member Home + Rhythm · **backend landed 2026-08-07, screens next**
+
+Its own plan doc now: `W2.8-member-home-and-rhythm.md`, which carries the contract the screens
+draw from, the two decisions taken (grace covers one missed week; content milestones are
+awarded on approval), and the frame gate that blocks two of the four remaining surfaces.
 
 **The biggest remaining slice, and the only one with a new domain and real maths.** Budget
 more than one session.

@@ -63,6 +63,51 @@ export type Database = {
           },
         ]
       }
+      attendance: {
+        Row: {
+          branch_id: string
+          client_taken_at: string
+          created_at: string
+          id: string
+          profile_id: string
+          service_date: string
+          source: Database["public"]["Enums"]["attendance_source"]
+        }
+        Insert: {
+          branch_id: string
+          client_taken_at?: string
+          created_at?: string
+          id?: string
+          profile_id: string
+          service_date: string
+          source?: Database["public"]["Enums"]["attendance_source"]
+        }
+        Update: {
+          branch_id?: string
+          client_taken_at?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+          service_date?: string
+          source?: Database["public"]["Enums"]["attendance_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -554,6 +599,35 @@ export type Database = {
           leased_until?: string
         }
         Relationships: []
+      }
+      milestones: {
+        Row: {
+          achieved_at: string
+          id: string
+          kind: string
+          profile_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          id?: string
+          kind: string
+          profile_id: string
+        }
+        Update: {
+          achieved_at?: string
+          id?: string
+          kind?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_prefs: {
         Row: {
@@ -1169,6 +1243,38 @@ export type Database = {
           },
         ]
       }
+      streaks: {
+        Row: {
+          current_weeks: number
+          last_service_date: string | null
+          longest_weeks: number
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          current_weeks?: number
+          last_service_date?: string | null
+          longest_weeks?: number
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          current_weeks?: number
+          last_service_date?: string | null
+          longest_weeks?: number
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streaks_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       testimonies: {
         Row: {
           author_id: string
@@ -1516,6 +1622,14 @@ export type Database = {
         Args: { target_prayer: string }
         Returns: undefined
       }
+      attendance_service_date: {
+        Args: { basis: string; zone: string }
+        Returns: string
+      }
+      award_milestone: {
+        Args: { milestone_kind: string; target: string }
+        Returns: undefined
+      }
       caller_branch_live: { Args: never; Returns: string }
       caller_is_admin_live: { Args: never; Returns: boolean }
       caller_is_onboarded: { Args: never; Returns: boolean }
@@ -1585,12 +1699,38 @@ export type Database = {
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
       prune_job_alerts: { Args: never; Returns: number }
+      recompute_all_streaks: { Args: never; Returns: number }
+      recompute_streak: { Args: { target: string }; Returns: undefined }
+      record_attendance: {
+        Args: { p_branch_id: string; p_client_taken_at?: string }
+        Returns: {
+          checked_in: boolean
+          current_weeks: number
+          last_service_date: string
+          longest_weeks: number
+          recorded: boolean
+          state: string
+          today: string
+        }[]
+      }
       record_job_alerts: { Args: { alerts: Json }; Returns: number }
       record_photo_validation: {
         Args: { content_type: string; object_name: string }
         Returns: undefined
       }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
+      rhythm_state: {
+        Args: { p_branch_id?: string }
+        Returns: {
+          checked_in: boolean
+          current_weeks: number
+          last_service_date: string
+          longest_weeks: number
+          state: string
+          today: string
+        }[]
+      }
+      rhythm_week: { Args: { service_date: string }; Returns: string }
       set_member_role: {
         Args: {
           new_branch?: string
@@ -1617,6 +1757,7 @@ export type Database = {
       }
     }
     Enums: {
+      attendance_source: "here_button" | "live_watch"
       branch_request_status: "pending" | "approved" | "rejected" | "cancelled"
       branch_status: "active" | "archived"
       content_status: "pending" | "approved" | "rejected" | "removed"
@@ -1763,6 +1904,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      attendance_source: ["here_button", "live_watch"],
       branch_request_status: ["pending", "approved", "rejected", "cancelled"],
       branch_status: ["active", "archived"],
       content_status: ["pending", "approved", "rejected", "removed"],

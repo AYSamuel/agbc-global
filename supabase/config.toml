@@ -478,6 +478,11 @@ verify_jwt = true
 enabled = true
 verify_jwt = true
 
+# The weekly streak safety net (docs/spec/21 §5; W2.8). Same cron-invoked shape.
+[functions.streak-recompute]
+enabled = true
+verify_jwt = true
+
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
 # by the member right after uploading, with THEIR access token: verify_jwt only
 # proves the token belongs to this project, so the function resolves the real
