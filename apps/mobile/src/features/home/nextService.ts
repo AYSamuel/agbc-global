@@ -28,6 +28,14 @@ export interface NextService {
   isInWindow: boolean;
   /** Between start and start + duration. */
   isRunning: boolean;
+  /**
+   * Branch-local MIDNIGHTS between now and the service: 0 today, 1 tomorrow.
+   *
+   * Carried on the answer rather than derived by the caller because this is the
+   * one place the branch's wall clock is known. "Today" is a question about a
+   * calendar, and the calendar that matters is the branch's.
+   */
+  daysAhead: number;
 }
 
 export const WINDOW_LEAD_MIN = 30;
@@ -112,6 +120,21 @@ export function resolveNextService(
       minutesUntil,
       isInWindow: isRunning || isInLead || atStart,
       isRunning: isRunning || atStart,
+      // Midnights crossed, counted on the branch's wall clock: the occurrence
+      // is `untilStart` minutes past this instant, so the difference in whole
+      // branch-local days between the two is how many times midnight passes.
+      // Wrapping is already handled, because `untilStart` is the forward
+      // distance and can carry the sum past the end of the week.
+      //
+      // Zero while it is RUNNING, where `untilStart` has already wrapped round
+      // to next week's occurrence and would read six days. `dayBucket` answers
+      // 'now' there and never looks, but a field that is only true in company
+      // is a trap for the next reader.
+      daysAhead:
+        isRunning || atStart
+          ? 0
+          : Math.floor((nowMin + untilStart) / 1440) -
+            Math.floor(nowMin / 1440),
     };
 
     // Running/imminent wins outright; otherwise the soonest upcoming start.
@@ -183,13 +206,24 @@ export function checkInOpen(
   });
 }
 
-/** Coarse day bucket for the eyebrow; exact countdowns are not attempted. */
+/**
+ * Coarse day bucket for the eyebrow; exact countdowns are not attempted.
+ *
+ * COUNTED IN MIDNIGHTS, not in hours. It read the elapsed distance until W2.8
+ * slice 4, which meant anything within 24 hours was "today": on a Saturday
+ * evening Home told members that Sunday's service was TODAY, which is the one
+ * evening it matters (seen on the phone, 2026-08-08). Fourteen hours away can
+ * be tomorrow and eleven hours away can be today; only the calendar knows, and
+ * the calendar that counts is the branch's, which is why `daysAhead` is
+ * computed where the branch's clock is (see `resolveNextService`).
+ */
 export function dayBucket(
-  minutesUntil: number,
+  next: NextService,
 ): 'now' | 'today' | 'tomorrow' | 'later' {
-  if (minutesUntil <= 0) return 'now';
-  if (minutesUntil < 24 * 60) return 'today';
-  if (minutesUntil < 48 * 60) return 'tomorrow';
+  // A service already under way is neither today nor tomorrow: it is happening.
+  if (next.minutesUntil <= 0) return 'now';
+  if (next.daysAhead === 0) return 'today';
+  if (next.daysAhead === 1) return 'tomorrow';
   return 'later';
 }
 
