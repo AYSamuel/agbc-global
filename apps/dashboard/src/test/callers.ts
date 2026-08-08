@@ -61,7 +61,17 @@ export async function createTestBranch(label: string): Promise<string> {
 }
 
 export async function deleteTestBranch(id: string): Promise<void> {
-  await admin().from('branches').delete().eq('id', id);
+  const { error } = await admin().from('branches').delete().eq('id', id);
+  // Loud, because it can now succeed. Discarding this error is how sixteen
+  // "Test Branch …" rows reached the local stack and the app's own branch
+  // switcher: any caller here who performed an AUDITED action was undeletable
+  // (privileged_actions' foreign keys against its append-only trigger), the
+  // branch kept a profile, and the silence made cleanup look like it worked.
+  // The schema was fixed in 20260808123451; a failure here now means a real
+  // regression rather than a known wall, so it should stop a test.
+  if (error) {
+    throw new Error(`could not delete test branch ${id}: ${error.message}`);
+  }
 }
 
 let branchCounter = 0;
