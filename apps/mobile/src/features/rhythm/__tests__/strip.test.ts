@@ -11,6 +11,9 @@ import type { RhythmPhase, RhythmState } from '../queries';
 // English that W4.6 will translate.
 function t(key: string, options?: Record<string, unknown>): string {
   const count = options?.count;
+  const name = options?.name;
+  // The next rung is NAMED now, so the stub has to show which name it was given.
+  if (typeof name === 'string') return `${key}(${name})`;
   return typeof count === 'number' ? `${key}:${String(count)}` : key;
 }
 
@@ -43,7 +46,7 @@ describe('the strip in each state', () => {
       t,
     );
     expect(content.title).toBe('rhythm:stripWeeks:5');
-    expect(content.note).toBe('rhythm:stripNextNote:12');
+    expect(content.note).toBe('rhythm:nextNamed(rhythm:milestoneTwelveWeek)');
     expect(content.ring).toEqual({ label: '5', fraction: 5 / 12 });
   });
 
@@ -69,10 +72,18 @@ describe('the strip in each state', () => {
     expect(content.ring).toBeNull();
   });
 
-  test('past the top rung: it stops counting down instead of nagging', () => {
-    const content = stripContent(rhythm('active', { currentWeeks: 20 }), t);
-    expect(content.note).toBe('rhythm:stripSteadyNote');
-    expect(content.ring).toEqual({ label: '20', fraction: 1 });
+  test('there is no top rung to fall off (W2.8 slice 5)', () => {
+    // The strip used to run out of ladder and say a "steady rhythm" sentence
+    // with a permanently full ring, which is the dead end this slice removed:
+    // the most faithful members were the ones it stopped rewarding.
+    const twenty = stripContent(rhythm('active', { currentWeeks: 20 }), t);
+    expect(twenty.note).toBe('rhythm:nextNamed(rhythm:milestoneHalfYear)');
+    expect(twenty.ring?.fraction).toBeCloseTo(20 / 26, 5);
+
+    const decade = stripContent(rhythm('active', { currentWeeks: 520 }), t);
+    // Eleven years in: past the named tiers, the name is generated.
+    expect(decade.note).toBe('rhythm:nextNamed(rhythm:milestoneYears:11)');
+    expect(decade.ring?.fraction).toBeCloseTo(520 / 572, 5);
   });
 
   test('no state ever renders a bare zero as the headline', () => {
@@ -85,11 +96,19 @@ describe('the strip in each state', () => {
 });
 
 describe('the milestone ladder', () => {
-  test('follows the server trigger: 4 then 12, then nothing to chase', () => {
+  test('mirrors the server ladder: 4, 12, 26, 52, then a year at a time', () => {
+    // rhythm_week_rungs() in 20260808214722. Two implementations of one ladder
+    // is a drift risk, so these are the same numbers pgTAP 031 asserts.
     expect(nextMilestone(0)).toBe(4);
     expect(nextMilestone(3)).toBe(4);
     expect(nextMilestone(4)).toBe(12);
-    expect(nextMilestone(12)).toBeNull();
+    expect(nextMilestone(12)).toBe(26);
+    expect(nextMilestone(26)).toBe(52);
+    expect(nextMilestone(52)).toBe(104);
+    expect(nextMilestone(103)).toBe(104);
+    expect(nextMilestone(104)).toBe(156);
+    // Ten years in, there is still one more.
+    expect(nextMilestone(520)).toBe(572);
   });
 
   test('the ring is weeks over the next rung, exactly as the frames draw it', () => {
@@ -100,6 +119,8 @@ describe('the milestone ladder', () => {
     expect(milestoneFraction(5)).toBeCloseTo(5 / 12, 5);
     expect(milestoneFraction(0)).toBe(0);
     expect(milestoneFraction(4)).toBeCloseTo(4 / 12, 5);
-    expect(milestoneFraction(12)).toBe(1);
+    // Past a rung the ring refills toward the next one rather than sticking full.
+    expect(milestoneFraction(12)).toBeCloseTo(12 / 26, 5);
+    expect(milestoneFraction(52)).toBeCloseTo(52 / 104, 5);
   });
 });

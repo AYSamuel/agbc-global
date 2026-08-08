@@ -94,7 +94,7 @@ describe('the milestone celebration', () => {
     });
     await renderMoments();
 
-    expect(screen.getByText('Four weeks of rhythm')).toBeOnTheScreen();
+    expect(screen.getByText('A month of Sundays')).toBeOnTheScreen();
     expect(screen.getByText('Milestone')).toBeOnTheScreen();
   });
 
@@ -107,7 +107,7 @@ describe('the milestone celebration', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
 
     expect(useCelebratedStore.getState().known).toContain('4_week_rhythm');
-    expect(screen.queryByText('Four weeks of rhythm')).toBeNull();
+    expect(screen.queryByText('A month of Sundays')).toBeNull();
   });
 
   test('the share is text through the OS sheet, not a rendered image', async () => {
@@ -125,12 +125,39 @@ describe('the milestone celebration', () => {
     );
   });
 
+  test('a gathering count renders as an ORDINAL, not as its raw key', async () => {
+    // This one has to go through real i18next rather than a stub. The stubs all
+    // passed while the phone rendered "milestoneGatherings" at the member,
+    // because i18next only selects `_ordinal_*` forms when told `ordinal: true`
+    // and otherwise falls back to the key (2026-08-09).
+    signIn();
+    mockMilestones.mockReturnValue({
+      data: [{ kind: '50_gatherings', achievedAt: '2026-08-08T10:00:00Z' }],
+    });
+    await renderMoments();
+
+    expect(screen.getByText('Your 50th gathering')).toBeOnTheScreen();
+    expect(
+      screen.queryByText(/milestoneGatherings|celebrateGatherings/),
+    ).toBeNull();
+  });
+
+  test('a generated year tier renders its number too', async () => {
+    signIn();
+    mockMilestones.mockReturnValue({
+      data: [{ kind: '520_week_rhythm', achievedAt: '2026-08-08T10:00:00Z' }],
+    });
+    await renderMoments();
+
+    expect(screen.getByText('10 years of Sundays')).toBeOnTheScreen();
+  });
+
   test('a guest is never celebrated at', async () => {
     mockMilestones.mockReturnValue({
       data: [{ kind: '4_week_rhythm', achievedAt: '2026-08-08T10:00:00Z' }],
     });
     await renderMoments();
-    expect(screen.queryByText('Four weeks of rhythm')).toBeNull();
+    expect(screen.queryByText('A month of Sundays')).toBeNull();
   });
 });
 

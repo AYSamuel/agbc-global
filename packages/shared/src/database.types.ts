@@ -1690,6 +1690,7 @@ export type Database = {
         Returns: undefined
       }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
+      rhythm_gathering_rungs: { Args: { total: number }; Returns: number[] }
       rhythm_state: {
         Args: { p_branch_id?: string }
         Returns: {
@@ -1702,6 +1703,7 @@ export type Database = {
         }[]
       }
       rhythm_week: { Args: { service_date: string }; Returns: string }
+      rhythm_week_rungs: { Args: { weeks: number }; Returns: number[] }
       set_member_role: {
         Args: {
           new_branch?: string

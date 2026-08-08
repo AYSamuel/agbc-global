@@ -1,25 +1,35 @@
-// The rhythm milestone ladder, as the SERVER awards it.
+// The rhythm milestone ladders, as the SERVER awards them.
 //
-// `attendance_after_insert` (20260807120000) awards `4_week_rhythm` at four weeks
-// and `12_week_rhythm` at twelve. This list exists so the strip can say what is
-// next; it never decides that a milestone was reached, which is the trigger's job
-// and the trigger's alone. If the ladder ever changes it changes in SQL first,
-// and this follows in the same PR.
+// `attendance_after_insert` (20260808214722) awards every week rung at or below the
+// current run and every gathering count reached. This file is the app's mirror of
+// those two ladders: it exists so a screen can say what is NEXT and what a kind is
+// called, and it never decides that a milestone was reached, which is the trigger's
+// job and the trigger's alone. If a ladder changes it changes in SQL first, and this
+// follows in the same PR.
 //
-// AND IT IS ABOUT TO CHANGE. Two rungs is a dead end: past twelve weeks the ring
-// sits full and nothing is ever celebrated again. The endless ladder (4, 12, 26,
-// 52, then yearly, plus cumulative gathering counts) is decided and specified in
-// docs/spec/plans/W2.8-member-home-and-rhythm.md; it lands with its migration.
-// Nothing here needs to anticipate it beyond knowing that this array grows.
-export const RHYTHM_MILESTONES = [4, 12] as const;
+// Both are endless, which is the whole point of W2.8 slice 5: `4, 12, done` meant the
+// ring sat permanently full and nothing was ever celebrated again for the people who
+// show up most.
+
+/** Named week tiers; past the last one it is one rung per year, forever. */
+const NAMED_WEEK_RUNGS = [4, 12, 26, 52] as const;
+/** Named gathering tiers; past the last one it is one rung per hundred, forever. */
+const NAMED_GATHERING_RUNGS = [10, 25, 50, 100] as const;
+const WEEKS_IN_YEAR = 52;
+const GATHERINGS_PER_RUNG = 100;
 
 /**
- * The next rung above `weeks`, or null once the member is past the last one.
- * Past the top is not an ending: the strip simply stops counting down to
- * something and says the steady thing instead (docs/spec/10: never a nag).
+ * The next week rung above `weeks`. There is always one.
+ *
+ * It used to return null past the top, and the strip had a "steady" sentence for
+ * that case. Both are gone: a ladder with a last rung is a ladder that stops
+ * rewarding the most faithful members, which is the dead end RHYTHM exposed.
  */
-export function nextMilestone(weeks: number): number | null {
-  return RHYTHM_MILESTONES.find((rung) => rung > weeks) ?? null;
+export function nextMilestone(weeks: number): number {
+  const named = NAMED_WEEK_RUNGS.find((rung) => rung > weeks);
+  if (named !== undefined) return named;
+  // Past the named tiers: the next whole year of Sundays.
+  return (Math.floor(weeks / WEEKS_IN_YEAR) + 1) * WEEKS_IN_YEAR;
 }
 
 /**
@@ -31,64 +41,53 @@ export function nextMilestone(weeks: number): number | null {
  * in the abstract and wrong here twice over: it disagrees with the frame, and it
  * renders an EMPTY ring the moment a member reaches four weeks, so the reward for
  * hitting a milestone is a circle with nothing in it (seen on the phone,
- * 2026-08-08). Past the top rung it reads full, because it is.
+ * 2026-08-08).
  */
 export function milestoneFraction(weeks: number): number {
-  const next = nextMilestone(weeks);
-  if (next === null) return 1;
-  return Math.max(0, Math.min(1, weeks / next));
+  return Math.max(0, Math.min(1, weeks / nextMilestone(weeks)));
 }
 
 /**
- * The badge for each milestone kind the server can award today.
+ * What a milestone kind IS, once read.
  *
  * `milestones.kind` is TEXT on purpose ("kinds are data, so a new one needs no
- * migration"), so this list is the app's side of that bargain rather than a
- * mirror of a database enum. A kind that arrives without an entry here is left
- * out of the badges instead of rendering its raw key at somebody: a milestone
- * the app cannot name yet is a missing translation, not something to celebrate
- * with a string like `plan_7_days`. Adding a kind server-side therefore means
- * adding it here, in the same PR, which is the same rule the week ladder above
- * already keeps.
+ * migration"), and with an endless ladder a fixed catalog is no longer possible:
+ * there is no list that contains `520_week_rhythm`. So the week rungs and the
+ * gathering counts are PARSED (`<n>_week_rhythm`, `<n>_gatherings`) and only the
+ * genuinely named kinds are looked up.
  *
- * The glyphs are the approved frames' verbatim (W2.8 "RHYTHM · grace" and
- * "· lapsed"); `12_week_rhythm` is the one the frames never drew, and it takes
- * the star because the rung above fire should read as further, not louder. The
- * labels are i18n keys, because the glyph is decoration and the word is copy.
+ * `count` is what the label interpolates. A kind this build cannot read at all
+ * still returns null, and callers still drop it rather than render its raw key at
+ * somebody: a milestone the app cannot name is a missing translation, not
+ * something to celebrate with a string like `plan_7_days`.
  */
 export interface MilestoneBadge {
   kind: string;
   /** Decorative; the label is what assistive tech reads. */
   glyph: string;
   labelKey: string;
-  /** The celebration overlay's heading and sentence (W2.8 slice 4). The badge
-   * label is a caption under an icon; this is what the app says when it stops
-   * everything to tell somebody they did a thing. */
   celebrateTitleKey: string;
   celebrateBodyKey: string;
+  /** Interpolated into all three keys when the tier is generated rather than named. */
+  count?: number;
+  /**
+   * "Your 50th gathering" is an ORDINAL, and i18next selects `_ordinal_*` forms
+   * only when told: `{ count }` alone looks for `_one`/`_other`, finds neither,
+   * and renders the raw key at the member. Seen on the phone reading
+   * "milestoneGatherings" (2026-08-09), which is the exact trap this slice's
+   * plan warned about.
+   */
+  ordinal?: true;
 }
 
-export const MILESTONE_BADGES: readonly MilestoneBadge[] = [
+/** The kinds that are a name rather than a number. */
+const NAMED_KINDS: readonly MilestoneBadge[] = [
   {
     kind: 'first_service',
     glyph: '🎉',
     labelKey: 'rhythm:milestoneFirstService',
     celebrateTitleKey: 'rhythm:celebrateFirstServiceTitle',
     celebrateBodyKey: 'rhythm:celebrateFirstServiceBody',
-  },
-  {
-    kind: '4_week_rhythm',
-    glyph: '🔥',
-    labelKey: 'rhythm:milestoneFourWeek',
-    celebrateTitleKey: 'rhythm:celebrateFourWeekTitle',
-    celebrateBodyKey: 'rhythm:celebrateFourWeekBody',
-  },
-  {
-    kind: '12_week_rhythm',
-    glyph: '🌟',
-    labelKey: 'rhythm:milestoneTwelveWeek',
-    celebrateTitleKey: 'rhythm:celebrateTwelveWeekTitle',
-    celebrateBodyKey: 'rhythm:celebrateTwelveWeekBody',
   },
   {
     kind: 'first_prayer',
@@ -104,17 +103,94 @@ export const MILESTONE_BADGES: readonly MilestoneBadge[] = [
     celebrateTitleKey: 'rhythm:celebrateFirstTestimonyTitle',
     celebrateBodyKey: 'rhythm:celebrateFirstTestimonyBody',
   },
-] as const;
+];
 
-/** The badge for a kind, or null for one this build cannot name (see above). */
+/**
+ * The named week tiers, in church language rather than counted: a month of
+ * Sundays, a season, half a year, a year (decided with Ayo 2026-08-08). Past
+ * them the label is generated from the number of years, because "a season" does
+ * not extend to eleven of them.
+ */
+const WEEK_TIERS: Record<number, { glyph: string; key: string } | undefined> = {
+  4: { glyph: '🔥', key: 'FourWeek' },
+  12: { glyph: '🌟', key: 'TwelveWeek' },
+  26: { glyph: '🕊️', key: 'HalfYear' },
+  52: { glyph: '👑', key: 'Year' },
+};
+
+function weekBadge(kind: string, weeks: number): MilestoneBadge | null {
+  const tier = WEEK_TIERS[weeks];
+  if (tier) {
+    return {
+      kind,
+      glyph: tier.glyph,
+      labelKey: `rhythm:milestone${tier.key}`,
+      celebrateTitleKey: `rhythm:celebrate${tier.key}Title`,
+      celebrateBodyKey: `rhythm:celebrate${tier.key}Body`,
+    };
+  }
+  // Generated: only whole years past the named tiers are ever awarded, so a
+  // remainder means a kind from some other ladder and is not ours to name.
+  if (weeks <= WEEKS_IN_YEAR || weeks % WEEKS_IN_YEAR !== 0) return null;
+  return {
+    kind,
+    glyph: '💛',
+    labelKey: 'rhythm:milestoneYears',
+    celebrateTitleKey: 'rhythm:celebrateYearsTitle',
+    celebrateBodyKey: 'rhythm:celebrateYearsBody',
+    count: weeks / WEEKS_IN_YEAR,
+  };
+}
+
+function gatheringBadge(kind: string, total: number): MilestoneBadge | null {
+  const named = (NAMED_GATHERING_RUNGS as readonly number[]).includes(total);
+  const generated =
+    total > GATHERINGS_PER_RUNG && total % GATHERINGS_PER_RUNG === 0;
+  if (!named && !generated) return null;
+  return {
+    kind,
+    glyph: '🎉',
+    labelKey: 'rhythm:milestoneGatherings',
+    celebrateTitleKey: 'rhythm:celebrateGatheringsTitle',
+    celebrateBodyKey: 'rhythm:celebrateGatheringsBody',
+    count: total,
+    ordinal: true,
+  };
+}
+
+/** The badge for a kind, or null for one this build cannot read. */
 export function badgeFor(kind: string): MilestoneBadge | null {
-  return MILESTONE_BADGES.find((badge) => badge.kind === kind) ?? null;
+  const named = NAMED_KINDS.find((badge) => badge.kind === kind);
+  if (named) return named;
+
+  const weeks = /^(\d+)_week_rhythm$/.exec(kind);
+  if (weeks) return weekBadge(kind, Number(weeks[1]));
+
+  const gatherings = /^(\d+)_gatherings$/.exec(kind);
+  if (gatherings) return gatheringBadge(kind, Number(gatherings[1]));
+
+  return null;
+}
+
+/**
+ * The earned badges, oldest first.
+ *
+ * Ordered by ACHIEVEMENT now rather than by a fixed ladder position, because
+ * with two endless ladders interleaving there is no single order to sort by: a
+ * member reaches their fiftieth gathering somewhere between their first year and
+ * their second. The rows arrive oldest-first from the server, which is the order
+ * they actually happened in.
+ */
+export function earnedBadges(kinds: readonly string[]): MilestoneBadge[] {
+  return kinds
+    .map(badgeFor)
+    .filter((badge): badge is MilestoneBadge => badge !== null);
 }
 
 /**
  * What the `none` state offers as "What's ahead", in the frame's own order:
  * turn up, keep turning up, and pray with somebody. Deliberately NOT the top of
- * the ladder in order, which would put "12-week rhythm" in front of a member who
+ * the ladder in order, which would put a year of Sundays in front of a member who
  * has never been, and deliberately not everything unearned, which would read as
  * a list of things not done yet.
  */
@@ -124,11 +200,6 @@ const AHEAD_ORDER: readonly string[] = [
   'first_prayer',
 ];
 
-/** The earned badges, in ladder order; unknown kinds are dropped (see above). */
-export function earnedBadges(kinds: readonly string[]): MilestoneBadge[] {
-  return MILESTONE_BADGES.filter((badge) => kinds.includes(badge.kind));
-}
-
 /**
  * The `none` state's "What's ahead", minus anything already earned: a member can
  * reach RHYTHM with `first_prayer` behind them and no attendance at all, because
@@ -137,7 +208,7 @@ export function earnedBadges(kinds: readonly string[]): MilestoneBadge[] {
  * actually did.
  */
 export function aheadBadges(kinds: readonly string[]): MilestoneBadge[] {
-  return AHEAD_ORDER.filter((kind) => !kinds.includes(kind)).flatMap((kind) =>
-    MILESTONE_BADGES.filter((badge) => badge.kind === kind),
-  );
+  return AHEAD_ORDER.filter((kind) => !kinds.includes(kind))
+    .map(badgeFor)
+    .filter((badge): badge is MilestoneBadge => badge !== null);
 }

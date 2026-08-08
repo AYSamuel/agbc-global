@@ -62,8 +62,14 @@ export function MilestoneCelebration() {
   // to depend on than saying so (found by the test that asserted it, W2.8).
   if (!isMember || badge === null) return null;
 
-  const title = t(badge.celebrateTitleKey);
-  const body = t(badge.celebrateBodyKey);
+  // `count` is undefined for the named kinds, which i18next ignores.
+  const title = t(badge.celebrateTitleKey, {
+    count: badge.count,
+    ordinal: badge.ordinal,
+  });
+  // The BODY is a plain sentence with a number in it, never an ordinal: "that is
+  // 50 times", not "that is your 50th times".
+  const body = t(badge.celebrateBodyKey, { count: badge.count });
 
   return (
     <Celebration
