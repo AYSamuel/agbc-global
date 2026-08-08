@@ -244,7 +244,8 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Refs: `15` (channels, ordering, payload privacy, localization model, receipts, deep links), `02` (notifications, push_tickets), `21` §5.
 - Build BE: notifications (monthly-partitioned) + push_tickets migrations; template-key rendering per recipient language; push-send function (generic payloads only) + receipts sweep job (DeviceNotRegistered pruning, error-rate alert) + dead-man pings.
 - Build FE: six Android channels created at first start BEFORE any permission request; token registration after in-context grant, sign-out deletion; deep-link config (scheme, AASA + assetlinks with the Play App Signing SHA-256, expo-router path handling, cold start via `getLastNotificationResponseAsync`; navigate-only rule); NC screen (cursor pagination, batching display, badge cap, retention footer) + NOTIF-PREFS (incl. OS-denied banner).
-- Done: `15` acceptance criteria testable subset: a dev push arrives localized, deep-links correctly from killed state, lands in NC; receipts job prunes a dead token.
+- Build FE, also: **MORE's member "My life" section** (`04` §MORE: Profile, My Rhythm, My List, My posts, Notifications). W1.2 built the hub with the sign-in card standing in its place, because none of those destinations existed yet; `NC` is the last of the five to land, and this is the item where the section stops being a promise. (Added 2026-08-08 during W2.8 slice 3, per §8's work-item drift rule: `04` specified the section and no item claimed it, so RHYTHM shipped reachable from Home's strip alone.)
+- Done: `15` acceptance criteria testable subset: a dev push arrives localized, deep-links correctly from killed state, lands in NC; receipts job prunes a dead token; every "My life" row navigates.
 
 **W3.4 · Reminder jobs slice**
 - Refs: `21` §5 (jobs table), `15` (tiers), `09`/`02` (prayer reminders).

@@ -280,7 +280,20 @@ select
   now(),
   'here_button'
 from public.profiles p
-cross join unnest(array[6, 5, 4, 3, 1]) as w
+cross join unnest(array[6, 5, 3, 1]) as w
+where p.email = 'dev.grace@example.test'
+on conflict (profile_id, service_date) do nothing;
+
+-- One of Grace's six Sundays, credited by watching the stream instead of by the button. The
+-- WRITER of these arrives at W3.2 (`08` credit-on-open); the row exists now because RHYTHM's
+-- history draws that source differently (the frame's `.atrow.live`, a red disc and "Watched
+-- live"), and a rendering path with no data behind it is a path nobody looks at until a real
+-- member is standing in it. Split out of the array above rather than added to it, so the
+-- dates, the run and the grace week are all exactly as they were.
+insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
+select p.id, p.branch_id, (date_trunc('week', current_date) - interval '4 weeks')::date + 6,
+       now(), 'live_watch'
+from public.profiles p
 where p.email = 'dev.grace@example.test'
 on conflict (profile_id, service_date) do nothing;
 

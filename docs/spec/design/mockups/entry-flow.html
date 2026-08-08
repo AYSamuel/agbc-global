@@ -976,6 +976,7 @@
 
   <h2 class="ghead" id="w28">&#128337; W2.8 &middot; Member Home + Rhythm &middot; light</h2>
   <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Home</b> &#8594; <b>I'm here</b> &#8594; <b>checked in</b> &#8594; <b>celebration</b> (only on a milestone) &#8594; <b>reminder sheet</b> (only the first time) &nbsp;|&nbsp; <b>RHYTHM</b> renders the four states of <code>rhythm_state()</code>, and the app never works out which one it is.</p>
+  <p class="alwayson" style="padding:0 20px 10px">The streak sentence reads <b>&#8220;5 weeks of showing up&#8221;</b>, not &#8220;Five weeks&#8221;: the count is interpolated, and no <code>Intl</code> API spells a number out in EN/DE/NL/FR. Corrected here when RHYTHM was built (2026-08-08) so the reference matches what ships.</p>
   <div class="gallery t-light" id="w28Light">
 
       <!-- HOME · checked in -->
@@ -1239,7 +1240,7 @@
           <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
           <div class="screen">
             <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
-            <div class="streakhero"><div class="num">5</div><div class="unit">week rhythm</div><p class="hl">Five weeks of showing up. Your rhythm carries right on.</p><div class="lo">Longest rhythm: 11 weeks</div></div>
+            <div class="streakhero"><div class="num">5</div><div class="unit">week rhythm</div><p class="hl">5 weeks of showing up. Your rhythm carries right on.</p><div class="lo">Longest rhythm: 11 weeks</div></div>
             <div class="linkbanner gold" style="margin:12px 16px 0">
               <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg></span>
               <div class="lt"><b>We missed you last week.</b> Nothing is lost, and we'd love to see you Sunday.</div>
@@ -3104,14 +3105,16 @@
       </div>
     </div>
 
-    <!-- RHYTHM -->
+    <!-- RHYTHM · the active state. The none / grace / lapsed states live in the W2.8 section.
+         The streak sentence carries the NUMERAL, not the spelled-out word: the count is
+         interpolated and no Intl API spells one out across EN/DE/NL/FR (synced 2026-08-08). -->
     <div class="device">
       <p class="name"><b>RHYTHM</b> · streak, grace-framed</p>
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
           <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
-          <div class="streakhero"><div class="num">6</div><div class="unit">week rhythm</div><p class="hl">Six weeks of showing up. We love having you in the family.</p><div class="lo">Longest rhythm: 11 weeks</div></div>
+          <div class="streakhero"><div class="num">6</div><div class="unit">week rhythm</div><p class="hl">6 weeks of showing up. We love having you in the family.</p><div class="lo">Longest rhythm: 11 weeks</div></div>
           <div class="mlabel">Milestones</div>
           <div class="mbadges">
             <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">First service</div></div>

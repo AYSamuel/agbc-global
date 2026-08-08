@@ -19,11 +19,15 @@ const mockSignOut = jest.fn(() => Promise.resolve({ error: null }));
 // module load, which runs before this file's own statements, so a test-file
 // variable would be re-initialized to null right after the subscription.
 jest.mock('@/lib/supabase', () => {
-  const listeners: ((event: string) => void)[] = [];
+  const listeners: ((event: string, session: unknown) => void)[] = [];
   return {
-    __fireAuthEvent: (event: string) => {
+    // The real callback is `(event, session)`, and the identity in that second
+    // argument is what the listener watches: an account switch arrives as
+    // SIGNED_IN, not as SIGNED_OUT.
+    __fireAuthEvent: (event: string, userId?: string) => {
+      const session = userId === undefined ? null : { user: { id: userId } };
       listeners.forEach((listener) => {
-        listener(event);
+        listener(event, session);
       });
     },
     supabase: {
@@ -45,7 +49,7 @@ jest.mock('@/lib/supabase', () => {
 });
 
 const { __fireAuthEvent: fireAuthEvent } = jest.requireMock<{
-  __fireAuthEvent: (event: string) => void;
+  __fireAuthEvent: (event: string, userId?: string) => void;
 }>('@/lib/supabase');
 
 const SESSION = {
@@ -194,5 +198,34 @@ describe('the refresh-failure transition (docs/spec/03)', () => {
     expect(
       queryClient.getQueryData(['daily-verse', '2026-08-08', 'en']),
     ).toEqual({ reference: 'Psalm 23:1' });
+  });
+});
+
+describe('an account switch that never signs out (W2.8 slice 3)', () => {
+  it("drops the previous member's cached reads on a sign-in as somebody else", () => {
+    // The one the SIGNED_OUT handler above cannot catch. A session's access
+    // token stays valid for its full hour after the refresh token is gone, so
+    // the app can answer one member's rhythm at launch, have a second member
+    // sign in, and keep serving the first one's row until it goes stale. Seen
+    // on the phone: Anke opened RHYTHM and read Marieke's streak.
+    fireAuthEvent('INITIAL_SESSION', 'member-a');
+    queryClient.setQueryData(['rhythm', 'branch-1'], { currentWeeks: 2 });
+
+    fireAuthEvent('SIGNED_IN', 'member-b');
+
+    expect(queryClient.getQueryData(['rhythm', 'branch-1'])).toBeUndefined();
+  });
+
+  it('and keeps them when the SAME member simply refreshes a token', () => {
+    // Every hour, for everyone. Clearing here would blank the member's own
+    // screens on a schedule.
+    fireAuthEvent('SIGNED_IN', 'member-c');
+    queryClient.setQueryData(['rhythm', 'branch-1'], { currentWeeks: 4 });
+
+    fireAuthEvent('TOKEN_REFRESHED', 'member-c');
+
+    expect(queryClient.getQueryData(['rhythm', 'branch-1'])).toEqual({
+      currentWeeks: 4,
+    });
   });
 });

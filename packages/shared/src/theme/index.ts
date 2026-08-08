@@ -87,12 +87,30 @@ export const tonal = {
   redRow: {
     bg: 'rgba(224,52,44,0.10)',
   },
+  /**
+   * The mockup's `.atrow.live .ad` (W2.8): the icon disc on an attendance row
+   * that was credited by watching live. `palette.red` at 12%, the frame's value
+   * verbatim, and a wash rather than a fill because it is a quiet marker on a
+   * list row, not a warning.
+   *
+   * Distinct from `redRow` above by two points of alpha, which nobody can see,
+   * and kept separate anyway because they mean different things: that one says a
+   * row will destroy something, this one says a Sunday was kept from a distance.
+   * They will drift the day one of them changes for its own reason.
+   */
+  redSoft: {
+    bg: 'rgba(224,52,44,0.12)',
+  },
 } as const;
 
 // Colors for content sitting on ink or on a photo (splash, photo heroes). Identical
 // in both themes because the surface underneath never changes.
 export const onInk = {
   text: '#ffffff',
+  /** Body copy on ink, a shade below white: the mockup's `.streakhero .hl`, the
+   * encouraging sentence under a streak. Softer than a heading without dropping
+   * to `sub`, which is a meta line rather than something to read. */
+  body: '#e6ebf3',
   sub: '#9aa6bd',
   link: '#8db4ff',
   scrimTop: 'rgba(14,20,32,0.15)',

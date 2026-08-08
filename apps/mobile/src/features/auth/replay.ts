@@ -70,6 +70,12 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       router.replace('/my-posts');
       return Promise.resolve('done');
     }
+    case 'rhythm': {
+      // Same shape as my_posts: the gated action WAS the screen. `replace` for
+      // the same reason, so the finished sign-in leaves no back stack behind.
+      router.replace('/rhythm');
+      return Promise.resolve('done');
+    }
     // Executors land with their work items: rsvp (W2.9), im_here (W2.8),
     // save/notes/resume (W3.1), notifications (W3.3).
     default:

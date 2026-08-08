@@ -239,6 +239,28 @@ export function BookIcon(props: IconProps) {
   );
 }
 
+// RHYTHM (W2.8): the two ways a gathering is attended. The church fronts an
+// in-person row and RHYTHM's empty state; the screen fronts a live-watch row,
+// which `10` counts exactly the same so a diaspora member keeps their rhythm.
+export function ChurchIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5" />
+    </Svg>
+  );
+}
+
+export function LiveIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      {/* The frame's <rect rx="3"> as a path: react-native-svg deprecates the
+          x/y props Rect leans on (see MailIcon). */}
+      <Path d="M6 4h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" />
+      <Path d="M10 8l6 4-6 4z" />
+    </Svg>
+  );
+}
+
 export function ShareIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>
