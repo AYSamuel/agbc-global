@@ -899,36 +899,7 @@ export type Database = {
           target_id?: string | null
           target_redacted_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "privileged_actions_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "privileged_actions_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "branch_change_requests"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "privileged_actions_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "branch_request_queue"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "privileged_actions_target_id_fkey"
-            columns: ["target_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {

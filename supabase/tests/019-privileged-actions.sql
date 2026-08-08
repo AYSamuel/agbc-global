@@ -7,7 +7,7 @@
 -- broke 002 and cost three failures on W2.7 slice 2).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(26);
 
 insert into auth.users (id, email) values
   ('60000000-0000-4000-8000-0000000000a1', 't019-member@test.local'),
@@ -191,6 +191,52 @@ select isnt(
 
 reset role;
 reset request.jwt.claims;
+
+-- --- the record outlives the account (20260808123451) ------------------------------------
+--
+-- The ids were foreign keys with ON DELETE SET NULL, and that action was impossible: the
+-- append-only trigger refused the update its own foreign key was making, so deleting any
+-- profile named here failed with "privileged_actions is append-only". W4.5 has to delete
+-- the account of somebody who may well have been the target of a role change, so this was
+-- account deletion broken in advance, and it surfaced first as a test suite that could not
+-- tidy up after itself (2026-08-08).
+
+select is(
+  (select count(*)::int from pg_constraint
+    where conrelid = 'public.privileged_actions'::regclass and contype = 'f'),
+  0,
+  'the table carries NO foreign key at all: every id in it points at something the app may delete, and the record has to survive all of them');
+
+select isnt(
+  (select count(*)::int from public.privileged_actions
+    where actor_id = '60000000-0000-4000-8000-0000000000a3'), 0,
+  'the fixture left rows naming the actor');
+
+delete from public.profiles where id = '60000000-0000-4000-8000-0000000000a3';
+delete from auth.users where id = '60000000-0000-4000-8000-0000000000a3';
+
+select is(
+  (select count(*)::int from public.profiles
+    where id = '60000000-0000-4000-8000-0000000000a3'), 0,
+  'the actor can now close their account at all, which they could not before');
+
+select isnt(
+  (select count(*)::int from public.privileged_actions
+    where actor_id = '60000000-0000-4000-8000-0000000000a3'), 0,
+  'and the audit rows still name them: the id is retained, not erased with the account (docs/spec/16)');
+
+select throws_ok(
+  $$update public.privileged_actions set actor_id = null
+     where actor_id = '60000000-0000-4000-8000-0000000000a3'$$,
+  '42501', null,
+  'nobody gained a way to erase the actor by hand: the log is append-only exactly as before');
+
+-- The same act, one table further out: a member who asked to move branch used to be
+-- undeletable too, because the cascade into branch_change_requests fired this table's
+-- third foreign key.
+select lives_ok(
+  $$delete from public.profiles where id = '60000000-0000-4000-8000-0000000000a4'$$,
+  'a member who once asked to change branch can be deleted, cascade and all');
 
 select * from finish();
 rollback;
