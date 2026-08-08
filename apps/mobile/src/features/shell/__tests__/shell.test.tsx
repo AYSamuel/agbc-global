@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { ToastProvider } from '@/components/ui';
 import i18n from '@/i18n';
+import { useAuthStore } from '@/state/auth';
 import { ThemeScope } from '@/theme';
 import { useThemePrefStore } from '@/theme/store';
 
@@ -20,10 +22,12 @@ jest.mock(
 // SETTINGS now reads the auth store to decide whether to show its member rows (W2.7),
 // and the store's module scope reaches the real Supabase client, which refuses to build
 // without env. Same stub the family screen tests use; the real store stays.
+const mockSignOut = jest.fn(() => Promise.resolve({ error: null }));
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null } }),
+      signOut: () => mockSignOut(),
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: () => undefined } },
       }),
@@ -61,7 +65,9 @@ jest.mock('expo-web-browser', () => ({
 function inTheme(ui: React.ReactElement) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <ThemeScope name="light">{ui}</ThemeScope>
+      <ThemeScope name="light">
+        <ToastProvider>{ui}</ToastProvider>
+      </ThemeScope>
     </QueryClientProvider>,
   );
 }
@@ -139,6 +145,49 @@ describe('SETTINGS, guest level (docs/spec/16)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(mockPush).toHaveBeenCalledWith('/auth');
     expect(screen.getByText('AGBC · v1.0.0')).toBeOnTheScreen();
+  });
+});
+
+// docs/spec/16 §19 names both states of this control, and until W2.8 only the guest
+// one existed: a signed-in member met a "Sign in" button that pushed them at AUTH-1.
+describe('SETTINGS, member level: signing out (docs/spec/16, 03)', () => {
+  beforeEach(() => {
+    useAuthStore.setState({
+      status: 'member',
+      email: 'grace@example.test',
+      profile: {
+        displayName: 'Grace Bello',
+        branchId: 'b1',
+        language: 'en',
+        role: 'member',
+      },
+    });
+  });
+
+  afterEach(() => {
+    useAuthStore.setState({ status: 'guest', email: null, profile: null });
+  });
+
+  test('a member is offered Sign out, never Sign in', async () => {
+    await inTheme(<Settings />);
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Sign in' })).toBeNull();
+  });
+
+  test('it ends the session and says so, staying on a browsable app', async () => {
+    await inTheme(<Settings />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Sign out' }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockSignOut).toHaveBeenCalled();
+    expect(useAuthStore.getState().status).toBe('guest');
+    // It stays on Settings rather than routing anywhere: browsing is free, so
+    // there is nothing to be thrown out of (docs/spec/16 "keeps guest browse").
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('Signed out. You can keep browsing.'),
+    ).toBeOnTheScreen();
   });
 });
 

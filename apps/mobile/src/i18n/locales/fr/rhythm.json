@@ -1,0 +1,22 @@
+{
+  "imHere": "Je suis là",
+  "checkedIn": "Vous êtes là",
+  "checkedInLabel": "Vous êtes là. Présence notée pour aujourd'hui.",
+  "visiting": "De passage à <1>{{branch}}</1> aujourd'hui ? \"Je suis là\" compte ici même, et votre rythme continue.",
+  "toastRecorded": "Vous êtes là. Quelle joie de vous voir.",
+  "toastAlready": "Votre présence est déjà notée.",
+  "gateTitle": "Connectez-vous pour dire que vous êtes là",
+  "gateBody": "Rejoignez la famille : gardez votre rythme, partagez des témoignages et priez avec ceux qui vous entourent.",
+  "gateDismissed": "Connexion fermée. Vous pouvez dire que vous êtes là à tout moment.",
+  "stripLabel": "Votre rythme",
+  "stripNoneTitle": "Il commence ce dimanche",
+  "stripNoneNote": "Touchez \"Je suis là\" quand vous vous rassemblez, et nous le gardons avec vous",
+  "stripWeeks_one": "Rythme : {{count}} semaine",
+  "stripWeeks_other": "Rythme : {{count}} semaines",
+  "stripNextNote": "Prochaine étape : {{count}} semaines",
+  "stripGraceNote": "La grâce couvre la semaine passée. Au plaisir de vous voir dimanche.",
+  "stripSteadyNote": "Un rythme long et paisible. Quelle joie de vous avoir ici.",
+  "stripLapsedTitle_one": "Votre plus long : {{count}} semaine",
+  "stripLapsedTitle_other": "Votre plus long : {{count}} semaines",
+  "stripLapsedNote": "Dès votre retour, nous reprenons exactement là"
+}

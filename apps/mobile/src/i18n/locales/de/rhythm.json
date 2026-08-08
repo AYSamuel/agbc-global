@@ -1,0 +1,22 @@
+{
+  "imHere": "Ich bin da",
+  "checkedIn": "Du bist da",
+  "checkedInLabel": "Du bist da. Für heute eingetragen.",
+  "visiting": "Heute zu Gast in <1>{{branch}}</1>? \"Ich bin da\" zählt genau hier, und dein Rhythmus läuft weiter.",
+  "toastRecorded": "Du bist da. Schön, dass du da bist.",
+  "toastAlready": "Du bist heute schon eingetragen.",
+  "gateTitle": "Melde dich an, um dich einzutragen",
+  "gateBody": "Werde Teil der Familie: halte deinen Rhythmus, teile Zeugnisse und bete mit den Menschen um dich herum.",
+  "gateDismissed": "Anmeldung geschlossen. Du kannst dich jederzeit eintragen.",
+  "stripLabel": "Dein Rhythmus",
+  "stripNoneTitle": "Er beginnt diesen Sonntag",
+  "stripNoneNote": "Tippe auf \"Ich bin da\", wenn ihr euch versammelt, und wir halten ihn mit dir",
+  "stripWeeks_one": "Rhythmus: {{count}} Woche",
+  "stripWeeks_other": "Rhythmus: {{count}} Wochen",
+  "stripNextNote": "Nächster Meilenstein: {{count}} Wochen",
+  "stripGraceNote": "Gnade deckt letzte Woche. Wir sehen dich gern am Sonntag.",
+  "stripSteadyNote": "Ein langer, ruhiger Rhythmus. Schön, dass du da bist.",
+  "stripLapsedTitle_one": "Am längsten: {{count}} Woche",
+  "stripLapsedTitle_other": "Am längsten: {{count}} Wochen",
+  "stripLapsedNote": "Wann immer du zurückkommst, machen wir genau dort weiter"
+}

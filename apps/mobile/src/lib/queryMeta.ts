@@ -12,3 +12,19 @@ export const PERSIST_META = { persist: true } as const;
 export function shouldPersistQuery(query: Query): boolean {
   return query.state.status === 'success' && query.meta?.persist === true;
 }
+
+/**
+ * Is this cached answer somebody's, rather than everybody's?
+ *
+ * The same flag read the other way round, and it is what a sign-out has to act on:
+ * `03` and `16` both say sign-out clears personal caches and KEEPS the
+ * guest-browsable ones, so that signing out does not also cost you the offline
+ * verse and service card.
+ *
+ * The default is "personal", which is the safe direction: a query nobody thought
+ * about is dropped at sign-out and refetched, where the other default would leave
+ * one member's data on screen for the next one (found on device, W2.8).
+ */
+export function isPersonalQuery(query: Query): boolean {
+  return query.meta?.persist !== true;
+}

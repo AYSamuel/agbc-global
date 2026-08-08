@@ -75,5 +75,7 @@
     "unblockFailed": "Cela n'a pas fonctionné. Veuillez réessayer.",
     "emptyTitle": "Personne n'est bloqué",
     "emptyBody": "Si vous en avez besoin un jour, vous pouvez bloquer un membre depuis les actions de sa publication."
-  }
+  },
+  "signout": "Se déconnecter",
+  "signedOut": "Déconnecté. Vous pouvez continuer à explorer."
 }

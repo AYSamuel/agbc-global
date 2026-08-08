@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import '@/i18n';
+import { ToastProvider } from '@/components/ui';
 import { useBranchStore } from '@/state/branch';
 import { ThemeScope } from '@/theme';
 
@@ -62,6 +63,16 @@ jest.mock('@/features/watch/queries', () => ({
   useSermonsQuery: () => ({ data: [], isError: false, refetch: jest.fn() }),
 }));
 
+// This suite is the GUEST composition; the member's rhythm read belongs to
+// memberHome.test.tsx, and a guest never issues it (docs/spec/07).
+jest.mock('@/features/rhythm/queries', () => ({
+  useRhythmQuery: () => ({
+    data: undefined,
+    isError: false,
+    refetch: jest.fn(),
+  }),
+}));
+
 // The "From the family" highlight reads the Family domain's latest-testimony
 // query; mock it (and keep prefetchHome's options import resolvable).
 jest.mock('@/features/family/queries', () => ({
@@ -88,7 +99,9 @@ jest.mock('@/features/branch-change/queries', () => ({
 function renderHome() {
   return render(
     <ThemeScope name="light">
-      <Home />
+      <ToastProvider>
+        <Home />
+      </ToastProvider>
     </ThemeScope>,
   );
 }

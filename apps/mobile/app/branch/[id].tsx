@@ -30,11 +30,16 @@ import { useBranchDetailQuery } from '@/features/church/queries';
 import { shareText } from '@/features/family/share';
 import { branchInitial } from '@/features/onboarding/branchInitial';
 import {
+  checkInOpen,
   formatServiceDay,
   formatServiceTime,
   resolveNextService,
 } from '@/features/home/nextService';
 import { useBranchServicesQuery } from '@/features/home/queries';
+import { CheckedInBadge } from '@/features/rhythm/CheckedInBadge';
+import { useRhythmQuery } from '@/features/rhythm/queries';
+import { useImHerePress } from '@/features/rhythm/useImHere';
+import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
@@ -45,7 +50,9 @@ const HERO_MIN_HEIGHT = 196;
 // branch's hero, next service (computed from branch_services with the
 // display-string fallback, docs/spec/07 zero-rows rule), lead + leaders,
 // welcome word, and the "Watch this branch" browsing-context action. "I'm
-// here" appears around service time only and gates until Phase 2 auth.
+// here" appears around service time only (`checkInOpen`, shared with Home so
+// the same action is offered at the same moments) and records attendance at
+// THIS branch, whether or not it is the member's own (docs/spec/07, W2.8).
 export default function BranchInfo() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -59,6 +66,19 @@ export default function BranchInfo() {
   const query = useBranchDetailQuery(branchId);
   const servicesQuery = useBranchServicesQuery(branchId);
   const [gateVisible, setGateVisible] = useState(false);
+
+  // The check-in state for THIS branch, from the server (docs/spec/10). Read
+  // here rather than passed from Home, because a member can arrive on this
+  // screen from the map or the branch list without Home ever being involved.
+  const isMember = useAuthStore((s) => s.status === 'member');
+  const rhythmQuery = useRhythmQuery(branchId, isMember);
+  const imHere = useImHerePress(
+    branchId,
+    rhythmQuery.data?.checkedIn ?? false,
+    () => {
+      setGateVisible(true);
+    },
+  );
 
   const branch = query.data;
   const loading = query.data === undefined && !query.isError;
@@ -307,18 +327,26 @@ export default function BranchInfo() {
           <View
             style={{ flexDirection: 'row', gap: spacing.sm + 2, marginTop: 14 }}
           >
-            {/* "I'm here" only around service time (docs/spec/04); it gates
-                until auth lands (W2.1). No dead button outside the window. */}
-            {next?.isInWindow ? (
+            {/* "I'm here" only around service time (docs/spec/04): from the
+                30-minute lead to the end of the branch's day. No dead button
+                outside it, and once the day is recorded the action quietens
+                into the same badge Home's hero uses. */}
+            {checkInOpen(
+              servicesQuery.data ?? [],
+              branch.timezone,
+              new Date(),
+            ) ? (
               <View style={{ flex: 1 }}>
-                <Button
-                  label={t('church:imHere')}
-                  variant="accent"
-                  fullWidth
-                  onPress={() => {
-                    setGateVisible(true);
-                  }}
-                />
+                {imHere.checkedIn ? (
+                  <CheckedInBadge surface="card" />
+                ) : (
+                  <Button
+                    label={t('church:imHere')}
+                    variant="accent"
+                    fullWidth
+                    onPress={imHere.press}
+                  />
+                )}
               </View>
             ) : null}
             {canRouteTo(routeTarget) ? (
@@ -491,8 +519,14 @@ export default function BranchInfo() {
         dismissLabel={t('notNow')}
         dismissAnnouncement={t('church:gateDismissed')}
         onSignIn={() => {
-          // Gate-return (W2.2): the attendance executor itself lands at W2.8.
-          useGateStore.getState().beginGateSignIn({ kind: 'im_here' });
+          // Gate-return (W2.2 + W2.8): the branch travels with the action, so
+          // signing in records the check-in HERE and not wherever the browsing
+          // chip happens to point afterwards.
+          if (branchId) {
+            useGateStore
+              .getState()
+              .beginGateSignIn({ kind: 'im_here', branchId });
+          }
           setGateVisible(false);
           router.push('/auth');
         }}

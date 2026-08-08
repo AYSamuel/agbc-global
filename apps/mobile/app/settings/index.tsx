@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
@@ -14,6 +15,7 @@ import {
   MenuRow,
   Screen,
   SegmentedControl,
+  useToast,
 } from '@/components/ui';
 import { useBlockedMembers } from '@/features/family/moderation';
 import { LANGUAGE_AUTONYMS, type SupportedLanguage } from '@/i18n';
@@ -40,6 +42,8 @@ export default function Settings() {
   // first, and it is the ONLY route to a home-branch change (ADR 0015): the branch chip
   // on Home changes what you BROWSE and never where you belong.
   const isMember = useAuthStore((s) => s.status === 'member');
+  const toast = useToast();
+  const [signingOut, setSigningOut] = useState(false);
   const setThemePref = useThemePrefStore((s) => s.setPref);
   // The frame's `.val` on the Blocked members row. The same query the screen behind it
   // reads, so the number in the row and the list it opens are one fact; zero shows
@@ -164,16 +168,47 @@ export default function Settings() {
           />
         </MenuCard>
 
-        {/* Guest: Sign in where the member frame shows Sign out (docs/spec/16). */}
+        {/* Guest: Sign in. Member: Sign out, as `.btn.outline` with a red label
+            (mockup SETTINGS tablet frame), because it is an ordinary control
+            that names a consequence and not the solid red of Delete.
+            docs/spec/16 §79 and `03` §79 define what it does: tokens and the
+            personal caches go, the guest-browsable ones and the local
+            theme/language/branch stay, which is why signing out leaves you
+            browsing rather than at a wall. */}
         <View style={{ marginTop: spacing.lg }}>
-          <Button
-            label={t('settings:signin')}
-            variant="accent"
-            fullWidth
-            onPress={() => {
-              router.push('/auth');
-            }}
-          />
+          {isMember ? (
+            <Button
+              label={t('settings:signout')}
+              variant="outline"
+              tone="danger"
+              fullWidth
+              loading={signingOut}
+              onPress={() => {
+                setSigningOut(true);
+                void useAuthStore
+                  .getState()
+                  .signOut()
+                  .catch(() => {
+                    // The local session is gone either way (supabase-js clears
+                    // it before the network call); saying otherwise would be a
+                    // lie the next screen contradicts.
+                  })
+                  .finally(() => {
+                    setSigningOut(false);
+                    toast.show(t('settings:signedOut'));
+                  });
+              }}
+            />
+          ) : (
+            <Button
+              label={t('settings:signin')}
+              variant="accent"
+              fullWidth
+              onPress={() => {
+                router.push('/auth');
+              }}
+            />
+          )}
         </View>
 
         <Text

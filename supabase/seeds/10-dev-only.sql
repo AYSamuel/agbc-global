@@ -59,13 +59,39 @@ on conflict (date, language) do nothing;
 -- ONLY way to publish without moderation, and it is exactly what the pgTAP suites
 -- prove a client cannot do.
 
-insert into auth.users (id, email)
-values
+-- These columns are not decoration. Auth (GoTrue) reads this table with a Go struct that has
+-- no nullable fields for most of them, and it looks a user up by email AND AUDIENCE, so on a
+-- fresh stack a hand-seeded row failed three ways in a row before a sign-in got through
+-- (found on device, W2.8):
+--
+--   aud/role null      -> the lookup misses, Auth tries to CREATE the user, and the email it
+--                         is inserting is already there: 500 "Database error saving new user"
+--   token columns null -> "converting NULL to string is unsupported"
+--   created_at null    -> "unsupported Scan, storing driver.Value type <nil> into *time.Time"
+--
+-- The app can only render any of those as "You're offline. Check your connection", which is
+-- exactly the wrong thing to tell somebody whose connection is fine. Signing in as a seeded
+-- member is the whole point of these rows, so they are seeded the way Auth writes them.
+insert into auth.users (
+  id, email, instance_id, aud, role,
+  created_at, updated_at, email_confirmed_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change_token_current,
+  email_change, phone_change, phone_change_token, reauthentication_token,
+  raw_app_meta_data, raw_user_meta_data
+)
+select
+  v.id::uuid, v.email, '00000000-0000-0000-0000-000000000000'::uuid,
+  'authenticated', 'authenticated',
+  now(), now(), now(),
+  '', '', '', '', '', '', '', '',
+  '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb
+from (values
   ('50000000-0000-4000-8000-00000000000a', 'dev.grace@example.test'),
   ('50000000-0000-4000-8000-00000000000b', 'dev.tobi@example.test'),
   ('50000000-0000-4000-8000-00000000000c', 'dev.anke@example.test'),
   ('50000000-0000-4000-8000-00000000000d', 'dev.marieke@example.test'),
   ('50000000-0000-4000-8000-00000000000e', 'dev.folake@example.test')
+) as v(id, email)
 on conflict (id) do nothing;
 
 -- Grace is seeded as a leader so the dev dashboard and the moderation-plane checks
@@ -225,12 +251,22 @@ on conflict (id) do update set
 -- --- rhythm (W2.8) --------------------------------------------------------------------------
 --
 -- Attendance history, so RHYTHM and Home's streak strip have something true to draw on device
--- rather than an empty state that looks like a bug. Three shapes on purpose, because the three
--- states the screens must render are exactly these (docs/spec/10):
+-- rather than an empty state that looks like a bug. Four shapes on purpose, one per state
+-- `rhythm_state()` can answer (docs/spec/10), because a state with no seeded member is a state
+-- nobody looks at until a real member is standing in it:
 --
---   Grace   (Glasgow leader)  six Sundays with one missed: the grace-covered run
---   Tobi    (Glasgow member)  last Sunday only: a rhythm just beginning
---   Marieke (Emmen member)    a month ago and nothing since: lapsed, longest remembered
+--   Grace   (Glasgow leader)  six Sundays with one missed: state ACTIVE, and the run reads 5,
+--                             which is the grace ARITHMETIC (the missed week is carried)
+--   Tobi    (Glasgow member)  last Sunday only: ACTIVE, a rhythm just beginning
+--   Anke    (Berlin member)   nothing for a fortnight: state GRACE, the run still standing
+--   Marieke (Emmen member)    a month ago and nothing since: LAPSED, longest remembered
+--
+-- Anke exists because the grace STATE and the grace ARITHMETIC are different things, and only
+-- the arithmetic was seeded until W2.8's screens went looking for the state (2026-08-07). Grace
+-- attended last week, so she is `active` on any day of a fresh reset; a member is not in `grace`
+-- until a whole week has passed with nothing. The fourth member is the only way that state is on
+-- screen the moment `pnpm db:reset` finishes. (Folake, in Ogbomosho, is deliberately left with no
+-- attendance at all: she is the `none` state, and the empty rhythm screen.)
 --
 -- Written with explicit service_date, which the insert guard allows only for a trusted writer
 -- (no auth.uid()): as a member every one of these would be clamped to today, which is the
@@ -261,4 +297,16 @@ select p.id, p.branch_id, (date_trunc('week', current_date) - (w || ' weeks')::i
 from public.profiles p
 cross join unnest(array[5, 4]) as w
 where p.email = 'dev.marieke@example.test'
+on conflict (profile_id, service_date) do nothing;
+
+-- Anke: four Sundays ending a fortnight ago. Exactly one whole week is missed, which is the
+-- `grace` state: the run is carried across it and still reads 4. A week 2 rows back rather than
+-- 1 is the entire difference between this member and Grace, and between two of the four states
+-- the screens have to draw.
+insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
+select p.id, p.branch_id, (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
+       now(), 'here_button'
+from public.profiles p
+cross join unnest(array[5, 4, 3, 2]) as w
+where p.email = 'dev.anke@example.test'
 on conflict (profile_id, service_date) do nothing;

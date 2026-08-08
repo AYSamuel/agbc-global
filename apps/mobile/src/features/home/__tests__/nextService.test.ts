@@ -1,4 +1,5 @@
 import {
+  checkInOpen,
   dayBucket,
   formatServiceDay,
   formatServiceTime,
@@ -132,5 +133,94 @@ describe('display helpers', () => {
     expect(formatServiceDay(0, 'en-GB')).toBe('Sunday');
     expect(formatServiceDay(3, 'en-GB')).toBe('Wednesday');
     expect(formatServiceDay(0, 'de')).toBe('Sonntag');
+  });
+});
+
+// "I'm here" is offered around service time (docs/spec/10, `04`): from the same
+// 30-minute lead the card uses, through the end of the branch's own day. Both
+// edges are the feature: the near one stops a check-in hours before anyone
+// gathers, the far one keeps it for the member who taps on the way home.
+describe('checkInOpen', () => {
+  const sunday = service({ weekday: 0, start_time: '12:00:00' });
+
+  test('closed the morning of, before the lead begins', () => {
+    // Sunday 09:00 UTC: three hours early, and nobody is there yet.
+    expect(checkInOpen([sunday], 'UTC', new Date('2026-07-19T09:00:00Z'))).toBe(
+      false,
+    );
+  });
+
+  test('opens 30 minutes before the service starts', () => {
+    expect(checkInOpen([sunday], 'UTC', new Date('2026-07-19T11:30:00Z'))).toBe(
+      true,
+    );
+  });
+
+  test('stays open while the service runs', () => {
+    expect(checkInOpen([sunday], 'UTC', new Date('2026-07-19T12:45:00Z'))).toBe(
+      true,
+    );
+  });
+
+  test('stays open after it ends, to the end of the branch day', () => {
+    // 22:00, long after the noon service: the member was still there.
+    expect(checkInOpen([sunday], 'UTC', new Date('2026-07-19T22:00:00Z'))).toBe(
+      true,
+    );
+  });
+
+  test('closed the next day, even minutes past midnight', () => {
+    expect(checkInOpen([sunday], 'UTC', new Date('2026-07-20T00:10:00Z'))).toBe(
+      false,
+    );
+  });
+
+  test("reads the BRANCH's clock, not the device's", () => {
+    // 23:30 UTC on Saturday is already Sunday 01:30 in Lagos, so a Lagos
+    // service that day has not reached its lead yet.
+    const lagos = service({ weekday: 0, start_time: '11:00:00' });
+    expect(
+      checkInOpen([lagos], 'Africa/Lagos', new Date('2026-07-18T23:30:00Z')),
+    ).toBe(false);
+    // ...and Sunday 09:00 UTC is 10:00 in Lagos: inside the lead.
+    expect(
+      checkInOpen([lagos], 'Africa/Lagos', new Date('2026-07-19T09:30:00Z')),
+    ).toBe(true);
+  });
+
+  test('a service running past midnight keeps it, while the card still says "now"', () => {
+    // Found on a device, 2026-08-08: a late gathering starting 23:30 was still
+    // running at 00:02, the hero still read HAPPENING NOW, and the check-in had
+    // vanished because the weekday had rolled over. The people it disappeared
+    // for were the ones sitting in the room.
+    const late = service({
+      weekday: 5,
+      start_time: '23:30:00',
+      duration_min: 120,
+    });
+    // Friday 23:45 UTC: fifteen minutes in.
+    expect(checkInOpen([late], 'UTC', new Date('2026-07-17T23:45:00Z'))).toBe(
+      true,
+    );
+    // Saturday 00:20 UTC: fifty minutes in, and a different weekday.
+    expect(checkInOpen([late], 'UTC', new Date('2026-07-18T00:20:00Z'))).toBe(
+      true,
+    );
+    // Saturday 02:00 UTC: it ended at 01:30, and this is no longer its day.
+    expect(checkInOpen([late], 'UTC', new Date('2026-07-18T02:00:00Z'))).toBe(
+      false,
+    );
+  });
+
+  test('a branch with no rows never offers it (docs/spec/07 zero-rows rule)', () => {
+    expect(checkInOpen([], 'UTC', new Date('2026-07-19T12:00:00Z'))).toBe(
+      false,
+    );
+  });
+
+  test('an unknown timezone never offers it on a guess', () => {
+    expect(
+      checkInOpen([sunday], 'Not/AZone', new Date('2026-07-19T12:00:00Z')),
+    ).toBe(false);
   });
 });

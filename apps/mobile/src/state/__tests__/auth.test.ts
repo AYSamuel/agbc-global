@@ -1,6 +1,9 @@
 // The auth store's transitions (docs/spec/03): server truth via profiles,
 // snapshot-backed member routing, and the refresh-failure guest transition.
 
+import { PERSIST_META } from '@/lib/queryMeta';
+import { queryClient } from '@/lib/queryPersist';
+
 import { useAuthStore } from '../auth';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -162,5 +165,34 @@ describe('the refresh-failure transition (docs/spec/03)', () => {
     useAuthStore.setState({ status: 'guest' });
     fireAuthEvent('SIGNED_OUT');
     expect(useAuthStore.getState().signedOutBanner).toBe(false);
+  });
+
+  it("takes the member's cached reads with them (W2.8)", () => {
+    // The cache is keyed by what was asked, never by who asked, so the next
+    // person to sign in on this phone would meet the last one's data: their
+    // rhythm on the strip, their reaction state on a feed card. Found with two
+    // seeded members on a device.
+    queryClient.setQueryData(['rhythm', 'branch-1'], { currentWeeks: 6 });
+    useAuthStore.setState({ status: 'member', email: 'a@test.local' });
+
+    fireAuthEvent('SIGNED_OUT');
+
+    expect(queryClient.getQueryData(['rhythm', 'branch-1'])).toBeUndefined();
+  });
+
+  it('but leaves the guest-browsable ones (docs/spec/03, 16)', () => {
+    // Signing out must not also cost you the offline verse and service card.
+    // Public reads are the ones that opted into persistence.
+    queryClient.setQueryDefaults(['daily-verse'], { meta: PERSIST_META });
+    queryClient.setQueryData(['daily-verse', '2026-08-08', 'en'], {
+      reference: 'Psalm 23:1',
+    });
+    useAuthStore.setState({ status: 'member', email: 'a@test.local' });
+
+    fireAuthEvent('SIGNED_OUT');
+
+    expect(
+      queryClient.getQueryData(['daily-verse', '2026-08-08', 'en']),
+    ).toEqual({ reference: 'Psalm 23:1' });
   });
 });

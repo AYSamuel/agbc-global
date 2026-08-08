@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 
 import { applyGloryToCaches } from '@/features/family/gloryCache';
 import { applyIntercessionToCaches } from '@/features/family/prayerCache';
+import { queueCheckIn } from '@/features/rhythm/useImHere';
 import { pushWrite } from '@/lib/writeQueue';
 import type { GateAction } from '@/state/gate';
 
@@ -50,6 +51,15 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       router.push(
         action.target === 'prayer' ? '/prayer/compose' : '/testimony/compose',
       );
+      return Promise.resolve('done');
+    }
+    case 'im_here': {
+      // The gated action was "I'm here", and it takes the same path an ordinary
+      // tap does: show it, queue it, say it. The branch travelled with the
+      // action rather than being read from the chip now, because the member is
+      // being returned to the card they tapped and that is the branch they were
+      // standing in (docs/spec/07).
+      queueCheckIn(action.branchId);
       return Promise.resolve('done');
     }
     case 'my_posts': {

@@ -35,5 +35,7 @@
   "familySoonTitle": "Testimonies are coming",
   "familySoonBody": "Soon you'll see what God is doing across every branch, right here.",
   "joinTitle": "Join the family",
-  "joinBody": "Sign in to react, share testimonies, RSVP, and keep your rhythm."
+  "joinBody": "Sign in to react, share testimonies, RSVP, and keep your rhythm.",
+  "greetingNamed": "{{greeting}}, {{name}}",
+  "openProfile": "Your profile, {{name}}"
 }

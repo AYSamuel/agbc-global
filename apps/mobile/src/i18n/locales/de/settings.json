@@ -75,5 +75,7 @@
     "unblockFailed": "Das hat nicht geklappt. Bitte versuche es erneut.",
     "emptyTitle": "Niemand ist blockiert",
     "emptyBody": "Falls du es einmal brauchst: Du kannst ein Mitglied über die Beitragsaktionen an seinem Beitrag blockieren."
-  }
+  },
+  "signout": "Abmelden",
+  "signedOut": "Abgemeldet. Du kannst weiter stöbern."
 }

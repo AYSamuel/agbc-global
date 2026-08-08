@@ -75,5 +75,7 @@
     "unblockFailed": "That did not work. Please try again.",
     "emptyTitle": "Nobody is blocked",
     "emptyBody": "If you ever need to, you can block a member from the post actions menu on their post."
-  }
+  },
+  "signout": "Sign out",
+  "signedOut": "Signed out. You can keep browsing."
 }

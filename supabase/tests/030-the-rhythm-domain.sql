@@ -20,7 +20,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(50);
+select plan(51);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 \set emmen '00000000-0000-4000-8000-000000000003'
@@ -88,13 +88,25 @@ set local request.jwt.claims to
   '{"sub": "a0000000-0000-4000-8000-0000000000a1", "role": "authenticated", "user_role": "member", "branch_id": "00000000-0000-4000-8000-000000000001"}';
 
 -- Yesterday's tap, replayed from the offline queue now: it counts for yesterday.
+--
+-- Anchored to yesterday's DATE at midday rather than "20 hours ago", which is only yesterday
+-- when the suite runs before 20:00. After that it lands on today, collides with the clamped
+-- row below on `unique(profile_id, service_date)`, and the whole file dies at test 7 (found
+-- 2026-08-07, running at 21:15 local). A test whose result depends on the hour it runs at is
+-- a flake with a schedule, and this one would have started failing every evening.
+\set yesterday_tap '(current_date - 1 + time ''12:00'') at time zone ''Europe/London'''
 insert into public.attendance (profile_id, branch_id, client_taken_at)
-values (:'member', :'glasgow', now() - interval '20 hours');
+values (:'member', :'glasgow', :yesterday_tap);
 select is(
   (select service_date from public.attendance
     where profile_id = :'member' order by service_date desc limit 1),
-  public.attendance_service_date(now() - interval '20 hours', 'Europe/London'),
+  public.attendance_service_date(:yesterday_tap, 'Europe/London'),
   'an offline replay from within 72 hours lands on the day actually attended');
+select is(
+  (select service_date from public.attendance
+    where profile_id = :'member' order by service_date desc limit 1),
+  current_date - 1,
+  'and that day is yesterday, whatever hour the suite runs at');
 
 -- Ten days back is not a replay, it is a claim about last week.
 insert into public.attendance (profile_id, branch_id, client_taken_at)

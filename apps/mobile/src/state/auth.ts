@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { isPersonalQuery } from '@/lib/queryMeta';
+import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 import { useWriteQueueStore } from '@/lib/writeQueue';
 import { useGateStore } from '@/state/gate';
@@ -177,6 +179,19 @@ supabase.auth.onAuthStateChange((event) => {
     });
     // A session ending in any way orphans a pending gate action (W2.2).
     useGateStore.getState().clearPending();
+    // ...and orphans every CACHED READ that was answered for that member. The
+    // query cache is keyed by what was asked (a branch, a testimony), never by
+    // who asked, so without this the next person to sign in on the same phone
+    // meets the last one's data until each query refetches: their rhythm on the
+    // strip, their `reacted_by_me` on a feed card. Found on device with two
+    // seeded members, W2.8.
+    //
+    // The public reads STAY, which is what `03` and `16` ask for ("keeps
+    // guest-browsable caches"): signing out should not also cost you the offline
+    // verse and service card. `isPersonalQuery` is the existing persistence flag
+    // read backwards, so this is one declaration rather than a list of keys to
+    // keep in step, and its default drops rather than keeps.
+    queryClient.removeQueries({ predicate: isPersonalQuery });
     // ...and orphans every unsent write, which belonged to that member and
     // could not be replayed as anyone else (docs/spec/01 §8: cleared on
     // sign-out). This sits on the SIGNED_OUT event rather than in signOut()

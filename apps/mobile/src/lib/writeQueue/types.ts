@@ -6,12 +6,13 @@
 // type here exists to make that shape impossible to misuse.
 
 /**
- * One entity kind the queue knows how to replay. `01` §8 lists six; two are live
- * (W2.4) and the rest are registered by the work item that builds their surface:
- * `rsvp` (W2.9), `attendance` (W2.8), `playback` (W3.1), `plan_day` (Phase 4).
- * Adding a kind here without a handler is caught at compile time by the registry.
+ * One entity kind the queue knows how to replay. `01` §8 lists six; three are
+ * live (glory and intercession at W2.4, attendance at W2.8) and the rest are
+ * registered by the work item that builds their surface: `rsvp` (W2.9),
+ * `playback` (W3.1), `plan_day` (Phase 4). Adding a kind here without a handler
+ * is caught at compile time by the registry.
  */
-export type QueuedKind = 'glory' | 'intercession';
+export type QueuedKind = 'glory' | 'intercession' | 'attendance';
 
 /**
  * The end state per kind. Glory is a toggle because `09` says "tap again to
@@ -26,15 +27,35 @@ export type QueuedKind = 'glory' | 'intercession';
 export interface QueuedStates {
   glory: 'on' | 'off';
   intercession: 'none' | 'committed' | 'prayed';
+  /**
+   * The branch the member was standing in. Attendance has no off switch, so the
+   * end state of a day is not "on" but WHERE: a member who taps at Berlin,
+   * notices they were browsing Glasgow and taps again has expressed one day at
+   * one branch, and the queue collapses it to exactly that (W2.8).
+   */
+  attendance: string;
 }
 
 export type QueuedWrite = {
   [K in QueuedKind]: {
     kind: K;
-    /** Testimony id for glory, prayer id for an intercession. */
+    /**
+     * Testimony id for glory, prayer id for an intercession, and for attendance
+     * the DEVICE-LOCAL date of the tap (`features/home/queries` localDateKey).
+     *
+     * That date is bookkeeping and nothing else: it is never displayed, never
+     * sent, and never decides anything. `service_date` stays the server's, from
+     * `client_taken_at` in the branch's timezone (`20260807120000`). What it
+     * buys is one slot per day, so two Sundays tapped during one long offline
+     * stretch stay two wishes instead of the second overwriting the first.
+     */
     entityId: string;
     state: QueuedStates[K];
-    /** For eviction order (oldest entity first) and nothing else. */
+    /**
+     * For eviction order (oldest entity first). Attendance also SENDS it, as
+     * `client_taken_at`, which is why the clamp exists: a Sunday tap replayed on
+     * Monday still records Sunday (docs/spec/02).
+     */
     queuedAt: number;
   };
 }[QueuedKind];
