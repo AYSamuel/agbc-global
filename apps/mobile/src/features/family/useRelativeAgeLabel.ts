@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
+import { useFormattingLocale } from '@/i18n';
+
 import { formatDate, relativeAge } from './format';
 
 /**
@@ -11,7 +13,8 @@ import { formatDate, relativeAge } from './format';
  * cost for a cosmetic gain. The 60s feed poll re-renders these anyway.
  */
 export function useRelativeAgeLabel(iso: string): string {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const age = relativeAge(iso, new Date());
   switch (age.unit) {
     case 'now':
@@ -23,7 +26,7 @@ export function useRelativeAgeLabel(iso: string): string {
     case 'day':
       return t('family:ageDays', { count: age.count });
     case 'date':
-      return formatDate(age.iso, i18n.language);
+      return formatDate(age.iso, locale);
   }
 }
 
@@ -40,7 +43,8 @@ export function useRelativeAgeLabel(iso: string): string {
  * what the detail screens show.
  */
 export function useVerboseAgeLabel(iso: string): string {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const age = relativeAge(iso, new Date());
   switch (age.unit) {
     case 'now':
@@ -55,6 +59,6 @@ export function useVerboseAgeLabel(iso: string): string {
         ? t('family:ageYesterday')
         : t('family:ageDaysAgo', { count: age.count });
     case 'date':
-      return formatDate(age.iso, i18n.language);
+      return formatDate(age.iso, locale);
   }
 }

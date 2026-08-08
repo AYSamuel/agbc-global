@@ -36,6 +36,7 @@ import {
   shouldSave,
   usePlaybackStore,
 } from '@/features/watch/playback';
+import { useFormattingLocale } from '@/i18n';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
@@ -125,7 +126,8 @@ function SermonVideo({
 // the custom transport row arrives with audio. Rot state per 08.
 export default function Sermon() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const { colors } = useTheme();
   const toast = useToast();
   const { width } = useWindowDimensions();
@@ -300,7 +302,7 @@ export default function Sermon() {
               ]}
             >
               {sermon.series ??
-                formatPublishedDate(sermon.published_at, i18n.language)}
+                formatPublishedDate(sermon.published_at, locale)}
             </Text>
             <Text
               style={{

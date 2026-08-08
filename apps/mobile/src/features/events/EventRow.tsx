@@ -11,6 +11,7 @@ import {
 
 import { ChevronRightIcon } from '@/components/ui';
 import { useTheme } from '@/theme';
+import { useFormattingLocale } from '@/i18n';
 
 import { eventDateParts, formatEventTime } from './format';
 import type { EventListItem } from './queries';
@@ -32,12 +33,13 @@ export function EventRow({
   muted = false,
   onPress,
 }: EventRowProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const { colors } = useTheme();
 
   const isGlobal = event.branch_id === null;
-  const date = eventDateParts(event.starts_at_local, i18n.language);
-  const time = formatEventTime(event.starts_at_local, i18n.language);
+  const date = eventDateParts(event.starts_at_local, locale);
+  const time = formatEventTime(event.starts_at_local, locale);
   const place = isGlobal ? t('events:allBranches') : (branchCity ?? '');
   const metaText = [time, place].filter(Boolean).join(' · ');
 

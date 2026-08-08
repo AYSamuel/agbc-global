@@ -17,6 +17,7 @@ import {
   Skeleton,
   useManualRefresh,
 } from '@/components/ui';
+import { useFormattingLocale } from '@/i18n';
 import { resolveAddressLine } from '@/features/home/address';
 import { resolveNextService } from '@/features/home/nextService';
 import { useBranchServicesQuery } from '@/features/home/queries';
@@ -64,7 +65,8 @@ import { useGateStore } from '@/state/gate';
  */
 export default function RhythmScreen() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const isMember = useAuthStore((state) => state.status === 'member');
   const branch = useBranchStore((state) => state.branch);
   const beginGateSignIn = useGateStore((state) => state.beginGateSignIn);
@@ -179,7 +181,7 @@ export default function RhythmScreen() {
     const kinds = milestonesQuery.data.map((row) => row.kind);
     const earned = earnedBadges(kinds);
     const entries = attendanceQuery.data;
-    const hero = heroContent(rhythm, i18n.language, t);
+    const hero = heroContent(rhythm, locale, t);
 
     if (hero === null) {
       // `none`: nothing recorded yet. The invitation IS the screen (the frame's

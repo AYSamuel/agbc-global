@@ -32,6 +32,7 @@ import {
   isPastEvent,
   wallClockToInstant,
 } from '@/features/events/format';
+import { useFormattingLocale } from '@/i18n';
 import { useEventDetailQuery } from '@/features/events/queries';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useBranchCities } from '@/features/events/useBranchCities';
@@ -50,7 +51,8 @@ const HERO_MIN_HEIGHT = 186;
 export default function EventDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -114,9 +116,9 @@ export default function EventDetailScreen() {
   const isGlobal = event.branch_id === null;
   const cancelled = event.status === 'cancelled';
   const past = isPastEvent(event.starts_at_local, event.timezone, new Date());
-  const date = eventDateParts(event.starts_at_local, i18n.language);
-  const day = formatEventDay(event.starts_at_local, i18n.language);
-  const time = formatEventTime(event.starts_at_local, i18n.language);
+  const date = eventDateParts(event.starts_at_local, locale);
+  const day = formatEventDay(event.starts_at_local, locale);
+  const time = formatEventTime(event.starts_at_local, locale);
   const city = isGlobal ? null : (branchCities[event.branch_id ?? ''] ?? null);
   const branchName = isGlobal
     ? t('events:allBranches')
@@ -307,7 +309,7 @@ export default function EventDetailScreen() {
             >
               {t('events:ministryWide')}
               {viewerInstant
-                ? ` · ${t('events:yourTime', { time: formatViewerDayTime(viewerInstant, i18n.language) })}`
+                ? ` · ${t('events:yourTime', { time: formatViewerDayTime(viewerInstant, locale) })}`
                 : ''}
             </Text>
           ) : null}
