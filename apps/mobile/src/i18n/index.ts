@@ -2,7 +2,7 @@ import './polyfills';
 
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { initReactI18next, useTranslation } from 'react-i18next';
 
 import deCommon from './locales/de/common.json';
 import deSettings from './locales/de/settings.json';
@@ -104,6 +104,48 @@ export function deviceLanguage(): SupportedLanguage {
   return (SUPPORTED_LANGUAGES as readonly string[]).includes(code ?? '')
     ? (code as SupportedLanguage)
     : 'en';
+}
+
+/**
+ * The tag `Intl` should format with, which is NOT the tag i18next translates
+ * with (docs/spec/16 §Localization).
+ *
+ * The app ships four LANGUAGES, so translation looks up `en`. Formatting is a
+ * different question with a different answer: day-month order, 12h against 24h
+ * and decimal separators are regional, and a bare `en` resolves to en-US, so
+ * until this existed every member of a Glasgow-led church with branches in
+ * Berlin, Emmen and Ogbomosho read American dates ("Sun, Aug 2"). Format
+ * follows the READER; a service time still follows the branch it happens in,
+ * and a stored `service_date` follows neither (see features/rhythm/format.ts).
+ *
+ * The region comes from the device when it agrees with the language being
+ * read, and is left to `Intl` otherwise: a UK phone reading English gets
+ * en-GB, a Nigerian phone gets en-NG, and a UK phone SWITCHED to German gets
+ * German conventions rather than British ones, because choosing German is a
+ * choice about how the app should read (decided with Ayo 2026-08-08).
+ *
+ * @param language the language i18next is currently serving (`i18n.language`).
+ */
+export function formattingLocale(language: string): string {
+  const device = getLocales()[0];
+  return device.languageCode === language && device.languageTag
+    ? device.languageTag
+    : language;
+}
+
+/**
+ * `formattingLocale` for components, re-evaluated when the language changes so
+ * a live switch in Settings re-formats every date on screen (docs/spec/16:
+ * "language change mid-session: relocalize without restart").
+ *
+ * Every `Intl` call site takes this. The bare `i18n.language` is still correct
+ * for the things that are about the LANGUAGE rather than the reader's
+ * conventions: the profile language sent at sign-up, the `daily_verses` lookup,
+ * the website's locale path segment, and the language picker itself.
+ */
+export function useFormattingLocale(): string {
+  const { i18n: instance } = useTranslation();
+  return formattingLocale(instance.language);
 }
 
 // Initialized synchronously at import (bundled resources, no async loading); the root

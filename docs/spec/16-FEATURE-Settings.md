@@ -65,7 +65,10 @@ Toggles mapping to `notification_prefs`: Ministry announcements · Branch update
 - **Workflow:** i18n keys mandatory from Phase 1 (no literal strings in components); string freeze per release; named translation reviewers and the legal-string review rule live in `22-CONTENT-OPERATIONS.md` §4.
 - **Default:** device locale if supported, else English; overridable in onboarding + Settings.
 - **Content (devotional, plans, verses):** English v1. Data model has `language` fields so DE/NL content can be added without schema change.
-- **Formatting:** dates/times/numbers/currency localized; branch times shown in branch timezone with locale formatting.
+- **Formatting:** dates/times/numbers/currency localized; branch times shown in branch timezone with locale formatting. Stated as one rule (W2.8, after RHYTHM shipped American dates to every member of a Glasgow-led church): **the moment follows the event, the format follows the reader, and a stored day follows neither.**
+  - **A time that belongs to a place** (a service, an event) is shown on THAT place's clock, always, labelled with the place. Converting it to the reader's zone would tell a Berlin member browsing Glasgow to arrive an hour late. The exception is participation at a distance (a livestream, a ministry-wide gathering), which shows BOTH: the origin, and "your time" (`11` §Timezone).
+  - **A stored day** (`attendance.service_date`, "last gathered") is not an instant. The timezone acted once, at write time, in the branch attended, and the date is immutable after; it therefore renders identically in Ogbomosho and Glasgow forever. Never re-apply a zone to one (`features/rhythm/format.ts`).
+  - **The format** (day-month order, 12h against 24h, separators) is regional and carries no information about when anything happens, so it follows the READER: `useFormattingLocale()`, which takes the device's region when it agrees with the language being read and leaves it to `Intl` otherwise. i18next still translates with the bare language code; the two are different questions with different answers.
 - **RTL:** not needed for EN/DE/NL/FR.
 
 ## Data

@@ -11,6 +11,7 @@ import {
 
 import { Button, GradientFill, PinIcon } from '@/components/ui';
 import { CheckedInBadge } from '@/features/rhythm/CheckedInBadge';
+import { useFormattingLocale } from '@/i18n';
 
 import {
   dayBucket,
@@ -56,7 +57,8 @@ export function NextServiceCard({
   imHere = null,
   visitingBranchName = null,
 }: NextServiceCardProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
 
   const eyebrow = (() => {
     if (next === null) {
@@ -69,7 +71,7 @@ export function NextServiceCard({
     if (bucket === 'today') return t('home:today');
     if (bucket === 'tomorrow') return t('home:tomorrow');
     return t('home:thisDay', {
-      day: formatServiceDay(next.service.weekday, i18n.language),
+      day: formatServiceDay(next.service.weekday, locale),
     });
   })();
 
@@ -79,7 +81,7 @@ export function NextServiceCard({
         ? displayTimes[0]
         : t('home:serviceTimesSoon');
     }
-    const time = formatServiceTime(next.service.start_time, i18n.language);
+    const time = formatServiceTime(next.service.start_time, locale);
     const name =
       next.service.label || t(`home:serviceKind.${next.service.kind}`);
     return `${name} · ${time}`;

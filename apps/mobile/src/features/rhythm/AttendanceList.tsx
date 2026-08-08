@@ -12,6 +12,7 @@ import {
 import { ChurchIcon, LiveIcon } from '@/components/ui';
 import { joinMeta } from '@/features/family/format';
 import { useTheme } from '@/theme';
+import { useFormattingLocale } from '@/i18n';
 
 import { formatAttendanceDate } from './format';
 import type { AttendanceEntry } from './history';
@@ -42,7 +43,8 @@ export function AttendanceList({
   entries: readonly AttendanceEntry[];
   branchNames: Record<string, string>;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const { colors } = useTheme();
 
   return (
@@ -59,7 +61,7 @@ export function AttendanceList({
     >
       {entries.map((entry, index) => {
         const live = entry.source === 'live_watch';
-        const when = formatAttendanceDate(entry.serviceDate, i18n.language);
+        const when = formatAttendanceDate(entry.serviceDate, locale);
         const where = live
           ? t('rhythm:watchedLive')
           : // A branch the lookup has not got (a branch since retired, an

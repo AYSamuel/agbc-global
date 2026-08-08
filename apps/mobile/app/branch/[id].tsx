@@ -25,6 +25,7 @@ import {
   Skeleton,
   useToast,
 } from '@/components/ui';
+import { useFormattingLocale } from '@/i18n';
 import { canRouteTo, directionsUrl } from '@/features/church/directions';
 import { useBranchDetailQuery } from '@/features/church/queries';
 import { shareText } from '@/features/family/share';
@@ -56,7 +57,8 @@ const HERO_MIN_HEIGHT = 196;
 export default function BranchInfo() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
@@ -138,7 +140,7 @@ export default function BranchInfo() {
   // Mockup .svccard .when: "Sunday · 11:00 AM"; display-string fallback when
   // the branch has no machine schedule (docs/spec/07).
   const nextServiceLine = next
-    ? `${formatServiceDay(next.service.weekday, i18n.language)} · ${formatServiceTime(next.service.start_time, i18n.language)}`
+    ? `${formatServiceDay(next.service.weekday, locale)} · ${formatServiceTime(next.service.start_time, locale)}`
     : (displaySunday ?? t('home:serviceTimesSoon'));
 
   const addressLine = [branch.address?.line1, branch.address?.line2]

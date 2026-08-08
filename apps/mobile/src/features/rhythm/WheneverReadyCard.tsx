@@ -11,6 +11,7 @@ import {
   type NextService,
 } from '@/features/home/nextService';
 import { useTheme } from '@/theme';
+import { useFormattingLocale } from '@/i18n';
 
 /**
  * The mockup's `.todaycard` on RHYTHM's lapsed frame: when the branch gathers,
@@ -45,7 +46,8 @@ export function WheneverReadyCard({
   addressLine,
   onDetails,
 }: WheneverReadyCardProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useFormattingLocale();
   const { colors } = useTheme();
 
   const title =
@@ -54,8 +56,8 @@ export function WheneverReadyCard({
         ? displayTimes[0]
         : null
       : t('rhythm:servicePattern', {
-          day: formatServiceDay(next.service.weekday, i18n.language),
-          time: formatServiceTime(next.service.start_time, i18n.language),
+          day: formatServiceDay(next.service.weekday, locale),
+          time: formatServiceTime(next.service.start_time, locale),
         });
   if (title === null) return null;
 
