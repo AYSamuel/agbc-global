@@ -5,6 +5,7 @@ import {
   formatServiceTime,
   localMinuteOfWeek,
   resolveNextService,
+  type NextService,
   type ServiceRow,
 } from '../nextService';
 
@@ -115,12 +116,49 @@ describe('resolveNextService', () => {
 });
 
 describe('display helpers', () => {
-  test('dayBucket labels the coarse distance', () => {
-    expect(dayBucket(-10)).toBe('now');
-    expect(dayBucket(0)).toBe('now');
-    expect(dayBucket(60)).toBe('today');
-    expect(dayBucket(30 * 60)).toBe('tomorrow');
-    expect(dayBucket(72 * 60)).toBe('later');
+  test('the eyebrow names the branch-local DAY, not the hours away', () => {
+    // The bug this replaces: 2026-08-08 is a Saturday, and at 21:15 in Glasgow
+    // the noon Sunday service is 14h45m away. Bucketing by elapsed hours called
+    // that "today", so Home told members all Saturday evening that the service
+    // was TODAY (seen on the phone, 2026-08-08). It crosses one branch-local
+    // midnight, so it is tomorrow.
+    const saturdayEvening = resolveNextService(
+      [service({ weekday: 0, start_time: '12:00' })],
+      'Europe/London',
+      new Date('2026-08-08T20:15:00Z'),
+    );
+    expect(saturdayEvening).not.toBeNull();
+    expect(dayBucket(saturdayEvening as NextService)).toBe('tomorrow');
+  });
+
+  test('a service later the same day is today, however many hours off', () => {
+    // Sunday 00:30 in Glasgow: the noon service is 11.5 hours away and shares
+    // the day, which is the case the old arithmetic got right by accident.
+    const earlySunday = resolveNextService(
+      [service({ weekday: 0, start_time: '12:00' })],
+      'Europe/London',
+      new Date('2026-08-08T23:30:00Z'),
+    );
+    expect(dayBucket(earlySunday as NextService)).toBe('today');
+  });
+
+  test('two midnights away is later, not tomorrow', () => {
+    // Friday 09:00 in Glasgow, service Sunday noon: two midnights.
+    const friday = resolveNextService(
+      [service({ weekday: 0, start_time: '12:00' })],
+      'Europe/London',
+      new Date('2026-08-07T08:00:00Z'),
+    );
+    expect(dayBucket(friday as NextService)).toBe('later');
+  });
+
+  test('a running service is now, whatever day it started on', () => {
+    const running = resolveNextService(
+      [service()],
+      'UTC',
+      new Date('2026-07-19T12:30:00Z'),
+    );
+    expect(dayBucket(running as NextService)).toBe('now');
   });
 
   test('service time renders the branch wall clock, not a converted one', () => {

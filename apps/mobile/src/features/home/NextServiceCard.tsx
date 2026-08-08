@@ -66,7 +66,7 @@ export function NextServiceCard({
         ? t('home:serviceTimes')
         : t('home:serviceTimesSoonEyebrow');
     }
-    const bucket = dayBucket(next.minutesUntil);
+    const bucket = dayBucket(next);
     if (bucket === 'now') return t('home:happeningNow');
     if (bucket === 'today') return t('home:today');
     if (bucket === 'tomorrow') return t('home:tomorrow');
