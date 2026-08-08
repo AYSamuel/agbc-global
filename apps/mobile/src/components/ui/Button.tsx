@@ -45,6 +45,14 @@ export interface ButtonProps extends Omit<
   fill?: boolean;
   /** Leading icon (mockup buttons that carry a glyph, e.g. "I will pray"). */
   icon?: ReactNode;
+  /**
+   * Recolours the LABEL without changing the surface. The mockup writes Sign out
+   * as `.btn.outline` with `color:var(--red)`: an ordinary control that names a
+   * consequence, not the solid red of Delete or Block (`.btn.danger`, which is
+   * the variant). Kept as a tone rather than a seventh variant so the two cannot
+   * drift apart.
+   */
+  tone?: 'danger';
 }
 
 export function Button({
@@ -54,6 +62,7 @@ export function Button({
   fullWidth = false,
   fill = false,
   icon,
+  tone,
   disabled,
   ...pressableProps
 }: ButtonProps) {
@@ -74,7 +83,7 @@ export function Button({
               : 'transparent';
   // Accent (gold) always carries navy text, both themes (05 contrast rule);
   // glass sits on ink/photo, so its text is always white; danger is white on red.
-  const foreground =
+  const base =
     variant === 'primary'
       ? colors.btnText
       : variant === 'accent'
@@ -84,6 +93,8 @@ export function Button({
           : variant === 'glass' || variant === 'danger'
             ? onInk.text
             : colors.muted;
+  // The tone recolours the label only; the surface stays the variant's.
+  const foreground = tone === 'danger' ? palette.red : base;
 
   return (
     <Pressable

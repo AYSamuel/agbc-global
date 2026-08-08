@@ -130,6 +130,59 @@ export function resolveNextService(
   return best;
 }
 
+/**
+ * Is "I'm here" open, on this branch's own wall clock?
+ *
+ * `10` and `04` both say attendance is offered "around service time", and this
+ * is that phrase made exact: from the same 30-minute lead the card already uses,
+ * through the END OF THE BRANCH-LOCAL DAY.
+ *
+ * Both edges are deliberate. The lead is what stops a check-in at breakfast for
+ * a service at eleven, which the server cannot tell from a real one. The far
+ * edge is grace: a member who taps on the way home, or once the children are in
+ * bed, was still there, and the 72-hour clamp exists precisely so a late tap
+ * still records the right day (docs/spec/02). Ending the offer when the service
+ * ends would take the control away from exactly those people.
+ *
+ * A branch with no rows answers false, which is `07`'s zero-rows rule: display
+ * strings, no countdown, and no check-in.
+ */
+export function checkInOpen(
+  services: ServiceRow[],
+  timeZone: string,
+  now: Date,
+): boolean {
+  const nowMin = localMinuteOfWeek(now, timeZone);
+  // Unknown zone: the card is already falling back to display strings, and a
+  // check-in must never be offered on a guess.
+  if (nowMin < 0) return false;
+
+  return services.some((service) => {
+    const start = startMinute(service);
+    if (start === null) return false;
+    const untilStart = (start - nowMin + WEEK_MIN) % WEEK_MIN;
+    const sinceStart = (nowMin - start + WEEK_MIN) % WEEK_MIN;
+
+    // Inside the same 30-minute lead the card uses, or actually running. Both
+    // are asked as wrapped distances rather than as "is it today", because a
+    // service that starts at 23:30 is STILL RUNNING at 00:15 and the card is
+    // still saying "Happening now": taking the check-in away at midnight, from
+    // people sitting in the room, is exactly the bug that shipped to a device
+    // and got caught there (2026-08-08).
+    if (untilStart <= WINDOW_LEAD_MIN || sinceStart <= service.duration_min) {
+      return true;
+    }
+
+    // Otherwise it stays open for the rest of the branch-local day it started
+    // in, which is the grace half of "around service time": a member who taps
+    // on the way home was still there, and the 72-hour clamp records the right
+    // day for them (docs/spec/02).
+    return (
+      Math.floor(start / 1440) === Math.floor(nowMin / 1440) && nowMin >= start
+    );
+  });
+}
+
 /** Coarse day bucket for the eyebrow; exact countdowns are not attempted. */
 export function dayBucket(
   minutesUntil: number,

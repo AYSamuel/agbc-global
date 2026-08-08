@@ -1,9 +1,15 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  onInk,
+  palette,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import {
   BellIcon,
@@ -11,12 +17,14 @@ import {
   ChevronDownIcon,
   EmptyState,
   GateSheet,
+  GradientFill,
   PersonIcon,
   Screen,
   Skeleton,
   useManualRefresh,
+  useToast,
 } from '@/components/ui';
-import { joinMeta } from '@/features/family/format';
+import { initials, joinMeta } from '@/features/family/format';
 import { useLatestTestimonyQuery } from '@/features/family/queries';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
@@ -32,7 +40,7 @@ import { PendingBranchNote } from '@/features/branch-change/PendingBranchNote';
 import { useMyBranchRequests } from '@/features/branch-change/queries';
 import { useBranchOutcomeStore } from '@/features/branch-change/seen';
 import { NextServiceCard } from '@/features/home/NextServiceCard';
-import { resolveNextService } from '@/features/home/nextService';
+import { checkInOpen, resolveNextService } from '@/features/home/nextService';
 import { QuickActions } from '@/features/home/QuickActions';
 import {
   useBranchServicesQuery,
@@ -42,22 +50,40 @@ import { useLocalDate } from '@/features/home/useLocalDate';
 import { VerseCard } from '@/features/home/VerseCard';
 import { resolveBranchList } from '@/features/onboarding/branchList';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
+import { useCheckInAnnounceStore } from '@/features/rhythm/announce';
+import { useRhythmQuery } from '@/features/rhythm/queries';
+import { StreakStrip } from '@/features/rhythm/StreakStrip';
+import { useImHerePress } from '@/features/rhythm/useImHere';
 import { useSermonsQuery } from '@/features/watch/queries';
 import { SermonRow } from '@/features/watch/SermonRow';
+import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
-import { useGateStore } from '@/state/gate';
+import { useGateStore, type GateAction } from '@/state/gate';
 import { useTheme } from '@/theme';
 
-// HOME (docs/spec/07, mockup "Home · guest"): greeting + branch chip + bell,
-// next-service hero, quick actions, daily verse (no devotional CTA until
-// Phase 4 per 07's phasing), latest message, the "From the family" testimony
-// highlight (wired to the Family feed at W1.5), guest Join card. Everything
-// follows the BROWSED branch.
+// HOME (docs/spec/07, mockups "Home · guest" and W2.8 "HOME · checked in"):
+// greeting + branch chip + bell, next-service hero, quick actions, daily verse
+// (no devotional CTA until Phase 4 per 07's phasing), latest message, the "From
+// the family" testimony highlight (wired to the Family feed at W1.5), and then
+// the one part that knows who is reading: a member gets their name, the rhythm
+// strip and "I'm here" (W2.8); a guest gets the Join card and a gate.
+//
+// Everything else follows the BROWSED branch, including where a check-in counts.
 function greetingKey(now: Date): string {
   const hour = now.getHours();
   if (hour < 12) return 'home:goodMorning';
   if (hour < 17) return 'home:goodAfternoon';
   return 'home:goodEvening';
+}
+
+/**
+ * The greeting takes a first name (mockup: "Good morning, Ayo"). Display names
+ * are free text, so this takes the first word and nothing else: a full name on
+ * that line pushes the branch chip down at large text scale, and "Good morning,
+ * Oluwatobiloba Adewale" is not how anyone greets anyone.
+ */
+function firstName(displayName: string): string {
+  return displayName.trim().split(/\s+/)[0] ?? displayName;
 }
 
 function SectionHeader({
@@ -114,11 +140,16 @@ export default function Home() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
+  const toast = useToast();
   const branch = useBranchStore((s) => s.branch);
   const setBranch = useBranchStore((s) => s.setBranch);
+  const isMember = useAuthStore((s) => s.status === 'member');
+  const profile = useAuthStore((s) => s.profile);
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [gateVisible, setGateVisible] = useState(false);
-  const [gateTestimonyId, setGateTestimonyId] = useState<string | null>(null);
+  // The gate carries the action that needs an account, so one sheet serves both
+  // of Home's gated taps (Glory on the highlight, and "I'm here") with its own
+  // copy and its own gate-return (docs/spec/03).
+  const [gateAction, setGateAction] = useState<GateAction | null>(null);
 
   // Date-anchored reads re-key at local midnight and on foreground.
   const dateKey = useLocalDate();
@@ -166,12 +197,56 @@ export default function Home() {
   // second one immediately and the welcome would spend its fade-out saying "Welcome to".
   const arrivedBranchName = branchNameOf(arrived?.toBranchId);
 
+  // The member's rhythm, from the one function that owns it (docs/spec/10).
+  // Keyed on the BROWSED branch, because "today" and "checked in" are answered
+  // in that branch's timezone.
+  const rhythmQuery = useRhythmQuery(branch?.id ?? null, isMember);
+  const rhythm = rhythmQuery.data ?? null;
+
   const now = new Date();
   const next = resolveNextService(
     servicesQuery.data ?? [],
     branch?.timezone ?? 'UTC',
     now,
   );
+  // "I'm here" is offered around service time (docs/spec/10), to guests too:
+  // the tap gates rather than the control being hidden (docs/spec/07).
+  const serviceToday = checkInOpen(
+    servicesQuery.data ?? [],
+    branch?.timezone ?? 'UTC',
+    now,
+  );
+  const imHere = useImHerePress(
+    branch?.id ?? null,
+    rhythm?.checkedIn ?? false,
+    () => {
+      if (branch) setGateAction({ kind: 'im_here', branchId: branch.id });
+    },
+  );
+  // Browsing a branch that is not where they belong (docs/spec/07): the card
+  // says where the tap will count. Guests have no home branch to differ from.
+  const visitingBranchName =
+    isMember &&
+    profile !== null &&
+    branch !== null &&
+    profile.branchId !== branch.id
+      ? branch.name
+      : null;
+
+  // What to say about a check-in. The tap says the warm thing itself; the
+  // server's correction ("you're already checked in") arrives later, from the
+  // write queue handler, which has no screen of its own to say it on.
+  const announcement = useCheckInAnnounceStore((s) => s.announcement);
+  const clearAnnouncement = useCheckInAnnounceStore((s) => s.clear);
+  useEffect(() => {
+    if (announcement === null) return;
+    toast.show(
+      announcement === 'already'
+        ? t('rhythm:toastAlready')
+        : t('rhythm:toastRecorded'),
+    );
+    clearAnnouncement();
+  }, [announcement, clearAnnouncement, toast, t]);
   const latestSermon = (sermonsQuery.data ?? []).find(
     (s) => s.kind === 'video',
   );
@@ -186,6 +261,7 @@ export default function Home() {
       sermonsQuery.refetch(),
       branchesQuery.refetch(),
       testimonyHighlight.refetch(),
+      rhythmQuery.refetch(),
     ]),
   );
 
@@ -215,7 +291,12 @@ export default function Home() {
               color: colors.sub,
             }}
           >
-            {t(greetingKey(now))}
+            {isMember && profile !== null
+              ? t('home:greetingNamed', {
+                  greeting: t(greetingKey(now)),
+                  name: firstName(profile.displayName),
+                })
+              : t(greetingKey(now))}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -251,43 +332,70 @@ export default function Home() {
             <ChevronDownIcon size={16} color={colors.blue} />
           </Pressable>
         </View>
-        {/* Mockup .head .rt: bell AND the guest avatar (sign-in entry). */}
+        {/* Mockup .head .rt: bell + avatar. The bell's destination is NC, which
+            W3.3 builds; until then it is the guest's sign-in prompt and a member
+            simply does not carry a control with nowhere to go (docs/spec/04: no
+            dead ends). W3.3 gives it back, pointed at NC. */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          {isMember ? null : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('home:notifications')}
+              onPress={() => {
+                router.push('/auth');
+              }}
+              style={({ pressed }) => ({
+                width: 40,
+                height: 40,
+                borderRadius: radius.full,
+                backgroundColor: colors.alt,
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <BellIcon color={colors.text} />
+            </Pressable>
+          )}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('home:notifications')}
+            accessibilityLabel={
+              isMember && profile !== null
+                ? t('home:openProfile', { name: profile.displayName })
+                : t('more.signin')
+            }
             onPress={() => {
-              router.push('/auth');
+              router.push(isMember ? '/settings/profile' : '/auth');
             }}
             style={({ pressed }) => ({
               width: 40,
               height: 40,
               borderRadius: radius.full,
-              backgroundColor: colors.alt,
+              // Mockup .avatar: the member's initial on the blue-to-navy
+              // gradient; .avatar.guest is the flat alt disc with the glyph.
+              backgroundColor: isMember ? palette.navy : colors.alt,
               alignItems: 'center',
               justifyContent: 'center',
               opacity: pressed ? 0.7 : 1,
+              overflow: 'hidden',
             })}
           >
-            <BellIcon color={colors.text} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('more.signin')}
-            onPress={() => {
-              router.push('/auth');
-            }}
-            style={({ pressed }) => ({
-              width: 40,
-              height: 40,
-              borderRadius: radius.full,
-              backgroundColor: colors.alt,
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <PersonIcon color={colors.sub} />
+            {isMember && profile !== null ? (
+              <>
+                <GradientFill from={palette.blue} to={palette.navy} />
+                <Text
+                  style={{
+                    fontFamily: fontFamily.body.bold,
+                    fontSize: 15,
+                    color: onInk.text,
+                  }}
+                >
+                  {initials(profile.displayName)}
+                </Text>
+              </>
+            ) : (
+              <PersonIcon color={colors.sub} />
+            )}
           </Pressable>
         </View>
       </View>
@@ -329,6 +437,12 @@ export default function Home() {
             onWatchLive={() => {
               router.push('/watch');
             }}
+            imHere={
+              serviceToday
+                ? { checkedIn: imHere.checkedIn, onPress: imHere.press }
+                : null
+            }
+            visitingBranchName={visitingBranchName}
           />
         )}
 
@@ -432,8 +546,8 @@ export default function Home() {
                 });
               }}
               onGloryGate={() => {
-                setGateVisible(true);
-                setGateTestimonyId(testimonyHighlight.data?.id ?? null);
+                const id = testimonyHighlight.data?.id;
+                if (id) setGateAction({ kind: 'glory', testimonyId: id });
               }}
               // Sharing is outbound, not a gated contribution (matches the Family
               // feed): open the OS sheet rather than the gate.
@@ -462,49 +576,58 @@ export default function Home() {
           )}
         </View>
 
-        {/* Guest Join card (docs/spec/07 §8); the member rhythm strip replaces
-            it at W2.8. */}
-        <Card>
-          <Text
-            style={{
-              fontFamily: fontFamily.display.extraBold,
-              fontSize: 18,
-              letterSpacing: -0.36,
-              color: colors.text,
-            }}
-          >
-            {t('home:joinTitle')}
-          </Text>
-          <Text
-            style={{
-              fontFamily: fontFamily.body.regular,
-              fontSize: 13,
-              lineHeight: 19,
-              color: colors.sub,
-              marginTop: spacing.xs,
-              marginBottom: spacing.md,
-            }}
-          >
-            {t('home:joinBody')}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('more.signin')}
-            onPress={() => {
-              router.push('/auth');
-            }}
-          >
+        {/* The one block that changes with who is reading (docs/spec/07 §7-8):
+            a member's rhythm strip, or the guest's Join card. The strip is not
+            a link yet; RHYTHM is the next slice of W2.8 and wires it. */}
+        {isMember ? (
+          rhythm === null && !rhythmQuery.isError ? (
+            <Skeleton height={92} />
+          ) : rhythm !== null ? (
+            <StreakStrip rhythm={rhythm} />
+          ) : null
+        ) : (
+          <Card>
             <Text
               style={{
-                fontFamily: fontFamily.body.bold,
-                fontSize: 14,
-                color: colors.blue,
+                fontFamily: fontFamily.display.extraBold,
+                fontSize: 18,
+                letterSpacing: -0.36,
+                color: colors.text,
               }}
             >
-              {t('more.signin')}
+              {t('home:joinTitle')}
             </Text>
-          </Pressable>
-        </Card>
+            <Text
+              style={{
+                fontFamily: fontFamily.body.regular,
+                fontSize: 13,
+                lineHeight: 19,
+                color: colors.sub,
+                marginTop: spacing.xs,
+                marginBottom: spacing.md,
+              }}
+            >
+              {t('home:joinBody')}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('more.signin')}
+              onPress={() => {
+                router.push('/auth');
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: fontFamily.body.bold,
+                  fontSize: 14,
+                  color: colors.blue,
+                }}
+              >
+                {t('more.signin')}
+              </Text>
+            </Pressable>
+          </Card>
+        )}
       </View>
 
       {/* Arriving takes the whole screen, tab bar included, which is why it is a Modal
@@ -542,26 +665,39 @@ export default function Home() {
         }}
       />
 
+      {/* One sheet, whichever gated tap opened it. The copy names the action the
+          member reached for, because "sign in to continue" tells them nothing
+          about what they were doing (docs/spec/03). */}
       <GateSheet
-        visible={gateVisible}
-        title={t('family:gateTitle')}
-        body={t('family:gateBody')}
+        visible={gateAction !== null}
+        title={
+          gateAction?.kind === 'im_here'
+            ? t('rhythm:gateTitle')
+            : t('family:gateTitle')
+        }
+        body={
+          gateAction?.kind === 'im_here'
+            ? t('rhythm:gateBody')
+            : t('family:gateBody')
+        }
         signInLabel={t('common:signIn')}
         dismissLabel={t('common:notNow')}
-        dismissAnnouncement={t('family:gateDismissed')}
+        dismissAnnouncement={
+          gateAction?.kind === 'im_here'
+            ? t('rhythm:gateDismissed')
+            : t('family:gateDismissed')
+        }
         onSignIn={() => {
-          // Gate-return (W2.2): remember the Glory so AUTH-4 replays it.
-          if (gateTestimonyId) {
-            useGateStore
-              .getState()
-              .beginGateSignIn({ kind: 'glory', testimonyId: gateTestimonyId });
+          // Gate-return (W2.2): remember the action so AUTH-4 replays it.
+          if (gateAction) {
+            useGateStore.getState().beginGateSignIn(gateAction);
           }
-          setGateVisible(false);
+          setGateAction(null);
           router.push('/auth');
         }}
         onDismiss={() => {
-          useGateStore.getState().dismissGate('glory');
-          setGateVisible(false);
+          if (gateAction) useGateStore.getState().dismissGate(gateAction.kind);
+          setGateAction(null);
         }}
       />
     </Screen>

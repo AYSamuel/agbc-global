@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
 import {
@@ -9,7 +9,8 @@ import {
   typeScale,
 } from '@agbc/shared/theme';
 
-import { Button, GradientFill } from '@/components/ui';
+import { Button, GradientFill, PinIcon } from '@/components/ui';
+import { CheckedInBadge } from '@/features/rhythm/CheckedInBadge';
 
 import {
   dayBucket,
@@ -30,6 +31,19 @@ export interface NextServiceCardProps {
   addressLine: string | null;
   onPlanVisit: () => void;
   onWatchLive: () => void;
+  /**
+   * "I'm here" (docs/spec/10), present only when this branch gathers today. A
+   * guest gets it too and the tap gates (docs/spec/07): browsing is free,
+   * contributing signs you in.
+   */
+  imHere?: { checkedIn: boolean; onPress: () => void } | null;
+  /**
+   * The browsed branch's name, when it is NOT the member's home branch. The card
+   * then says where the tap will count, because attendance follows the branch
+   * you are standing in and a member who travels should not have to guess
+   * (docs/spec/07).
+   */
+  visitingBranchName?: string | null;
 }
 
 export function NextServiceCard({
@@ -39,6 +53,8 @@ export function NextServiceCard({
   addressLine,
   onPlanVisit,
   onWatchLive,
+  imHere = null,
+  visitingBranchName = null,
 }: NextServiceCardProps) {
   const { t, i18n } = useTranslation();
 
@@ -123,26 +139,103 @@ export function NextServiceCard({
         {/* fill on both: when one label wraps at large text scale, the pair
             stays equal height instead of the gold button outgrowing (#76). */}
         <View style={{ flexDirection: 'row', gap: spacing.md }}>
-          <View style={{ flex: 1 }}>
-            <Button
-              label={t('home:planVisit')}
-              variant="accent"
-              fullWidth
-              fill
-              onPress={onPlanVisit}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            {/* Mockup .btn.glass: outline would paint a light card block here. */}
-            <Button
-              label={t('home:watchLive')}
-              variant="glass"
-              fullWidth
-              fill
-              onPress={onWatchLive}
-            />
-          </View>
+          {/* On a day this branch gathers, the gold slot is the check-in and
+              "Plan a visit" quietens beside it (mockup W2.8 HOME · checked in).
+              On any other day the card keeps its guest pair. */}
+          {imHere ? (
+            <>
+              <View style={{ flex: 1 }}>
+                {imHere.checkedIn ? (
+                  <CheckedInBadge />
+                ) : (
+                  <Button
+                    label={t('rhythm:imHere')}
+                    variant="accent"
+                    fullWidth
+                    fill
+                    onPress={imHere.onPress}
+                  />
+                )}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  label={t('home:planVisit')}
+                  variant="glass"
+                  fullWidth
+                  fill
+                  onPress={onPlanVisit}
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={{ flex: 1 }}>
+                <Button
+                  label={t('home:planVisit')}
+                  variant="accent"
+                  fullWidth
+                  fill
+                  onPress={onPlanVisit}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                {/* Mockup .btn.glass: outline would paint a light card block. */}
+                <Button
+                  label={t('home:watchLive')}
+                  variant="glass"
+                  fullWidth
+                  fill
+                  onPress={onWatchLive}
+                />
+              </View>
+            </>
+          )}
         </View>
+
+        {/* Mockup .hero .visitnote. Only where it changes the meaning of the
+            tap: a member browsing another branch on a day it gathers. */}
+        {imHere && visitingBranchName !== null ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: spacing.sm,
+              marginTop: 12,
+            }}
+          >
+            <View style={{ marginTop: 1 }}>
+              <PinIcon size={14} color={palette.gold} />
+            </View>
+            <Text
+              style={{
+                flex: 1,
+                fontFamily: fontFamily.body.regular,
+                fontSize: 12,
+                lineHeight: 17,
+                color: onInk.sub,
+              }}
+            >
+              {/* The branch name carries the emphasis, gold and heavy, exactly
+                  as `.hero .visitnote b` does: it is the one word in the
+                  sentence that changes what the tap means. */}
+              <Trans
+                t={t}
+                i18nKey="rhythm:visiting"
+                values={{ branch: visitingBranchName }}
+                components={{
+                  1: (
+                    <Text
+                      style={{
+                        fontFamily: fontFamily.body.extraBold,
+                        color: palette.gold,
+                      }}
+                    />
+                  ),
+                }}
+              />
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );

@@ -75,5 +75,7 @@
     "unblockFailed": "Dat is niet gelukt. Probeer het opnieuw.",
     "emptyTitle": "Niemand is geblokkeerd",
     "emptyBody": "Als het ooit nodig is, kun je een lid blokkeren via de berichtacties bij hun bericht."
-  }
+  },
+  "signout": "Afmelden",
+  "signedOut": "Afgemeld. Je kunt gewoon verder kijken."
 }

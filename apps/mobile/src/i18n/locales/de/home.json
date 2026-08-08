@@ -35,5 +35,7 @@
   "familySoonTitle": "Zeugnisse kommen bald",
   "familySoonBody": "Bald siehst du hier, was Gott in allen Gemeinden tut.",
   "joinTitle": "Werde Teil der Familie",
-  "joinBody": "Melde dich an, um zu reagieren, Zeugnisse zu teilen, zuzusagen und deinen Rhythmus zu halten."
+  "joinBody": "Melde dich an, um zu reagieren, Zeugnisse zu teilen, zuzusagen und deinen Rhythmus zu halten.",
+  "greetingNamed": "{{greeting}}, {{name}}",
+  "openProfile": "Dein Profil, {{name}}"
 }

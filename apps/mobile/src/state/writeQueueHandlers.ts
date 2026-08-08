@@ -3,6 +3,12 @@ import {
   PRAYER_SURFACE_KEYS,
   TESTIMONY_SURFACE_KEYS,
 } from '@/features/family/keys';
+import { announceCheckIn } from '@/features/rhythm/announce';
+import { toRhythmState } from '@/features/rhythm/queries';
+import {
+  applyRhythmAnswer,
+  invalidateRhythm,
+} from '@/features/rhythm/rhythmCache';
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 import {
@@ -155,9 +161,63 @@ async function handleIntercession(write: QueuedWrite): Promise<ReplayOutcome> {
   return outcome;
 }
 
+/**
+ * The window the server will believe a device clock for (`20260807120000`): a
+ * `client_taken_at` older than this, or in the future, is replaced by the
+ * server's own now(). That protects the server from fabricated history, and it
+ * is exactly why a stale wish must not be SENT: replayed on day eight, a tap
+ * made last Sunday would be clamped forward and recorded as attendance today, a
+ * week the member was never there. The queue knows when the tap happened, so it
+ * is the queue's job to stop.
+ */
+const CLIENT_CLOCK_TRUSTED_MS = 72 * 60 * 60_000;
+
+async function handleAttendance(write: QueuedWrite): Promise<ReplayOutcome> {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.user.id) return 'retry';
+
+  const takenAt = new Date(write.queuedAt);
+  if (Date.now() - write.queuedAt > CLIENT_CLOCK_TRUSTED_MS) {
+    // Nothing to send and nothing to retry: this wish can no longer be recorded
+    // as the day it belonged to. Dropped rather than clamped forward, and the
+    // optimistic tick goes with it.
+    console.warn('writeQueue: dropped an attendance older than 72h');
+    invalidateRhythm();
+    return 'refused';
+  }
+
+  // One call does the write and answers with the resulting rhythm, so the toast
+  // and the streak strip come from the same answer (docs/spec/10). The insert is
+  // idempotent by the unique constraint: a second replay records nothing and
+  // says so through `recorded`.
+  const { data: rows, error } = await supabase.rpc('record_attendance', {
+    p_branch_id: write.state,
+    p_client_taken_at: takenAt.toISOString(),
+  });
+
+  const outcome = outcomeFor(error);
+  if (outcome === 'done') {
+    const row = rows?.at(0);
+    if (row) {
+      // The server's whole answer replaces the row: this is where the week
+      // counts arrive, and the app has not guessed one of them.
+      applyRhythmAnswer(write.state, toRhythmState(row));
+      // The one thing the tap could not know (docs/spec/10): the day was
+      // already recorded, on another device or by a replay this app forgot.
+      if (!row.recorded) announceCheckIn('already');
+    }
+  } else if (outcome === 'refused') {
+    // The member is not onboarded, or the branch is gone. Only the server can
+    // say what is true now, so the tick comes off by refetching.
+    invalidateRhythm();
+  }
+  return outcome;
+}
+
 export const writeHandlers: WriteHandlers = {
   glory: handleGlory,
   intercession: handleIntercession,
+  attendance: handleAttendance,
 };
 
 /**

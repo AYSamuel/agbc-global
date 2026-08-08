@@ -49,6 +49,11 @@ export {
   type Segment,
   type SegmentedControlProps,
 } from './SegmentedControl';
+export {
+  StatusPanel,
+  type StatusPanelProps,
+  type StatusPanelRing,
+} from './StatusPanel';
 export { Skeleton, type SkeletonProps } from './Skeleton';
 export { SuccessScreen, type SuccessScreenProps } from './SuccessScreen';
 export { TabBar, type TabBarProps, type TabItem } from './TabBar';

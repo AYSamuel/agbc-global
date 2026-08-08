@@ -1,0 +1,22 @@
+{
+  "imHere": "I'm here",
+  "checkedIn": "You're here",
+  "checkedInLabel": "You're here. Checked in for today.",
+  "visiting": "Visiting <1>{{branch}}</1> today? \"I'm here\" counts right here, and your rhythm carries on the same.",
+  "toastRecorded": "You're here. Lovely to have you.",
+  "toastAlready": "You're already checked in.",
+  "gateTitle": "Sign in to say you're here",
+  "gateBody": "Join the family to keep your rhythm, share testimonies, and pray with the people around you.",
+  "gateDismissed": "Sign-in dismissed. You can say you're here any time.",
+  "stripLabel": "Your rhythm",
+  "stripNoneTitle": "It starts this Sunday",
+  "stripNoneNote": "Tap \"I'm here\" when you gather and we'll keep it with you",
+  "stripWeeks_one": "{{count}}-week rhythm",
+  "stripWeeks_other": "{{count}}-week rhythm",
+  "stripNextNote": "Next milestone: {{count}} weeks",
+  "stripGraceNote": "Grace covers last week. We'd love to see you Sunday.",
+  "stripSteadyNote": "A long, steady rhythm. We love having you here.",
+  "stripLapsedTitle_one": "Your longest: {{count}} week",
+  "stripLapsedTitle_other": "Your longest: {{count}} weeks",
+  "stripLapsedNote": "Whenever you're back, we pick it up right there"
+}

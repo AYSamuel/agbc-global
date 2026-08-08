@@ -1,0 +1,22 @@
+{
+  "imHere": "Ik ben er",
+  "checkedIn": "Je bent er",
+  "checkedInLabel": "Je bent er. Vandaag genoteerd.",
+  "visiting": "Vandaag te gast in <1>{{branch}}</1>? \"Ik ben er\" telt hier, en je ritme loopt gewoon door.",
+  "toastRecorded": "Je bent er. Fijn dat je er bent.",
+  "toastAlready": "Je bent vandaag al genoteerd.",
+  "gateTitle": "Meld je aan om te zeggen dat je er bent",
+  "gateBody": "Word deel van de familie: houd je ritme bij, deel getuigenissen en bid met de mensen om je heen.",
+  "gateDismissed": "Aanmelden gesloten. Je kunt altijd zeggen dat je er bent.",
+  "stripLabel": "Jouw ritme",
+  "stripNoneTitle": "Het begint deze zondag",
+  "stripNoneNote": "Tik op \"Ik ben er\" wanneer jullie samenkomen, dan houden wij het bij",
+  "stripWeeks_one": "Ritme: {{count}} week",
+  "stripWeeks_other": "Ritme: {{count}} weken",
+  "stripNextNote": "Volgende mijlpaal: {{count}} weken",
+  "stripGraceNote": "Genade dekt vorige week. We zien je graag zondag.",
+  "stripSteadyNote": "Een lang, rustig ritme. Fijn dat je erbij bent.",
+  "stripLapsedTitle_one": "Je langste: {{count}} week",
+  "stripLapsedTitle_other": "Je langste: {{count}} weken",
+  "stripLapsedNote": "Wanneer je terug bent, pakken we het daar weer op"
+}

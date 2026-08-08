@@ -18,7 +18,13 @@ export type GateAction =
   | { kind: 'sermon_notes'; sermonId: string }
   | { kind: 'resume_playback'; sermonId: string }
   | { kind: 'notifications' }
-  | { kind: 'im_here' }
+  /**
+   * "I'm here" (W2.8). Carries the BROWSED branch, because attendance records
+   * where the member was standing when they tapped (docs/spec/07), and after
+   * AUTH-4 returns them the chip could read anything. In memory only, like every
+   * action here, so no link can mint a check-in at a branch of its choosing.
+   */
+  | { kind: 'im_here'; branchId: string }
   /**
    * Reaching MY-POSTS (W2.6). The only NAVIGATION-shaped gate so far: the others complete
    * something the member tapped, this one opens the screen they were trying to reach, which

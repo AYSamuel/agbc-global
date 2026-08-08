@@ -67,8 +67,28 @@ describe('replayGateAction: the kinds that are still waiting for their item', ()
     await expect(
       replayGateAction({ kind: 'rsvp', eventId: 'e1' }),
     ).resolves.toBe('noop');
-    await expect(replayGateAction({ kind: 'im_here' })).resolves.toBe('noop');
     expect(mockPush).not.toHaveBeenCalled();
+  });
+});
+
+// W2.8. Same shape as glory: the replay owes the member that the wish is
+// RECORDED, and the queue owns delivering it.
+describe('replayGateAction: im_here', () => {
+  it('records the check-in as a queued wish, at the branch the action named', async () => {
+    await expect(
+      replayGateAction({ kind: 'im_here', branchId: 'b1' }),
+    ).resolves.toBe('done');
+    const queued = Object.values(useWriteQueueStore.getState().queue);
+    expect(queued).toHaveLength(1);
+    expect(queued[0]).toMatchObject({ kind: 'attendance', state: 'b1' });
+  });
+
+  it('records the branch from the action, never the browsing chip', async () => {
+    // A member can switch the chip during sign-in; the tap they made was at the
+    // branch they were standing in, and that is what must be recorded.
+    await replayGateAction({ kind: 'im_here', branchId: 'b2' });
+    const queued = Object.values(useWriteQueueStore.getState().queue);
+    expect(queued[0]?.state).toBe('b2');
   });
 });
 
