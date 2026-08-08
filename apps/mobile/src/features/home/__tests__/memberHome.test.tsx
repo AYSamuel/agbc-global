@@ -194,7 +194,7 @@ describe('who Home is greeting', () => {
     signIn();
     await renderHome();
     expect(
-      screen.getByLabelText('5-week rhythm. Next milestone: 12 weeks'),
+      screen.getByLabelText('5-week rhythm. Next: A season with us'),
     ).toBeOnTheScreen();
   });
 
@@ -202,7 +202,7 @@ describe('who Home is greeting', () => {
     signIn();
     await renderHome();
     await fireEvent.press(
-      screen.getByLabelText('5-week rhythm. Next milestone: 12 weeks'),
+      screen.getByLabelText('5-week rhythm. Next: A season with us'),
     );
     expect(mockPush).toHaveBeenCalledWith('/rhythm');
   });

@@ -3,8 +3,10 @@ import { Pressable } from 'react-native';
 
 import { StatusPanel, type StatusPanelRing } from '@/components/ui';
 
-import { milestoneFraction, nextMilestone } from './milestones';
+import { badgeFor, milestoneFraction, nextMilestone } from './milestones';
 import type { RhythmState } from './queries';
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 // Home's rhythm strip (docs/spec/07 §7, mockup W2.8 "the rhythm strip, all four
 // states"): the ink `.rhythm` panel, in whichever of `rhythm_state`'s four
@@ -58,6 +60,9 @@ export function stripContent(
     };
   }
 
+  // There is always a next rung now (W2.8 slice 5), so the strip always has
+  // something to count towards and the old "steady rhythm" sentence, which
+  // covered running out of ladder, is gone with the dead end that needed it.
   const upcoming = nextMilestone(rhythm.currentWeeks);
   return {
     title: t('rhythm:stripWeeks', { count: rhythm.currentWeeks }),
@@ -65,14 +70,22 @@ export function stripContent(
       rhythm.phase === 'grace'
         ? // The one line that names the missed week, and it names it as covered.
           t('rhythm:stripGraceNote')
-        : upcoming === null
-          ? t('rhythm:stripSteadyNote')
-          : t('rhythm:stripNextNote', { count: upcoming }),
+        : stripNextNote(upcoming, t),
     ring: {
       label: String(rhythm.currentWeeks),
       fraction: milestoneFraction(rhythm.currentWeeks),
     },
   };
+}
+
+/** "Next: A season with us", falling back to the count for a rung with no name. */
+function stripNextNote(upcoming: number, t: Translate): string {
+  const badge = badgeFor(`${String(upcoming)}_week_rhythm`);
+  return badge === null
+    ? t('rhythm:stripNextNote', { count: upcoming })
+    : t('rhythm:nextNamed', {
+        name: t(badge.labelKey, { count: badge.count }),
+      });
 }
 
 export function StreakStrip({

@@ -28,7 +28,19 @@ Encourage a healthy spiritual rhythm (showing up, and daily devotion), **framed 
 - Grace-framed empty/paused states.
 
 ### Milestones (`milestones`)
-Examples: `first_service`, `4_week_rhythm`, `12_week_rhythm`, `first_testimony`, `first_prayer`, `plan_7_days`, `plan_complete`. Achieving one shows a brief celebration overlay + optional share. Purely positive.
+Named kinds: `first_service`, `first_testimony`, `first_prayer`, and later `plan_7_days` / `plan_complete` (W4.4). Achieving one shows a brief celebration overlay + optional share. Purely positive.
+
+**Two endless ladders** (built W2.8 slice 5, `20260808214722`; decided with Ayo 2026-08-08 after RHYTHM exposed the dead end). `4, 12, done` meant that past twelve weeks the ring sat permanently full, the "Next" card vanished, and the app never celebrated a member again: the retention loop went quiet for exactly the people who show up most.
+
+| Ladder | Kind | Rungs | Answers |
+|---|---|---|---|
+| Week rungs | `<n>_week_rhythm` | 4, 12, 26, 52, then one per year without end | "how long without a gap"; streak-based, so a place on it CAN be lost |
+| Gatherings | `<n>_gatherings` | 10, 25, 50, 100, then one per hundred without end | "how many times, ever"; cumulative, so a lapse costs nothing |
+
+- **Deliberately not Duolingo's engine.** The endlessness is copied; the loss aversion is not. Every award is `unique(profile_id, kind)`, so a badge already held is never re-awarded and never taken away: a member whose streak breaks keeps every rung they ever reached, and the gathering ladder keeps climbing through the break.
+- **Awarding is a sweep, not two tests.** `attendance_after_insert` awards every rung at or below the current run and every gathering count reached, which is self-healing: a grace week that jumps the run, a late offline replay that bridges two runs, or a rung added years from now all award whatever was skipped on the next check-in.
+- **Named in church language, not counted:** a month of Sundays, a season with us, half a year, a year of Sundays; past that `{{count}} years of Sundays`. The gathering rungs are ORDINALS ("your 50th gathering"), which are not plurals: i18next needs `{ ordinal: true }` or it renders the raw key.
+- A **belonging anniversary** ("one year since your first Sunday") was offered and NOT taken. Do not add it without asking.
 
 ### Devotional plan (`PLAN` / `PLAN-DAY`): paid, entitlement-gated
 **Model decision (2026-07-12):** devotionals are written by the lead pastor and **purchased** (Payhip, like books; see `14`). A purchased devotional is both a book in My Library AND, once imported, a structured day-by-day plan. `reading_plans.book_id` links a plan to its book; the entitlement unlocks the plan experience.

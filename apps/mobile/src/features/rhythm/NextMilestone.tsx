@@ -5,7 +5,7 @@ import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
-import { milestoneFraction, nextMilestone } from './milestones';
+import { badgeFor, milestoneFraction, nextMilestone } from './milestones';
 
 /**
  * The mockup's `.nextm` card with its `.pbar`: what the next rung is, how far
@@ -19,25 +19,34 @@ import { milestoneFraction, nextMilestone } from './milestones';
  * uses. Two components computing "how far along" from the same number is how
  * they end up disagreeing, and this one is drawn directly under the other.
  *
- * Renders nothing past the last rung. There is no next milestone to count down
- * to, and inventing one so the card has something to say would be the nag `10`
- * forbids: the hero says the steady thing instead.
+ * IT NEVER VANISHES NOW. It used to render nothing past the last rung, which was
+ * honest while the ladder had one and is the dead end W2.8 slice 5 removed: the
+ * rungs run 4, 12, 26, 52 and then one per year without end, so there is always
+ * something ahead and the card always has something true to say.
  */
 export function NextMilestone({ weeks }: { weeks: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
   const next = nextMilestone(weeks);
-  if (next === null) return null;
   const fraction = milestoneFraction(weeks);
+  // Named, not counted: the rungs carry church language now ("A year of
+  // Sundays"), and a card reading "Next: 104-week rhythm" beside a badge
+  // reading "A year of Sundays" would be the same rung called two things.
+  const badge = badgeFor(`${String(next)}_week_rhythm`);
+  const name =
+    badge === null
+      ? t('rhythm:nextMilestone', { count: next })
+      : t('rhythm:nextNamed', {
+          name: t(badge.labelKey, { count: badge.count }),
+        });
 
   return (
     <View
       accessible
-      accessibilityLabel={`${t('rhythm:nextMilestone', { count: next })}. ${t(
-        'rhythm:weeksToGo',
-        { count: next - weeks },
-      )}`}
+      accessibilityLabel={`${name}. ${t('rhythm:weeksToGo', {
+        count: next - weeks,
+      })}`}
       style={{
         marginHorizontal: spacing.lg,
         marginTop: spacing.md,
@@ -65,7 +74,7 @@ export function NextMilestone({ weeks }: { weeks: number }) {
             color: colors.text,
           }}
         >
-          {t('rhythm:nextMilestone', { count: next })}
+          {name}
         </Text>
         <Text
           style={{

@@ -1,6 +1,6 @@
 import { formatAttendanceDate, formatGatheredDate } from '../format';
 import { heroContent } from '../heroContent';
-import { aheadBadges, earnedBadges } from '../milestones';
+import { aheadBadges, badgeFor, earnedBadges } from '../milestones';
 import type { RhythmPhase, RhythmState } from '../queries';
 
 // RHYTHM's decisions, asked without rendering: which number leads, which badges
@@ -90,10 +90,32 @@ describe('which number leads (docs/spec/10)', () => {
 });
 
 describe('the milestone ladder', () => {
-  test('earned badges come back in ladder order, whatever order they arrived in', () => {
+  test('earned badges come back in the order they were achieved', () => {
+    // Ordered by achievement rather than by ladder position, because with two
+    // endless ladders interleaving there is no single position to sort by: the
+    // fiftieth gathering lands somewhere between the first year and the second.
+    // The rows arrive oldest-first from the server, which is when they happened.
     expect(
       earnedBadges(['first_prayer', 'first_service']).map((b) => b.kind),
-    ).toEqual(['first_service', 'first_prayer']);
+    ).toEqual(['first_prayer', 'first_service']);
+  });
+
+  test('a rung is read from the kind, not looked up in a list', () => {
+    // The ladder is endless, so no catalog can hold `520_week_rhythm`.
+    expect(badgeFor('520_week_rhythm')?.count).toBe(10);
+    expect(badgeFor('520_week_rhythm')?.labelKey).toBe('rhythm:milestoneYears');
+    expect(badgeFor('52_week_rhythm')?.labelKey).toBe('rhythm:milestoneYear');
+    expect(badgeFor('300_gatherings')?.count).toBe(300);
+    expect(badgeFor('50_gatherings')?.labelKey).toBe(
+      'rhythm:milestoneGatherings',
+    );
+  });
+
+  test('a number the server would never award is not ours to name', () => {
+    // Week rungs past the named tiers are whole years only, so a remainder
+    // belongs to some other ladder and gets the same silence as an unknown kind.
+    expect(badgeFor('77_week_rhythm')).toBeNull();
+    expect(badgeFor('37_gatherings')).toBeNull();
   });
 
   test('a kind the app cannot name yet is left out, never rendered raw', () => {

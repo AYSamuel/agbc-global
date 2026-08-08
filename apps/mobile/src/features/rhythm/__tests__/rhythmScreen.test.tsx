@@ -168,7 +168,9 @@ describe('the four states of rhythm_state (docs/spec/10)', () => {
     await renderRhythm();
     expect(screen.getByText('6')).toBeOnTheScreen();
     expect(screen.getByText(/6 weeks of showing up/)).toBeOnTheScreen();
-    expect(screen.getByText('Next: 12-week rhythm')).toBeOnTheScreen();
+    // Named rather than counted (W2.8 slice 5): the rung a member is climbing
+    // towards is called the same thing on the card as on the badge.
+    expect(screen.getByText('Next: A season with us')).toBeOnTheScreen();
     expect(screen.getByText('6 to go')).toBeOnTheScreen();
   });
 

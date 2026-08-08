@@ -50,7 +50,10 @@ export function MilestoneBadges({
         <View
           key={badge.kind}
           accessible
-          accessibilityLabel={t(badge.labelKey)}
+          accessibilityLabel={t(badge.labelKey, {
+            count: badge.count,
+            ordinal: badge.ordinal,
+          })}
           style={{
             minWidth: 96,
             maxWidth: 160,
@@ -95,7 +98,7 @@ export function MilestoneBadges({
               textAlign: 'center',
             }}
           >
-            {t(badge.labelKey)}
+            {t(badge.labelKey, { count: badge.count, ordinal: badge.ordinal })}
           </Text>
         </View>
       ))}
