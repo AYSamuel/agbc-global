@@ -7,6 +7,7 @@ import { announceCheckIn } from '@/features/rhythm/announce';
 import { toRhythmState } from '@/features/rhythm/queries';
 import {
   applyRhythmAnswer,
+  invalidateMilestones,
   invalidateRhythm,
 } from '@/features/rhythm/rhythmCache';
 import { queryClient } from '@/lib/queryPersist';
@@ -202,6 +203,10 @@ async function handleAttendance(write: QueuedWrite): Promise<ReplayOutcome> {
       // The server's whole answer replaces the row: this is where the week
       // counts arrive, and the app has not guessed one of them.
       applyRhythmAnswer(write.state, toRhythmState(row));
+      // ...and the server may have awarded a milestone on the way past, which
+      // no part of that answer mentions. Asking again is what turns a fourth
+      // Sunday into a celebration (W2.8 slice 4).
+      invalidateMilestones();
       // The one thing the tap could not know (docs/spec/10): the day was
       // already recorded, on another device or by a replay this app forgot.
       if (!row.recorded) announceCheckIn('already');

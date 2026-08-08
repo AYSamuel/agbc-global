@@ -14,7 +14,6 @@ import { motion } from '@agbc/shared/theme';
 // Same detection shape as components/ui/Skeleton.
 
 const DOTS = 6;
-const SPREAD = 14;
 
 export interface BurstProps {
   /** Increment to fire. A number rather than a boolean so two reactions in a row
@@ -23,9 +22,12 @@ export interface BurstProps {
   color: string;
   /** Dot diameter; the default suits a pill-sized icon. */
   size?: number;
+  /** How far the dots travel. The default suits a pill; the milestone
+   * celebration's 88px disc needs them to clear its edge (W2.8). */
+  spread?: number;
 }
 
-export function Burst({ trigger, color, size = 3 }: BurstProps) {
+export function Burst({ trigger, color, size = 3, spread = 14 }: BurstProps) {
   const [progress] = useState(() => new Animated.Value(0));
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -99,13 +101,13 @@ export function Burst({ trigger, color, size = 3 }: BurstProps) {
                 {
                   translateX: progress.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, Math.cos(angle) * SPREAD],
+                    outputRange: [0, Math.cos(angle) * spread],
                   }),
                 },
                 {
                   translateY: progress.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, Math.sin(angle) * SPREAD],
+                    outputRange: [0, Math.sin(angle) * spread],
                   }),
                 },
               ],

@@ -1289,6 +1289,61 @@
         </div>
       </div>
 
+      <!-- RHYTHM · guest. Backfilled 2026-08-08: the screen shipped in W2.8 slice 3
+           without a frame, which the guest variants of Home, Watch, Family, Give, More
+           and PROFILE all have. Same `.empty` shape as PROFILE's guest state, including
+           its `.ei` glyph, because this says the same thing: the account is the thing
+           that holds it. Reachable by deep link only, since Home offers a guest the
+           Join card rather than a strip to tap. -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; guest (a rhythm belongs to somebody)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+              <h3>Your rhythm lives with your account</h3>
+              <p>Sign in and we'll keep every Sunday you gather with us, grace and all.</p>
+              <button class="btn primary" style="max-width:220px">Sign in</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · none, but something has already been earned. Backfilled 2026-08-08
+           alongside the guest frame. The `none` frame above draws a member with nothing
+           at all, which is the common case and not the only one: content milestones are
+           awarded on APPROVAL and owe nothing to Sundays, so somebody can stand here
+           having had a prayer request approved without ever having tapped "I'm here".
+           This screen is the only place that badge is ever shown, so it says Milestones
+           as well as What's ahead, and the earned one leaves the ahead list. -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; none, with a content milestone already earned</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg></div>
+              <h3>Your rhythm starts here</h3>
+              <p>Tap &#8220;I'm here&#8221; at your next service and we'll keep the rhythm with you. Grace covers the weeks you miss.</p>
+              <button class="btn gold" style="max-width:230px">See service times</button>
+            </div>
+            <div class="mlabel">Milestones</div>
+            <div class="mbadges">
+              <div class="mbadge"><div class="mi">&#128591;</div><div class="ml">First prayer</div></div>
+            </div>
+            <div class="mlabel">What's ahead</div>
+            <div class="mbadges">
+              <div class="mbadge up"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+              <div class="mbadge up"><div class="mi">&#128293;</div><div class="ml">4-week rhythm</div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- HOME · tablet landscape, member -->
       <div class="device">
         <p class="name"><b>HOME</b> &middot; tablet landscape &middot; member (checked in, rhythm in the right column)</p>
@@ -1934,6 +1989,29 @@
             <h3>Nothing here yet</h3>
             <p>What you share with the family, and how it is getting on, will live here.</p>
             <button class="btn primary" style="max-width:230px">Share a testimony</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY-POSTS · guest -->
+    <div class="device">
+      <p class="name"><b>MY-POSTS</b> &middot; guest (posts belong to somebody)</p>
+      <!-- Backfilled 2026-08-08, the third and last of this gap: the screen shipped at W2.6
+           with a guest state and no frame, the same miss RHYTHM made at W2.8. Every other
+           guest variant in this file is drawn (Home, Watch, Family, Give, More, PROFILE),
+           and the PERSON glyph is the one they share, because they all say the same thing:
+           the account is what holds the answer. Reachable by deep link only, since the MORE
+           row that leads here gates first. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">My posts</span><span style="width:40px"></span></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+            <h3>Sign in to see your posts</h3>
+            <p>Your testimonies and prayer requests, and how each one is getting on, live here once you are signed in.</p>
+            <button class="btn primary" style="max-width:220px">Sign in</button>
           </div>
         </div>
       </div>

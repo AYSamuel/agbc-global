@@ -8,6 +8,7 @@ import {
   AppHeader,
   EmptyGlyph,
   EmptyState,
+  PersonIcon,
   PlusIcon,
   Screen,
   Skeleton,
@@ -54,7 +55,13 @@ export default function MyPostsScreen() {
           // Reachable by deep link rather than by tapping, since the row that leads here
           // gates first. Same machine either way: remember the destination, sign in, land
           // back on it (docs/spec/03).
+          //
+          // The PERSON glyph every guest state in the mockup shares, rather than the plus
+          // the EMPTY state above uses: one says "you have not written anything yet", this
+          // one says "the account is what holds them". (Frame backfilled 2026-08-08; this
+          // state shipped at W2.6 without one, and the glyph came from the frame.)
           <EmptyState
+            icon={<EmptyGlyph Icon={PersonIcon} />}
             title={t('family:myPosts.guestTitle')}
             body={t('family:myPosts.guestBody')}
             actionLabel={t('common:signIn')}

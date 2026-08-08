@@ -6,6 +6,7 @@ import { fontFamily, palette } from '@agbc/shared/theme';
 import { useTheme } from '@/theme';
 
 import { Button } from './Button';
+import { GoldDisc } from './GoldDisc';
 import { CheckIcon } from './icons';
 import { Screen } from './Screen';
 
@@ -49,34 +50,10 @@ export function SuccessScreen({
           paddingHorizontal: 34,
         }}
       >
-        <View
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          style={{
-            width: 88,
-            height: 88,
-            borderRadius: 44,
-            backgroundColor: palette.gold,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 22,
-          }}
-        >
-          {/* The mockup's 10px soft gold ring, as a view (no RN boxShadow). */}
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: -10,
-              left: -10,
-              right: -10,
-              bottom: -10,
-              borderWidth: 10,
-              borderColor: 'rgba(255,207,74,0.15)',
-              borderRadius: 54,
-            }}
-          />
-          <CheckIcon size={42} color={palette.navy} strokeWidth={2.6} />
+        <View style={{ marginBottom: 22 }}>
+          <GoldDisc>
+            <CheckIcon size={42} color={palette.navy} strokeWidth={2.6} />
+          </GoldDisc>
         </View>
         <Text
           accessibilityRole="header"

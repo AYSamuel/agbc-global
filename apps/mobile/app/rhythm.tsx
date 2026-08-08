@@ -13,6 +13,7 @@ import {
   HeartIcon,
   MenuLabel,
   NoteBanner,
+  PersonIcon,
   Screen,
   Skeleton,
   useManualRefresh,
@@ -125,8 +126,14 @@ export default function RhythmScreen() {
       // Only reachable by deep link: Home shows the Join card to a guest, not a
       // strip to tap. Same machine as every other gate all the same, so signing
       // in lands back here rather than on Home (docs/spec/03 rule 9).
+      //
+      // The PERSON glyph, not the church one the `none` state uses: this is the
+      // frame's `.ei` on `PROFILE · guest`, and it says the same thing, that the
+      // account is what holds a rhythm. (The frame was backfilled 2026-08-08
+      // after the screen shipped without one; the glyph came from the frame.)
       return (
         <EmptyState
+          icon={<EmptyGlyph Icon={PersonIcon} />}
           title={t('rhythm:guestTitle')}
           body={t('rhythm:guestBody')}
           actionLabel={t('common:signIn')}

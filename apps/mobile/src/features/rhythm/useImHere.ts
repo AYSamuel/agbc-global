@@ -1,4 +1,5 @@
 import { localDateKey } from '@/features/home/queries';
+import { useNotificationAskStore } from '@/features/notifications/ask';
 import { pushWrite, usePendingWrite } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
 
@@ -33,6 +34,12 @@ export function queueCheckIn(branchId: string): void {
   // deliver it whenever it can. The server's own correction, when the day turns
   // out to be recorded already, comes from the handler.
   announceCheckIn('recorded');
+  // The first value moment (docs/spec/06): gathering with the family is the
+  // thing a reminder is FOR, so this is where the app earns the right to ask.
+  // Raised on the tap rather than on delivery, because the sheet belongs to the
+  // moment the member is living, not to whenever the queue drains. RSVP joins
+  // this at W2.9, when an RSVP starts recording rather than only gating.
+  useNotificationAskStore.getState().reachedValueMoment();
 }
 
 /**

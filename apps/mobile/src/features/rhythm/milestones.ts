@@ -61,6 +61,11 @@ export interface MilestoneBadge {
   /** Decorative; the label is what assistive tech reads. */
   glyph: string;
   labelKey: string;
+  /** The celebration overlay's heading and sentence (W2.8 slice 4). The badge
+   * label is a caption under an icon; this is what the app says when it stops
+   * everything to tell somebody they did a thing. */
+  celebrateTitleKey: string;
+  celebrateBodyKey: string;
 }
 
 export const MILESTONE_BADGES: readonly MilestoneBadge[] = [
@@ -68,24 +73,43 @@ export const MILESTONE_BADGES: readonly MilestoneBadge[] = [
     kind: 'first_service',
     glyph: '🎉',
     labelKey: 'rhythm:milestoneFirstService',
+    celebrateTitleKey: 'rhythm:celebrateFirstServiceTitle',
+    celebrateBodyKey: 'rhythm:celebrateFirstServiceBody',
   },
-  { kind: '4_week_rhythm', glyph: '🔥', labelKey: 'rhythm:milestoneFourWeek' },
+  {
+    kind: '4_week_rhythm',
+    glyph: '🔥',
+    labelKey: 'rhythm:milestoneFourWeek',
+    celebrateTitleKey: 'rhythm:celebrateFourWeekTitle',
+    celebrateBodyKey: 'rhythm:celebrateFourWeekBody',
+  },
   {
     kind: '12_week_rhythm',
     glyph: '🌟',
     labelKey: 'rhythm:milestoneTwelveWeek',
+    celebrateTitleKey: 'rhythm:celebrateTwelveWeekTitle',
+    celebrateBodyKey: 'rhythm:celebrateTwelveWeekBody',
   },
   {
     kind: 'first_prayer',
     glyph: '🙏',
     labelKey: 'rhythm:milestoneFirstPrayer',
+    celebrateTitleKey: 'rhythm:celebrateFirstPrayerTitle',
+    celebrateBodyKey: 'rhythm:celebrateFirstPrayerBody',
   },
   {
     kind: 'first_testimony',
     glyph: '✦',
     labelKey: 'rhythm:milestoneFirstTestimony',
+    celebrateTitleKey: 'rhythm:celebrateFirstTestimonyTitle',
+    celebrateBodyKey: 'rhythm:celebrateFirstTestimonyBody',
   },
 ] as const;
+
+/** The badge for a kind, or null for one this build cannot name (see above). */
+export function badgeFor(kind: string): MilestoneBadge | null {
+  return MILESTONE_BADGES.find((badge) => badge.kind === kind) ?? null;
+}
 
 /**
  * What the `none` state offers as "What's ahead", in the frame's own order:
