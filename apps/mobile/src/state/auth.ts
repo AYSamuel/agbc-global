@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { useNotificationAskStore } from '@/features/notifications/ask';
+import { useCelebratedStore } from '@/features/rhythm/celebrated';
 import { isPersonalQuery } from '@/lib/queryMeta';
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
@@ -180,10 +182,22 @@ export const useAuthStore = create<AuthState>()(
  *
  * UNSENT WRITES, which belonged to that member and could not be replayed as
  * anyone else (docs/spec/01 §8).
+ *
+ * WHICH MILESTONES HAVE BEEN CELEBRATED, which is a fact about a person who has
+ * been told something, not about a device. Without this the next member on the
+ * phone would be silently robbed of their own first service, because the last
+ * one had already "seen" that kind (W2.8 slice 4).
+ *
+ * AND WHETHER THIS APP HAS ASKED ABOUT NOTIFICATIONS. The OS permission belongs
+ * to the install and survives on purpose, but the in-context ask is a promise
+ * made to one member at one value moment, and the next member has been promised
+ * nothing (`06`).
  */
 function forgetWhoeverThatWas(): void {
   queryClient.removeQueries({ predicate: isPersonalQuery });
   void useWriteQueueStore.getState().reset();
+  useCelebratedStore.getState().reset();
+  useNotificationAskStore.getState().reset();
 }
 
 /**

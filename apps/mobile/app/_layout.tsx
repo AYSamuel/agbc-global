@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 import { ToastProvider } from '@/components/ui';
 import { prefetchHome } from '@/features/home/queries';
 import { prefetchBranches } from '@/features/onboarding/useBranches';
+import { NotificationAsk } from '@/features/notifications/NotificationAsk';
+import { MilestoneCelebration } from '@/features/rhythm/MilestoneCelebration';
 import { SignedOutToast } from '@/features/shell/SignedOutToast';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
 import { persistOptions, queryClient } from '@/lib/queryPersist';
@@ -56,6 +58,13 @@ export default function RootLayout() {
       <ThemeProvider>
         <ToastProvider>
           <SignedOutToast />
+          {/* Both arrive over whatever screen the member is on, so they are
+              mounted here rather than on one: a milestone can be awarded by a
+              moderator approving a testimony while the app is closed, and the
+              check-in that earns one is a queued write that lands whenever the
+              signal comes back. The ask waits for the celebration (W2.8). */}
+          <MilestoneCelebration />
+          <NotificationAsk />
           {/* Below-minimum binaries block before any navigation (docs/spec/21 §8). */}
           <ForcedUpdateGate>
             <ThemedStack />

@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { palette, radius, spacing } from '@agbc/shared/theme';
+import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
+
+import { useTheme } from '@/theme';
 
 import { Button } from './Button';
 import { Sheet, SheetBody, SheetTitle, useSheetDismiss } from './Sheet';
@@ -26,6 +28,12 @@ export interface ActionSheetProps {
   /** Announced on dismiss per the 05 contract. */
   dismissAnnouncement: string;
   onDismiss: () => void;
+  /**
+   * The frames' `.authnote`: a quiet line under the buttons that takes the
+   * pressure off the decision ("You're checked in either way"). Only the
+   * notification ask draws one so far (W2.8).
+   */
+  footnote?: string;
 }
 
 /**
@@ -52,7 +60,9 @@ export function ActionSheet({
   secondaryLabel,
   dismissAnnouncement,
   onDismiss,
+  footnote,
 }: ActionSheetProps) {
+  const { colors } = useTheme();
   const dismiss = useSheetDismiss(dismissAnnouncement, onDismiss);
 
   return (
@@ -100,6 +110,23 @@ export function ActionSheet({
           fullWidth
           onPress={dismiss}
         />
+      ) : null}
+      {/* `.authnote{12.5px;muted;centred;margin-top:14px;line-height:1.5}`. The
+          frame overrides its margin to 2 here, because the ghost button above
+          already carries 8. */}
+      {footnote ? (
+        <Text
+          style={{
+            fontFamily: fontFamily.body.regular,
+            fontSize: 12.5,
+            lineHeight: 19,
+            color: colors.muted,
+            textAlign: 'center',
+            marginTop: spacing.xs - 2,
+          }}
+        >
+          {footnote}
+        </Text>
       ) : null}
     </Sheet>
   );

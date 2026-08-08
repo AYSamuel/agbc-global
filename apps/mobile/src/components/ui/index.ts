@@ -5,6 +5,7 @@ export {
 } from './ActionPill';
 export { AppHeader, type AppHeaderProps } from './AppHeader';
 export { Burst, type BurstProps } from './Burst';
+export { Celebration, type CelebrationProps } from './Celebration';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export { Card, type CardProps } from './Card';
 export { Checkbox, type CheckboxProps } from './Checkbox';
@@ -15,6 +16,7 @@ export {
 } from './CircleIconButton';
 export { EmptyGlyph, EmptyState, type EmptyStateProps } from './EmptyState';
 export { Eyebrow } from './Eyebrow';
+export { GoldDisc } from './GoldDisc';
 export { Fab, type FabProps } from './Fab';
 export { ActionSheet, type ActionSheetProps } from './ActionSheet';
 export { GateSheet, type GateSheetProps } from './GateSheet';

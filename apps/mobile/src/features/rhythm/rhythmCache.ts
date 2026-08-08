@@ -43,3 +43,20 @@ export function applyRhythmAnswer(branchId: string, next: RhythmState): void {
 export function invalidateRhythm(): void {
   void queryClient.invalidateQueries({ queryKey: ['rhythm'] });
 }
+
+/**
+ * A landed check-in may have earned a milestone, and the trigger that awards one
+ * runs on the server where the app cannot see it (`attendance_after_insert`).
+ * `record_attendance` answers with the rhythm and says nothing about milestones,
+ * so the only way to learn is to ask again. Refetching that list is what turns a
+ * fourth Sunday into the celebration overlay (W2.8 slice 4).
+ *
+ * Deliberately narrow: the attendance history and the milestone list share the
+ * `['rhythm']` prefix `invalidateRhythm` already sweeps, but that one also drops
+ * the state row the handler has just replaced with the server's own answer, and
+ * re-fetching it would be asking twice for something already in hand.
+ */
+export function invalidateMilestones(): void {
+  void queryClient.invalidateQueries({ queryKey: ['rhythm', 'milestones'] });
+  void queryClient.invalidateQueries({ queryKey: ['rhythm', 'attendance'] });
+}

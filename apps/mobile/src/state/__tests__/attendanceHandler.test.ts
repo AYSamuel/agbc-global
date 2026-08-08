@@ -16,6 +16,7 @@ const mockRpc = jest.fn<
 const mockGetSession = jest.fn<Promise<unknown>, []>();
 const mockAnswer = jest.fn<undefined, [string, unknown]>();
 const mockInvalidateRhythm = jest.fn<undefined, []>();
+const mockInvalidateMilestones = jest.fn<undefined, []>();
 const mockAnnounce = jest.fn<undefined, [string]>();
 
 jest.mock('@/features/rhythm/rhythmCache', () => ({
@@ -24,6 +25,9 @@ jest.mock('@/features/rhythm/rhythmCache', () => ({
   },
   invalidateRhythm: () => {
     mockInvalidateRhythm();
+  },
+  invalidateMilestones: () => {
+    mockInvalidateMilestones();
   },
 }));
 
@@ -115,6 +119,15 @@ describe('the attendance handler', () => {
       longestWeeks: 11,
       lastServiceDate: '2026-08-09',
     });
+  });
+
+  test('a landed check-in asks whether it earned a milestone (W2.8 slice 4)', async () => {
+    // `record_attendance` answers with the rhythm and says nothing about
+    // milestones, but the insert may have awarded one on the way past
+    // (`attendance_after_insert`). Asking again is the only way to find out, and
+    // it is what turns a fourth Sunday into a celebration.
+    await writeHandlers.attendance(wish(1));
+    expect(mockInvalidateMilestones).toHaveBeenCalled();
   });
 
   test('a first check-in says nothing more: the tap already said it', async () => {
