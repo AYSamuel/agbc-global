@@ -99,7 +99,7 @@ jobs:
       # keys are exported into the job environment.
       - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
         with:
-          version: 2.110.0
+          version: 2.111.0
       - run: supabase start -x analytics,edge-runtime,functions,imgproxy,inbucket,meta,realtime,storage,studio,vector
       - run: pnpm --filter dashboard test
       - run: pnpm --filter dashboard build
@@ -112,7 +112,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
         with:
-          version: 2.110.0
+          version: 2.111.0
       # db-only start (not the full `supabase start`): pgTAP, drift, and fence checks need
       # only Postgres, and skipping the auth/storage/studio images saves minutes per run.
       # Applies the FULL migration history + seeds to a fresh database (docs/spec/23 §3a).
