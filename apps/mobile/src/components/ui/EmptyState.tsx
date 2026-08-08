@@ -5,7 +5,7 @@ import { radius, spacing, typeScale } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
-import { Button } from './Button';
+import { Button, type ButtonVariant } from './Button';
 import type { IconProps } from './icons';
 
 export interface EmptyStateProps {
@@ -15,6 +15,12 @@ export interface EmptyStateProps {
   icon?: ReactNode;
   actionLabel?: string;
   onAction?: () => void;
+  /**
+   * The frames draw most empty actions as `.btn.primary`, which is the default.
+   * RHYTHM's draws `.btn.gold`: the one empty state that is an invitation to
+   * something warm rather than a way out of a dead end (W2.8).
+   */
+  actionVariant?: ButtonVariant;
 }
 
 // 05: never a bare empty list; icon + copy + a primary action.
@@ -24,6 +30,7 @@ export function EmptyState({
   icon,
   actionLabel,
   onAction,
+  actionVariant = 'primary',
 }: EmptyStateProps) {
   const { colors } = useTheme();
   return (
@@ -59,7 +66,11 @@ export function EmptyState({
         </Text>
       ) : null}
       {actionLabel && onAction ? (
-        <Button label={actionLabel} variant="primary" onPress={onAction} />
+        <Button
+          label={actionLabel}
+          variant={actionVariant}
+          onPress={onAction}
+        />
       ) : null}
     </View>
   );

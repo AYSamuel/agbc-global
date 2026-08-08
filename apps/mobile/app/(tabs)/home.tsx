@@ -577,13 +577,20 @@ export default function Home() {
         </View>
 
         {/* The one block that changes with who is reading (docs/spec/07 §7-8):
-            a member's rhythm strip, or the guest's Join card. The strip is not
-            a link yet; RHYTHM is the next slice of W2.8 and wires it. */}
+            a member's rhythm strip, or the guest's Join card. The strip is the
+            entry to RHYTHM (docs/spec/04), which is the whole of it: the screen
+            reads the same cached `rhythm_state` row this panel is drawn from,
+            so opening it costs nothing and can say nothing different. */}
         {isMember ? (
           rhythm === null && !rhythmQuery.isError ? (
             <Skeleton height={92} />
           ) : rhythm !== null ? (
-            <StreakStrip rhythm={rhythm} />
+            <StreakStrip
+              rhythm={rhythm}
+              onPress={() => {
+                router.push('/rhythm');
+              }}
+            />
           ) : null
         ) : (
           <Card>

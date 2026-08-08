@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Pressable } from 'react-native';
 
 import { StatusPanel, type StatusPanelRing } from '@/components/ui';
 
@@ -74,19 +75,44 @@ export function stripContent(
   };
 }
 
-export function StreakStrip({ rhythm }: { rhythm: RhythmState }) {
+export function StreakStrip({
+  rhythm,
+  onPress,
+}: {
+  rhythm: RhythmState;
+  /** Opens RHYTHM (docs/spec/04: the strip's destination). Optional so the
+   * panel can still be shown somewhere that is already the rhythm. */
+  onPress?: () => void;
+}) {
   const { t } = useTranslation();
   const { title, note, ring } = stripContent(rhythm, t);
 
-  return (
+  // docs/spec/05: the strip is grouped and reads as one phrase rather than
+  // three fragments ("5-week rhythm, next milestone 12 weeks").
+  const label = `${title}. ${note}`;
+  const panel = (
     <StatusPanel
       label={t('rhythm:stripLabel')}
       title={title}
       note={note}
       ring={ring}
-      // docs/spec/05: the strip is grouped and reads as one phrase rather than
-      // three fragments ("5-week rhythm, next milestone 12 weeks").
-      accessibilityLabel={`${title}. ${note}`}
+      // The label moves to whichever element is the accessibility node. Setting
+      // it on BOTH would put an accessible view inside an accessible button:
+      // two nodes for one thing, and a screen reader stopping twice on it.
+      accessibilityLabel={onPress === undefined ? label : undefined}
     />
+  );
+  if (onPress === undefined) return panel;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={t('rhythm:stripHint')}
+      onPress={onPress}
+      style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+    >
+      {panel}
+    </Pressable>
   );
 }

@@ -32,6 +32,12 @@ export type GateAction =
    */
   | { kind: 'my_posts' }
   /**
+   * Reaching RHYTHM (W2.8). Navigation-shaped like `my_posts`, and reachable
+   * only by deep link: Home offers a guest the Join card, never a strip to tap.
+   * A rhythm is by definition a fact about somebody, so a guest has nobody to be.
+   */
+  | { kind: 'rhythm' }
+  /**
    * Reporting a post and blocking a member (W2.6), both of which need an account: the
    * report policy requires an onboarded caller, and a block is by definition a fact about
    * somebody, so a guest has nobody to be.

@@ -198,6 +198,15 @@ describe('who Home is greeting', () => {
     ).toBeOnTheScreen();
   });
 
+  test('the strip is the way into RHYTHM (docs/spec/04)', async () => {
+    signIn();
+    await renderHome();
+    await fireEvent.press(
+      screen.getByLabelText('5-week rhythm. Next milestone: 12 weeks'),
+    );
+    expect(mockPush).toHaveBeenCalledWith('/rhythm');
+  });
+
   test('a lapsed member is met with their longest, never a zero', async () => {
     signIn();
     mockRhythm.mockReturnValue({
