@@ -163,12 +163,57 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-// Permanent refresh failure: supabase-js clears the session and emits
-// SIGNED_OUT (network blips retry silently and never land here). Transition to
-// guest in place with the banner (docs/spec/03); "account deleted" detection
-// arrives with the first member writes (W2.3).
-supabase.auth.onAuthStateChange((event) => {
+/**
+ * Everything a session leaves behind when it stops being the current one.
+ *
+ * CACHED READS that were answered for that member: the query cache is keyed by
+ * what was asked (a branch, a testimony), never by who asked, so without this
+ * the next person on the same phone meets the last one's data until each query
+ * happens to refetch: their rhythm on the strip, their `reacted_by_me` on a feed
+ * card. Found on device with two seeded members, W2.8.
+ *
+ * The public reads STAY, which is what `03` and `16` ask for ("keeps
+ * guest-browsable caches"): losing a session should not also cost you the
+ * offline verse and service card. `isPersonalQuery` is the existing persistence
+ * flag read backwards, so this is one declaration rather than a list of keys to
+ * keep in step, and its default drops rather than keeps.
+ *
+ * UNSENT WRITES, which belonged to that member and could not be replayed as
+ * anyone else (docs/spec/01 §8).
+ */
+function forgetWhoeverThatWas(): void {
+  queryClient.removeQueries({ predicate: isPersonalQuery });
+  void useWriteQueueStore.getState().reset();
+}
+
+/**
+ * Whose answers the caches currently hold, as opposed to who the app thinks is
+ * signed in. Module-level, maintained only by the listener below.
+ */
+let cachedIdentity: string | null = null;
+
+// Two things end a member's claim on this device's caches, and only one of them
+// is a sign-out.
+//
+// SIGNED_OUT is the ordinary one: a permanent refresh failure (supabase-js
+// clears the session and emits it; network blips retry silently and never land
+// here) or Settings' Sign out. Transition to guest in place with the banner
+// (docs/spec/03); "account deleted" detection arrives with the first member
+// writes (W2.3).
+//
+// A SIGN-IN AS SOMEBODY ELSE is the other, and it emits SIGNED_IN rather than
+// SIGNED_OUT, so hanging the cleanup off the event was not enough: the access
+// token of the previous session stays valid for its full hour even once the
+// refresh token is gone, so the app can fetch one member's rhythm at launch,
+// have a second member sign in, and keep serving the first one's answer until
+// the entry goes stale. Seen on the phone at W2.8 slice 3, where Anke opened
+// RHYTHM and read Marieke's streak. Identity, not the event, is the thing to
+// watch.
+supabase.auth.onAuthStateChange((event, session) => {
+  const userId = session?.user.id ?? null;
+
   if (event === 'SIGNED_OUT') {
+    cachedIdentity = null;
     const store = useAuthStore.getState();
     if (store.status === 'guest' || store.status === 'loading') return;
     useAuthStore.setState({
@@ -179,25 +224,16 @@ supabase.auth.onAuthStateChange((event) => {
     });
     // A session ending in any way orphans a pending gate action (W2.2).
     useGateStore.getState().clearPending();
-    // ...and orphans every CACHED READ that was answered for that member. The
-    // query cache is keyed by what was asked (a branch, a testimony), never by
-    // who asked, so without this the next person to sign in on the same phone
-    // meets the last one's data until each query refetches: their rhythm on the
-    // strip, their `reacted_by_me` on a feed card. Found on device with two
-    // seeded members, W2.8.
-    //
-    // The public reads STAY, which is what `03` and `16` ask for ("keeps
-    // guest-browsable caches"): signing out should not also cost you the offline
-    // verse and service card. `isPersonalQuery` is the existing persistence flag
-    // read backwards, so this is one declaration rather than a list of keys to
-    // keep in step, and its default drops rather than keeps.
-    queryClient.removeQueries({ predicate: isPersonalQuery });
-    // ...and orphans every unsent write, which belonged to that member and
-    // could not be replayed as anyone else (docs/spec/01 §8: cleared on
-    // sign-out). This sits on the SIGNED_OUT event rather than in signOut()
-    // so a session that ends by refresh failure clears the queue too.
-    void useWriteQueueStore.getState().reset();
+    forgetWhoeverThatWas();
+    return;
   }
+
+  if (userId === null || userId === cachedIdentity) return;
+  // A different person now. The first identity of a launch clears nothing,
+  // because a cold cache has nothing of anyone's in it; every later change does.
+  const previous = cachedIdentity;
+  cachedIdentity = userId;
+  if (previous !== null) forgetWhoeverThatWas();
 });
 
 /** SPLASH routing (docs/spec/03 + 06): a half-created profile resumes AUTH-3;
