@@ -23,6 +23,21 @@
   .cap h1{margin:0;font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:-.02em}
   .cap p{margin:8px 0 0;color:var(--muted);font-size:14px;max-width:80ch;line-height:1.6}
   .ghead{max-width:1500px;margin:26px auto 10px;font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text)}
+  /* Section tabs (page chrome, not part of any frame; "sectabs" because entry-flow's
+     .tabbar is the app's bottom tab bar, and the two files keep one pattern). Built by
+     the script at the end of the file: every direct-child .ghead starts a group, and the
+     trailing dark stage is its own tab, so a new section added with its .ghead gets a
+     tab for free. */
+  .sectabs{position:sticky;top:0;z-index:60;margin:0 -20px 18px;padding:12px 20px;background:var(--stage);border-bottom:1px solid var(--framestroke)}
+  .sectabs .sectrow{max-width:1500px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px}
+  .sectabs button{font-family:var(--font);font-weight:800;font-size:12.5px;letter-spacing:.01em;color:var(--sub);background:transparent;border:1px solid var(--framestroke);border-radius:100px;padding:8px 14px;cursor:pointer}
+  .sectabs button:hover{color:var(--text);border-color:var(--text)}
+  .sectabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+  /* While the dark-stage tab is active the light stage holds only the cap and the tabs;
+     without this it still claims its 100vh and the dark stage starts below the fold.
+     flow-root stops the tab bar's bottom margin collapsing through the now-paddingless
+     stage edge, which showed as a white body strip between the stages. */
+  .stage.folded{min-height:0;padding-bottom:0;display:flow-root}
   .gnote{max-width:1500px;margin:0 auto 14px;font-size:13px;color:var(--muted);line-height:1.6}
   .gnote span{display:block;max-width:90ch}
 
@@ -1561,3 +1576,60 @@
     </div>
   </div>
 </div>
+<script>
+/* Section tabs. Every direct-child .ghead of the light stage starts a group that runs to
+   the next .ghead; the trailing dark stage is its own tab. One tab per group, so a new
+   section needs nothing beyond its .ghead. The hash remembers the pick. Runs after the
+   dark-clone scripts, which have already copied their light galleries. */
+(function(){
+  var stages=document.querySelectorAll('.stage');
+  var stage=stages[0];
+  var heads=[].filter.call(stage.children,function(el){return el.classList.contains('ghead')});
+  if(!heads.length)return;
+  var groups=heads.map(function(h){
+    var nodes=[h],n=h.nextElementSibling;
+    while(n&&!n.classList.contains('ghead')){nodes.push(n);n=n.nextElementSibling}
+    var label=h.textContent.replace(/\s+/g,' ').trim();
+    return{label:label,slug:label.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''),nodes:nodes}
+  });
+  if(stages[1]){
+    var h1=stages[1].querySelector('h1');
+    var label=h1?h1.textContent.replace(/\s+/g,' ').trim():'Dark';
+    groups.push({label:label,slug:label.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''),nodes:[stages[1]],darkStage:true})
+  }
+  var bar=document.createElement('nav');bar.className='sectabs';bar.setAttribute('aria-label','Sections');
+  var row=document.createElement('div');row.className='sectrow';bar.appendChild(row);
+  groups.forEach(function(g,i){
+    var b=document.createElement('button');b.type='button';b.textContent=g.label;
+    b.addEventListener('click',function(){show(i,true)});
+    row.appendChild(b);g.btn=b
+  });
+  var cap=stage.querySelector('.cap');
+  cap.parentNode.insertBefore(bar,cap.nextElementSibling);
+  function show(i,remember){
+    groups.forEach(function(g,j){
+      var on=i===j;
+      g.btn.classList.toggle('on',on);
+      g.btn.setAttribute('aria-current',on?'true':'false');
+      g.nodes.forEach(function(n){n.style.display=on?'':'none'})
+    });
+    stage.classList.toggle('folded',!!groups[i].darkStage);
+    if(remember){history.replaceState(null,'','#'+groups[i].slug);window.scrollTo(0,0)}
+  }
+  var start=0,want=location.hash.slice(1);
+  if(want)groups.forEach(function(g,i){
+    if(g.slug===want)start=i;
+    else try{if(g.nodes.some(function(n){return n.id===want||!!n.querySelector('[id="'+want+'"]')}))start=i}catch(e){}
+  });
+  show(start,false);
+  /* The browser keeps re-scrolling to #hash through load when it names a real element,
+     landing the heading under the sticky bar. Rewriting the hash to the tab's slug,
+     which matches no element id, leaves that scroll nothing to jump to; the activated
+     section starts right under the bar, so top is always right. */
+  if(want){
+    history.replaceState(null,'','#'+groups[start].slug);
+    window.scrollTo(0,0);
+    addEventListener('load',function(){window.scrollTo(0,0)})
+  }
+})();
+</script>
