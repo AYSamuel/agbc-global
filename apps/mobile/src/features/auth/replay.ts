@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 
 import { applyGloryToCaches } from '@/features/family/gloryCache';
 import { applyIntercessionToCaches } from '@/features/family/prayerCache';
+import { queueRsvp } from '@/features/events/rsvp';
 import { queueCheckIn } from '@/features/rhythm/useImHere';
 import { pushWrite } from '@/lib/writeQueue';
 import type { GateAction } from '@/state/gate';
@@ -70,14 +71,22 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       router.replace('/my-posts');
       return Promise.resolve('done');
     }
+    case 'rsvp': {
+      // The gated action was "I'm going", and it takes the same path an ordinary
+      // tap does: show it, then queue it. Going rather than interested, because
+      // that is the button the gate sits behind (docs/spec/11); a member who
+      // wanted "interested" can change it on the screen they land back on.
+      queueRsvp(action.eventId, 'going');
+      return Promise.resolve('done');
+    }
     case 'rhythm': {
       // Same shape as my_posts: the gated action WAS the screen. `replace` for
       // the same reason, so the finished sign-in leaves no back stack behind.
       router.replace('/rhythm');
       return Promise.resolve('done');
     }
-    // Executors land with their work items: rsvp (W2.9), im_here (W2.8),
-    // save/notes/resume (W3.1), notifications (W3.3).
+    // Executors land with their work items: save/notes/resume (W3.1),
+    // notifications (W3.3).
     default:
       return Promise.resolve('noop');
   }

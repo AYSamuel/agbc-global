@@ -13,6 +13,15 @@
   .t-dark{--bg:#0e1420;--card:#18212f;--raised:#28323f;--text:#eef2f8;--sub:#aab4c6;--muted:#7c8698;--border:#28323f;--alt:#141d2a;--btnBg:#ffcf4a;--btnText:#14213d;--framestroke:rgba(255,255,255,0.10);--dshadow:rgba(0,0,0,0.5);--mapsea:#0b111b;--mapland:rgba(255,255,255,0.07);--eye:#ffcf4a;color:var(--text)}
   .phone{color:var(--text)}
   .ghead{max-width:1400px;margin:16px auto 6px;font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text)}
+  /* Section tabs (page chrome, not part of any frame; "sectabs" because .tabbar is the
+     app's bottom tab bar inside the phone frames). Built by the script at the end of the
+     file: every direct-child .ghead starts a group, so a new section added with its
+     .ghead gets a tab for free and nothing here needs touching. */
+  .sectabs{position:sticky;top:0;z-index:60;margin:0 -20px 18px;padding:12px 20px;background:var(--stage);border-bottom:1px solid var(--framestroke)}
+  .sectabs .sectrow{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px}
+  .sectabs button{font-family:var(--font);font-weight:800;font-size:12.5px;letter-spacing:.01em;color:var(--sub);background:transparent;border:1px solid var(--framestroke);border-radius:100px;padding:8px 14px;cursor:pointer}
+  .sectabs button:hover{color:var(--text);border-color:var(--text)}
+  .sectabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
   *{box-sizing:border-box}
   body{margin:0}
@@ -48,6 +57,10 @@
   .btn{width:100%;border:none;border-radius:14px;padding:16px;font-family:var(--font);font-weight:800;font-size:15.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
   .btn.primary{background:var(--btnBg);color:var(--btnText)}
   .btn.gold{background:var(--gold);color:var(--navy)}
+  /* A commitment already made, ON A PAGE SURFACE (W2.9): the same gold tint and hairline
+     `.hero .btns .btn.gold.on` gives "You're here", but keeping --text rather than the
+     hero's #fff, because off the ink card white is invisible in light mode. */
+  .btn.confirmed{background:rgba(255,207,74,.20);border:1.5px solid var(--eye);color:var(--eye)}
   .btn.outline{background:var(--card);border:1px solid var(--border);color:var(--text);font-weight:700}
   .btn.ghost{background:none;color:var(--muted);font-weight:700;font-size:13.5px;padding:12px}
   .btn.glass{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.28);backdrop-filter:blur(4px)}
@@ -782,9 +795,8 @@
   <header class="cap">
     <p class="kick">AGBC Global · Screen designs</p>
     <h1>Entry flow (guest)</h1>
-    <p>Built to the prototype's design language (warm palette, Bricolage/Hanken, navy/gold buttons, cream scripture card, ink band cards, hairline borders). Guest-correct: no streak, generic greeting, gates fire only on member actions. Scroll sideways; toggle light/dark.</p>
+    <p>Built to the prototype's design language (warm palette, Bricolage/Hanken, navy/gold buttons, cream scripture card, ink band cards, hairline borders). Guest-correct: no streak, generic greeting, gates fire only on member actions. Each section is a tab below; scroll a gallery sideways.</p>
   </header>
-  <p class="flow">FLOW &nbsp;·&nbsp; <b>Splash</b> &#8594; <b>Welcome</b> &#8594; <b>Pick branch</b> &#8594; <b>Language</b> &#8594; <b>Home (guest)</b></p>
 
   <h2 class="ghead">&#127968; W2.7 &middot; Branch change (ADR 0015) &middot; light</h2>
   <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Profile</b> &#8594; <b>Pick a branch</b> &#8594; <b>Confirm</b> &#8594; <b>Awaiting</b> &#8594; <b>Welcome</b> &nbsp;|&nbsp; refused and too-soon are <b>sheets</b>, because they are one-off events; <b>awaiting</b> stays inline, because you live with it for 48 hours.</p>
@@ -1391,7 +1403,120 @@
   <div class="gallery t-dark" id="w28Dark"></div>
   <script>(function(){var l=document.getElementById('w28Light'),d=document.getElementById('w28Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
+  <h2 class="ghead" id="w29">&#128197; W2.9 &middot; RSVP &middot; light</h2>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Event</b> &#8594; <b>I'm going</b> (or <b>I'm interested</b>) &#8594; <b>the answer is in</b> &#8594; <b>Change or cancel</b> &nbsp;|&nbsp; RSVP is gated, and the pre-permission sheet follows the FIRST one (<code>06</code>), exactly as it follows the first &#8220;I'm here&#8221;.</p>
+  <div class="gallery t-light" id="w29Light">
+
+    <!-- EVENT-DETAIL · the three RSVP states. Composed 2026-08-09 for W2.9 slice 1, before
+         any code: `11` specifies Going / Interested / Cancel and the frame beside this one
+         draws only the un-RSVP'd primary, so two of the three states had never been drawn.
+         (The rule that a surface is a STATE and not a screen was added to CLAUDE.md the same
+         night, after three guest states shipped unframed.)
+
+         Composed from what the app already says elsewhere rather than from anything new:
+          - INTERESTED is an outline button beside the primary, the pair shape `.ev-actions`
+            already uses below it.
+          - A COMMITMENT ALREADY MADE quietens rather than vanishing, which is the treatment
+            `.btn.gold.on` gives "You're here" on Home and `.glory.on` gives a reaction: a
+            gold tint, a gold hairline and a check. It keeps its place in the row, so the
+            screen still states plainly that the answer is in. The one NEW class here is
+            `.btn.confirmed`, which is that treatment for a button on a page surface rather
+            than on the ink hero. It keeps --text, because the hero's #fff is invisible on a
+            light background. The colour is --eye rather than a fixed one, which is the same
+            trick `.linkbanner.gold` uses: deep gold on light, bright gold on dark, so one
+            declaration reads in both themes. Arrived at by RENDERING it: a heavier tint with
+            --text looked washed out on cream and went muddy olive on near-black, and the
+            HTML looked equally correct in all three versions (2026-08-09).
+          - CHANGING IT is a ghost line under the confirmed button, opening the same
+            `.gatesheet` confirm the app uses everywhere else. Cancel is never a button
+            sitting in the open next to a commitment; it is one step behind it. -->
+    <div class="device">
+      <p class="name"><b>EVENT-DETAIL</b> &middot; going (the answer is in)</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="mediahero" style="margin:0;border-radius:0 0 22px 22px;min-height:186px">
+            <div class="bg" style="background:linear-gradient(160deg,#3a2c5e,#0e1420)"></div>
+            <div class="heronav"><button aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
+            <div class="datebadge"><div class="d">24</div><div class="mo">Aug</div></div>
+          </div>
+          <div style="padding:16px 20px 0">
+            <span class="evhead">Saturday &middot; 7:00 PM</span>
+            <h1 class="ev-title">Night of Worship</h1>
+            <div class="ev-meta">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</div>
+            <p class="ev-desc">An evening of worship and prayer as the Berlin family gathers to seek God together. All are welcome, so bring a friend.</p>
+          </div>
+          <div style="padding:16px 16px 0">
+            <button class="btn confirmed" style="width:100%"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're going</button>
+          </div>
+          <div style="padding:8px 16px 0"><button class="btn ghost" style="width:100%">Change or cancel</button></div>
+          <div class="ev-actions"><button class="btn outline">Add to calendar</button><button class="btn outline">Share</button></div>
+          <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="device">
+      <p class="name"><b>EVENT-DETAIL</b> &middot; not answered yet (going, or interested)</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="mediahero" style="margin:0;border-radius:0 0 22px 22px;min-height:186px">
+            <div class="bg" style="background:linear-gradient(160deg,#3a2c5e,#0e1420)"></div>
+            <div class="heronav"><button aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button></div>
+            <div class="datebadge"><div class="d">24</div><div class="mo">Aug</div></div>
+          </div>
+          <div style="padding:16px 20px 0">
+            <span class="evhead">Saturday &middot; 7:00 PM</span>
+            <h1 class="ev-title">Night of Worship</h1>
+            <div class="ev-meta">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</div>
+            <p class="ev-desc">An evening of worship and prayer as the Berlin family gathers to seek God together. All are welcome, so bring a friend.</p>
+          </div>
+          <div style="padding:16px 16px 0"><button class="btn primary">RSVP &middot; I'm going</button></div>
+          <div style="padding:8px 16px 0"><button class="btn ghost">I'm interested</button></div>
+          <div class="ev-actions"><button class="btn outline">Add to calendar</button><button class="btn outline">Share</button></div>
+          <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="device">
+      <p class="name"><b>EVENT-DETAIL</b> &middot; interested, and the sheet that changes it</p>
+      <div class="phone gatephone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="mediahero" style="margin:0;border-radius:0 0 22px 22px;min-height:186px">
+            <div class="bg" style="background:linear-gradient(160deg,#3a2c5e,#0e1420)"></div>
+            <div class="datebadge"><div class="d">24</div><div class="mo">Aug</div></div>
+          </div>
+          <div style="padding:16px 20px 0">
+            <span class="evhead">Saturday &middot; 7:00 PM</span>
+            <h1 class="ev-title">Night of Worship</h1>
+            <div class="ev-meta">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</div>
+          </div>
+          <div style="padding:16px 16px 0">
+            <button class="btn confirmed" style="width:100%"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're interested</button>
+          </div>
+          <div style="padding:8px 16px 0"><button class="btn ghost" style="width:100%">Change or cancel</button></div>
+        </div>
+        <div class="gatedim"></div>
+        <div class="gatesheet">
+          <div class="grab"></div>
+          <h3>Change your RSVP?</h3>
+          <p>You said you're interested in Night of Worship. You can say you're going instead, or cancel altogether.</p>
+          <button class="btn primary">I'm going</button>
+          <button class="btn ghost">Cancel my RSVP</button>
+          <div class="authnote" style="margin-top:2px">Cancelling just removes your name from the list. You are welcome either way.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="ghead">&#127769; W2.9 &middot; RSVP &middot; dark</h2>
+  <div class="gallery t-dark" id="w29Dark"></div>
+  <script>(function(){var l=document.getElementById('w29Light'),d=document.getElementById('w29Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>
+  <p class="flow">FLOW &nbsp;·&nbsp; <b>Splash</b> &#8594; <b>Welcome</b> &#8594; <b>Pick branch</b> &#8594; <b>Language</b> &#8594; <b>Home (guest)</b></p>
   <div class="gallery t-light" id="lightGallery">
 
     <!-- SPLASH -->
@@ -2523,6 +2648,13 @@
         </div>
       </div>
     </div>
+
+    
+    
+
+    
+
+    
 
     <!-- BRANCH-SWITCH -->
     <div class="device">
@@ -3917,3 +4049,54 @@
 
   <p class="note">Guest state shown: no rhythm/streak, generic "Good morning", HQ default branch. Tapping Glory / Save / I'm here would open the sign-in gate, then complete. Hero/Welcome use a navy gradient where real photos (<code>hero.jpg</code>) go. Fonts fall back to a system grotesque in this sandbox; the app embeds Bricolage + Hanken.</p>
 </main>
+<script>
+/* Section tabs. Every direct-child .ghead of the stage starts a group that runs to the
+   next .ghead; one tab per group, so a new section needs nothing beyond its .ghead. The
+   hash remembers the pick, and a hash naming an element inside a group (e.g. #w28) still
+   opens the group that contains it. Runs after the dark-clone scripts, which have already
+   copied their light galleries by the time this hides anything. */
+(function(){
+  var stage=document.querySelector('main.stage');
+  var heads=[].filter.call(stage.children,function(el){return el.classList.contains('ghead')});
+  if(!heads.length)return;
+  var groups=heads.map(function(h){
+    var nodes=[h],n=h.nextElementSibling;
+    while(n&&!n.classList.contains('ghead')){nodes.push(n);n=n.nextElementSibling}
+    var label=h.textContent.replace(/\s+/g,' ').trim();
+    return{label:label,slug:label.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''),nodes:nodes}
+  });
+  var bar=document.createElement('nav');bar.className='sectabs';bar.setAttribute('aria-label','Sections');
+  var row=document.createElement('div');row.className='sectrow';bar.appendChild(row);
+  groups.forEach(function(g,i){
+    var b=document.createElement('button');b.type='button';b.textContent=g.label;
+    b.addEventListener('click',function(){show(i,true)});
+    row.appendChild(b);g.btn=b
+  });
+  var cap=stage.querySelector('.cap');
+  cap.parentNode.insertBefore(bar,cap.nextElementSibling);
+  function show(i,remember){
+    groups.forEach(function(g,j){
+      var on=i===j;
+      g.btn.classList.toggle('on',on);
+      g.btn.setAttribute('aria-current',on?'true':'false');
+      g.nodes.forEach(function(n){n.style.display=on?'':'none'})
+    });
+    if(remember){history.replaceState(null,'','#'+groups[i].slug);window.scrollTo(0,0)}
+  }
+  var start=0,want=location.hash.slice(1);
+  if(want)groups.forEach(function(g,i){
+    if(g.slug===want)start=i;
+    else try{if(g.nodes.some(function(n){return n.id===want||!!n.querySelector('[id="'+want+'"]')}))start=i}catch(e){}
+  });
+  show(start,false);
+  /* The browser keeps re-scrolling to #hash through load when it names a real element
+     (e.g. #w28), landing the heading under the sticky bar. Rewriting the hash to the
+     tab's slug, which matches no element id, leaves that scroll nothing to jump to;
+     the activated section starts right under the bar, so top is always right. */
+  if(want){
+    history.replaceState(null,'','#'+groups[start].slug);
+    window.scrollTo(0,0);
+    addEventListener('load',function(){window.scrollTo(0,0)})
+  }
+})();
+</script>

@@ -32,6 +32,26 @@ type QueryResult<T> = {
 };
 const mockList = jest.fn<QueryResult<EventListItem[]>, []>();
 const mockDetail = jest.fn<QueryResult<EventDetail | null>, []>();
+// EVENT-DETAIL reads the member's own RSVP from W2.9. This suite mocks its reads
+// rather than providing a QueryClient, which is what it already does for
+// `../queries`; the RSVP states have their own suite (features/events/__tests__).
+jest.mock('../rsvp', () => ({
+  useRsvpQuery: () => ({ data: null, isError: false }),
+  useRsvpAnswer: (_eventId: string | null, serverAnswer: unknown) =>
+    serverAnswer,
+  queueRsvp: jest.fn(),
+}));
+
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
+  },
+}));
+
 jest.mock('../queries', () => ({
   useEventsQuery: () => mockList(),
   useEventDetailQuery: () => mockDetail(),

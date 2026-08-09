@@ -3,6 +3,7 @@ import {
   PRAYER_SURFACE_KEYS,
   TESTIMONY_SURFACE_KEYS,
 } from '@/features/family/keys';
+import { invalidateRsvp } from '@/features/events/rsvp';
 import { announceCheckIn } from '@/features/rhythm/announce';
 import { toRhythmState } from '@/features/rhythm/queries';
 import {
@@ -219,10 +220,52 @@ async function handleAttendance(write: QueuedWrite): Promise<ReplayOutcome> {
   return outcome;
 }
 
+/**
+ * The member's answer to an event (docs/spec/11, W2.9).
+ *
+ * An upsert rather than an insert-or-update dance, because `rsvps` is unique per
+ * (event, profile) and the queue carries an END STATE: whatever the member last
+ * chose is what should be true, and replaying it twice must land in the same
+ * place. `profile_id` is sent so the conflict target resolves, and the guard
+ * overwrites it with `auth.uid()` anyway, so a forged one buys nothing
+ * (`rsvps_insert_guard`).
+ *
+ * REFUSALS ARE EXPECTED HERE, more than for any other kind. The event may have
+ * been cancelled or may have started since the tap, and `assert_event_accepts_rsvps`
+ * raises for going/interested in either case. That is a final answer, not a
+ * transport failure, so the wish is dropped and the row refetched: `11` asks for
+ * exactly this, "RSVP against a cancelled event rejected server-side and
+ * reconciled quietly". Cancelling is never refused, which is why a member can
+ * always take their name off a list.
+ */
+async function handleRsvp(write: QueuedWrite): Promise<ReplayOutcome> {
+  const { data } = await supabase.auth.getSession();
+  const profileId = data.session?.user.id;
+  if (!profileId) return 'retry';
+
+  const { error } = await supabase.from('rsvps').upsert(
+    {
+      event_id: write.entityId,
+      profile_id: profileId,
+      status: write.state as 'going' | 'interested' | 'cancelled',
+    },
+    { onConflict: 'event_id,profile_id' },
+  );
+
+  const outcome = outcomeFor(error);
+  if (outcome !== 'done') {
+    // Quietly: the screen simply shows what the server says, with no scolding
+    // about an event that moved out from under them (docs/spec/11).
+    invalidateRsvp(write.entityId);
+  }
+  return outcome;
+}
+
 export const writeHandlers: WriteHandlers = {
   glory: handleGlory,
   intercession: handleIntercession,
   attendance: handleAttendance,
+  rsvp: handleRsvp,
 };
 
 /**

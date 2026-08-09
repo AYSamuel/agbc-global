@@ -23,7 +23,15 @@ function handlers(script: Record<string, ReplayOutcome>): WriteHandlers {
     sent.push(write);
     return Promise.resolve(script[write.entityId] ?? 'done');
   };
-  return { glory: handle, intercession: handle, attendance: handle };
+  // Every kind, deliberately: `WriteHandlers` is an exhaustive record, so a new
+  // queued kind fails to compile here until it is scripted, and the driver's
+  // behaviour is proven for it rather than assumed.
+  return {
+    glory: handle,
+    intercession: handle,
+    attendance: handle,
+    rsvp: handle,
+  };
 }
 
 beforeEach(() => {
@@ -87,9 +95,12 @@ test('a handler that throws is treated as transport, not as an answer', async ()
     throw new Error('handler bug');
   };
   useWriteQueueStore.getState().push('glory', T1, 'on');
-  useWriteQueueStore
-    .getState()
-    .setHandlers({ glory: boom, intercession: boom, attendance: boom });
+  useWriteQueueStore.getState().setHandlers({
+    glory: boom,
+    intercession: boom,
+    attendance: boom,
+    rsvp: boom,
+  });
   await useWriteQueueStore.getState().drain();
 
   expect(Object.keys(useWriteQueueStore.getState().queue)).toHaveLength(1);
@@ -109,9 +120,12 @@ test('a tap during the drain wins: the newer wish is what goes out', async () =>
   };
   useWriteQueueStore.getState().push('glory', T1, 'on');
   useWriteQueueStore.getState().push('glory', T2, 'on');
-  useWriteQueueStore
-    .getState()
-    .setHandlers({ glory: handle, intercession: handle, attendance: handle });
+  useWriteQueueStore.getState().setHandlers({
+    glory: handle,
+    intercession: handle,
+    attendance: handle,
+    rsvp: handle,
+  });
 
   const draining = useWriteQueueStore.getState().drain();
   await Promise.resolve();
@@ -137,9 +151,12 @@ test('drains do not overlap', async () => {
   };
   useWriteQueueStore.getState().push('glory', T1, 'on');
   useWriteQueueStore.getState().push('glory', T2, 'on');
-  useWriteQueueStore
-    .getState()
-    .setHandlers({ glory: handle, intercession: handle, attendance: handle });
+  useWriteQueueStore.getState().setHandlers({
+    glory: handle,
+    intercession: handle,
+    attendance: handle,
+    rsvp: handle,
+  });
 
   await Promise.all([
     useWriteQueueStore.getState().drain(),

@@ -80,7 +80,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   useAuthStore.setState({ status: 'guest', email: null, profile: null });
   useCelebratedStore.setState({ known: [], showing: null });
-  useNotificationAskStore.setState({ asked: false, pending: false });
+  useNotificationAskStore.setState({ asked: false, pending: null });
   mockMilestones.mockReturnValue({ data: [] });
   mockState.mockResolvedValue('undetermined');
   mockRequest.mockResolvedValue('granted');
@@ -170,7 +170,7 @@ describe('the notification ask (docs/spec/06)', () => {
 
   test('appears after one, and asks before the OS does', async () => {
     signIn();
-    useNotificationAskStore.setState({ pending: true });
+    useNotificationAskStore.setState({ pending: 'check_in' });
     await renderMoments();
 
     expect(
@@ -183,7 +183,7 @@ describe('the notification ask (docs/spec/06)', () => {
   test('waits behind a celebration rather than stacking on it', async () => {
     // The first "I'm here" is both a first service and a first value moment.
     signIn();
-    useNotificationAskStore.setState({ pending: true });
+    useNotificationAskStore.setState({ pending: 'check_in' });
     mockMilestones.mockReturnValue({
       data: [{ kind: 'first_service', achievedAt: '2026-08-08T10:00:00Z' }],
     });
@@ -195,7 +195,7 @@ describe('the notification ask (docs/spec/06)', () => {
 
   test('"Yes" fires the OS dialog, and the app never asks again either way', async () => {
     signIn();
-    useNotificationAskStore.setState({ pending: true });
+    useNotificationAskStore.setState({ pending: 'check_in' });
     await renderMoments();
     await fireEvent.press(
       screen.getByRole('button', { name: 'Yes, remind me' }),
@@ -207,7 +207,7 @@ describe('the notification ask (docs/spec/06)', () => {
 
   test('"Not now" spends the ask too, and the check-in is untouched', async () => {
     signIn();
-    useNotificationAskStore.setState({ pending: true });
+    useNotificationAskStore.setState({ pending: 'check_in' });
     await renderMoments();
     await fireEvent.press(screen.getByRole('button', { name: 'Not now' }));
 
@@ -222,17 +222,37 @@ describe('the notification ask (docs/spec/06)', () => {
     // that CAN ask arrives.
     signIn();
     mockState.mockResolvedValue('unavailable');
-    useNotificationAskStore.setState({ pending: true });
+    useNotificationAskStore.setState({ pending: 'check_in' });
     await renderMoments();
 
     expect(screen.queryByText('Want a reminder before service?')).toBeNull();
     expect(useNotificationAskStore.getState().asked).toBe(false);
   });
 
+  test('the reassurance names the thing the member actually just did', async () => {
+    // "You're checked in either way" appeared under an RSVP on device
+    // (2026-08-09), which is a sentence about something that did not happen.
+    // The moment carries its own kind so the footnote can be true.
+    signIn();
+    useNotificationAskStore.setState({ pending: 'rsvp' });
+    await renderMoments();
+
+    expect(screen.getByText(/Your RSVP stands either way/)).toBeOnTheScreen();
+    expect(screen.queryByText(/You're checked in either way/)).toBeNull();
+  });
+
+  test('and still says checked in when that is what happened', async () => {
+    signIn();
+    useNotificationAskStore.setState({ pending: 'check_in' });
+    await renderMoments();
+
+    expect(screen.getByText(/You're checked in either way/)).toBeOnTheScreen();
+  });
+
   test('a member who already answered the OS is not interrupted at all', async () => {
     signIn();
     mockState.mockResolvedValue('granted');
-    useNotificationAskStore.setState({ pending: true });
+    useNotificationAskStore.setState({ pending: 'check_in' });
     await renderMoments();
 
     expect(screen.queryByText('Want a reminder before service?')).toBeNull();

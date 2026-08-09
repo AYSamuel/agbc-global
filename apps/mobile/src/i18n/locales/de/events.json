@@ -25,5 +25,26 @@
   "gateBody": "Melde dich an, um zuzusagen, damit deine Familie weiß, dass du kommst.",
   "gateDismissed": "Du kannst Veranstaltungen als Gast weiter ansehen.",
   "notFoundTitle": "Diese Veranstaltung ist nicht verfügbar",
-  "notFoundBody": "Sie wurde womöglich entfernt. Sieh dir an, was sonst ansteht."
+  "notFoundBody": "Sie wurde womöglich entfernt. Sieh dir an, was sonst ansteht.",
+  "rsvpGoingShort": "Ich komme",
+  "rsvpInterested": "Ich habe Interesse",
+  "rsvpYoureGoing": "Du kommst",
+  "rsvpYoureInterested": "Du hast Interesse",
+  "rsvpChange": "Ändern oder absagen",
+  "rsvpChangeTitle": "Zusage ändern?",
+  "rsvpChangeBodyGoing": "Du hast zugesagt. Du kannst stattdessen Interesse zeigen oder ganz absagen.",
+  "rsvpChangeBodyInterested": "Du hast Interesse gezeigt. Du kannst stattdessen zusagen oder ganz absagen.",
+  "rsvpCancel": "Zusage zurücknehmen",
+  "rsvpCancelNote": "Absagen nimmt nur deinen Namen von der Liste. Du bist so oder so willkommen.",
+  "rsvpChangeDismissed": "Zusage unverändert.",
+  "rsvpGoingToast": "Du kommst. Schön, dass du dabei bist.",
+  "rsvpInterestedToast": "Notiert, du hast Interesse.",
+  "rsvpCancelledToast": "Deine Zusage ist zurückgenommen. Du bist jederzeit willkommen.",
+  "addCalendar": "Zum Kalender",
+  "calendar": {
+    "added": "Zu deinem Kalender hinzugefügt.",
+    "denied": "Kalenderzugriff ist aus. Deine Zusage bleibt bestehen.",
+    "unavailable": "Kalender ist in dieser Version nicht verfügbar.",
+    "failed": "Das hat nicht geklappt. Bitte versuche es erneut."
+  }
 }

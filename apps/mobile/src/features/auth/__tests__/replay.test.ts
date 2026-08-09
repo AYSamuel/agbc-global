@@ -2,6 +2,13 @@ import { useWriteQueueStore } from '@/lib/writeQueue';
 
 import { replayGateAction } from '../replay';
 
+const mockQueueRsvp = jest.fn<undefined, [string, string]>();
+jest.mock('@/features/events/rsvp', () => ({
+  queueRsvp: (eventId: string, status: string) => {
+    mockQueueRsvp(eventId, status);
+  },
+}));
+
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
@@ -62,11 +69,15 @@ describe('replayGateAction: compose (W2.3)', () => {
   });
 });
 
-describe('replayGateAction: the kinds that are still waiting for their item', () => {
-  it('resolves noop rather than pretending, and navigates nowhere', async () => {
+// W2.9. The gate sits behind "I'm going", so that is what signing in completes;
+// a member who wanted "interested" changes it on the screen they land back on.
+describe('replayGateAction: rsvp', () => {
+  it('records the answer the gate was standing in front of', async () => {
     await expect(
       replayGateAction({ kind: 'rsvp', eventId: 'e1' }),
-    ).resolves.toBe('noop');
+    ).resolves.toBe('done');
+    expect(mockQueueRsvp).toHaveBeenCalledWith('e1', 'going');
+    // Nothing navigates: AUTH-4 has already returned them to the event.
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

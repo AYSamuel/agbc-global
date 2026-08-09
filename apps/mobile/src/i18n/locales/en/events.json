@@ -25,5 +25,26 @@
   "gateBody": "Sign in to RSVP so your family knows you're coming.",
   "gateDismissed": "You can keep browsing events as a guest.",
   "notFoundTitle": "This event isn't available",
-  "notFoundBody": "It may have been removed. See what else is coming up."
+  "notFoundBody": "It may have been removed. See what else is coming up.",
+  "rsvpGoingShort": "I'm going",
+  "rsvpInterested": "I'm interested",
+  "rsvpYoureGoing": "You're going",
+  "rsvpYoureInterested": "You're interested",
+  "rsvpChange": "Change or cancel",
+  "rsvpChangeTitle": "Change your RSVP?",
+  "rsvpChangeBodyGoing": "You said you're going. You can say you're interested instead, or cancel altogether.",
+  "rsvpChangeBodyInterested": "You said you're interested. You can say you're going instead, or cancel altogether.",
+  "rsvpCancel": "Cancel my RSVP",
+  "rsvpCancelNote": "Cancelling just removes your name from the list. You are welcome either way.",
+  "rsvpChangeDismissed": "RSVP unchanged.",
+  "rsvpGoingToast": "You're going. Lovely to have you.",
+  "rsvpInterestedToast": "Noted, you're interested.",
+  "rsvpCancelledToast": "Your RSVP is cancelled. You're welcome any time.",
+  "addCalendar": "Add to calendar",
+  "calendar": {
+    "added": "Added to your calendar.",
+    "denied": "Calendar access is off. Your RSVP still stands.",
+    "unavailable": "Calendar isn't available on this build.",
+    "failed": "We couldn't add it. Please try again."
+  }
 }

@@ -23,6 +23,7 @@ import {
   GradientFill,
   Screen,
   Skeleton,
+  useToast,
 } from '@/components/ui';
 import {
   eventDateParts,
@@ -33,7 +34,11 @@ import {
   wallClockToInstant,
 } from '@/features/events/format';
 import { useFormattingLocale } from '@/i18n';
+import { addEventToCalendar } from '@/features/events/calendar';
 import { useEventDetailQuery } from '@/features/events/queries';
+import { RsvpControls } from '@/features/events/RsvpControls';
+import { queueRsvp, useRsvpAnswer, useRsvpQuery } from '@/features/events/rsvp';
+import { useAuthStore } from '@/state/auth';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useBranchCities } from '@/features/events/useBranchCities';
 import { shareText } from '@/features/family/share';
@@ -61,6 +66,13 @@ export default function EventDetailScreen() {
   const branchNames = useBranchNames();
   const branchCities = useBranchCities();
   const [gateVisible, setGateVisible] = useState(false);
+  const toast = useToast();
+
+  // The member's own answer, from the server unless the queue is holding a
+  // newer one (docs/spec/01 §8: an RSVP tapped on a train stays answered).
+  const isMember = useAuthStore((state) => state.status === 'member');
+  const rsvpQuery = useRsvpQuery(eventId, isMember);
+  const answer = useRsvpAnswer(eventId, rsvpQuery.data ?? null);
 
   const event = query.data;
   const loading = query.data === undefined && !query.isError;
@@ -70,6 +82,24 @@ export default function EventDetailScreen() {
   };
   const seeOtherEvents = () => {
     router.replace('/events');
+  };
+
+  /**
+   * The device calendar (docs/spec/11). Every outcome says something: a refused
+   * permission is not a failure and never touches the RSVP (`06`), and a dev
+   * client without the native module says so rather than failing silently.
+   */
+  const addToCalendar = async () => {
+    if (event === null || event === undefined) return;
+    const outcome = await addEventToCalendar({
+      title: event.title,
+      startsAtLocal: event.starts_at_local,
+      endsAtLocal: event.ends_at_local,
+      timeZone: event.timezone,
+      location: event.location,
+      notes: event.description,
+    });
+    toast.show(t(`events:calendar.${outcome}`));
   };
 
   if (loading || query.isError || event === null || event === undefined) {
@@ -348,12 +378,25 @@ export default function EventDetailScreen() {
               {t('events:pastNote')}
             </Text>
           ) : event.rsvp_enabled ? (
-            <Button
-              label={t('events:rsvpGoing')}
-              variant="primary"
-              fullWidth
-              onPress={() => {
-                setGateVisible(true);
+            <RsvpControls
+              answer={answer}
+              onAnswer={(status) => {
+                // Browsing is free, contributing signs you in (docs/spec/03):
+                // the tap gates rather than the control being hidden.
+                if (!isMember) {
+                  setGateVisible(true);
+                  return;
+                }
+                // Raises the value moment itself, so an RSVP made through the
+                // gate counts the same as one made from here (features/events/rsvp).
+                queueRsvp(id, status);
+                toast.show(
+                  status === 'cancelled'
+                    ? t('events:rsvpCancelledToast')
+                    : status === 'going'
+                      ? t('events:rsvpGoingToast')
+                      : t('events:rsvpInterestedToast'),
+                );
               }}
             />
           ) : (
@@ -370,7 +413,7 @@ export default function EventDetailScreen() {
           )}
         </View>
 
-        {/* Mockup .ev-actions (calendar joins at W2.9). */}
+        {/* Mockup .ev-actions. */}
         <View
           style={{
             flexDirection: 'row',
@@ -379,6 +422,16 @@ export default function EventDetailScreen() {
             paddingTop: 12,
           }}
         >
+          <View style={{ flex: 1 }}>
+            <Button
+              label={t('events:addCalendar')}
+              variant="outline"
+              fullWidth
+              onPress={() => {
+                void addToCalendar();
+              }}
+            />
+          </View>
           <View style={{ flex: 1 }}>
             <Button
               label={t('events:share')}
@@ -398,7 +451,7 @@ export default function EventDetailScreen() {
         dismissLabel={t('notNow')}
         dismissAnnouncement={t('events:gateDismissed')}
         onSignIn={() => {
-          // Gate-return (W2.2): the RSVP executor itself lands at W2.9.
+          // Gate-return: signing in completes the RSVP they tapped (replay.ts).
           useGateStore
             .getState()
             .beginGateSignIn({ kind: 'rsvp', eventId: id });
