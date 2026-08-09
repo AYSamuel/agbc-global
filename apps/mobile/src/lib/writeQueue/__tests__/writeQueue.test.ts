@@ -7,7 +7,7 @@ import {
   settle,
 } from '../reducer';
 import { parseQueue } from '../storage';
-import { queueKey, type WriteQueue } from '../types';
+import { queueKey, type QueuedKind, type WriteQueue } from '../types';
 
 // The queue's rules, tested where they live: pure functions, no clock, no
 // network, no store. The claim under test throughout is docs/spec/01 §8's
@@ -146,14 +146,44 @@ describe('parseQueue', () => {
   test('entries from an older or tampered build are dropped, not hydrated', () => {
     // A kind this build cannot replay, a state that is not in its vocabulary,
     // and a missing id: each would be a wish with nowhere to go.
+    //
+    // `playback` is the example on purpose: it is a kind `01` §8 lists and W3.1
+    // will build, so it is genuinely unreplayable TODAY. This test used to use
+    // `rsvp` that way and went on passing after W2.9 made `rsvp` real, which is
+    // how every stored RSVP came to be discarded on launch.
     const stored = JSON.stringify({
-      'rsvp:x': { kind: 'rsvp', entityId: 'x', state: 'going', queuedAt: 1 },
+      'playback:x': {
+        kind: 'playback',
+        entityId: 'x',
+        state: 'played',
+        queuedAt: 1,
+      },
       'glory:y': { kind: 'glory', entityId: 'y', state: 'maybe', queuedAt: 2 },
       'glory:': { kind: 'glory', entityId: '', state: 'on', queuedAt: 3 },
       'glory:z': { kind: 'glory', entityId: 'z', state: 'on', queuedAt: 4 },
     });
     const parsed = parseQueue(stored);
     expect(Object.keys(parsed)).toEqual([queueKey('glory', 'z')]);
+  });
+
+  test('every kind the queue can replay survives a restart', () => {
+    // The promise is "I tapped that on the train", so it has to hold for each
+    // kind, not just the two that happened to exist when this file was written.
+    // Driven off the queue's own vocabulary, so a new kind joins this test by
+    // existing rather than by somebody remembering.
+    const samples: Record<QueuedKind, string> = {
+      glory: 'on',
+      intercession: 'committed',
+      attendance: 'branch-berlin',
+      rsvp: 'going',
+    };
+
+    for (const [kind, state] of Object.entries(samples)) {
+      const stored = JSON.stringify({
+        [`${kind}:e1`]: { kind, entityId: 'e1', state, queuedAt: 1 },
+      });
+      expect(Object.keys(parseQueue(stored))).toEqual([`${kind}:e1`]);
+    }
   });
 
   test('an entry is re-keyed from itself, so a mismatched key cannot redirect it', () => {

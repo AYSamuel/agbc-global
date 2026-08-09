@@ -25,5 +25,26 @@
   "gateBody": "Meld je aan om je aan te melden, zodat je familie weet dat je komt.",
   "gateDismissed": "Je kunt evenementen als gast blijven bekijken.",
   "notFoundTitle": "Dit evenement is niet beschikbaar",
-  "notFoundBody": "Het is mogelijk verwijderd. Bekijk wat er verder aankomt."
+  "notFoundBody": "Het is mogelijk verwijderd. Bekijk wat er verder aankomt.",
+  "rsvpGoingShort": "Ik kom",
+  "rsvpInterested": "Ik heb interesse",
+  "rsvpYoureGoing": "Je komt",
+  "rsvpYoureInterested": "Je hebt interesse",
+  "rsvpChange": "Wijzigen of afmelden",
+  "rsvpChangeTitle": "Je aanmelding wijzigen?",
+  "rsvpChangeBodyGoing": "Je hebt je aangemeld. Je kunt in plaats daarvan interesse tonen, of je helemaal afmelden.",
+  "rsvpChangeBodyInterested": "Je hebt interesse getoond. Je kunt je in plaats daarvan aanmelden, of je helemaal afmelden.",
+  "rsvpCancel": "Mijn aanmelding annuleren",
+  "rsvpCancelNote": "Afmelden haalt alleen je naam van de lijst. Je bent hoe dan ook welkom.",
+  "rsvpChangeDismissed": "Aanmelding ongewijzigd.",
+  "rsvpGoingToast": "Je komt. Fijn dat je erbij bent.",
+  "rsvpInterestedToast": "Genoteerd, je hebt interesse.",
+  "rsvpCancelledToast": "Je aanmelding is geannuleerd. Je bent altijd welkom.",
+  "addCalendar": "In agenda zetten",
+  "calendar": {
+    "added": "Toegevoegd aan je agenda.",
+    "denied": "Agendatoegang staat uit. Je aanmelding blijft staan.",
+    "unavailable": "Agenda is niet beschikbaar in deze versie.",
+    "failed": "Het is niet gelukt. Probeer het opnieuw."
+  }
 }

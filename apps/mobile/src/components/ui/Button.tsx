@@ -14,6 +14,7 @@ import {
   palette,
   radius,
   spacing,
+  tonal,
 } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
@@ -25,9 +26,13 @@ import { useTheme } from '@/theme';
 // light card-colored block; 'danger' is `.btn.danger`, a solid red with white text,
 // for the button that ends something (Block, Delete). Red in BOTH themes: the mockup
 // keeps --red constant, and a destructive action is the one control that should not
-// change temperature with the theme.
+// change temperature with the theme. 'confirmed' is `.btn.confirmed` (W2.9): an answer
+// already given, holding its place in the layout rather than vanishing, in the gold
+// wash + `--eye` border and text that reads in both themes. It is the page-surface
+// sibling of the hero's `.btn.gold.on` ("You're here"), whose white-on-ink treatment
+// is invisible on a light page.
 export type ButtonVariant =
-  'primary' | 'accent' | 'outline' | 'ghost' | 'glass' | 'danger';
+  'primary' | 'accent' | 'outline' | 'ghost' | 'glass' | 'danger' | 'confirmed';
 
 export interface ButtonProps extends Omit<
   PressableProps,
@@ -80,7 +85,9 @@ export function Button({
             ? 'rgba(255,255,255,0.16)'
             : variant === 'danger'
               ? palette.red
-              : 'transparent';
+              : variant === 'confirmed'
+                ? tonal.gold.bg
+                : 'transparent';
   // Accent (gold) always carries navy text, both themes (05 contrast rule);
   // glass sits on ink/photo, so its text is always white; danger is white on red.
   const base =
@@ -92,7 +99,12 @@ export function Button({
           ? colors.text
           : variant === 'glass' || variant === 'danger'
             ? onInk.text
-            : colors.muted;
+            : // `--eye` reads in both themes, which is the whole reason the
+              // frame's `.btn.confirmed` uses it: deep gold on light, bright
+              // gold on dark (05 contrast rule).
+              variant === 'confirmed'
+              ? colors.eye
+              : colors.muted;
   // The tone recolours the label only; the surface stays the variant's.
   const foreground = tone === 'danger' ? palette.red : base;
 
@@ -112,9 +124,18 @@ export function Button({
         flexDirection: 'row',
         gap: spacing.sm,
         backgroundColor: background,
-        borderWidth: variant === 'outline' || variant === 'glass' ? 1 : 0,
+        borderWidth:
+          variant === 'outline' || variant === 'glass'
+            ? 1
+            : variant === 'confirmed'
+              ? 1.5
+              : 0,
         borderColor:
-          variant === 'glass' ? 'rgba(255,255,255,0.28)' : colors.cardline,
+          variant === 'glass'
+            ? 'rgba(255,255,255,0.28)'
+            : variant === 'confirmed'
+              ? colors.eye
+              : colors.cardline,
         opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
         alignSelf: fullWidth ? 'stretch' : 'auto',
         flex: fill ? 1 : undefined,

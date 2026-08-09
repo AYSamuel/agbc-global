@@ -15,13 +15,21 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 // nowhere, and one who has been asked once is never asked again by this app at
 // all. Settings is where it can be turned on later (`16`, W3.3).
 
+/**
+ * Which moment earned the ask. The sheet reassures the member that the thing
+ * they just did stands whatever they answer, and that sentence has to name the
+ * right thing: "you're checked in either way" read as a lie under an RSVP
+ * (found on device, 2026-08-09).
+ */
+export type ValueMoment = 'check_in' | 'rsvp';
+
 interface AskState {
   /** The sheet has been shown once. Never shown again. */
   asked: boolean;
-  /** A value moment happened just now and the sheet is due. Not persisted. */
-  pending: boolean;
-  /** Called at the moment itself: a recorded check-in today (RSVP joins at W2.9). */
-  reachedValueMoment: () => void;
+  /** The moment that just happened and is owed a sheet. Not persisted. */
+  pending: ValueMoment | null;
+  /** Called at the moment itself: a recorded check-in, or an RSVP given. */
+  reachedValueMoment: (moment: ValueMoment) => void;
   markAsked: () => void;
   clearPending: () => void;
   reset: () => void;
@@ -31,20 +39,20 @@ export const useNotificationAskStore = create<AskState>()(
   persist(
     (set, get) => ({
       asked: false,
-      pending: false,
-      reachedValueMoment: () => {
+      pending: null,
+      reachedValueMoment: (moment) => {
         // Nothing to raise if this app has already had its one ask.
         if (get().asked) return;
-        set({ pending: true });
+        set({ pending: moment });
       },
       markAsked: () => {
-        set({ asked: true, pending: false });
+        set({ asked: true, pending: null });
       },
       clearPending: () => {
-        set({ pending: false });
+        set({ pending: null });
       },
       reset: () => {
-        set({ asked: false, pending: false });
+        set({ asked: false, pending: null });
       },
     }),
     {

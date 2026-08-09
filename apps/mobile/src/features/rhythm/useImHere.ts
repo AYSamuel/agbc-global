@@ -37,9 +37,9 @@ export function queueCheckIn(branchId: string): void {
   // The first value moment (docs/spec/06): gathering with the family is the
   // thing a reminder is FOR, so this is where the app earns the right to ask.
   // Raised on the tap rather than on delivery, because the sheet belongs to the
-  // moment the member is living, not to whenever the queue drains. RSVP joins
-  // this at W2.9, when an RSVP starts recording rather than only gating.
-  useNotificationAskStore.getState().reachedValueMoment();
+  // moment the member is living, not to whenever the queue drains. RSVP joined
+  // this at W2.9, which is why the moment says which one it is.
+  useNotificationAskStore.getState().reachedValueMoment('check_in');
 }
 
 /**

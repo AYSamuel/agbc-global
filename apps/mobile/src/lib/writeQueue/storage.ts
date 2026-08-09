@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { queueKey, type QueuedWrite, type WriteQueue } from './types';
+import {
+  queueKey,
+  type QueuedKind,
+  type QueuedWrite,
+  type WriteQueue,
+} from './types';
 
 // The queue survives process death, because "I tapped that on the train" has to
 // still be true when the app comes back (docs/spec/01 §8: enqueue locally,
@@ -12,11 +17,30 @@ import { queueKey, type QueuedWrite, type WriteQueue } from './types';
  * discarded rather than hydrated into a shape it no longer matches. */
 const STORAGE_KEY = 'agbc.writeQueue.v1';
 
-const KINDS = ['glory', 'intercession'] as const;
-const STATES: Record<(typeof KINDS)[number], readonly string[]> = {
-  glory: ['on', 'off'],
-  intercession: ['none', 'committed', 'prayed'],
+/**
+ * What counts as a valid stored state, per kind.
+ *
+ * `Record<QueuedKind, ...>` is the point: this used to be a hand-written list of
+ * two kinds, so when `attendance` (W2.8) and `rsvp` (W2.9) joined the queue,
+ * every stored one was rejected on hydration and silently dropped. A check-in or
+ * an RSVP tapped offline survived until the app was killed and then quietly
+ * ceased to exist, which is the exact promise `01` §8 makes and the exact way it
+ * cannot be allowed to break. Now a new kind fails to compile until it says what
+ * a valid state looks like (found on device, 2026-08-09).
+ */
+const VALID_STATE: Readonly<Record<QueuedKind, (state: string) => boolean>> = {
+  glory: (state) => state === 'on' || state === 'off',
+  intercession: (state) =>
+    state === 'none' || state === 'committed' || state === 'prayed',
+  // The state is the BRANCH the member stood in, an id rather than an enum, so
+  // structural validity is all this layer can judge. Whether that branch exists
+  // is the server's answer to give.
+  attendance: (state) => state.length > 0,
+  rsvp: (state) =>
+    state === 'going' || state === 'interested' || state === 'cancelled',
 };
+
+const KINDS = Object.keys(VALID_STATE) as readonly QueuedKind[];
 
 /** Pure for tests. Anything malformed reads as "no such entry" rather than
  * throwing: a queue written by an older build must not be able to crash a
@@ -52,10 +76,7 @@ function parseWrite(value: unknown): QueuedWrite | null {
   if (!kind) return null;
   if (typeof record.entityId !== 'string' || record.entityId === '')
     return null;
-  if (
-    typeof record.state !== 'string' ||
-    !STATES[kind].includes(record.state)
-  ) {
+  if (typeof record.state !== 'string' || !VALID_STATE[kind](record.state)) {
     return null;
   }
   return {

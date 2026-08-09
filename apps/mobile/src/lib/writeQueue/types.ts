@@ -6,13 +6,17 @@
 // type here exists to make that shape impossible to misuse.
 
 /**
- * One entity kind the queue knows how to replay. `01` §8 lists six; three are
- * live (glory and intercession at W2.4, attendance at W2.8) and the rest are
- * registered by the work item that builds their surface: `rsvp` (W2.9),
- * `playback` (W3.1), `plan_day` (Phase 4). Adding a kind here without a handler
- * is caught at compile time by the registry.
+ * One entity kind the queue knows how to replay. `01` §8 lists six; four are
+ * live (glory and intercession at W2.4, attendance at W2.8, rsvp at W2.9) and
+ * the rest are registered by the work item that builds their surface:
+ * `playback` (W3.1), `plan_day` (Phase 4).
+ *
+ * Adding a kind here without a handler is caught at compile time by the
+ * registry, and without a stored-state rule by `storage.VALID_STATE`. Both
+ * checks exist because a kind that is only half-registered does not fail: it
+ * quietly drops the member's tap (W2.9).
  */
-export type QueuedKind = 'glory' | 'intercession' | 'attendance';
+export type QueuedKind = 'glory' | 'intercession' | 'attendance' | 'rsvp';
 
 /**
  * The end state per kind. Glory is a toggle because `09` says "tap again to
@@ -34,14 +38,25 @@ export interface QueuedStates {
    * one branch, and the queue collapses it to exactly that (W2.8).
    */
   attendance: string;
+  /**
+   * The answer, which is the whole state: `rsvps` keeps ONE row per member per
+   * event and changing your mind is an UPDATE, so "cancelled" is a value rather
+   * than a deletion and the row is remembered (docs/spec/11).
+   *
+   * The end-state model earns its keep here more than anywhere: a member who
+   * taps going, then interested, then cancels while offline has expressed one
+   * answer, and exactly one write replays.
+   */
+  rsvp: 'going' | 'interested' | 'cancelled';
 }
 
 export type QueuedWrite = {
   [K in QueuedKind]: {
     kind: K;
     /**
-     * Testimony id for glory, prayer id for an intercession, and for attendance
-     * the DEVICE-LOCAL date of the tap (`features/home/queries` localDateKey).
+     * Testimony id for glory, prayer id for an intercession, event id for an
+     * RSVP, and for attendance the DEVICE-LOCAL date of the tap
+     * (`features/home/queries` localDateKey).
      *
      * That date is bookkeeping and nothing else: it is never displayed, never
      * sent, and never decides anything. `service_date` stays the server's, from

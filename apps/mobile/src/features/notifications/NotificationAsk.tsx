@@ -16,7 +16,9 @@ import { permissionState, requestPermission } from './permission';
  *
  * A short sheet that explains the value BEFORE the OS dialog, because iOS shows
  * that dialog once per install and a refusal is permanent. It never appears in
- * onboarding, and it never appears cold: a check-in has just been recorded.
+ * onboarding, and it never appears cold: a check-in has just been recorded, or
+ * an RSVP has just been given (W2.9). The sheet's footnote names whichever it
+ * was, so the reassurance is about the thing the member actually did.
  *
  * Mounted at the root next to the celebration, and DELIBERATELY BEHIND IT. The
  * first "I'm here" is both a first service and a first value moment, so both
@@ -26,7 +28,7 @@ import { permissionState, requestPermission } from './permission';
  *
  * What this does NOT do is register a token or create a channel. Those are
  * W3.3's, with the six Android channels that have to exist before anything is
- * delivered; what W2.8 owns is the moment, and the moment is a check-in.
+ * delivered; what W2.8 and W2.9 own is the moment.
  */
 export function NotificationAsk() {
   const { t } = useTranslation();
@@ -41,7 +43,7 @@ export function NotificationAsk() {
   // due: a member who granted or permanently refused elsewhere is not worth
   // interrupting, and `undetermined` is the only state this sheet can help with.
   const [askable, setAskable] = useState<boolean | null>(null);
-  const due = isMember && pending && !celebrating;
+  const due = isMember && pending !== null && !celebrating;
 
   useEffect(() => {
     if (!due || askable !== null) return;
@@ -92,7 +94,14 @@ export function NotificationAsk() {
         markAsked();
         clearPending();
       }}
-      footnote={t('rhythm:notifyFootnote')}
+      // Names the thing the member actually just did, because the whole point
+      // of the line is "this is not a toll on what you did" and a check-in
+      // sentence under an RSVP is simply untrue.
+      footnote={t(
+        pending === 'rsvp'
+          ? 'rhythm:notifyFootnoteRsvp'
+          : 'rhythm:notifyFootnote',
+      )}
     />
   );
 }

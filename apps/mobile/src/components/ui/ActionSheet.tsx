@@ -25,6 +25,13 @@ export interface ActionSheetProps {
   primaryVariant?: 'primary' | 'danger';
   /** Omitted when the sheet has one way out, like the 90-day settle notice. */
   secondaryLabel?: string;
+  /**
+   * Makes the secondary button an ACTION rather than the way out. Without it the
+   * secondary dismisses, which is right for "Not now" and wrong for "Cancel my
+   * RSVP": a sheet offering two real choices still needs the scrim and the back
+   * button as its way out, and they remain so (W2.9).
+   */
+  onSecondary?: () => void;
   /** Announced on dismiss per the 05 contract. */
   dismissAnnouncement: string;
   onDismiss: () => void;
@@ -58,6 +65,7 @@ export function ActionSheet({
   onPrimary,
   primaryVariant = 'primary',
   secondaryLabel,
+  onSecondary,
   dismissAnnouncement,
   onDismiss,
   footnote,
@@ -108,7 +116,7 @@ export function ActionSheet({
           label={secondaryLabel}
           variant="ghost"
           fullWidth
-          onPress={dismiss}
+          onPress={onSecondary ?? dismiss}
         />
       ) : null}
       {/* `.authnote{12.5px;muted;centred;margin-top:14px;line-height:1.5}`. The
