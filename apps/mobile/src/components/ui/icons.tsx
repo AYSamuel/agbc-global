@@ -105,6 +105,17 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
+// The prerequisite lock (mockup .plock / .prereq .pi). Like MailIcon, the
+// frame's <rect> is a rounded path here.
+export function LockIcon(props: IconProps) {
+  return (
+    <Svg {...base(props)}>
+      <Path d="M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" />
+      <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </Svg>
+  );
+}
+
 export function BellIcon(props: IconProps) {
   return (
     <Svg {...base(props)}>

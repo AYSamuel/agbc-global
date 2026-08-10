@@ -17,7 +17,7 @@ import {
 import { GiveHero } from '@/features/give/GiveHero';
 import { GiveRow } from '@/features/give/GiveRow';
 import { useGivingConfigQuery } from '@/features/give/queries';
-import { localizedGiveUrl } from '@/features/give/url';
+import { localizedWebsiteUrl } from '@/lib/websiteUrl';
 import { StubIcon } from '@/features/shell/StubIcon';
 import { useTheme } from '@/theme';
 
@@ -121,7 +121,7 @@ export default function Give() {
                   fullWidth
                   onPress={() => {
                     void WebBrowser.openBrowserAsync(
-                      localizedGiveUrl(config.giveUrl ?? '', i18n.language),
+                      localizedWebsiteUrl(config.giveUrl ?? '', i18n.language),
                     );
                   }}
                 />

@@ -1,5 +1,10 @@
 import { router } from 'expo-router';
 
+import i18n from 'i18next';
+
+import { addInterest } from '@/features/academy/interest';
+import { openCourseRegistration } from '@/features/academy/handoff';
+import { invalidateRegistrations } from '@/features/academy/queries';
 import { applyGloryToCaches } from '@/features/family/gloryCache';
 import { applyIntercessionToCaches } from '@/features/family/prayerCache';
 import { queueRsvp } from '@/features/events/rsvp';
@@ -84,6 +89,27 @@ export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
       // the same reason, so the finished sign-in leaves no back stack behind.
       router.replace('/rhythm');
       return Promise.resolve('done');
+    }
+    case 'course_register': {
+      // The gated action was "register for this course", which for the app
+      // means opening the website's page AS this member (ADR 0017): the mint
+      // needed the session, which is what the sign-in just created. The
+      // already_registered refusal is a quiet success here: the member is
+      // registered, the screen they land back on refetches and says so.
+      return openCourseRegistration(action.courseSlug, i18n.language).then(
+        (outcome) => {
+          if (outcome === 'already_registered') invalidateRegistrations();
+          return 'done';
+        },
+      );
+    }
+    case 'course_interest': {
+      // Online-only by decision (2026-08-10, interest.ts): no queue, so a
+      // failure here is a real failure and AuthFlow's replay toast says so.
+      return addInterest(action.courseId).then(
+        () => 'done' as const,
+        () => 'failed' as const,
+      );
     }
     // Executors land with their work items: save/notes/resume (W3.1),
     // notifications (W3.3).

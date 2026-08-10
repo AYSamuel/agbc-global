@@ -16,7 +16,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(43);
+select plan(47);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 
@@ -273,6 +273,61 @@ select is(
   (select outcome from public.mint_course_handoff(:'m1', 'grace-reset')),
   'already_registered',
   'a member already holding a live registration is told so instead of walked into paying twice');
+
+-- The mint's refusal covers everything the member can SEE, not only linked rows
+-- (20260810150000; the gap was walked on device: an email-matched row minted a
+-- checkout for a place already held). m2's SIGN-IN address on an unlinked guest
+-- row, typed with a stray capital and stray spaces, still refuses.
+insert into public.course_registrations
+  (course, format, full_name, email, city, country, amount, currency, payment_status)
+values
+  ('grace-masterclass', 'Intensive (3 weeks)', 'M Two Guest',
+   '  T033-M2@test.local ', 'Glasgow', 'Scotland, UK', 4000, 'gbp', 'paid');
+
+select is(
+  (select outcome from public.mint_course_handoff(:'m2', 'grace-masterclass')),
+  'already_registered',
+  'an UNLINKED row carrying the caller''s sign-in address refuses the mint, however it is capitalized');
+
+-- A PROVEN address (profile_emails) refuses the same way. m4 proved a second
+-- mailbox; a guest row by that mailbox is a place m4 already holds.
+\set m4 'a0000000-0000-4000-8000-0000000033a4'
+insert into auth.users (id, email) values (:'m4', 't033-m4@test.local');
+insert into public.profiles (id, email, display_name, branch_id, role, onboarded_at) values
+  (:'m4', 't033-m4@test.local', 'T033 Four', :'glasgow', 'member', now());
+insert into public.profile_emails (profile_id, email) values
+  (:'m4', 't033-m4-other@test.local');
+insert into public.course_registrations
+  (id, course, format, full_name, email, city, country, amount, currency, payment_status)
+values
+  ('c0330000-0000-4000-8000-000000000004', 'grace-reset', 'Part-time (4 weeks)',
+   'M Four Guest', 'T033-M4-Other@test.local', 'Glasgow', 'Scotland, UK', 2500, 'gbp', 'paid');
+
+select is(
+  (select outcome from public.mint_course_handoff(:'m4', 'grace-reset')),
+  'already_registered',
+  'an unlinked row carrying an address the caller PROVED refuses the mint');
+
+-- Prod rows that predate the catalog may carry course_id null after `19`'s
+-- ALTER; the refusal matches the website slug too, like the app's own matcher.
+update public.course_registrations
+  set course_id = null
+  where id = 'c0330000-0000-4000-8000-000000000004';
+
+select is(
+  (select outcome from public.mint_course_handoff(:'m4', 'grace-reset')),
+  'already_registered',
+  'a row with course_id null still refuses by its website slug');
+
+-- Cancelled frees the slot for the mint exactly as it does for the unique.
+update public.course_registrations
+  set status = 'cancelled'
+  where id = 'c0330000-0000-4000-8000-000000000004';
+
+select is(
+  (select outcome from public.mint_course_handoff(:'m4', 'grace-reset')),
+  'minted',
+  'a cancelled email-matched row leaves nothing behind: the member may register again');
 
 select is(
   (select outcome from public.mint_course_handoff(:'m2', 'further')),

@@ -500,6 +500,10 @@
   .pathcard .ptag{font-size:12.5px;color:var(--muted);margin-top:2px}
   .pathcard .pm{font-size:12.5px;color:var(--sub);margin-top:9px}
   .pathcard .plock{font-size:12px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px}
+  /* Composed 2026-08-10 (W2.9 slice 3): 02 assigns courses.pathway_summary to "the ACADEMY
+     card's own blurb", but no frame ever drew it; the pm line below it becomes the compact
+     meta (formats · fee). Same token vocabulary as .pm, one size down from the body. */
+  .pathcard .pblurb{font-size:12.5px;color:var(--sub);margin-top:7px;line-height:1.45}
   .stchip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:100px;padding:4px 10px;margin-top:10px}
   .stchip.ok{background:rgba(47,111,237,.12);color:var(--blue)}
   .stchip.enr{background:rgba(31,138,91,.14);color:var(--green)}
@@ -3072,6 +3076,13 @@
     </div>
 
     <!-- ACADEMY -->
+    <!-- Reworked 2026-08-10 (W2.9 slice 3): the cards now carry the REAL catalog (05-courses.sql)
+         and the anatomy 02 actually specifies: pathway_summary is "the ACADEMY card's own blurb"
+         (.pblurb, drawn here for the first time), and the meta line (.pm) becomes formats · fee
+         from the seed, since "In person or online" and per-course single durations never existed
+         in the data. The upcoming level is "Further levels" ("+"), not the invented Grace
+         Leadership. Guest and member see this same screen; only the member enrolled variant
+         (further down, with .stchip.enr) differs. -->
     <div class="device">
       <p class="name"><b>ACADEMY</b> · the pathway</p>
       <div class="phone">
@@ -3079,37 +3090,47 @@
         <div class="screen">
           <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Grace Academy</span><span style="width:40px"></span></div>
           <div class="introband"><div class="eye">The pathway</div><h2>Grow, one step at a time</h2><p>Grace Academy is our discipleship pathway. Start at the foundations and walk it out, at your own pace, in person or online.</p></div>
-          <div class="pathcard"><div class="step">01</div><div class="pg"><div class="pt">Grace Reset</div><div class="ptag">Foundations</div><div class="pm">6 weeks &middot; In person or online &middot; Free</div><span class="stchip ok">Available</span></div></div>
-          <div class="pathcard"><div class="step">02</div><div class="pg"><div class="pt">Grace Masterclass</div><div class="ptag">Deeper training</div><div class="pm">10 weeks &middot; In person or online &middot; &pound;45</div><div class="plock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Complete Grace Reset first</div><span class="stchip ok">Available</span></div></div>
-          <div class="pathcard up"><div class="step">03</div><div class="pg"><div class="pt">Grace Leadership</div><div class="ptag">Coming soon</div><div class="pm">Launching later this year</div><span class="stchip soon">Coming soon</span></div></div>
+          <div class="pathcard"><div class="step">01</div><div class="pg"><div class="pt">Grace Reset</div><div class="ptag">Foundations</div><div class="pblurb">Eight classes that ground you in the gospel of the grace of Christ and move you out of legalism, from the works of the law into the fruit of the Spirit.</div><div class="pm">Intensive or part-time &middot; &pound;25</div><span class="stchip ok">Available</span></div></div>
+          <div class="pathcard"><div class="step">02</div><div class="pg"><div class="pt">Grace Masterclass</div><div class="ptag">Deeper training</div><div class="pblurb">Eleven classes on the passages most often used to unsettle believers, plus the training to teach and lead a Grace Reset class yourself.</div><div class="pm">Intensive or part-time &middot; &pound;40</div><div class="plock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Complete Grace Reset first</div><span class="stchip ok">Available</span></div></div>
+          <div class="pathcard up"><div class="step">+</div><div class="pg"><div class="pt">Further levels</div><div class="ptag">The journey continues</div><div class="pblurb">The pathway continues into specialised tracks and leadership training. These levels are in preparation, and we will announce them here as soon as they open.</div><span class="stchip soon">Coming soon</span></div></div>
           <p class="formcap" style="padding-bottom:18px;padding-top:14px">New levels open through the year. We'll notify you when the next one is ready.</p>
         </div>
       </div>
     </div>
 
     <!-- COURSE -->
+    <!-- Reworked 2026-08-10 (W2.9 slice 3) to the real catalog shape: the hero eyebrow is
+         courses.step ("Level One · Start here"; falls back to level · level_name when step is
+         empty), the hero body is summary, and the old Format/Duration/Fee chips became
+         per-format chips because durations are PER FORMAT in the data ({intensive, part_time}
+         localized durations); "In person or online" never existed. fee_note lands as the
+         .formcap under the chips. Outline rows show the topic titles (13: "numbered topics");
+         the localized bodies + scripture refs exist in the data but stay undrawn for now.
+         This same screen is the guest view (Register just gates) and the
+         cancelled-then-registered-again view (a cancelled row leaves no trace here). -->
     <div class="device">
       <p class="name"><b>COURSE</b> · detail (Grace Reset)</p>
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
           <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Course</span><span style="width:40px"></span></div>
-          <div class="chero"><div class="eye">Level 01 &middot; Foundations</div><h1>Grace Reset</h1><p>Start here. The foundations of grace, identity, and life in God's family.</p></div>
-          <div class="metarow"><div class="metachip"><b>Format</b>In person or online</div><div class="metachip"><b>Duration</b>6 weeks, weekly</div><div class="metachip"><b>Fee</b>Free</div></div>
+          <div class="chero"><div class="eye">Level One &middot; Start here</div><h1>Grace Reset</h1><p>Level One of Grace Academy. Eight classes that ground you in the foundational truths of the gospel of the grace of Christ and carry you out of legalism, from the works of the law and the works of the flesh into the fruit of the Spirit. Anchored in Hebrews 13:9a.</p></div>
+          <div class="metarow"><div class="metachip"><b>Intensive</b>2 weeks</div><div class="metachip"><b>Part-time</b>4 weeks</div><div class="metachip"><b>Fee</b>&pound;25</div></div>
+          <p class="formcap">Workbook included.</p>
           <div class="mlabel">Outline</div>
           <div class="numlist">
-            <div class="numrow"><span class="nn">1</span><span class="nt">Grace, not performance</span></div>
-            <div class="numrow"><span class="nn">2</span><span class="nt">Your identity in Christ</span></div>
-            <div class="numrow"><span class="nn">3</span><span class="nt">The Word as your foundation</span></div>
-            <div class="numrow"><span class="nn">4</span><span class="nt">Prayer and the Spirit</span></div>
-            <div class="numrow"><span class="nn">5</span><span class="nt">Belonging to the family</span></div>
-            <div class="numrow"><span class="nn">6</span><span class="nt">Walking it out</span></div>
+            <div class="numrow"><span class="nn">1</span><span class="nt">Forgiveness of sin and righteousness by faith</span></div>
+            <div class="numrow"><span class="nn">2</span><span class="nt">Eternal salvation and new creation reality</span></div>
+            <div class="numrow"><span class="nn">3</span><span class="nt">The place of good works in God's kingdom</span></div>
+            <div class="numrow"><span class="nn">4</span><span class="nt">The baptism of the Holy Spirit</span></div>
+            <div class="numrow"><span class="nn">5</span><span class="nt">Prayer and devotion practice week</span></div>
+            <div class="numrow"><span class="nn">6</span><span class="nt">The purpose of knowing the eternal nature of salvation</span></div>
           </div>
           <div class="mlabel">What you'll gain</div>
-          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">A clear understanding of grace over works</span></div>
-          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">Confidence in who you are in Christ</span></div>
-          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">A daily rhythm of Word and prayer</span></div>
-          <div class="gainrow" style="padding-bottom:16px"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">Real connection into the church family</span></div>
+          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">Settled assurance that your sins are forgiven and that righteousness is received, not earned</span></div>
+          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">Freedom from legalism, with a clear answer on where good works belong</span></div>
+          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">The baptism of the Holy Spirit, and ten reasons to pray in tongues every day</span></div>
+          <div class="gainrow" style="padding-bottom:16px"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">A daily rhythm of prayer and the Word that outlasts the course</span></div>
         </div>
         <div class="actionbar"><button class="btn primary">Register</button></div>
       </div>
@@ -3550,40 +3571,170 @@
     </div>
 
     <!-- EDGE: COURSE already registered -->
+    <!-- Reworked 2026-08-10 (W2.9 slice 3): the chips now show what the ROW actually knows:
+         its format free text (the website's form value, English by design so Stripe receipts
+         read consistently), what was paid (amount + currency off the row, so the NG fixture
+         renders ₦), and the branch display name ONLY when the row carries one. The old
+         "Starts" chip had no data source anywhere and is gone. The band copy is the pending
+         state; the confirmed variant is the next frame. -->
     <div class="device">
       <p class="name"><b>COURSE</b> · already registered (state)</p>
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
           <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Course</span><span style="width:40px"></span></div>
-          <div class="chero"><div class="eye">Level 01 &middot; Foundations</div><h1>Grace Reset</h1><p>Start here. The foundations of grace, identity, and life in God's family.</p></div>
+          <div class="chero"><div class="eye">Level One &middot; Start here</div><h1>Grace Reset</h1><p>Level One of Grace Academy. Eight classes that ground you in the foundational truths of the gospel of the grace of Christ and carry you out of legalism, from the works of the law and the works of the flesh into the fruit of the Spirit. Anchored in Hebrews 13:9a.</p></div>
           <div class="statusband" style="background:rgba(31,138,91,.1);color:var(--green)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're registered &middot; pending confirmation</div>
-          <div class="metarow"><div class="metachip"><b>Format</b>In person</div><div class="metachip"><b>Starts</b>Sun 24 Aug</div><div class="metachip"><b>Branch</b>AGBC Berlin</div></div>
+          <div class="metarow"><div class="metachip"><b>Format</b>Part-time (4 weeks)</div><div class="metachip"><b>Paid</b>&pound;25</div><div class="metachip"><b>Branch</b>AGBC Berlin</div></div>
           <div class="mlabel">Outline</div>
           <div class="numlist">
-            <div class="numrow"><span class="nn">1</span><span class="nt">Grace, not performance</span></div>
-            <div class="numrow"><span class="nn">2</span><span class="nt">Your identity in Christ</span></div>
-            <div class="numrow"><span class="nn">3</span><span class="nt">The Word as your foundation</span></div>
+            <div class="numrow"><span class="nn">1</span><span class="nt">Forgiveness of sin and righteousness by faith</span></div>
+            <div class="numrow"><span class="nn">2</span><span class="nt">Eternal salvation and new creation reality</span></div>
+            <div class="numrow"><span class="nn">3</span><span class="nt">The place of good works in God's kingdom</span></div>
           </div>
         </div>
-        <div class="actionbar"><div class="stat">We'll confirm your place and cohort shortly.</div><button class="btn outline">Cancel registration</button></div>
+        <div class="actionbar"><div class="stat">We'll confirm your place and cohort shortly.</div><button class="btn outline">Email us about this registration</button></div>
       </div>
     </div>
 
     <!-- EDGE: COURSE upcoming (Notify me) -->
+    <!-- Reworked 2026-08-10 (W2.9 slice 3): the real upcoming row is "Further levels" ("+",
+         level_name "The journey continues", step empty so the eyebrow falls back to
+         level_name), and it carries NO formats, fee, outline or gains, so the honest screen
+         is hero + chip + the Notify action and nothing invented. Sections render only when
+         their data exists. Guests tapping Notify me get the GATE sheet. -->
     <div class="device">
       <p class="name"><b>COURSE</b> · upcoming (Notify me)</p>
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
           <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Course</span><span style="width:40px"></span></div>
-          <div class="chero"><div class="eye">Level 03 &middot; Coming soon</div><h1>Grace Leadership</h1><span class="stchip soon" style="margin:2px 0 8px">Coming soon</span><p>Training for those God is raising to serve and lead in the family.</p></div>
-          <div class="metarow"><div class="metachip"><b>Duration</b>12 weeks</div><div class="metachip"><b>Launching</b>Later this year</div></div>
-          <div class="mlabel">What to expect</div>
-          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">Character and calling before position</span></div>
-          <div class="gainrow"><span class="gi"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="gt">Leading a small group with grace</span></div>
+          <div class="chero"><div class="eye">The journey continues</div><h1>Further levels</h1><span class="stchip soon" style="margin:2px 0 8px">Coming soon</span><p>The pathway continues into specialised tracks and leadership training. These levels are in preparation, and we will announce them here as soon as they open.</p></div>
         </div>
         <div class="actionbar"><button class="btn primary"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg> Notify me</button><p class="sub">We'll let you know the moment it opens.</p></div>
+      </div>
+    </div>
+
+    <!-- EDGE: COURSE upcoming, interest recorded -->
+    <!-- Composed 2026-08-10 (W2.9 slice 3): the state Notify me leaves behind. A surface is a
+         state: the tap must land somewhere visible, and "withdraw" (course_interest DELETE,
+         13) needs a home. Same actionbar grammar as the registered state: a quiet stat line
+         and an outline action, no second primary. -->
+    <div class="device">
+      <p class="name"><b>COURSE</b> · upcoming, interest recorded (withdraw)</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Course</span><span style="width:40px"></span></div>
+          <div class="chero"><div class="eye">The journey continues</div><h1>Further levels</h1><span class="stchip soon" style="margin:2px 0 8px">Coming soon</span><p>The pathway continues into specialised tracks and leadership training. These levels are in preparation, and we will announce them here as soon as they open.</p></div>
+        </div>
+        <div class="actionbar"><div class="stat">You're on the list. We'll tell you the moment it opens.</div><button class="btn outline">Remove me from the list</button></div>
+      </div>
+    </div>
+
+    <!-- EDGE: COURSE prerequisite banner (Grace Masterclass) -->
+    <!-- Composed 2026-08-10 (W2.9 slice 3): .prereq has lived in the CSS since the Academy
+         frames were drawn and no frame ever used it; 13 explicitly asks for "prerequisite
+         banner if any (e.g. Masterclass requires Reset)" with a link and NO hard block.
+         Register stays primary; the banner informs, the website enforces whatever it
+         enforces. -->
+    <div class="device">
+      <p class="name"><b>COURSE</b> · with prerequisite (Grace Masterclass)</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Course</span><span style="width:40px"></span></div>
+          <div class="chero"><div class="eye">Level Two &middot; Next step after Grace Reset</div><h1>Grace Masterclass</h1><p>Level Two of Grace Academy. Eleven classes that take on the passages most often used to unsettle believers, one at a time, and train you to teach and lead a Grace Reset class yourself.</p></div>
+          <div class="prereq"><span class="pi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="pt2">Grace Masterclass builds on Grace Reset. If you haven't taken it yet, <a>start with Grace Reset</a>.</span></div>
+          <div class="metarow"><div class="metachip"><b>Intensive</b>3 weeks</div><div class="metachip"><b>Part-time</b>6 weeks</div><div class="metachip"><b>Fee</b>&pound;40</div></div>
+          <p class="formcap">Workbook included.</p>
+          <div class="mlabel">Outline</div>
+          <div class="numlist">
+            <div class="numrow"><span class="nn">1</span><span class="nt">Faith without works is dead</span></div>
+            <div class="numrow"><span class="nn">2</span><span class="nt">The one who does right is righteous</span></div>
+            <div class="numrow"><span class="nn">3</span><span class="nt">Those who endure to the end shall be saved</span></div>
+            <div class="numrow"><span class="nn">4</span><span class="nt">Deliberate sin and the unpardonable sin</span></div>
+          </div>
+        </div>
+        <div class="actionbar"><button class="btn primary">Register</button></div>
+      </div>
+    </div>
+
+    <!-- EDGE: COURSE registered, confirmed -->
+    <!-- Composed 2026-08-10 (W2.9 slice 3): status enum(pending|confirmed|cancelled) has a
+         confirmed value the pending frame's copy cannot serve; a copy variant is still a
+         state. Same band, settled copy; cancel remains available (the trigger allows
+         pending OR confirmed -> cancelled). Data mirrors the dev fixture: Marieke's
+         handoff-born Masterclass row, no branch on the row so no Branch chip. -->
+    <div class="device">
+      <p class="name"><b>COURSE</b> · registered, confirmed</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Course</span><span style="width:40px"></span></div>
+          <div class="chero"><div class="eye">Level Two &middot; Next step after Grace Reset</div><h1>Grace Masterclass</h1><p>Level Two of Grace Academy. Eleven classes that take on the passages most often used to unsettle believers, one at a time, and train you to teach and lead a Grace Reset class yourself.</p></div>
+          <div class="statusband" style="background:rgba(31,138,91,.1);color:var(--green)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're registered &middot; your place is confirmed</div>
+          <div class="metarow"><div class="metachip"><b>Format</b>Part-time (6 weeks)</div><div class="metachip"><b>Paid</b>&pound;40</div></div>
+          <div class="mlabel">Outline</div>
+          <div class="numlist">
+            <div class="numrow"><span class="nn">1</span><span class="nt">Faith without works is dead</span></div>
+            <div class="numrow"><span class="nn">2</span><span class="nt">The one who does right is righteous</span></div>
+            <div class="numrow"><span class="nn">3</span><span class="nt">Those who endure to the end shall be saved</span></div>
+          </div>
+        </div>
+        <div class="actionbar"><div class="stat">See you in class. Your branch will share the details.</div><button class="btn outline">Email us about this registration</button></div>
+      </div>
+    </div>
+
+    <!-- EDGE: REGISTRATION-CONTACT · the sheet behind "Email us" -->
+    <!-- Composed 2026-08-10 (W2.9 slice 3, replacing the in-app cancel confirm the same
+         day; Ayo's call in-session): members do NOT cancel from the app. A paid place is
+         released by a HUMAN after a conversation, so the registered state's action opens a
+         message instead, sent through the same contact-form function the CONTACT screen
+         uses (same inbox, same rate limit). The course and a short registration reference
+         ride along automatically so the team knows which row without the member typing it;
+         the member types only what they want to say. The merged cancel grant on
+         course_registrations stays as slice 2 built it, dormant from the app; staff
+         cancel via their own policies. 13 rewritten with this decision. -->
+    <div class="device">
+      <p class="name"><b>REGISTRATION-CONTACT</b> · the sheet behind "Email us"</p>
+      <div class="phone gatephone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen" aria-hidden="true">
+          <div class="chead"><span style="width:40px"></span><span class="ct">Course</span><span style="width:40px"></span></div>
+          <div class="chero"><div class="eye">Level One &middot; Start here</div><h1>Grace Reset</h1></div>
+          <div class="statusband" style="background:rgba(31,138,91,.1);color:var(--green)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> You're registered &middot; pending confirmation</div>
+        </div>
+        <div class="gatedim"></div>
+        <div class="gatesheet">
+          <div class="grab"></div>
+          <h3>About your registration</h3>
+          <p>Goes to the AGBC team with your Grace Reset registration attached. We'll reply
+            by email, including if you'd like to cancel.</p>
+          <div class="txtarea" style="margin:0 0 14px">I'd like to cancel my registration, please.</div>
+          <button class="btn primary">Send</button>
+          <div class="actrow">Not now</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDGE: ACADEMY member, one level enrolled -->
+    <!-- Composed 2026-08-10 (W2.9 slice 3): .stchip.enr has been in the CSS unused since the
+         Academy frames were drawn, and 13's first user story is "I see the pathway and where
+         I am in it". A member with a live (pending or confirmed) registration sees that card
+         wear Enrolled instead of Available; guests and unregistered members see the base
+         frame. Cancelled rows leave no chip behind. -->
+    <div class="device">
+      <p class="name"><b>ACADEMY</b> · member, one level enrolled</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="ct">Grace Academy</span><span style="width:40px"></span></div>
+          <div class="introband"><div class="eye">The pathway</div><h2>Grow, one step at a time</h2><p>Grace Academy is our discipleship pathway. Start at the foundations and walk it out, at your own pace, in person or online.</p></div>
+          <div class="pathcard"><div class="step">01</div><div class="pg"><div class="pt">Grace Reset</div><div class="ptag">Foundations</div><div class="pblurb">Eight classes that ground you in the gospel of the grace of Christ and move you out of legalism, from the works of the law into the fruit of the Spirit.</div><div class="pm">Intensive or part-time &middot; &pound;25</div><span class="stchip enr">Enrolled</span></div></div>
+          <div class="pathcard"><div class="step">02</div><div class="pg"><div class="pt">Grace Masterclass</div><div class="ptag">Deeper training</div><div class="pblurb">Eleven classes on the passages most often used to unsettle believers, plus the training to teach and lead a Grace Reset class yourself.</div><div class="pm">Intensive or part-time &middot; &pound;40</div><div class="plock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Complete Grace Reset first</div><span class="stchip ok">Available</span></div></div>
+          <div class="pathcard up"><div class="step">+</div><div class="pg"><div class="pt">Further levels</div><div class="ptag">The journey continues</div><div class="pblurb">The pathway continues into specialised tracks and leadership training. These levels are in preparation, and we will announce them here as soon as they open.</div><span class="stchip soon">Coming soon</span></div></div>
+        </div>
       </div>
     </div>
 
@@ -4033,9 +4184,9 @@
               <div class="tcol">
                 <div class="thead"><div style="display:flex;align-items:center;gap:12px"><button class="ic-btn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1>Grace Academy</h1></div></div>
                 <div class="introband"><div class="eye">The pathway</div><h2>Grow, one step at a time</h2><p>Grace Academy is our discipleship pathway. Start at the foundations and walk it out, at your own pace, in person or online.</p></div>
-                <div class="pathcard"><div class="step">01</div><div class="pg"><div class="pt">Grace Reset</div><div class="ptag">Foundations</div><div class="pm">6 weeks &middot; In person or online &middot; Free</div><span class="stchip ok">Available</span></div></div>
-                <div class="pathcard"><div class="step">02</div><div class="pg"><div class="pt">Grace Masterclass</div><div class="ptag">Deeper training</div><div class="pm">10 weeks &middot; In person or online &middot; &pound;45</div><span class="stchip ok">Available</span></div></div>
-                <div class="pathcard up"><div class="step">03</div><div class="pg"><div class="pt">Grace Leadership</div><div class="ptag">Coming soon</div><div class="pm">Launching later this year</div><span class="stchip soon">Coming soon</span></div></div>
+                <div class="pathcard"><div class="step">01</div><div class="pg"><div class="pt">Grace Reset</div><div class="ptag">Foundations</div><div class="pblurb">Eight classes that ground you in the gospel of the grace of Christ and move you out of legalism, from the works of the law into the fruit of the Spirit.</div><div class="pm">Intensive or part-time &middot; &pound;25</div><span class="stchip ok">Available</span></div></div>
+                <div class="pathcard"><div class="step">02</div><div class="pg"><div class="pt">Grace Masterclass</div><div class="ptag">Deeper training</div><div class="pblurb">Eleven classes on the passages most often used to unsettle believers, plus the training to teach and lead a Grace Reset class yourself.</div><div class="pm">Intensive or part-time &middot; &pound;40</div><div class="plock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Complete Grace Reset first</div><span class="stchip ok">Available</span></div></div>
+                <div class="pathcard up"><div class="step">+</div><div class="pg"><div class="pt">Further levels</div><div class="ptag">The journey continues</div><div class="pblurb">The pathway continues into specialised tracks and leadership training. These levels are in preparation, and we will announce them here as soon as they open.</div><span class="stchip soon">Coming soon</span></div></div>
                 <div style="height:18px"></div>
               </div>
             </div>

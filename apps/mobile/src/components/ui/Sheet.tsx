@@ -1,7 +1,9 @@
 import { useCallback, type ReactNode } from 'react';
 import {
   AccessibilityInfo,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -51,6 +53,14 @@ export interface SheetProps {
   dismissLabel: string;
   /** Every exit runs this; wrap it with `useSheetDismiss` so every exit also announces. */
   onDismiss: () => void;
+  /**
+   * Sheets that hold a text input set this so the keyboard lifts the sheet
+   * instead of covering its primary action (standards/mobile.md: the keyboard
+   * is an inset). Opt-in and inert when false: a Modal escapes the window's
+   * ordinary inset handling on iOS, so the sheet must avoid the keyboard
+   * itself. First needed by REGISTRATION-CONTACT (W2.9 slice 3).
+   */
+  avoidKeyboard?: boolean;
   children: ReactNode;
 }
 
@@ -72,6 +82,7 @@ export function Sheet({
   visible,
   dismissLabel,
   onDismiss,
+  avoidKeyboard = false,
   children,
 }: SheetProps) {
   const { colors } = useTheme();
@@ -84,7 +95,11 @@ export function Sheet({
       animationType="slide"
       onRequestClose={onDismiss}
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+      <KeyboardAvoidingView
+        enabled={avoidKeyboard}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1, justifyContent: 'flex-end' }}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={dismissLabel}
@@ -132,7 +147,7 @@ export function Sheet({
             {children}
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

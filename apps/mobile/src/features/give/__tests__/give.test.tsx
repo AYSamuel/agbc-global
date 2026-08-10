@@ -5,7 +5,7 @@ import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
 import type { GivingConfig } from '../queries';
-import { localizedGiveUrl } from '../url';
+import { localizedWebsiteUrl } from '@/lib/websiteUrl';
 
 import Give from '../../../../app/(tabs)/give';
 import GiveBank from '../../../../app/give/bank';
@@ -90,24 +90,24 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe('localizedGiveUrl (docs/spec/12: match the giver language)', () => {
+describe('localizedWebsiteUrl (docs/spec/12: match the giver language)', () => {
   const base = 'https://www.agbcglobal.com/give';
 
   test('English keeps the root path', () => {
-    expect(localizedGiveUrl(base, 'en')).toBe(base);
+    expect(localizedWebsiteUrl(base, 'en')).toBe(base);
   });
 
   test('other locales are prefixed', () => {
-    expect(localizedGiveUrl(base, 'de')).toBe(
+    expect(localizedWebsiteUrl(base, 'de')).toBe(
       'https://www.agbcglobal.com/de/give',
     );
-    expect(localizedGiveUrl(base, 'fr')).toBe(
+    expect(localizedWebsiteUrl(base, 'fr')).toBe(
       'https://www.agbcglobal.com/fr/give',
     );
   });
 
   test('region-tagged locales resolve to their base language', () => {
-    expect(localizedGiveUrl(base, 'nl-NL')).toBe(
+    expect(localizedWebsiteUrl(base, 'nl-NL')).toBe(
       'https://www.agbcglobal.com/nl/give',
     );
   });
