@@ -1,6 +1,19 @@
 # FENCED SUPABASE OBJECTS (one name per line; lines starting with # are ignored).
 # These belong to the agbc WEBSITE living in the shared prod project. No migration,
 # policy, or GRANT may reference or modify them; CI's fence-guard greps migrations
-# against this list. PLACEHOLDER until the docs/spec/19 audit (Track P2) fills it;
-# until then every pre-existing prod object is treated as fenced by convention
-# (see CLAUDE.md), which CI cannot check mechanically.
+# against this list. A failure on any of these is a DESIGN ERROR to stop on, never
+# something to work around (ADR 0017).
+#
+# Filled 2026-08-09 from the Track P2 audit (docs/runbooks/prod-audit-2026-07-30.md).
+# `course_registrations` is DELIBERATELY absent: ADR 0017 lowered the fence on that
+# one table so the app and the website share it (additive changes only; the website's
+# columns are listed in CLAUDE.md). `donations` stays fenced exactly as audited, and
+# its policies are covered transitively: no policy on it can be touched without
+# writing the table's name, which this list catches.
+donations
+donations_pkey
+donations_pi_uniq
+donations_session_uniq
+donations_stripe_invoice_id_key
+donations_user_id_idx
+donations_user_id_fkey

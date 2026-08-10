@@ -14,6 +14,7 @@
     "test:db": "supabase test db",
     "db:reset": "supabase db reset && node scripts/sync-local-sermons.mjs && node scripts/arm-local-jobs.mjs",
     "db:sync-sermons": "node scripts/sync-local-sermons.mjs",
+    "db:convert-courses": "node scripts/convert-course-seeds.mjs",
     "jobs:arm-local": "node scripts/arm-local-jobs.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -21,13 +21,25 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 - **Register** → `REGISTER` (gate).
 - Data from `courses/*.json` (name, level, step, summary, outline, gains, prereq, fee, upcoming).
 
-### `REGISTER`
-- **Checkout-style** form (design already refined): format selector (**In person / Online**), name + contact (prefilled from `profiles`, not stored again), **branch** (optional, defaults to home branch), notes (stored in `course_registrations.notes`, see `02`); **fee summary** (live total); submit.
-- Submit → `course_registrations` (`status = pending` or `confirmed` per church policy) → `REGISTER-CONFIRM` (checkmark, what happens next).
-- Prereq enforcement: if required course not done, show prereq banner + link (don't hard-block v1 unless church wants).
+### `REGISTER` (superseded 2026-08-09, ADR 0017)
+- **The app no longer registers anybody.** Courses are delivered on a third platform and
+  every course is paid, so registration and payment both happen on the WEBSITE, and
+  **Register** opens the website's own registration page in an in-app browser exactly as
+  `12` does for giving. One form, one payment, one row.
+- The handoff carries a short-lived, single-use token bound to (profile, course). The
+  website resolves it server-side, prefills, and writes `profile_id`, `source = 'app'` and
+  `link_method = 'handoff'`, so an app-started registration is linked from birth and needs
+  no matching afterwards. The token is opaque; `profile_id` is never in the URL.
+- The app therefore has **no member INSERT on `course_registrations`**; it reads them.
+- Prereq enforcement: if a required course is not done, show the prereq banner + link
+  before handing off (don't hard-block v1 unless the church wants).
+- The previously refined in-app checkout form (format selector, name/contact prefill,
+  branch, notes, fee summary) is retired with this change, along with its
+  `REGISTER` / `REGISTER-CONFIRM` mockup frames. Kept in the mockup for history, not built.
 
-### `REGISTER-CONFIRM`
-- Confirmation + next steps (when it starts, how they'll be contacted). Back to Academy/Home.
+### `REGISTER-CONFIRM` (superseded 2026-08-09, ADR 0017)
+- The website shows its own confirmation. Returning to the app, `COURSE` simply reads as
+  registered.
 
 ## Data
 - `courses`, `course_registrations`. Seed courses from `agbc/src/content/courses/*.json` + `academy/*.json`.
@@ -35,8 +47,8 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 ## States / edge cases
 - **Guest:** browse academy/courses; Register → gate (returns to registration).
 - **Upcoming course:** "Notify me" instead of Register; records a `course_interest` row (unique per member per course, see `02`) so admins can actually notify interested members when the level opens (`17`).
-- **Fee:** display only in v1 (payment handled offline / on web / in person) unless church specifies in-app payment (then follow giving-style link-out).
-- **Submit fails:** inline error + retry, form state preserved.
+- **Fee:** displayed in the app, charged on the website (ADR 0017). Regional pricing comes from `course_fees_regional`; both current courses are paid (£40 Masterclass, £25 Reset, with Nigeria overrides), so there is no free path. Because the course itself runs on a third platform, this is a real-world service booked off-platform: external payment is REQUIRED and **no Apple IAP question arises**. Never add in-app purchase here without re-checking policy.
+- **Handoff fails / member cancels in the browser:** returns to `COURSE`, still unregistered, no error state beyond the browser's own (same as `12` §giving). The token simply expires unused.
 - **Already registered:** show status ("You're registered: pending confirmation") plus a **Cancel registration** action (confirm sheet). Member UPDATE on own rows is trigger-limited to the single transition pending/confirmed → cancelled (no other column, no un-cancel; re-registering creates a new row per the partial unique key). The coordinator sees the cancellation in the dashboard; the member gets the transactional confirmation.
 - **"Notify me" delivery:** when a course opens, the dashboard's "Notify interested members" action sends the transactional `course_opened` notification to every `course_interest` row and deletes them (interest is consumed); see `17` §4.
 
@@ -46,9 +58,12 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 ## Notifications
 - Registration received/confirmed. Course starting soon reminder. Deep-link → `COURSE`.
 
-## Acceptance criteria
+## Acceptance criteria *(amended 2026-08-09 with ADR 0017: the app registers nobody)*
 - [ ] Pathway + courses render from seeded content.
-- [ ] Register gates for guests and records a registration with format + branch.
+- [ ] Register gates for guests; for members it opens the website's registration page in
+      an in-app browser, carrying the handoff token when one could be minted.
+- [ ] A registration made on the website (either address the member has proven) shows as
+      registered in the app; the member is never walked into paying twice.
 - [ ] Prerequisite is surfaced where relevant.
 - [ ] Upcoming courses never present a dead Register button.
-- [ ] Confirmation clearly states next steps.
+- [ ] Cancel registration works and is the member's ONLY write on the row.

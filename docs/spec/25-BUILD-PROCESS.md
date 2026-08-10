@@ -216,9 +216,10 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
   of `10` (one missed week is covered), with both docs corrected.
 
 **W2.9 · RSVP + Academy + profile slice**
-- Refs: `11` (RSVP), `13`, `02` (courses tables), `16` (profile edit).
+- Refs: `11` (RSVP), `13`, `02` (courses tables), `16` (profile edit), ADR 0017.
 - Build BE: courses + course_fees_regional + course_registrations + course_interest migrations + RLS + pgTAP (cancel-only transition, partial unique) + seed conversion script (symbol majors → minor units + ISO currency, NG overrides).
-- Build FE: RSVP on EVENT-DETAIL (going/interested/cancel, gate, add-to-calendar via expo-calendar, share); ACADEMY pathway, COURSE, REGISTER (prefill, fee summary, format/branch), REGISTER-CONFIRM, already-registered + cancel, upcoming → Notify me (`course_interest`); profile edit (name, avatar upload). **Home branch is NOT edited here** (ADR 0015): it moved into the W2.7 people slice as a request-and-approve flow, with a second entry point on the `BRANCH-SWITCH` sheet (`07`). If that slice has shipped by the time this item runs, this screen only links to it.
+- **Amended 2026-08-09 (ADR 0017, while building slice 2):** `course_registrations` is ONE table SHARED with the live website, so the backend also carries `profile_emails` + the claim flow (`email-claim`), the handoff (`course-handoff` + redeem RPC), the column-grant matrix on the shared table, and the fence-guard update; the app never writes a registration, and the REGISTER / REGISTER-CONFIRM screens are retired (`13`). The website's flag-gated half of the handoff lives in `Desktop/agbc` (PR opened from this slice; merged behind Track P P1 sequencing).
+- Build FE: RSVP on EVENT-DETAIL (going/interested/cancel, gate, add-to-calendar via expo-calendar, share); ACADEMY pathway, COURSE (Register hands off to the website; already-registered + cancel), upcoming → Notify me (`course_interest`); the "add another email" claim surface (frame to be composed + approved first); profile edit (name, avatar upload). **Home branch is NOT edited here** (ADR 0015): it moved into the W2.7 people slice as a request-and-approve flow, with a second entry point on the `BRANCH-SWITCH` sheet (`07`). If that slice has shipped by the time this item runs, this screen only links to it.
 - Done: `11` + `13` acceptance criteria; RSVP against a cancelled event rejected server-side and reconciled quietly.
 
 **W2.10 · Analytics + crash reporting + Phase 2 exit**

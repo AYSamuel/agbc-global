@@ -354,6 +354,303 @@ export type Database = {
         }
         Relationships: []
       }
+      course_fees_regional: {
+        Row: {
+          country_code: string
+          course_id: string
+          created_at: string
+          currency: string
+          fee_minor: number
+        }
+        Insert: {
+          country_code: string
+          course_id: string
+          created_at?: string
+          currency: string
+          fee_minor: number
+        }
+        Update: {
+          country_code?: string
+          course_id?: string
+          created_at?: string
+          currency?: string
+          fee_minor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_fees_regional_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_handoff_tokens: {
+        Row: {
+          course_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          profile_id: string
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          profile_id: string
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          profile_id?: string
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_handoff_tokens_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_handoff_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_interest: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_interest_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_interest_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_registrations: {
+        Row: {
+          amount: number
+          branch: string | null
+          branch_id: string | null
+          city: string
+          country: string
+          course: string
+          course_id: string | null
+          created_at: string
+          currency: string
+          email: string
+          format: string
+          full_name: string
+          id: string
+          link_method:
+            | Database["public"]["Enums"]["course_registration_link_method"]
+            | null
+          linked_at: string | null
+          linked_by: string | null
+          notes: string | null
+          payment_status: string
+          profile_id: string | null
+          source: Database["public"]["Enums"]["course_registration_source"]
+          status: Database["public"]["Enums"]["course_registration_status"]
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount: number
+          branch?: string | null
+          branch_id?: string | null
+          city: string
+          country: string
+          course: string
+          course_id?: string | null
+          created_at?: string
+          currency?: string
+          email: string
+          format: string
+          full_name: string
+          id?: string
+          link_method?:
+            | Database["public"]["Enums"]["course_registration_link_method"]
+            | null
+          linked_at?: string | null
+          linked_by?: string | null
+          notes?: string | null
+          payment_status?: string
+          profile_id?: string | null
+          source?: Database["public"]["Enums"]["course_registration_source"]
+          status?: Database["public"]["Enums"]["course_registration_status"]
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount?: number
+          branch?: string | null
+          branch_id?: string | null
+          city?: string
+          country?: string
+          course?: string
+          course_id?: string | null
+          created_at?: string
+          currency?: string
+          email?: string
+          format?: string
+          full_name?: string
+          id?: string
+          link_method?:
+            | Database["public"]["Enums"]["course_registration_link_method"]
+            | null
+          linked_at?: string | null
+          linked_by?: string | null
+          notes?: string | null
+          payment_status?: string
+          profile_id?: string | null
+          source?: Database["public"]["Enums"]["course_registration_source"]
+          status?: Database["public"]["Enums"]["course_registration_status"]
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_registrations_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_registrations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_registrations_linked_by_fkey"
+            columns: ["linked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_registrations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          created_at: string
+          fee_currency: string | null
+          fee_minor: number | null
+          fee_note: Json | null
+          formats: Json | null
+          gains: Json
+          id: string
+          level: string
+          level_name: string
+          name: string
+          order: number
+          outline: Json
+          pathway_summary: Json | null
+          prereq_slug: string | null
+          slug: string
+          step: string
+          summary: Json
+          upcoming: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fee_currency?: string | null
+          fee_minor?: number | null
+          fee_note?: Json | null
+          formats?: Json | null
+          gains?: Json
+          id?: string
+          level: string
+          level_name: string
+          name: string
+          order?: number
+          outline?: Json
+          pathway_summary?: Json | null
+          prereq_slug?: string | null
+          slug: string
+          step?: string
+          summary: Json
+          upcoming?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fee_currency?: string | null
+          fee_minor?: number | null
+          fee_note?: Json | null
+          formats?: Json | null
+          gains?: Json
+          id?: string
+          level?: string
+          level_name?: string
+          name?: string
+          order?: number
+          outline?: Json
+          pathway_summary?: Json | null
+          prereq_slug?: string | null
+          slug?: string
+          step?: string
+          summary?: Json
+          upcoming?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_prereq_slug_fkey"
+            columns: ["prereq_slug"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       daily_verses: {
         Row: {
           created_at: string
@@ -415,6 +712,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "devices_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_claims: {
+        Row: {
+          attempts: number
+          code_hash: string
+          code_salt: string
+          consumed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          code_salt: string
+          consumed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          code_salt?: string
+          consumed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_claims_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -900,6 +1241,38 @@ export type Database = {
           target_redacted_at?: string | null
         }
         Relationships: []
+      }
+      profile_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          profile_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          profile_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          profile_id?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_emails_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1630,6 +2003,7 @@ export type Database = {
         Args: { approve: boolean; note?: string; request: string }
         Returns: undefined
       }
+      email_belongs_to_caller: { Args: { target: string }; Returns: boolean }
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }
         Returns: string
@@ -1651,6 +2025,14 @@ export type Database = {
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      mint_course_handoff: {
+        Args: { p_course_slug: string; p_profile: string }
+        Returns: {
+          expires_at: string
+          outcome: string
+          token: string
+        }[]
+      }
       moderation_alert_batch: {
         Args: { overdue_after?: string }
         Returns: {
@@ -1689,7 +2071,23 @@ export type Database = {
         Args: { content_type: string; object_name: string }
         Returns: undefined
       }
+      redeem_course_handoff: {
+        Args: { p_consume?: boolean; p_course_slug: string; p_token: string }
+        Returns: {
+          email: string
+          full_name: string
+          outcome: string
+          profile_id: string
+        }[]
+      }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
+      request_email_claim: {
+        Args: { p_email: string; p_profile: string }
+        Returns: {
+          code: string
+          outcome: string
+        }[]
+      }
       rhythm_gathering_rungs: { Args: { total: number }; Returns: number[] }
       rhythm_state: {
         Args: { p_branch_id?: string }
@@ -1715,6 +2113,13 @@ export type Database = {
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
+      verify_email_claim: {
+        Args: { p_code: string; p_email: string; p_profile: string }
+        Returns: {
+          linked_count: number
+          outcome: string
+        }[]
+      }
       verse_alert_batch: {
         Args: { floor_days?: number }
         Returns: {
@@ -1734,6 +2139,13 @@ export type Database = {
       branch_request_status: "pending" | "approved" | "rejected" | "cancelled"
       branch_status: "active" | "archived"
       content_status: "pending" | "approved" | "rejected" | "removed"
+      course_registration_link_method:
+        | "handoff"
+        | "email_auto"
+        | "self"
+        | "leader"
+      course_registration_source: "app" | "website" | "import"
+      course_registration_status: "pending" | "confirmed" | "cancelled"
       device_platform: "ios" | "android"
       event_status: "scheduled" | "cancelled"
       intercession_state: "committed" | "prayed"
@@ -1741,6 +2153,7 @@ export type Database = {
         | "role_changed"
         | "branch_changed"
         | "branch_request_rejected"
+        | "registration_linked"
       profile_role: "member" | "leader" | "admin"
       report_status: "open" | "actioned" | "dismissed"
       rsvp_status: "going" | "interested" | "cancelled"
@@ -1881,6 +2294,14 @@ export const Constants = {
       branch_request_status: ["pending", "approved", "rejected", "cancelled"],
       branch_status: ["active", "archived"],
       content_status: ["pending", "approved", "rejected", "removed"],
+      course_registration_link_method: [
+        "handoff",
+        "email_auto",
+        "self",
+        "leader",
+      ],
+      course_registration_source: ["app", "website", "import"],
+      course_registration_status: ["pending", "confirmed", "cancelled"],
       device_platform: ["ios", "android"],
       event_status: ["scheduled", "cancelled"],
       intercession_state: ["committed", "prayed"],
@@ -1888,6 +2309,7 @@ export const Constants = {
         "role_changed",
         "branch_changed",
         "branch_request_rejected",
+        "registration_linked",
       ],
       profile_role: ["member", "leader", "admin"],
       report_status: ["open", "actioned", "dismissed"],

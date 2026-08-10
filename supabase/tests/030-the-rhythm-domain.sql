@@ -158,10 +158,19 @@ select set_config('request.jwt.claims', '', true);
 -- Written as trusted inserts with explicit dates, which is the only way to state history: as a
 -- member every one of these would be clamped to today, which is the point of the clamp.
 
--- Four weeks, one missed, then back.
+-- Four weeks, one missed, then back. The freshest row is the day before yesterday
+-- rather than this week's Sunday: on a SUNDAY run that Sunday IS today, section 4's
+-- "not checked in yet" premise dies, and "I'm here" finds the day already taken
+-- (found 2026-08-09, the suite's first Sunday). Same flake class as yesterday_tap
+-- above: a test whose result depends on the day it runs. Two days back is never
+-- today, never test 6's current_date - 1, and always lands in this ISO week or the
+-- one before, so the run still reads 5 either way.
 insert into public.attendance (profile_id, branch_id, service_date, client_taken_at)
 select :'grace_member', :'glasgow',
-       (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6, now()
+       case when w = 0 then current_date - 2
+            else (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6
+       end,
+       now()
 from unnest(array[5, 4, 3, 2, 0]) as w;
 
 select is(
@@ -222,7 +231,7 @@ select is(
 
 select is(
   (select checked_in from public.rhythm_state(:'glasgow')),
-  false, 'and Sunday''s attendance is not a check-in for today');
+  false, 'and an attendance two days back is not a check-in for today');
 
 select is(
   (select today from public.rhythm_state(:'glasgow')),
