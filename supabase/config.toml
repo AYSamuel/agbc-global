@@ -490,3 +490,16 @@ verify_jwt = true
 [functions.photo-guard]
 enabled = true
 verify_jwt = true
+
+# Second-address claim (ADR 0017 decision 3; W2.9 slice 2). Called with the
+# MEMBER's access token; the handler resolves the real user and refuses the
+# anon key. Decisions live in the request/verify RPCs; this owns transport.
+[functions.email-claim]
+enabled = true
+verify_jwt = true
+
+# Register handoff token mint (ADR 0017 decision 7; W2.9 slice 2). Same
+# member-token shape; the (profile, course) binding comes from the JWT.
+[functions.course-handoff]
+enabled = true
+verify_jwt = true

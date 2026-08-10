@@ -323,3 +323,43 @@ from public.profiles p
 cross join unnest(array[5, 4, 3, 2]) as w
 where p.email = 'dev.anke@example.test'
 on conflict (profile_id, service_date) do nothing;
+
+-- Academy fixtures (W2.9 slice 2, ADR 0017): course_registrations rows in the three
+-- shapes the app and dashboard have to draw. Written on a direct connection, so the
+-- insert guard treats them as the website's service key: exactly how prod rows arrive.
+-- course_id resolves from the slug by trigger; stripe ids are fixtures, unique so the
+-- upsert-by-session-id path stays idempotent.
+
+-- 1. A stranger's guest checkout, UNLINKED: admins see it, branch leaders must not
+--    (ADR 0017 decision 5). The NG row exercises the regional currency rendering.
+insert into public.course_registrations
+  (course, format, full_name, email, city, country, branch, amount, currency,
+   payment_status, stripe_session_id)
+values
+  ('grace-reset', 'Intensive (2 weeks)', 'Tunde Adeyemi', 'tunde.adeyemi@example.test',
+   'Ogbomosho', 'Nigeria', 'Miracle center Ogbomosho', 500000, 'ngn', 'paid',
+   'cs_test_dev_unlinked_ng')
+on conflict (stripe_session_id) do nothing;
+
+-- 2. A website checkout by a member's OWN sign-in address, still unlinked: visible to
+--    that member through the email match alone (the policy, not a link).
+insert into public.course_registrations
+  (course, format, full_name, email, city, country, amount, currency,
+   payment_status, stripe_session_id)
+values
+  ('grace-reset', 'Part-time (4 weeks)', 'Grace Dev', 'dev.grace@example.test',
+   'Glasgow', 'Scotland, UK', 2500, 'gbp', 'paid', 'cs_test_dev_email_match')
+on conflict (stripe_session_id) do nothing;
+
+-- 3. A handoff-born registration: linked from birth, confirmed, the "you're
+--    registered" state on COURSE.
+insert into public.course_registrations
+  (course, format, full_name, email, city, country, amount, currency, payment_status,
+   stripe_session_id, profile_id, status, source, link_method, linked_by, linked_at)
+select
+  'grace-masterclass', 'Part-time (6 weeks)', p.display_name, p.email,
+  'Emmen', 'Netherlands', 4000, 'gbp', 'paid',
+  'cs_test_dev_handoff_linked', p.id, 'confirmed', 'app', 'handoff', p.id, now()
+from public.profiles p
+where p.email = 'dev.marieke@example.test'
+on conflict (stripe_session_id) do nothing;

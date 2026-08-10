@@ -127,19 +127,21 @@ jobs:
           else
             echo "no committed database.types.ts yet (arrives at W0.10); skipping"
           fi
-      # Fence-guard: no migration may touch the website's objects in the shared prod
-      # project (docs/spec/19; list is a placeholder until the Track P2 audit).
+      # Fence-guard: no migration or seed may touch the website's objects in the
+      # shared prod project (docs/spec/19; list filled from the Track P2 audit, with
+      # course_registrations deliberately unfenced by ADR 0017). A hit on donations is
+      # a design error to stop on, never something to grep around.
       - name: fence guard
         run: |
           FENCED=$(grep -v '^#' supabase/fenced-objects.txt | sed '/^\s*$/d' || true)
           if [ -z "$FENCED" ]; then
-            echo "fenced-objects list is empty (pre-audit placeholder); nothing to check"
+            echo "fenced-objects list is empty; nothing to check"
             exit 0
           fi
           FAIL=0
           while IFS= read -r name; do
-            if grep -rn --include='*.sql' -w "$name" supabase/migrations/ 2>/dev/null; then
-              echo "::error::migration references fenced object: $name"
+            if grep -rn --include='*.sql' -w "$name" supabase/migrations/ supabase/seeds/ 2>/dev/null; then
+              echo "::error::migration or seed references fenced object: $name"
               FAIL=1
             fi
           done <<< "$FENCED"
