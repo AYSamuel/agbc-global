@@ -28,6 +28,13 @@ The stores do not care that the framework changes (Flutter to React Native); the
 
 > **Steps 1 and 2 are DONE (2026-07-30).** Full evidence and the ordered cleanup plan:
 > `docs/runbooks/prod-audit-2026-07-30.md`; the fenced list is in the project `CLAUDE.md`.
+>
+> **The ADR 0017 additive ALTER on `course_registrations` ran 2026-08-10** (reviewed step,
+> behind Track P P1): prod's copy of the shared table now carries the app's second block
+> (columns, comments, indexes, the partial unique; NO FKs/triggers/policies, whose targets
+> arrive with this cutover). Script + evidence: `docs/runbooks/prod-alter-2026-08-10.md`.
+> The step is also recorded in prod's own migration history
+> (`..._course_registrations_app_columns`), which step 6's baseline must reckon with.
 > The audit corrected three things below and found four ordering hazards this section did not
 > anticipate, so read the runbook before acting on steps 3 to 6.
 >
