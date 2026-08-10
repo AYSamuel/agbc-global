@@ -34,6 +34,7 @@
     "expo-system-ui": "~57.0.1",
     "expo-web-browser": "~57.0.2",
     "i18next": "^26.3.6",
+    "lucide-react-native": "^1.31.0",
     "react": "19.2.3",
     "react-hook-form": "^7.83.0",
     "react-i18next": "^17.0.11",
@@ -76,7 +77,8 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
-      "^@formatjs/(intl-locale|intl-pluralrules)/.*$": "<rootDir>/src/test/empty-module.js"
+      "^@formatjs/(intl-locale|intl-pluralrules)/.*$": "<rootDir>/src/test/empty-module.js",
+      "^lucide-react-native/icons/(.*)$": "<rootDir>/node_modules/lucide-react-native/dist/cjs/icons/$1.js"
     },
     "testTimeout": 15000
   },

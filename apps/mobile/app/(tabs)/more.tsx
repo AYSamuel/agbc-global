@@ -10,7 +10,22 @@ import {
   typeScale,
 } from '@agbc/shared/theme';
 
-import { Button, MenuCard, MenuLabel, MenuRow, Screen } from '@/components/ui';
+import {
+  BookOpenIcon,
+  Button,
+  CalendarIcon,
+  InfoIcon,
+  LibraryIcon,
+  MailIcon,
+  MenuCard,
+  MenuLabel,
+  MenuRow,
+  PinIcon,
+  Screen,
+  SettingsIcon,
+  StoreIcon,
+  StudyIcon,
+} from '@/components/ui';
 import { useTheme } from '@/theme';
 
 // MORE hub, guest variant (docs/spec/04 tab 5; mockup "More · guest hub"): sign-in
@@ -92,14 +107,14 @@ export default function More() {
         <MenuLabel label={t('more.sections.grow')} />
         <MenuCard>
           <MenuRow
-            icon="🎓"
+            icon={StudyIcon}
             label={t('more.rows.academy')}
             onPress={() => {
               router.push('/academy');
             }}
           />
           <MenuRow
-            icon="📖"
+            icon={BookOpenIcon}
             label={t('more.rows.devotional')}
             onPress={() => {
               router.push('/plan');
@@ -110,28 +125,28 @@ export default function More() {
         <MenuLabel label={t('more.sections.church')} />
         <MenuCard>
           <MenuRow
-            icon="📍"
+            icon={PinIcon}
             label={t('more.rows.branches')}
             onPress={() => {
               router.push('/branches');
             }}
           />
           <MenuRow
-            icon="📅"
+            icon={CalendarIcon}
             label={t('more.rows.events')}
             onPress={() => {
               router.push('/events');
             }}
           />
           <MenuRow
-            icon="ℹ️"
+            icon={InfoIcon}
             label={t('more.rows.about')}
             onPress={() => {
               router.push('/about');
             }}
           />
           <MenuRow
-            icon="✉️"
+            icon={MailIcon}
             label={t('more.rows.contact')}
             onPress={() => {
               router.push('/contact');
@@ -142,14 +157,14 @@ export default function More() {
         <MenuLabel label={t('more.sections.read')} />
         <MenuCard>
           <MenuRow
-            icon="🛒"
+            icon={StoreIcon}
             label={t('more.rows.bookstore')}
             onPress={() => {
               router.push('/store');
             }}
           />
           <MenuRow
-            icon="📚"
+            icon={LibraryIcon}
             label={t('more.rows.library')}
             badge={t('more.signin')}
             onPress={() => {
@@ -161,7 +176,7 @@ export default function More() {
         <MenuLabel label={t('more.sections.app')} />
         <MenuCard>
           <MenuRow
-            icon="⚙️"
+            icon={SettingsIcon}
             label={t('more.rows.settings')}
             onPress={() => {
               router.push('/settings');

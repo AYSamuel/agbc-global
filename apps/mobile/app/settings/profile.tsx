@@ -8,8 +8,10 @@ import {
   ActionPill,
   ActionSheet,
   AppHeader,
-  MailIcon,
   Button,
+  EditIcon,
+  HomeIcon,
+  MailIcon,
   MenuCard,
   MenuLabel,
   MenuRow,
@@ -127,7 +129,7 @@ export default function ProfileScreen() {
         <MenuLabel label={t('settings:profile.branchSection')} />
         <MenuCard>
           <MenuRow
-            icon="🏠"
+            icon={HomeIcon}
             label={t('settings:profile.homeBranch')}
             value={homeBranchName}
             // While a request is open the row stops being a way in: asking again is
@@ -156,7 +158,7 @@ export default function ProfileScreen() {
         <MenuLabel label={t('settings:profile.activitySection')} />
         <MenuCard>
           <MenuRow
-            icon="📝"
+            icon={EditIcon}
             label={t('settings:profile.myPosts')}
             onPress={() => {
               router.push('/my-posts');

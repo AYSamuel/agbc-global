@@ -1,395 +1,191 @@
-import Svg, { Circle, Path, type SvgProps } from 'react-native-svg';
+import type { ComponentType } from 'react';
+import type { SvgProps } from 'react-native-svg';
 
-// Stroke-based, currentColor-style icons at 1.8 stroke per docs/spec/05, matching the
-// website's glyph vocabulary. Grows as screens need glyphs; never import an icon font.
+// Stroke-based, currentColor-style icons at 1.8 stroke per docs/spec/05.
+//
+// The glyphs come from LUCIDE (ISC), not from an icon font and not hand-drawn.
+// The set this file used to carry was traced from the mockup, and the mockup's
+// vocabulary was already Feather's: `check`, the three chevrons, `plus`, `minus`
+// and `x` were byte-identical to it. Lucide is Feather's maintained successor, so
+// adopting it converges on what the mockup already was rather than restyling the
+// app, and it ends the drift that hand-drawing every new glyph guarantees.
+//
+// Two rules hold this together:
+//
+// 1. DEEP IMPORTS ONLY (`lucide-react-native/icons/<kebab-name>`). Metro does not
+//    tree-shake the package barrel, so `import { Check } from 'lucide-react-native'`
+//    pulls all ~1,700 icons into the bundle. The package's `exports` map publishes
+//    `./icons/*` precisely for this.
+// 2. Every glyph goes through `houseStyle()`, so 1.8 stroke and the 20px default
+//    live in ONE place. Call sites keep their existing `<XIcon size color />` shape.
+//
+// `absoluteStrokeWidth` is deliberately NOT set: Lucide would then hold the stroke
+// at a constant screen width for every size, which is a heavier look than the
+// mockup's (its SVGs scale stroke with the glyph). Keeping it off is what makes the
+// six identical glyphs render pixel-for-pixel as they did before.
+
+import Ban from 'lucide-react-native/icons/ban';
+import Bell from 'lucide-react-native/icons/bell';
+import Book from 'lucide-react-native/icons/book';
+import BookOpen from 'lucide-react-native/icons/book-open';
+import Bookmark from 'lucide-react-native/icons/bookmark';
+import Calendar from 'lucide-react-native/icons/calendar';
+import Check from 'lucide-react-native/icons/check';
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import ChevronLeft from 'lucide-react-native/icons/chevron-left';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import Church from 'lucide-react-native/icons/church';
+import CircleArrowUp from 'lucide-react-native/icons/circle-arrow-up';
+import CirclePlay from 'lucide-react-native/icons/circle-play';
+import Clock from 'lucide-react-native/icons/clock';
+import Copy from 'lucide-react-native/icons/copy';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import Ellipsis from 'lucide-react-native/icons/ellipsis';
+import FileText from 'lucide-react-native/icons/file-text';
+import Flame from 'lucide-react-native/icons/flame';
+import Globe from 'lucide-react-native/icons/globe';
+import GraduationCap from 'lucide-react-native/icons/graduation-cap';
+import Heart from 'lucide-react-native/icons/heart';
+import House from 'lucide-react-native/icons/house';
+import Image from 'lucide-react-native/icons/image';
+import Info from 'lucide-react-native/icons/info';
+import Landmark from 'lucide-react-native/icons/landmark';
+import Library from 'lucide-react-native/icons/library';
+import Link from 'lucide-react-native/icons/link';
+import Locate from 'lucide-react-native/icons/locate';
+import Lock from 'lucide-react-native/icons/lock';
+import Mail from 'lucide-react-native/icons/mail';
+import MapPin from 'lucide-react-native/icons/map-pin';
+import MessageCircle from 'lucide-react-native/icons/message-circle';
+import Minus from 'lucide-react-native/icons/minus';
+import Plus from 'lucide-react-native/icons/plus';
+import RotateCcw from 'lucide-react-native/icons/rotate-ccw';
+import Search from 'lucide-react-native/icons/search';
+import Settings from 'lucide-react-native/icons/settings';
+import Share from 'lucide-react-native/icons/share';
+import ShoppingBag from 'lucide-react-native/icons/shopping-bag';
+import SquarePen from 'lucide-react-native/icons/square-pen';
+import SquarePlay from 'lucide-react-native/icons/square-play';
+import Star from 'lucide-react-native/icons/star';
+import Trash2 from 'lucide-react-native/icons/trash-2';
+import User from 'lucide-react-native/icons/user';
+import Users from 'lucide-react-native/icons/users';
+import X from 'lucide-react-native/icons/x';
 
 export interface IconProps extends SvgProps {
   size?: number;
   color: string;
 }
 
-function base({ size = 20, color, ...rest }: IconProps) {
-  return {
-    width: size,
-    height: size,
-    viewBox: '0 0 24 24',
-    fill: 'none' as const,
-    stroke: color,
-    strokeWidth: 1.8,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-    ...rest,
-  };
+/** 05's icon stroke. Lucide's own default is 2. */
+const STROKE = 1.8;
+const SIZE = 20;
+
+// `strokeWidth` is intentionally left to SvgProps' own NumberProp: narrowing it to
+// `number` here conflicts with that declaration rather than tightening it.
+type LucideGlyph = ComponentType<SvgProps & { size?: number; color?: string }>;
+
+function houseStyle(Glyph: LucideGlyph, displayName: string, stroke = STROKE) {
+  function Wrapped({ size = SIZE, color, ...rest }: IconProps) {
+    return <Glyph size={size} color={color} strokeWidth={stroke} {...rest} />;
+  }
+  Wrapped.displayName = displayName;
+  return Wrapped;
 }
 
-export function CheckIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M20 6L9 17l-5-5" />
-    </Svg>
-  );
-}
+export const CheckIcon = houseStyle(Check, 'CheckIcon');
+export const MailIcon = houseStyle(Mail, 'MailIcon');
+export const PlusIcon = houseStyle(Plus, 'PlusIcon');
+export const MinusIcon = houseStyle(Minus, 'MinusIcon');
+export const LocateIcon = houseStyle(Locate, 'LocateIcon');
+export const LinkIcon = houseStyle(Link, 'LinkIcon');
+export const ChevronLeftIcon = houseStyle(ChevronLeft, 'ChevronLeftIcon');
+export const CloseIcon = houseStyle(X, 'CloseIcon');
+export const LockIcon = houseStyle(Lock, 'LockIcon');
+export const BellIcon = houseStyle(Bell, 'BellIcon');
+export const StarIcon = houseStyle(Star, 'StarIcon');
+export const ChevronRightIcon = houseStyle(ChevronRight, 'ChevronRightIcon');
+export const PersonIcon = houseStyle(User, 'PersonIcon');
+/** The mockup draws the select/disclosure caret heavier than a navigation chevron. */
+export const ChevronDownIcon = houseStyle(ChevronDown, 'ChevronDownIcon', 2.4);
+export const PinIcon = houseStyle(MapPin, 'PinIcon');
+export const StudyIcon = houseStyle(GraduationCap, 'StudyIcon');
+export const BookIcon = houseStyle(Book, 'BookIcon');
+export const ShareIcon = houseStyle(Share, 'ShareIcon');
+export const SearchIcon = houseStyle(Search, 'SearchIcon');
+export const CardIcon = houseStyle(CreditCard, 'CardIcon');
+export const BankIcon = houseStyle(Landmark, 'BankIcon');
+export const CopyIcon = houseStyle(Copy, 'CopyIcon');
+export const UpdateIcon = houseStyle(CircleArrowUp, 'UpdateIcon');
+export const ImageIcon = houseStyle(Image, 'ImageIcon');
 
-// The AUTH-1/AUTH-2 header glyph (mockup .authicon). The frame's <rect> is a
-// path here: react-native-svg deprecates the x/y props Rect leans on.
-export function MailIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5v-9A2.5 2.5 0 0 1 5.5 5z" />
-      <Path d="M3 7.5l9 6 9-6" />
-    </Svg>
-  );
-}
+/** Share to WhatsApp (mockup .wabtn). Lucide carries no brand marks by policy, so
+ * this is the generic bubble the mockup already drew, not WhatsApp's own glyph. */
+export const WhatsAppIcon = houseStyle(MessageCircle, 'WhatsAppIcon');
 
-// Map zoom controls (mockup .mzoom): drawn as icons rather than "+"/"−" text so
-// they stay crisp and dodge the literal-string lint on product screens.
-export function PlusIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M12 5v14M5 12h14" />
-    </Svg>
-  );
-}
+/** BLOCKED-MEMBERS · nobody blocked (the frame's `.ei` glyph). Lucide's `ban` IS
+ * the frame's glyph: a circle with a full diagonal through it, not a person with a
+ * cross, which reads as a person being removed rather than the absence of anyone.
+ * (`circle-slash` is the wrong one: its diagonal stops short of the rim.) */
+export const BlockedIcon = houseStyle(Ban, 'BlockedIcon');
 
-export function MinusIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M5 12h14" />
-    </Svg>
-  );
-}
+/** POST-PENDING's "sent for review" glyph (mockup frame line 1182): a clock, not a
+ * tick. The distinction is the whole point of the screen: the post is waiting, not
+ * published. */
+export const ClockIcon = houseStyle(Clock, 'ClockIcon');
 
-// Find-my-branch control (mockup .mlocate): a crosshair.
-export function LocateIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={12} cy={12} r={4} />
-      <Path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-    </Svg>
-  );
-}
-
-// Answered-prayer ribbon glyph (mockup .ribbon): a chain link.
-export function LinkIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M9 15l6-6" />
-      <Path d="M11 6l1-1a4 4 0 0 1 6 6l-1 1" />
-      <Path d="M13 18l-1 1a4 4 0 0 1-6-6l1-1" />
-    </Svg>
-  );
-}
-
-// Share to WhatsApp (mockup .wabtn): the speech-bubble outline.
-export function WhatsAppIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z" />
-    </Svg>
-  );
-}
-
-export function ChevronLeftIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M15 18l-6-6 6-6" />
-    </Svg>
-  );
-}
-
-export function CloseIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M6 6l12 12M18 6L6 18" />
-    </Svg>
-  );
-}
-
-// The prerequisite lock (mockup .plock / .prereq .pi). Like MailIcon, the
-// frame's <rect> is a rounded path here.
-export function LockIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" />
-      <Path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </Svg>
-  );
-}
-
-export function BellIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-      <Path d="M13.7 21a2 2 0 0 1-3.4 0" />
-    </Svg>
-  );
-}
-
-export function StarIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M12 2l2.9 6.3 6.6.6-5 4.5 1.5 6.6L12 16.9 6 20l1.5-6.6-5-4.5 6.6-.6z" />
-    </Svg>
-  );
-}
-
-export function ChevronRightIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M9 6l6 6-6 6" />
-    </Svg>
-  );
-}
-
-// The five tab glyphs, path data verbatim from the mockup's .tabbar SVGs.
-
-export function HomeTabIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M3 11l9-8 9 8" />
-      <Path d="M5 10v10h14V10" />
-    </Svg>
-  );
-}
-
-export function WatchTabIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={12} cy={12} r={9} />
-      <Path d="M10 8.5l6 3.5-6 3.5z" fill={props.color} stroke="none" />
-    </Svg>
-  );
-}
-
-export function FamilyTabIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={9} cy={9} r={3} />
-      <Path d="M15.5 8.5a2.6 2.6 0 1 0 0 4" />
-      <Path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
-      <Path d="M15 19a5.2 5.2 0 0 1 5.5-4" />
-    </Svg>
-  );
-}
-
-// The mockup draws the same heart for the Give tab and for prayer commitment.
-// Kept as two named exports over one shared glyph because they mean different
-// things: renaming or restyling the Give tab must not silently change what
-// "I will pray" looks like.
-const HEART_PATH =
-  'M20.8 8.6a3.2 3.2 0 0 0-4.5 0L12 12.9 7.7 8.6a3.2 3.2 0 1 0-4.5 4.5l8.8 8.8 8.8-8.8a3.2 3.2 0 0 0 0-4.5z';
-
-export function GiveTabIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d={HEART_PATH} />
-    </Svg>
-  );
-}
-
-/** Prayer commitment glyph (mockup .praybtn / .praystats .pi.praying). */
-export function HeartIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d={HEART_PATH} />
-    </Svg>
-  );
-}
-
-export function MoreTabIcon(props: IconProps) {
-  return (
-    <Svg {...base({ ...props, strokeWidth: 2.1 })}>
-      <Circle cx={5} cy={12} r={1.4} fill={props.color} stroke="none" />
-      <Circle cx={12} cy={12} r={1.4} fill={props.color} stroke="none" />
-      <Circle cx={19} cy={12} r={1.4} fill={props.color} stroke="none" />
-    </Svg>
-  );
-}
-
-export function PersonIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={12} cy={8} r={4} />
-      <Path d="M4 20a8 8 0 0 1 16 0" />
-    </Svg>
-  );
-}
-
-export function ChevronDownIcon(props: IconProps) {
-  return (
-    <Svg {...base({ ...props, strokeWidth: 2.4 })}>
-      <Path d="M6 9l6 6 6-6" />
-    </Svg>
-  );
-}
-
-export function PinIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z" />
-      <Circle cx={12} cy={10} r={2.5} />
-    </Svg>
-  );
-}
-
-export function StudyIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M3 7l9-4 9 4-9 4-9-4z" />
-      <Path d="M7 9.5V14c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V9.5" />
-    </Svg>
-  );
-}
-
-export function BookIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
-      <Path d="M4 5v16" />
-    </Svg>
-  );
-}
+/** Mockup .prayundo: a counter-clockwise arrow for taking back the last step.
+ * `rotate-ccw`, not `undo-2`, which is a straight arrow bending left. */
+export const UndoIcon = houseStyle(RotateCcw, 'UndoIcon');
 
 // RHYTHM (W2.8): the two ways a gathering is attended. The church fronts an
-// in-person row and RHYTHM's empty state; the screen fronts a live-watch row,
-// which `10` counts exactly the same so a diaspora member keeps their rhythm.
-export function ChurchIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5" />
-    </Svg>
-  );
-}
+// in-person row and RHYTHM's empty state; the screen fronts a live-watch row, which
+// `10` counts exactly the same so a diaspora member keeps their rhythm.
+export const ChurchIcon = houseStyle(Church, 'ChurchIcon');
+export const LiveIcon = houseStyle(SquarePlay, 'LiveIcon');
 
-export function LiveIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      {/* The frame's <rect rx="3"> as a path: react-native-svg deprecates the
-          x/y props Rect leans on (see MailIcon). */}
-      <Path d="M6 4h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" />
-      <Path d="M10 8l6 4-6 4z" />
-    </Svg>
-  );
-}
+// The five tab glyphs.
+export const HomeTabIcon = houseStyle(House, 'HomeTabIcon');
+export const WatchTabIcon = houseStyle(CirclePlay, 'WatchTabIcon');
+export const FamilyTabIcon = houseStyle(Users, 'FamilyTabIcon');
 
-export function ShareIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
-      <Path d="M16 6l-4-4-4 4" />
-      <Path d="M12 2v14" />
-    </Svg>
-  );
-}
+// The mockup draws the same heart for the Give tab and for prayer commitment. Kept
+// as two named exports over one shared glyph because they mean different things:
+// renaming or restyling the Give tab must not silently change what "I will pray"
+// looks like.
+export const GiveTabIcon = houseStyle(Heart, 'GiveTabIcon');
+/** Prayer commitment glyph (mockup .praybtn / .praystats .pi.praying). */
+export const HeartIcon = houseStyle(Heart, 'HeartIcon');
 
-export function SearchIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={11} cy={11} r={7} />
-      <Path d="M21 21l-4-4" />
-    </Svg>
-  );
-}
+// The two ellipsis glyphs keep the mockup's heavier tab weight vs the lighter
+// header weight. `...` on the DETAIL header, never on the feed card (docs/spec/09).
+export const MoreTabIcon = houseStyle(Ellipsis, 'MoreTabIcon', 2.1);
+export const MoreIcon = houseStyle(Ellipsis, 'MoreIcon');
 
-// GIVE "Other ways to give" rows (mockup .giverow .gic). The card glyph fronts the
-// PayPal row; the bank building fronts the bank-transfer row.
-export function CardIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
-      <Path d="M3 10h18" />
-    </Svg>
-  );
-}
+// The MENU-ROW TILE glyphs (mockup `.mic`, the 34px rounded tile on MORE and
+// SETTINGS). These were emoji until 2026-08-11, which made them the one surface the
+// design system did not govern: emoji are supplied by the OS, so the same row drew
+// differently on Samsung, Pixel and iOS, ignored both themes (the graduation cap sank
+// into the dark tile while the pin and calendar fired saturated red into a navy and
+// gold palette), and changed artwork on an OS update.
+export const BookOpenIcon = houseStyle(BookOpen, 'BookOpenIcon');
+export const CalendarIcon = houseStyle(Calendar, 'CalendarIcon');
+export const InfoIcon = houseStyle(Info, 'InfoIcon');
+export const StoreIcon = houseStyle(ShoppingBag, 'StoreIcon');
+export const LibraryIcon = houseStyle(Library, 'LibraryIcon');
+export const SettingsIcon = houseStyle(Settings, 'SettingsIcon');
+export const GlobeIcon = houseStyle(Globe, 'GlobeIcon');
+export const LegalIcon = houseStyle(FileText, 'LegalIcon');
+export const EditIcon = houseStyle(SquarePen, 'EditIcon');
+export const TrashIcon = houseStyle(Trash2, 'TrashIcon');
+export const BookmarkIcon = houseStyle(Bookmark, 'BookmarkIcon');
+export const FlameIcon = houseStyle(Flame, 'FlameIcon');
 
-export function BankIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M3 10l9-6 9 6" />
-      <Path d="M5 10v8M19 10v8M9 10v8M15 10v8" />
-      <Path d="M3 20h18" />
-    </Svg>
-  );
-}
+/** SETTINGS' home-branch row. Deliberately separate from `HomeTabIcon` even though
+ * both draw Lucide's `house`: restyling the Home TAB must not silently change what a
+ * member's home BRANCH looks like (same reasoning as GiveTabIcon vs HeartIcon). */
+export const HomeIcon = houseStyle(House, 'HomeIcon');
 
-// GIVE-BANK copy affordance (mockup .copyrow .copy): the classic copy-rectangles.
-export function CopyIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M11 9h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" />
-      <Path d="M5 15V5a2 2 0 0 1 2-2h10" />
-    </Svg>
-  );
-}
-
-export function UpdateIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={12} cy={12} r={9} />
-      <Path d="M12 16V8" />
-      <Path d="M8 12l4-4 4 4" />
-    </Svg>
-  );
-}
-
-// POST-PENDING's "sent for review" glyph (mockup frame line 1182): a clock, not
-// a tick. The distinction is the whole point of the screen: the post is waiting,
-// not published.
-export function ClockIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={12} cy={12} r={9} />
-      <Path d="M12 7.5v5l3 2" />
-    </Svg>
-  );
-}
-
-// The compose photo affordance (mockup .addphoto): a framed picture. Rendered
-// only when the picker module is linked (W2.3 slice 3, dev-client native fence).
-export function ImageIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z" />
-      <Circle cx={8.5} cy={8.5} r={1.5} />
-      <Path d="M21 15l-5-5L5 21" />
-    </Svg>
-  );
-}
-
-// Mockup .prayundo: a counter-clockwise arrow for taking back the last step.
-export function UndoIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Path d="M3 8v5h5" />
-      <Path d="M4.6 13a8 8 0 1 0 1.9-6.3L3 10" />
-    </Svg>
-  );
-}
-
-/**
- * The post-actions affordance (docs/spec/09: `...` on the DETAIL header, never on the
- * feed card). Three filled dots rather than the stroked glyph the rest of this file
- * draws: at 20px a stroked circle of radius 1 renders as a ring, and the frames draw
- * solid dots. `fill` is set per-dot because `base()` hands the Svg `fill="none"`.
- */
-export function MoreIcon({ color, size = 20, ...rest }: IconProps) {
-  return (
-    <Svg {...base({ color, size, ...rest })}>
-      <Circle cx={5} cy={12} r={1.6} fill={color} stroke="none" />
-      <Circle cx={12} cy={12} r={1.6} fill={color} stroke="none" />
-      <Circle cx={19} cy={12} r={1.6} fill={color} stroke="none" />
-    </Svg>
-  );
-}
-
-// BLOCKED-MEMBERS · nobody blocked (the frame's `.ei` glyph): a circle with a stroke
-// through it. Not a person with a cross, which reads as a person being removed rather
-// than as the absence of anyone.
-export function BlockedIcon(props: IconProps) {
-  return (
-    <Svg {...base(props)}>
-      <Circle cx={12} cy={12} r={9} />
-      <Path d="M5.6 5.6l12.8 12.8" />
-    </Svg>
-  );
-}
+// A screen that genuinely needs a one-off glyph imports `react-native-svg` directly
+// (it is already a direct dependency) and draws it next to its own component, rather
+// than this file growing a second, hand-drawn icon system alongside Lucide.

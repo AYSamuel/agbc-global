@@ -15,17 +15,21 @@ import {
   FamilyTabIcon,
   GateSheet,
   GiveTabIcon,
+  GlobeIcon,
   HeartIcon,
   HomeTabIcon,
+  LibraryIcon,
   MenuCard,
   MenuLabel,
   MenuRow,
   MoreTabIcon,
   OtpInput,
+  PinIcon,
   SegmentedControl,
   Skeleton,
   TabBar,
   TextField,
+  TrashIcon,
   useToast,
   WatchTabIcon,
 } from '@/components/ui';
@@ -197,14 +201,14 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
         <MenuLabel label="Menu section" />
         <MenuCard>
           <MenuRow
-            icon="📍"
+            icon={PinIcon}
             label="Chevron row"
             onPress={() => {
               // gallery: press feedback only
             }}
           />
           <MenuRow
-            icon="🌐"
+            icon={GlobeIcon}
             label="Value row"
             value="English"
             onPress={() => {
@@ -212,7 +216,7 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
             }}
           />
           <MenuRow
-            icon="📚"
+            icon={LibraryIcon}
             label="Locked row"
             badge="Sign in"
             onPress={() => {
@@ -220,7 +224,7 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
             }}
           />
           <MenuRow
-            icon="🗑️"
+            icon={TrashIcon}
             label="Danger row"
             danger
             onPress={() => {
