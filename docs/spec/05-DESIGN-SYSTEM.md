@@ -119,7 +119,12 @@ Plus the `onInk` group for content on ink/photo surfaces (same in both themes): 
 
 ## Iconography
 
-- Stroke-based, `currentColor`, 1.8 stroke: consistent with the website's `Icon` set. Reuse the same glyph vocabulary (play, calendar, globe, heart/flame for reactions, etc.).
+- **The icon set is Lucide** (ISC), consumed as SVG. Stroke-based, `currentColor`, 1.8 stroke (Lucide's own default is 2, so the stroke is always set explicitly). Never an icon font, and never a hand-drawn glyph where the pack has one.
+- Adopted 2026-08-10, and it is a convergence rather than a restyle: the glyphs traced into the app from the mockup were already Feather's (`check`, the three chevrons, `plus`, `minus` and `x` were byte-identical), and Lucide is Feather's maintained successor. `entry-flow.html` and `apps/mobile/src/components/ui/icons.tsx` were moved to it in the same change, so the mockup stays the source of truth.
+- **Mobile:** every glyph is a named export of `src/components/ui/icons.tsx`, which wraps Lucide through one `houseStyle()` helper so the stroke and default size live in a single place. Screens import `XIcon` from there, never from `lucide-react-native` directly.
+- **Deep imports only** (`lucide-react-native/icons/<kebab-name>`). Metro does not tree-shake the package barrel, so importing from the package root pulls all ~1,700 icons into the bundle.
+- `absoluteStrokeWidth` is deliberately not used: it holds the stroke at a constant screen width across sizes, which is heavier than the mockup, whose SVGs scale stroke with the glyph.
+- **No emoji as UI glyphs.** The MORE and SETTINGS row tiles (`.mic`) were emoji until 2026-08-11 and are now Lucide at 18px in `--sub`. Emoji are supplied by the OS, so the same row drew differently on Samsung, Pixel and iOS; they cannot take a theme token (on dark, the graduation cap sank into its tile while the pin and calendar fired saturated red through a navy and gold palette); and their artwork changes on an OS update. Emoji remain fine in CONTENT (a member's testimony), never in chrome.
 
 ## Imagery
 

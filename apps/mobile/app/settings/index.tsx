@@ -9,10 +9,17 @@ import { fontFamily, spacing } from '@agbc/shared/theme';
 
 import {
   AppHeader,
+  BlockedIcon,
   Button,
+  GlobeIcon,
+  InfoIcon,
+  LegalIcon,
+  LockIcon,
+  MailIcon,
   MenuCard,
   MenuLabel,
   MenuRow,
+  PersonIcon,
   Screen,
   SegmentedControl,
   useToast,
@@ -68,7 +75,7 @@ export default function Settings() {
             <MenuLabel label={t('settings:youSection')} />
             <MenuCard>
               <MenuRow
-                icon="🙂"
+                icon={PersonIcon}
                 label={t('settings:profileRow')}
                 onPress={() => {
                   router.push('/settings/profile');
@@ -83,7 +90,7 @@ export default function Settings() {
             <MenuLabel label={t('settings:communitySection')} />
             <MenuCard>
               <MenuRow
-                icon="🚫"
+                icon={BlockedIcon}
                 label={t('settings:blocked.title')}
                 value={blockedCount > 0 ? String(blockedCount) : undefined}
                 onPress={() => {
@@ -123,7 +130,7 @@ export default function Settings() {
         <View style={{ height: spacing.sm + 2 }} />
         <MenuCard>
           <MenuRow
-            icon="🌐"
+            icon={GlobeIcon}
             label={t('settings:language')}
             value={currentLanguage}
             onPress={() => {
@@ -135,7 +142,7 @@ export default function Settings() {
         <MenuLabel label={t('settings:privacyData')} />
         <MenuCard>
           <MenuRow
-            icon="🔒"
+            icon={LockIcon}
             label={t('settings:privacy')}
             onPress={() => {
               void WebBrowser.openBrowserAsync(PRIVACY_URL);
@@ -146,21 +153,21 @@ export default function Settings() {
         <MenuLabel label={t('settings:aboutSection')} />
         <MenuCard>
           <MenuRow
-            icon="ℹ️"
+            icon={InfoIcon}
             label={t('settings:aboutRow')}
             onPress={() => {
               router.push('/about');
             }}
           />
           <MenuRow
-            icon="✉️"
+            icon={MailIcon}
             label={t('settings:contact')}
             onPress={() => {
               router.push('/contact');
             }}
           />
           <MenuRow
-            icon="📄"
+            icon={LegalIcon}
             label={t('settings:legal')}
             onPress={() => {
               void WebBrowser.openBrowserAsync(TERMS_URL);

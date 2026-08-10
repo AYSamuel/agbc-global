@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ThemeScope } from '@/theme';
 
+import { GlobeIcon, LibraryIcon, PinIcon } from '../icons';
 import { MenuCard, MenuLabel, MenuRow } from '../Menu';
 
 function inTheme(ui: React.ReactElement) {
@@ -11,7 +12,7 @@ function inTheme(ui: React.ReactElement) {
 describe('MenuRow', () => {
   test('is a labeled button and fires onPress', async () => {
     const onPress = jest.fn();
-    await inTheme(<MenuRow icon="📍" label="Branches" onPress={onPress} />);
+    await inTheme(<MenuRow icon={PinIcon} label="Branches" onPress={onPress} />);
     await fireEvent.press(screen.getByRole('button', { name: 'Branches' }));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
@@ -20,13 +21,13 @@ describe('MenuRow', () => {
     await inTheme(
       <MenuCard>
         <MenuRow
-          icon="🌐"
+          icon={GlobeIcon}
           label="Language"
           value="English"
           onPress={jest.fn()}
         />
         <MenuRow
-          icon="📚"
+          icon={LibraryIcon}
           label="My Library"
           badge="Sign in"
           onPress={jest.fn()}

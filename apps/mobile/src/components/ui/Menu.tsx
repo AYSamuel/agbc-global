@@ -1,4 +1,9 @@
-import { Children, type PropsWithChildren, type ReactNode } from 'react';
+import {
+  Children,
+  type ComponentType,
+  type PropsWithChildren,
+  type ReactNode,
+} from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import {
@@ -11,7 +16,7 @@ import {
 
 import { useTheme } from '@/theme';
 
-import { ChevronRightIcon } from './icons';
+import { ChevronRightIcon, type IconProps } from './icons';
 
 // The mockup's menu hub vocabulary (.mlabel / .mcard / .mrow: MORE hub, SETTINGS,
 // future NOTIF-PREFS): an uppercase section label, a card of rows with hairline
@@ -64,8 +69,15 @@ export function MenuCard({ children }: PropsWithChildren) {
 }
 
 export interface MenuRowProps {
-  /** Emoji glyph rendered in the alt tile (mockup .mic uses emoji, not SVG). */
-  icon: string;
+  /**
+   * The glyph for the row's tile, as an icon component from `./icons` (not an
+   * element): the row owns its size and colour so every tile matches.
+   *
+   * Emoji until 2026-08-11. They came from the OS, so the same row drew differently
+   * per platform, could not take a theme token, and clashed with the stroke set
+   * beside them. See docs/spec/05 §Iconography.
+   */
+  icon: ComponentType<IconProps>;
   label: string;
   /** Muted trailing value before the chevron (mockup .val). */
   value?: string;
@@ -79,7 +91,7 @@ export interface MenuRowProps {
 }
 
 export function MenuRow({
-  icon,
+  icon: Icon,
   label,
   value,
   badge,
@@ -117,7 +129,10 @@ export function MenuRow({
           justifyContent: 'center',
         }}
       >
-        <Text style={{ fontSize: 16 }}>{icon}</Text>
+        {/* Fixed 18px: a tile glyph is a control affordance, so it does not grow
+            with the reader's font setting (05's control rule). The label beside it
+            still scales fully. */}
+        <Icon size={18} color={danger ? palette.red : colors.sub} />
       </View>
       <Text
         style={{
