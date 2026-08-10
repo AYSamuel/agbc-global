@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import {
   fontFamily,
   hitTarget,
+  icon,
   palette,
   radius,
   spacing,
@@ -112,7 +113,7 @@ export function QuickActions({
               justifyContent: 'center',
             }}
           >
-            <tile.Icon size={18} color={tile.iconColor} />
+            <tile.Icon size={icon.lg} color={tile.iconColor} />
           </View>
           <Text
             numberOfLines={1}

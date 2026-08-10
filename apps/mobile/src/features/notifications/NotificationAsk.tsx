@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { palette } from '@agbc/shared/theme';
+import { icon, palette } from '@agbc/shared/theme';
 
 import { ActionSheet, BellIcon } from '@/components/ui';
 import { useCelebratedStore } from '@/features/rhythm/celebrated';
@@ -76,7 +76,7 @@ export function NotificationAsk() {
       // The frame draws a bell emoji; `.gatesheet .gi` specifies a NAVY
       // foreground on its gold tile, which an emoji cannot honour, and the app
       // already has this bell in its icon set (Home's header).
-      icon={<BellIcon size={26} color={palette.navy} strokeWidth={2} />}
+      icon={<BellIcon size={icon.x2l} color={palette.navy} strokeWidth={2} />}
       title={t('rhythm:notifyTitle')}
       body={t('rhythm:notifyBody')}
       primaryLabel={t('rhythm:notifyYes')}

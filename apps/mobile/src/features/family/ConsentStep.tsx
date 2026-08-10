@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 import type { ComposeForm, ComposeTarget } from '@agbc/shared';
 import {
   fontFamily,
+  icon,
   palette,
   radius,
   spacing,
@@ -94,7 +95,7 @@ export function ConsentStep({
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          <ChevronLeftIcon size={20} color={colors.text} strokeWidth={2} />
+          <ChevronLeftIcon size={icon.xl} color={colors.text} strokeWidth={2} />
         </Pressable>
         <Text
           accessibilityRole="header"
@@ -147,7 +148,7 @@ export function ConsentStep({
                 marginTop: 1,
               }}
             >
-              <CheckIcon size={15} color={palette.green} strokeWidth={2.5} />
+              <CheckIcon size={icon.md} color={palette.green} strokeWidth={2.5} />
             </View>
             <Text
               style={{

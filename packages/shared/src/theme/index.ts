@@ -287,6 +287,37 @@ export const radius = {
   full: 999,
 } as const;
 
+/**
+ * Icon sizes (05 §Iconography, added 2026-08-11).
+ *
+ * Derived from what the mockup already drew, not invented: 18 and 20 carried 205 of
+ * its 323 icon SVGs, and the rest fell into four clusters. Before this, call sites
+ * used FOURTEEN distinct sizes (12, 13, 14, 15, 16, 17, 18, 19, 20, 26, 28, 30, 40,
+ * 42), several traced one screen at a time from arbitrary CSS values. 13 vs 14 vs 15
+ * is not a design decision anybody made; it is drift, and it reads as "slightly off"
+ * long before anyone can point at which glyph is wrong.
+ *
+ * A glyph picks the token for its ROLE. Sizes never appear as raw numbers in a screen.
+ */
+export const icon = {
+  /** Inline meta and badge glyphs sitting in a line of text. */
+  xs: 12,
+  /** Dense rows, pills, small counters. */
+  sm: 14,
+  /** Compact controls. */
+  md: 16,
+  /** THE DEFAULT: menu-row tiles, buttons, the tab bar. */
+  lg: 18,
+  /** Headers, nav, primary controls. */
+  xl: 20,
+  /** Feature disc: the auth header, branch tiles, the notification ask. */
+  x2l: 26,
+  /** Empty states, the avatar picker, the player's primary transport. */
+  x3l: 30,
+  /** Hero status: success, post-pending, the update gate. */
+  x4l: 40,
+} as const;
+
 // Motion from 05: gentle, 150-250ms ease; reduced-motion variants are mandatory.
 export const motion = {
   fast: 150,
@@ -307,6 +338,7 @@ export const tokens = {
   typeScale,
   spacing,
   radius,
+  icon,
   motion,
   hitTarget,
 } as const;

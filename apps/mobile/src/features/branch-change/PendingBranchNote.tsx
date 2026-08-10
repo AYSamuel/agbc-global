@@ -1,7 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, hitTarget, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  hitTarget,
+  icon,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { HomeTabIcon, NoteBanner } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -42,7 +47,7 @@ export function PendingBranchNote({
       <NoteBanner
         tone="gold"
         icon={(accent) => (
-          <HomeTabIcon size={18} color={accent} strokeWidth={1.8} />
+          <HomeTabIcon size={icon.lg} color={accent} strokeWidth={1.8} />
         )}
         lead={t('settings:branchChange.notePending', { branch: shortName })}
         body={t('settings:branchChange.noteBody', { branch: branchName })}

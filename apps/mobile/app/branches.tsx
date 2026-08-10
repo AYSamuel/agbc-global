@@ -3,7 +3,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, TextInput, View } from 'react-native';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -80,7 +85,7 @@ export default function Branches() {
             marginTop: spacing.sm,
           }}
         >
-          <SearchIcon size={18} color={colors.muted} />
+          <SearchIcon size={icon.lg} color={colors.muted} />
           <TextInput
             value={search}
             onChangeText={setSearch}

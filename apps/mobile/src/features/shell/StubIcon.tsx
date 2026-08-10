@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { View } from 'react-native';
 
-import { radius } from '@agbc/shared/theme';
+import { icon, radius } from '@agbc/shared/theme';
 
 import type { IconProps } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -21,7 +21,7 @@ export function StubIcon({ Icon }: { Icon: ComponentType<IconProps> }) {
         justifyContent: 'center',
       }}
     >
-      <Icon size={26} color={colors.muted} />
+      <Icon size={icon.x2l} color={colors.muted} />
     </View>
   );
 }

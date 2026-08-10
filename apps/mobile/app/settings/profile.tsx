@@ -2,7 +2,12 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Linking, Text, View } from 'react-native';
 
-import { fontFamily, palette, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  palette,
+  spacing,
+} from '@agbc/shared/theme';
 
 import {
   ActionPill,
@@ -212,7 +217,7 @@ export default function ProfileScreen() {
 
       <ActionSheet
         visible={unseenRefusal !== null}
-        icon={<MailIcon size={26} color={palette.navy} strokeWidth={1.8} />}
+        icon={<MailIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />}
         title={t('settings:branchChange.refusedTitle')}
         body={t('settings:branchChange.refusedBody', {
           branch: refusedBranch?.name ?? '',

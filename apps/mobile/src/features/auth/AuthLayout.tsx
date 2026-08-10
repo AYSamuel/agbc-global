@@ -7,7 +7,15 @@ import {
   View,
 } from 'react-native';
 
-import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  // Aliased: this component takes its own `icon` PROP (the glyph for the gold tile),
+  // which would shadow the size token inside the body.
+  icon as iconSize,
+  palette,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { MailIcon, Screen } from '@/components/ui';
 import { ChevronLeftIcon } from '@/components/ui/icons';
@@ -75,7 +83,7 @@ export function AuthLayout({
               opacity: pressed ? 0.7 : 1,
             })}
           >
-            <ChevronLeftIcon size={20} color={colors.text} strokeWidth={2} />
+            <ChevronLeftIcon size={iconSize.xl} color={colors.text} strokeWidth={2} />
           </Pressable>
           {icon !== undefined || showMailIcon ? (
             <View
@@ -93,7 +101,7 @@ export function AuthLayout({
               }}
             >
               {icon ?? (
-                <MailIcon size={28} color={palette.navy} strokeWidth={1.8} />
+                <MailIcon size={iconSize.x2l} color={palette.navy} strokeWidth={1.8} />
               )}
             </View>
           ) : null}

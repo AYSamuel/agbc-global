@@ -5,7 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
 import { authProfileSchema, type AuthProfileForm } from '@agbc/shared';
-import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  palette,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { Button, Checkbox, TextField } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
@@ -214,7 +220,7 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
           }}
         >
           <Text style={pickrowValueStyle}>{selectedBranch?.name ?? ''}</Text>
-          <ChevronRightIcon size={16} color={colors.muted} strokeWidth={2} />
+          <ChevronRightIcon size={icon.md} color={colors.muted} strokeWidth={2} />
         </View>
       </Pressable>
       <Pressable
@@ -234,7 +240,7 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
           }}
         >
           <Text style={pickrowValueStyle}>{LANGUAGE_AUTONYMS[language]}</Text>
-          <ChevronRightIcon size={16} color={colors.muted} strokeWidth={2} />
+          <ChevronRightIcon size={icon.md} color={colors.muted} strokeWidth={2} />
         </View>
       </Pressable>
       <View style={{ marginTop: 8, marginBottom: 6 }}>

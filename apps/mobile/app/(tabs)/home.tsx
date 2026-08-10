@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -329,7 +330,7 @@ export default function Home() {
             >
               {branch?.name ?? t('appName')}
             </Text>
-            <ChevronDownIcon size={16} color={colors.blue} />
+            <ChevronDownIcon size={icon.md} color={colors.blue} />
           </Pressable>
         </View>
         {/* Mockup .head .rt: bell + avatar. The bell's destination is NC, which

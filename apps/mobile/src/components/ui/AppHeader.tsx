@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -66,7 +71,7 @@ export function AppHeader({
           })}
         >
           {leading === 'close' ? (
-            <CloseIcon size={18} color={colors.text} strokeWidth={2} />
+            <CloseIcon size={icon.lg} color={colors.text} strokeWidth={2} />
           ) : (
             <ChevronLeftIcon color={colors.text} />
           )}

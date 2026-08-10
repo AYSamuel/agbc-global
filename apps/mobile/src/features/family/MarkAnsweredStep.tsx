@@ -1,7 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, onInk, palette, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  onInk,
+  palette,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { Button, CheckIcon, Screen } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -74,7 +80,7 @@ export function MarkAnsweredStep({
               borderRadius: 54,
             }}
           />
-          <CheckIcon size={42} color={onInk.text} strokeWidth={2.6} />
+          <CheckIcon size={icon.x4l} color={onInk.text} strokeWidth={2.6} />
         </View>
         <Text
           accessibilityRole="header"

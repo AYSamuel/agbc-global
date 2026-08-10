@@ -14,7 +14,13 @@ import YoutubePlayer, {
   type YoutubeIframeRef,
 } from 'react-native-youtube-iframe';
 
-import { fontFamily, radius, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  radius,
+  spacing,
+  typeScale,
+} from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -176,7 +182,7 @@ export default function Sermon() {
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <ShareIcon size={18} color={colors.text} />
+              <ShareIcon size={icon.lg} color={colors.text} />
             </Pressable>
           ) : undefined
         }

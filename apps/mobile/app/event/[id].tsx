@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -107,7 +108,7 @@ export default function EventDetailScreen() {
       <Screen widthClass="capped" padded={false}>
         <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.sm }}>
           <CircleIconButton
-            icon={<ChevronLeftIcon size={20} color={colors.text} />}
+            icon={<ChevronLeftIcon size={icon.xl} color={colors.text} />}
             accessibilityLabel={t('back')}
             onPress={back}
             backgroundColor={colors.alt}
@@ -217,7 +218,7 @@ export default function EventDetailScreen() {
             }}
           >
             <CircleIconButton
-              icon={<ChevronLeftIcon size={20} color={onInk.text} />}
+              icon={<ChevronLeftIcon size={icon.xl} color={onInk.text} />}
               accessibilityLabel={t('back')}
               onPress={back}
             />

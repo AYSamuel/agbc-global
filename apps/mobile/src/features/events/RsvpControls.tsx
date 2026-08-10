@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { spacing } from '@agbc/shared/theme';
+import { icon, spacing } from '@agbc/shared/theme';
 
 import { ActionSheet, Button, CheckIcon } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -75,7 +75,7 @@ export function RsvpControls({ answer, onAnswer }: RsvpControlsProps) {
         }
         variant="confirmed"
         fullWidth
-        icon={<CheckIcon size={17} color={colors.eye} strokeWidth={2.8} />}
+        icon={<CheckIcon size={icon.lg} color={colors.eye} strokeWidth={2.8} />}
         onPress={() => {
           setChanging(true);
         }}

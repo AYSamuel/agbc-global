@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -132,7 +133,7 @@ export function PhotoField({
               opacity: pressed ? 0.75 : 1,
             })}
           >
-            <CloseIcon size={16} color={onInk.text} strokeWidth={2.2} />
+            <CloseIcon size={icon.md} color={onInk.text} strokeWidth={2.2} />
           </Pressable>
         )}
       </View>
@@ -159,7 +160,7 @@ export function PhotoField({
           opacity: pressed ? 0.7 : 1,
         })}
       >
-        <ImageIcon size={20} color={colors.muted} />
+        <ImageIcon size={icon.xl} color={colors.muted} />
         <Text
           // Same reason as the busy overlay: at maximum scale the label wraps
           // inside the dashed box rather than pushing past its edge.

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { ComposeTarget } from '@agbc/shared';
-import { spacing } from '@agbc/shared/theme';
+import { icon, spacing } from '@agbc/shared/theme';
 
 import {
   Button,
@@ -101,7 +101,7 @@ export function PostActionsMenu({
   return (
     <>
       <CircleIconButton
-        icon={<MoreIcon size={20} color={colors.text} />}
+        icon={<MoreIcon size={icon.xl} color={colors.text} />}
         accessibilityLabel={t('family:actions.open')}
         backgroundColor={colors.alt}
         onPress={() => {

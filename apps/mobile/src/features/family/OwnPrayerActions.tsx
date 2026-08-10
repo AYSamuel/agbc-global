@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, spacing } from '@agbc/shared/theme';
+import { fontFamily, icon, spacing } from '@agbc/shared/theme';
 
 import {
   Button,
@@ -115,7 +115,7 @@ export function OwnPrayerActions({
         <NoteBanner
           tone="gold"
           icon={(accent) => (
-            <ClockIcon size={18} color={accent} strokeWidth={1.8} />
+            <ClockIcon size={icon.lg} color={accent} strokeWidth={1.8} />
           )}
           lead={t(`family:answered.linked.${awaiting}Lead`)}
           body={t(`family:answered.linked.${awaiting}Body`)}

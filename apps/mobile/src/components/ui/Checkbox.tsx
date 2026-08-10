@@ -1,6 +1,12 @@
 import { Text, View, Pressable } from 'react-native';
 
-import { fontFamily, hitTarget, palette, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  hitTarget,
+  icon,
+  palette,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -62,7 +68,7 @@ export function Checkbox({
           }}
         >
           {checked ? (
-            <CheckIcon size={14} color={colors.btnText} strokeWidth={3} />
+            <CheckIcon size={icon.sm} color={colors.btnText} strokeWidth={3} />
           ) : null}
         </View>
         <Text
