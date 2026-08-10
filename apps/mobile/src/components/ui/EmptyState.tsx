@@ -1,7 +1,12 @@
 import type { ComponentType, ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
-import { radius, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  icon,
+  radius,
+  spacing,
+  typeScale,
+} from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -96,7 +101,7 @@ export function EmptyGlyph({ Icon }: { Icon: ComponentType<IconProps> }) {
         justifyContent: 'center',
       }}
     >
-      <Icon size={30} color={colors.muted} />
+      <Icon size={icon.x3l} color={colors.muted} />
     </View>
   );
 }

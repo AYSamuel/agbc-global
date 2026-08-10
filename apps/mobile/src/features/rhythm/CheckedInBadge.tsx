@@ -4,6 +4,7 @@ import { Text, View } from 'react-native';
 import {
   fontFamily,
   hitTarget,
+  icon,
   onInk,
   palette,
   radius,
@@ -56,7 +57,7 @@ export function CheckedInBadge({ surface = 'ink' }: CheckedInBadgeProps) {
       }}
     >
       <CheckIcon
-        size={17}
+        size={icon.lg}
         color={surface === 'ink' ? palette.gold : colors.eye}
       />
       <Text

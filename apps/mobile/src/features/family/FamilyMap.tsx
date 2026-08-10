@@ -14,6 +14,7 @@ import Svg, { Circle, G, Path } from 'react-native-svg';
 
 import {
   fontFamily,
+  icon,
   mapPinPalette,
   onInk,
   palette,
@@ -196,7 +197,7 @@ function ZoomButton({
         opacity: pressed ? 0.6 : 1,
       })}
     >
-      <Icon size={19} color={colors.text} />
+      <Icon size={icon.xl} color={colors.text} />
     </Pressable>
   );
 }
@@ -533,7 +534,7 @@ export function FamilyMap({
             opacity: pressed ? 0.6 : 1,
           })}
         >
-          <LocateIcon size={20} color={colors.blue} />
+          <LocateIcon size={icon.xl} color={colors.blue} />
         </Pressable>
       </View>
 

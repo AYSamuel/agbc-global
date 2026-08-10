@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -72,7 +73,7 @@ export default function About() {
             }}
           >
             <CircleIconButton
-              icon={<ChevronLeftIcon size={20} color={onInk.text} />}
+              icon={<ChevronLeftIcon size={icon.xl} color={onInk.text} />}
               accessibilityLabel={t('back')}
               onPress={() => {
                 router.back();

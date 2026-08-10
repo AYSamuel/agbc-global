@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -110,7 +115,7 @@ export default function WatchSearch() {
             paddingVertical: 4,
           }}
         >
-          <SearchIcon size={18} color={colors.muted} />
+          <SearchIcon size={icon.lg} color={colors.muted} />
           <TextInput
             accessibilityLabel={t('watch:searchTitle')}
             value={term}

@@ -3,7 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
-import { fontFamily, spacing } from '@agbc/shared/theme';
+import { fontFamily, icon, spacing } from '@agbc/shared/theme';
 
 import {
   BankIcon,
@@ -158,7 +158,7 @@ export default function Give() {
             <View style={{ gap: spacing.sm + 2 }}>
               {config.paypalUrl !== null ? (
                 <GiveRow
-                  icon={<CardIcon size={18} color={colors.text} />}
+                  icon={<CardIcon size={icon.lg} color={colors.text} />}
                   title={t('give:paypalTitle')}
                   // The handle (data, not copy) so the giver sees where they go.
                   subtitle={config.paypalUrl.replace(/^https?:\/\//, '')}
@@ -170,7 +170,7 @@ export default function Give() {
               ) : null}
               {config.accounts.length > 0 ? (
                 <GiveRow
-                  icon={<BankIcon size={18} color={colors.text} />}
+                  icon={<BankIcon size={icon.lg} color={colors.text} />}
                   title={t('give:bankTitle')}
                   // Mockup: "GBP · EUR · NGN · copyable details", codes from data.
                   subtitle={t('give:bankSubtitle', {

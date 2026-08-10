@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   fontFamily,
+  icon,
   palette,
   radius,
   spacing,
@@ -295,7 +296,7 @@ export default function CourseDetail() {
                 backgroundColor: tonal.greenCard.bg,
               }}
             >
-              <CheckIcon size={16} color={palette.green} strokeWidth={3} />
+              <CheckIcon size={icon.md} color={palette.green} strokeWidth={3} />
               <Text
                 style={{
                   flex: 1,
@@ -330,7 +331,7 @@ export default function CourseDetail() {
               }}
             >
               <View style={{ marginTop: 1 }}>
-                <LockIcon size={15} color={colors.eye} strokeWidth={2} />
+                <LockIcon size={icon.md} color={colors.eye} strokeWidth={2} />
               </View>
               <Text
                 style={{
@@ -477,7 +478,7 @@ export default function CourseDetail() {
                         }}
                       >
                         <CheckIcon
-                          size={13}
+                          size={icon.sm}
                           color={palette.green}
                           strokeWidth={3}
                         />
@@ -570,7 +571,7 @@ export default function CourseDetail() {
                   variant="primary"
                   fullWidth
                   loading={toggleInterest.isPending}
-                  icon={<BellIcon size={17} color={colors.btnText} />}
+                  icon={<BellIcon size={icon.lg} color={colors.btnText} />}
                   onPress={notify}
                 />
                 <Text

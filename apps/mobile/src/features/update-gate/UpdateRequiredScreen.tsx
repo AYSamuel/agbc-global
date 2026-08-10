@@ -1,7 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Linking, Text, View } from 'react-native';
 
-import { onInk, palette, radius, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  icon,
+  onInk,
+  palette,
+  radius,
+  spacing,
+  typeScale,
+} from '@agbc/shared/theme';
 
 import { Button, UpdateIcon } from '@/components/ui';
 import { storeUrl } from '@/lib/links';
@@ -35,7 +42,7 @@ export function UpdateRequiredScreen() {
           justifyContent: 'center',
         }}
       >
-        <UpdateIcon size={40} color={palette.navy} />
+        <UpdateIcon size={icon.x4l} color={palette.navy} />
       </View>
       <Text
         accessibilityRole="header"

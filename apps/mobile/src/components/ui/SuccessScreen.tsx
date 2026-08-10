@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
-import { fontFamily, palette } from '@agbc/shared/theme';
+import { fontFamily, icon, palette } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -52,7 +52,7 @@ export function SuccessScreen({
       >
         <View style={{ marginBottom: 22 }}>
           <GoldDisc>
-            <CheckIcon size={42} color={palette.navy} strokeWidth={2.6} />
+            <CheckIcon size={icon.x4l} color={palette.navy} strokeWidth={2.6} />
           </GoldDisc>
         </View>
         <Text

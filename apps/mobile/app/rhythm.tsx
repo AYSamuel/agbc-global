@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { spacing } from '@agbc/shared/theme';
+import { icon, spacing } from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -235,7 +235,7 @@ export default function RhythmScreen() {
           >
             <NoteBanner
               tone="gold"
-              icon={(accent) => <HeartIcon size={18} color={accent} />}
+              icon={(accent) => <HeartIcon size={icon.lg} color={accent} />}
               lead={t('rhythm:graceLead')}
               body={t('rhythm:graceBody')}
             />

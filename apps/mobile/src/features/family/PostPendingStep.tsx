@@ -2,7 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
 import type { ComposeTarget } from '@agbc/shared';
-import { fontFamily, palette, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  palette,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { Button, ClockIcon, Screen } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -64,7 +69,7 @@ export function PostPendingStep({ target, onDone }: PostPendingStepProps) {
               borderRadius: 54,
             }}
           />
-          <ClockIcon size={40} color={palette.goldDeep} strokeWidth={1.8} />
+          <ClockIcon size={icon.x4l} color={palette.goldDeep} strokeWidth={1.8} />
         </View>
         <Text
           accessibilityRole="header"

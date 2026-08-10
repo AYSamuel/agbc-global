@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   spacing,
@@ -206,7 +207,7 @@ export function NextServiceCard({
             }}
           >
             <View style={{ marginTop: 1 }}>
-              <PinIcon size={14} color={palette.gold} />
+              <PinIcon size={icon.sm} color={palette.gold} />
             </View>
             <Text
               style={{

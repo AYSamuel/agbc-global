@@ -9,6 +9,7 @@ import { Pressable, Text, View } from 'react-native';
 import {
   fontFamily,
   hitTarget,
+  icon,
   palette,
   radius,
   spacing,
@@ -132,7 +133,7 @@ export function MenuRow({
         {/* Fixed 18px: a tile glyph is a control affordance, so it does not grow
             with the reader's font setting (05's control rule). The label beside it
             still scales fully. */}
-        <Icon size={18} color={danger ? palette.red : colors.sub} />
+        <Icon size={icon.lg} color={danger ? palette.red : colors.sub} />
       </View>
       <Text
         style={{
@@ -174,7 +175,7 @@ export function MenuRow({
             {badge}
           </Text>
         ) : (
-          <ChevronRightIcon size={18} color={colors.muted} />
+          <ChevronRightIcon size={icon.lg} color={colors.muted} />
         ))}
     </Pressable>
   );

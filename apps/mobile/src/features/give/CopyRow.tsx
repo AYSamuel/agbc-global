@@ -1,6 +1,11 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import {
+  fontFamily,
+  icon,
+  radius,
+  spacing,
+} from '@agbc/shared/theme';
 
 import { CopyIcon, useToast } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -115,7 +120,7 @@ export function CopyRow({
             opacity: pressed ? 0.6 : 1,
           })}
         >
-          <CopyIcon size={14} color={colors.blue} />
+          <CopyIcon size={icon.sm} color={colors.blue} />
           <Text
             style={{
               fontFamily: fontFamily.body.bold,

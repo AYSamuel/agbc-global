@@ -5,6 +5,7 @@ import { BackHandler, Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -202,7 +203,7 @@ export default function PrayerDetail() {
                   marginBottom: spacing.md,
                 }}
               >
-                <CheckIcon size={12} color={onInk.text} />
+                <CheckIcon size={icon.xs} color={onInk.text} />
                 <Text
                   style={{
                     fontFamily: fontFamily.body.extraBold,
@@ -256,7 +257,7 @@ export default function PrayerDetail() {
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
               >
-                <HeartIcon size={14} color={colors.eye} />
+                <HeartIcon size={icon.sm} color={colors.eye} />
                 <Text
                   style={{
                     fontFamily: fontFamily.body.bold,
@@ -270,7 +271,7 @@ export default function PrayerDetail() {
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
               >
-                <CheckIcon size={14} color={palette.green} />
+                <CheckIcon size={icon.sm} color={palette.green} />
                 <Text
                   style={{
                     fontFamily: fontFamily.body.bold,
@@ -341,13 +342,13 @@ export default function PrayerDetail() {
                   icon={
                     commitment === 'prayed' ? (
                       <CheckIcon
-                        size={17}
+                        size={icon.lg}
                         color={palette.green}
                         strokeWidth={2.5}
                       />
                     ) : (
                       <HeartIcon
-                        size={17}
+                        size={icon.lg}
                         color={
                           commitment === 'committed'
                             ? colors.eye
@@ -392,7 +393,7 @@ export default function PrayerDetail() {
                       opacity: pressed ? 0.6 : 1,
                     })}
                   >
-                    <UndoIcon size={13} color={colors.blue} strokeWidth={2} />
+                    <UndoIcon size={icon.sm} color={colors.blue} strokeWidth={2} />
                     <Text
                       style={{
                         fontFamily: fontFamily.body.bold,

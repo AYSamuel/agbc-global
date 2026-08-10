@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -46,7 +47,7 @@ function PrayCounts({ prayer }: { prayer: PrayerFeedItem }) {
       {/* .praystats .pi.praying is gold-toned, .pi.prayed green: the two counts
           are deliberately different colors so the split reads at a glance. */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-        <HeartIcon size={13} color={colors.eye} />
+        <HeartIcon size={icon.sm} color={colors.eye} />
         <Text
           style={{
             fontFamily: fontFamily.body.bold,
@@ -58,7 +59,7 @@ function PrayCounts({ prayer }: { prayer: PrayerFeedItem }) {
         </Text>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-        <CheckIcon size={13} color={palette.green} />
+        <CheckIcon size={icon.sm} color={palette.green} />
         <Text
           style={{
             fontFamily: fontFamily.body.bold,
@@ -115,7 +116,7 @@ export function AnsweredPrayerCard({
           paddingHorizontal: 11,
         }}
       >
-        <CheckIcon size={12} color={onInk.text} />
+        <CheckIcon size={icon.xs} color={onInk.text} />
         <Text
           style={{
             fontFamily: fontFamily.body.extraBold,
@@ -234,7 +235,7 @@ export function PrayerCard({
           onPress={commitment === 'prayed' ? undefined : onCommit}
           icon={
             <HeartIcon
-              size={15}
+              size={icon.md}
               color={
                 commitment === 'none'
                   ? colors.sub
@@ -262,7 +263,7 @@ export function PrayerCard({
               opacity: pressed ? 0.6 : 1,
             })}
           >
-            <UndoIcon size={12} color={colors.blue} strokeWidth={2} />
+            <UndoIcon size={icon.xs} color={colors.blue} strokeWidth={2} />
             <Text
               style={{
                 fontFamily: fontFamily.body.bold,

@@ -7,7 +7,12 @@ import {
   type ComposeForm,
   type ComposeTarget,
 } from '@agbc/shared';
-import { palette, spacing, typeScale } from '@agbc/shared/theme';
+import {
+  icon,
+  palette,
+  spacing,
+  typeScale,
+} from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -129,7 +134,7 @@ export function ComposeStep({
           {originPrayerBody === null ? null : (
             <View style={{ marginBottom: spacing.md }}>
               <NoteBanner
-                icon={(accent) => <LinkIcon size={18} color={accent} />}
+                icon={(accent) => <LinkIcon size={icon.lg} color={accent} />}
                 lead={t('answered.linkBannerLead')}
                 body={t('answered.linkBannerQuote', {
                   excerpt: excerpt(originPrayerBody),

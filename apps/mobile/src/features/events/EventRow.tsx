@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   palette,
   radius,
   spacing,
@@ -147,7 +148,7 @@ export function EventRow({
           </Text>
         </View>
       </View>
-      <ChevronRightIcon size={18} color={colors.muted} />
+      <ChevronRightIcon size={icon.lg} color={colors.muted} />
     </Pressable>
   );
 }

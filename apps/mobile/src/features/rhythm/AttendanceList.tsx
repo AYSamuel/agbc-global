@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   palette,
   radius,
   spacing,
@@ -101,9 +102,9 @@ export function AttendanceList({
               }}
             >
               {live ? (
-                <LiveIcon size={18} color={palette.red} />
+                <LiveIcon size={icon.lg} color={palette.red} />
               ) : (
-                <ChurchIcon size={18} color={colors.text} />
+                <ChurchIcon size={icon.lg} color={colors.text} />
               )}
             </View>
             <View style={{ flex: 1 }}>

@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import {
   fontFamily,
   hitTarget,
+  icon,
   onInk,
   palette,
   radius,
@@ -119,7 +120,7 @@ export function SelectRow({
         }}
       >
         {selected ? (
-          <CheckIcon size={14} color={colors.btnText} strokeWidth={3} />
+          <CheckIcon size={icon.sm} color={colors.btnText} strokeWidth={3} />
         ) : null}
       </View>
     </Pressable>

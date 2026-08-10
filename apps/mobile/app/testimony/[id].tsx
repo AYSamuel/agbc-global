@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   onInk,
   palette,
   radius,
@@ -332,7 +333,7 @@ export default function TestimonyDetail() {
               opacity: pressed ? 0.85 : 1,
             })}
           >
-            <WhatsAppIcon size={18} color={palette.green} />
+            <WhatsAppIcon size={icon.lg} color={palette.green} />
             <Text
               style={{
                 fontFamily: fontFamily.body.extraBold,
@@ -395,7 +396,7 @@ function Ribbon({
         paddingHorizontal: 14,
       }}
     >
-      <LinkIcon size={16} color={palette.green} />
+      <LinkIcon size={icon.md} color={palette.green} />
       <Text
         style={{
           fontFamily: fontFamily.body.bold,

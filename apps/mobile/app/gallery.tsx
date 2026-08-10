@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
-import { spacing, typeScale } from '@agbc/shared/theme';
+import { icon, spacing, typeScale } from '@agbc/shared/theme';
 
 import {
   ActionPill,
@@ -124,14 +124,14 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
         />
         <ActionPill
           label="I will pray"
-          icon={<HeartIcon size={15} color={colors.sub} />}
+          icon={<HeartIcon size={icon.md} color={colors.sub} />}
         />
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
         <ActionPill
           label="I prayed"
           tone="goldSoft"
-          icon={<HeartIcon size={15} color={colors.eye} />}
+          icon={<HeartIcon size={icon.md} color={colors.eye} />}
         />
         <ActionPill label="You prayed" tone="green" />
       </View>

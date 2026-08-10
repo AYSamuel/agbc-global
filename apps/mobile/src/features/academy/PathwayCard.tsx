@@ -2,6 +2,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import {
   fontFamily,
+  icon,
   palette,
   radius,
   spacing,
@@ -153,7 +154,7 @@ export function PathwayCard({
               marginTop: 6,
             }}
           >
-            <LockIcon size={13} color={colors.muted} />
+            <LockIcon size={icon.sm} color={colors.muted} />
             <Text
               style={{
                 flex: 1,
