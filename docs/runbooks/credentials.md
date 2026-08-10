@@ -23,6 +23,7 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Sentry (EU) | Crash reporting | Ayo | GitHub OAuth | TBC | Free (5k errors/mo) | Data Storage Location = EU, unchangeable |
 | healthchecks.io | Dead-man pings for jobs | Ayo | Email magic link | TBC | Free (20 checks) | Created 2026-07-18. Checks are per job and per environment; each ping URL is a function secret (`HEALTHCHECK_URL_*`, `21` §6.2). Two jobs are scheduled as of W2.7 slice 5: `moderation-alerts` (hourly) and `verse-monitor` (daily) |
 | UptimeRobot | Uptime monitors | Ayo | GitHub OAuth | TBC | Free (50 monitors) | Created 2026-07-18 |
+| Backblaze B2 | Off-provider prod backups (Track P P1, ADR 0018) | Ayo | TBC | TBC | Free (first 10 GB; standing use < 0.1 GB) | EU Central (Amsterdam). Bucket `agbc-prod-backup` (private, lifecycle: hide 30d + delete 1d); application key `agbc-backup-ci` (read+write, scoped to this bucket only) in GitHub `production` env secrets + password manager. **The age decryption key for these backups lives in the password manager ONLY** (entry `AGBC prod backup age key`): accepted single point of failure, Ayo's explicit choice 2026-08-10 (offered a church-safe offline copy, declined). Losing vault access = every backup unreadable |
 | Twilio | ~~OTP delivery~~ | n/a | n/a | n/a | n/a | DROPPED with email OTP (ADR 0011); no account created |
 
 ## In-app admin identities (ADR 0015, 2026-07-30)
@@ -92,6 +93,7 @@ The Android upload keystore exists in: EAS credentials (at W0.11) + encrypted va
 - [ ] Complete the five break-glass activation steps above, **in production, at Track P** (mobile onboarding, confirm the promotion, dashboard TOTP, seed offline, verify and leave)
 - [ ] Fill TBC sign-in methods as each account is next touched
 - [ ] Record domain renewal date from the registrar
+- [ ] Revisit the age-key single-point-of-failure (ADR 0018) when a second owner joins the password-manager vault: an offline copy in the church safe would then have a second custodian and the objection falls away
 
 ## Firebase `agbc-app` Android API key: leak remediation (2026-07-25)
 
