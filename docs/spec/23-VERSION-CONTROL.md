@@ -34,6 +34,11 @@ The definitive answer to "what lives in git, what never does, and how we always 
 | Secret | Home |
 |--------|------|
 | Supabase prod access token + prod db password | GitHub `production` Environment secrets only (+ password manager) |
+| Supabase prod db URL (`SUPABASE_PROD_DB_URL`, session pooler, embeds the password; backup dump) | GitHub `production` Environment secret (+ password manager) |
+| Supabase prod Storage S3 keys (`SUPABASE_PROD_S3_ACCESS_KEY`/`_SECRET_KEY`; storage-scoped, backup reads) | GitHub `production` Environment secrets (+ password manager) |
+| Backblaze B2 application key (`B2_KEY_ID`/`B2_APPLICATION_KEY`; read+write, scoped to the backup bucket only) | GitHub `production` Environment secrets (+ password manager) |
+| Backup dead-man ping URL (`HEALTHCHECK_URL_PROD_BACKUP`) | GitHub `production` Environment secret |
+| age backup identity (decryption key) | Password manager ONLY, never GitHub (ADR 0018: CI can encrypt, never decrypt). The recipient (public key) is committed in `backup.yml` by design |
 | Supabase dev access token | GitHub repo secrets |
 | Service-role keys | Vercel env (Production scope for prod) + password manager; never in mobile/EAS |
 | Supabase URL + anon key | Not secret, but per-env: EAS env vars per profile; Vercel per scope |

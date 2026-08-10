@@ -1,0 +1,126 @@
+name: Prod backup
+
+# Track P P1 (docs/spec/25 Track P · docs/spec/21 §7): nightly off-provider backup
+# of the SHARED prod project. It serves the LIVE church website today, so this
+# pipeline is the safety net for the website's donations and course_registrations
+# as much as for the app. This is the one sanctioned GitHub Actions cron (CI-budget
+# rule, project CLAUDE.md): pg_cron cannot run pg_dump, so the platform scheduler
+# cannot do this job. Kept to the cheapest honest shape: no PR triggers, tight
+# timeout, no overlap, and a healthchecks.io dead-man ping so SILENCE alerts
+# (ADR 0016's spirit; the check's period is 1 day).
+#
+# 02:41 UTC is off-peak for the whole congregation (UK/DE/NL/NG span UTC+1..+2)
+# and avoids the :00 cron rush on GitHub's runners.
+#
+# Everything uploaded is encrypted CLIENT-SIDE with age before it leaves the
+# runner. CI holds only the recipient (public) half, so a compromised runner or
+# repo can encrypt but never read a backup. The identity (decryption key) lives
+# in the password manager only (docs/runbooks/credentials.md, decided 2026-08-10).
+# Restore procedure: docs/runbooks/restore-from-backup.md. Vendor decision:
+# docs/decisions/0018-backblaze-b2-off-provider-backups.md.
+
+on:
+  schedule:
+    - cron: '41 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prod-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      # age recipient (PUBLIC key): in the repo by design, it can only encrypt.
+      AGE_RECIPIENT: 'age1pda9wkgnf66z5yhhfcteuvf5hw67mwtada0mqg994fes6z8fhu9qakglmn'
+      # Supabase Storage S3 endpoint for the prod project (the ref is public).
+      SUPABASE_S3_ENDPOINT: 'https://fotfplvqsnmbzjjhqlwp.storage.supabase.co/storage/v1/s3'
+      SUPABASE_S3_REGION: 'eu-central-1'
+      # Off-provider destination (Backblaze B2, EU Central / Amsterdam).
+      B2_ENDPOINT: 'https://s3.eu-central-003.backblazeb2.com'
+      B2_REGION: 'eu-central-003'
+      B2_BUCKET: 'agbc-prod-backup'
+    steps:
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.110.0
+
+      - name: Install age
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age zstd
+
+      - name: Dump database (roles + schema + data)
+        env:
+          DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p work/db
+          cd work
+          supabase db dump --db-url "$DB_URL" -f db/roles.sql --role-only
+          supabase db dump --db-url "$DB_URL" -f db/schema.sql
+          supabase db dump --db-url "$DB_URL" -f db/data.sql --use-copy --data-only \
+            -x storage.buckets_vectors -x storage.vector_indexes
+          # A dump that silently lost the website's tables is worse than a loud
+          # failure: these two are the reason this pipeline exists (project
+          # CLAUDE.md fence). The CLI emits quoted identifiers (verified against
+          # a real dump, 2026-08-10).
+          grep -q 'COPY "public"."donations" ' db/data.sql
+          grep -q 'COPY "public"."course_registrations" ' db/data.sql
+          grep -q 'COPY "auth"."users" ' db/data.sql
+          test "$(stat -c%s db/data.sql)" -gt 1024
+
+      - name: Copy storage objects
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_PROD_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_PROD_S3_SECRET_KEY }}
+          AWS_DEFAULT_REGION: eu-central-1
+        run: |
+          set -euo pipefail
+          cd work
+          mkdir -p storage
+          buckets=$(aws s3 ls --endpoint-url "$SUPABASE_S3_ENDPOINT" | awk '{print $NF}')
+          for b in $buckets; do
+            aws s3 sync "s3://$b" "storage/$b" --endpoint-url "$SUPABASE_S3_ENDPOINT" --no-progress
+          done
+          # Prod has at least one bucket with objects (avatars, 7 objects at
+          # P1). An empty storage/ means enumeration broke, not that prod is
+          # empty; fail loudly and adjust deliberately if that ever changes.
+          test -n "$(find storage -type f -print -quit)"
+
+      - name: Encrypt and upload
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+        run: |
+          set -euo pipefail
+          cd work
+          STAMP=$(date -u +%F)
+          FILE="agbc-prod-$STAMP.tar.zst.age"
+          tar -c db storage | zstd -q -o backup.tar.zst
+          age -r "$AGE_RECIPIENT" -o "$FILE" backup.tar.zst
+          aws s3 cp "$FILE" "s3://$B2_BUCKET/nightly/$FILE" \
+            --endpoint-url "$B2_ENDPOINT" --region "$B2_REGION" --no-progress
+          # Verify the object landed with the exact size we sent.
+          LOCAL=$(stat -c%s "$FILE")
+          REMOTE=$(aws s3api head-object --bucket "$B2_BUCKET" --key "nightly/$FILE" \
+            --endpoint-url "$B2_ENDPOINT" --region "$B2_REGION" --query ContentLength --output text)
+          test "$LOCAL" = "$REMOTE"
+          echo "uploaded nightly/$FILE ($LOCAL bytes)"
+
+      - name: Dead-man ping (success)
+        env:
+          HC_URL: ${{ secrets.HEALTHCHECK_URL_PROD_BACKUP }}
+        run: curl -fsS -m 10 --retry 3 "$HC_URL" > /dev/null
+
+      - name: Dead-man ping (failure)
+        if: failure()
+        env:
+          HC_URL: ${{ secrets.HEALTHCHECK_URL_PROD_BACKUP }}
+        run: curl -fsS -m 10 --retry 3 "$HC_URL/fail" > /dev/null
