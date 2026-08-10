@@ -132,7 +132,7 @@ A menu (hub: never a dead list). Sections:
 Each row → its screen. Every leaf screen has back. Guest rows that need auth open `GATE` first.
 
 ### Key MORE destinations
-- `ACADEMY` → `COURSE` → `REGISTER` (gate) → `REGISTER-CONFIRM`.
+- `ACADEMY` → `COURSE` → **Register** (gate; opens the website's registration page in the in-app browser, ADR 0017; `REGISTER` / `REGISTER-CONFIRM` retired 2026-08-09).
 - `EVENTS` → `EVENT-DETAIL` → **RSVP** (gate) → status set; **Add to calendar**; **Share**.
 - `STORE` → `BOOK-DETAIL` → **Buy** (web) ; owned → `READER`.
 - `LIBRARY` → `READER` (resume location).

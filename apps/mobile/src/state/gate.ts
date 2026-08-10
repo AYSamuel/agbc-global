@@ -50,7 +50,17 @@ export type GateAction =
    * abandonment) hold, and `replayGateAction`'s default returns 'noop' for them.
    */
   | { kind: 'report' }
-  | { kind: 'block' };
+  | { kind: 'block' }
+  /**
+   * Register on a course (W2.9 slice 3). The gated action is "open the
+   * website's registration page as me" (ADR 0017): the replay mints the
+   * handoff token, which needs the session that did not exist at the tap.
+   * Carries the slug, which is public catalog data, like every payload here.
+   */
+  | { kind: 'course_register'; courseSlug: string }
+  /** Notify me on an upcoming course (docs/spec/13): the replay records the
+   * interest the guest tapped for. */
+  | { kind: 'course_interest'; courseId: string };
 
 export type GateActionKind = GateAction['kind'];
 

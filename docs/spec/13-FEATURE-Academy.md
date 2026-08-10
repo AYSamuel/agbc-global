@@ -46,10 +46,20 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 
 ## States / edge cases
 - **Guest:** browse academy/courses; Register → gate (returns to registration).
-- **Upcoming course:** "Notify me" instead of Register; records a `course_interest` row (unique per member per course, see `02`) so admins can actually notify interested members when the level opens (`17`).
-- **Fee:** displayed in the app, charged on the website (ADR 0017). Regional pricing comes from `course_fees_regional`; both current courses are paid (£40 Masterclass, £25 Reset, with Nigeria overrides), so there is no free path. Because the course itself runs on a third platform, this is a real-world service booked off-platform: external payment is REQUIRED and **no Apple IAP question arises**. Never add in-app purchase here without re-checking policy.
+- **Upcoming course:** "Notify me" instead of Register; records a `course_interest` row (unique per member per course, see `02`) so admins can actually notify interested members when the level opens (`17`). An ONLINE-ONLY write (decided 2026-08-10): it does not join the W2.4 offline queue; an offline tap fails honestly with a retry. Withdrawing is a DELETE, offered in place once interest is recorded.
+- **Fee:** displayed in the app, charged on the website (ADR 0017). Regional pricing comes from `course_fees_regional`; both current courses are paid (£40 Masterclass, £25 Reset, with Nigeria overrides), so there is no free path. Because the course itself runs on a third platform, this is a real-world service booked off-platform: external payment is REQUIRED and **no Apple IAP question arises**. Never add in-app purchase here without re-checking policy. *Display rule (decided 2026-08-10):* the app always shows the BASE fee in the meta chip; where a regional override exists, COURSE adds one note line ("₦5,000 in Nigeria") alongside `fee_note`. Never a guess at what this viewer will pay: the website derives its own price at checkout.
 - **Handoff fails / member cancels in the browser:** returns to `COURSE`, still unregistered, no error state beyond the browser's own (same as `12` §giving). The token simply expires unused.
-- **Already registered:** show status ("You're registered: pending confirmation") plus a **Cancel registration** action (confirm sheet). Member UPDATE on own rows is trigger-limited to the single transition pending/confirmed → cancelled (no other column, no un-cancel; re-registering creates a new row per the partial unique key). The coordinator sees the cancellation in the dashboard; the member gets the transactional confirmation.
+- **Already registered:** show status ("You're registered: pending confirmation" / "your
+  place is confirmed") plus **"Email us about this registration"** *(amended 2026-08-10,
+  Ayo, superseding the in-app Cancel action)*: members do NOT cancel from the app. A paid
+  place is released by a human after a conversation, so the action opens a prefilled,
+  editable message sent through the same `contact-form` function the CONTACT screen uses
+  (same inbox, same rate limit), with the course and a short registration reference
+  attached automatically. Staff cancel, and handle any refund, manually. The database's
+  member cancel transition (trigger-limited pending/confirmed → cancelled, the partial
+  unique freeing the slot for a new row) stays exactly as W2.9 slice 2 built it: unused
+  by the app, available to staff tooling; revoking the member grant is a possible later
+  tightening, recorded here so it would be a decision rather than drift.
 - **"Notify me" delivery:** when a course opens, the dashboard's "Notify interested members" action sends the transactional `course_opened` notification to every `course_interest` row and deletes them (interest is consumed); see `17` §4.
 
 ## Permissions
@@ -58,7 +68,7 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
 ## Notifications
 - Registration received/confirmed. Course starting soon reminder. Deep-link → `COURSE`.
 
-## Acceptance criteria *(amended 2026-08-09 with ADR 0017: the app registers nobody)*
+## Acceptance criteria *(amended 2026-08-09 with ADR 0017: the app registers nobody; and 2026-08-10: cancelling is a conversation)*
 - [ ] Pathway + courses render from seeded content.
 - [ ] Register gates for guests; for members it opens the website's registration page in
       an in-app browser, carrying the handoff token when one could be minted.
@@ -66,4 +76,5 @@ Bring the church's discipleship pathway (**Grace Academy**) into the app: browse
       registered in the app; the member is never walked into paying twice.
 - [ ] Prerequisite is surfaced where relevant.
 - [ ] Upcoming courses never present a dead Register button.
-- [ ] Cancel registration works and is the member's ONLY write on the row.
+- [ ] A registered member can reach the team about their registration from the app
+      (prefilled message, contact-form path); the app writes NOTHING on the row.
