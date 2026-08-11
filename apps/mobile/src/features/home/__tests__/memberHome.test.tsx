@@ -6,6 +6,7 @@ import { useWriteQueueStore } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore } from '@/state/gate';
+import { indexOfText, textsInOrder } from '@/test/renderOrder';
 import { ThemeScope } from '@/theme';
 
 import Home from '../../../../app/(tabs)/home';
@@ -188,6 +189,25 @@ describe('who Home is greeting', () => {
     await renderHome();
     expect(screen.queryByText('Join the family')).toBeNull();
     expect(screen.getByLabelText(/5-week rhythm/)).toBeOnTheScreen();
+  });
+
+  // The strip sits directly under the service card so that the payoff of
+  // tapping "I'm here" is visible without scrolling: the tap and the streak it
+  // feeds are one loop (docs/spec/07, "Why this order"). Until 2026-08-11 it was
+  // the LAST block on the screen, below the verse and the family highlight, so
+  // this guards the move rather than the mere presence asserted above. The strip
+  // carries no role that would sort it against the cards, hence document order
+  // out of the rendered tree, which is what the member scrolls through.
+  test('the rhythm strip sits under the service card, above the family', async () => {
+    signIn();
+    await renderHome();
+    const texts = textsInOrder(screen.toJSON());
+    expect(indexOfText(texts, 'Sunday Service')).toBeLessThan(
+      indexOfText(texts, '5-week rhythm'),
+    );
+    expect(indexOfText(texts, '5-week rhythm')).toBeLessThan(
+      indexOfText(texts, 'From the family'),
+    );
   });
 
   test('the strip reads as one phrase, not three fragments (docs/spec/05)', async () => {

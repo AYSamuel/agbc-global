@@ -42,7 +42,6 @@ import { useMyBranchRequests } from '@/features/branch-change/queries';
 import { useBranchOutcomeStore } from '@/features/branch-change/seen';
 import { NextServiceCard } from '@/features/home/NextServiceCard';
 import { checkInOpen, resolveNextService } from '@/features/home/nextService';
-import { QuickActions } from '@/features/home/QuickActions';
 import {
   useBranchServicesQuery,
   useDailyVerseQuery,
@@ -63,11 +62,13 @@ import { useGateStore, type GateAction } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 // HOME (docs/spec/07, mockups "Home · guest" and W2.8 "HOME · checked in"):
-// greeting + branch chip + bell, next-service hero, quick actions, daily verse
-// (no devotional CTA until Phase 4 per 07's phasing), latest message, the "From
-// the family" testimony highlight (wired to the Family feed at W1.5), and then
-// the one part that knows who is reading: a member gets their name, the rhythm
-// strip and "I'm here" (W2.8); a guest gets the Join card and a gate.
+// greeting + branch chip + bell, next-service hero, the member's rhythm strip,
+// daily verse (no devotional CTA until Phase 4 per 07's phasing), the "From the
+// family" testimony highlight (wired to the Family feed at W1.5), and the
+// latest message. The one part that knows who is reading is split by where it
+// belongs rather than kept together: a member gets their name, "I'm here"
+// (W2.8) and the rhythm strip under the hero; a guest gets the Join card at the
+// foot of the screen, and a gate. Section order is 07's, and 07 carries why.
 //
 // Everything else follows the BROWSED branch, including where a check-in counts.
 function greetingKey(now: Date): string {
@@ -447,29 +448,27 @@ export default function Home() {
           />
         )}
 
-        <QuickActions
-          onVisit={() => {
-            // BRANCH-INFO is the 04 destination ("Plan a visit"); the list is the
-            // fallback when no browsing branch is set (matches the hero action).
-            if (branch) {
-              router.push({
-                pathname: '/branch/[id]',
-                params: { id: branch.id },
-              });
-            } else {
-              router.push('/branches');
-            }
-          }}
-          onWatch={() => {
-            router.push('/watch');
-          }}
-          onGive={() => {
-            router.push('/give');
-          }}
-          onAcademy={() => {
-            router.push('/academy');
-          }}
-        />
+        {/* The rhythm strip sits directly under the service card because it is
+            what "I'm here" pays off (docs/spec/07 §3, ordering rationale). A tap
+            on the card above and the streak it feeds are one loop, so nothing
+            goes between them: the member must not have to scroll to see that
+            their tap landed. Members only; the guest's Join card is the last
+            block on the screen instead. It is also the entry to RHYTHM
+            (docs/spec/04), which reads the same cached `rhythm_state` row this
+            panel is drawn from, so opening it costs nothing and can say nothing
+            different. */}
+        {isMember ? (
+          rhythm === null && !rhythmQuery.isError ? (
+            <Skeleton height={92} />
+          ) : rhythm !== null ? (
+            <StreakStrip
+              rhythm={rhythm}
+              onPress={() => {
+                router.push('/rhythm');
+              }}
+            />
+          ) : null
+        ) : null}
 
         {verseQuery.data === undefined && !verseQuery.isError ? (
           <Skeleton height={150} />
@@ -477,46 +476,13 @@ export default function Home() {
           <VerseCard verse={verseQuery.data} />
         ) : null}
 
-        {sermonsQuery.data === undefined && !sermonsQuery.isError ? (
-          <View>
-            <SectionHeader
-              label={t('home:latestMessage')}
-              actionLabel={t('watch:seeAll')}
-              onAction={() => {
-                router.push('/watch');
-              }}
-            />
-            <Skeleton height={96} />
-          </View>
-        ) : latestSermon ? (
-          <View>
-            <SectionHeader
-              label={t('home:latestMessage')}
-              actionLabel={t('watch:seeAll')}
-              onAction={() => {
-                router.push('/watch');
-              }}
-            />
-            {/* Mockup .sermon: a 12px card, not the 20px default: the row
-                carries its own spacing (2026-07-20). */}
-            <Card style={{ padding: spacing.md }}>
-              <SermonRow
-                sermon={latestSermon}
-                size="featured"
-                onPress={() => {
-                  router.push({
-                    pathname: '/sermon/[id]',
-                    params: { id: latestSermon.id },
-                  });
-                }}
-              />
-            </Card>
-          </View>
-        ) : null}
-
         {/* From the family (docs/spec/07): the latest testimony, the same card the
             Family feed uses. Its Glory/Share gate for guests; the card taps
-            through to the detail. Empty only if the family has posted nothing. */}
+            through to the detail. Empty only if the family has posted nothing.
+            It sits ABOVE the latest message on purpose: sermons already own a
+            bottom tab, testimonies live two levels deep under Family, so Home
+            surfaces the harder-to-reach thing (docs/spec/07, ordering
+            rationale). */}
         <View>
           <SectionHeader
             label={t('home:fromTheFamily')}
@@ -577,23 +543,47 @@ export default function Home() {
           )}
         </View>
 
-        {/* The one block that changes with who is reading (docs/spec/07 §7-8):
-            a member's rhythm strip, or the guest's Join card. The strip is the
-            entry to RHYTHM (docs/spec/04), which is the whole of it: the screen
-            reads the same cached `rhythm_state` row this panel is drawn from,
-            so opening it costs nothing and can say nothing different. */}
-        {isMember ? (
-          rhythm === null && !rhythmQuery.isError ? (
-            <Skeleton height={92} />
-          ) : rhythm !== null ? (
-            <StreakStrip
-              rhythm={rhythm}
-              onPress={() => {
-                router.push('/rhythm');
+        {sermonsQuery.data === undefined && !sermonsQuery.isError ? (
+          <View>
+            <SectionHeader
+              label={t('home:latestMessage')}
+              actionLabel={t('watch:seeAll')}
+              onAction={() => {
+                router.push('/watch');
               }}
             />
-          ) : null
-        ) : (
+            <Skeleton height={96} />
+          </View>
+        ) : latestSermon ? (
+          <View>
+            <SectionHeader
+              label={t('home:latestMessage')}
+              actionLabel={t('watch:seeAll')}
+              onAction={() => {
+                router.push('/watch');
+              }}
+            />
+            {/* Mockup .sermon: a 12px card, not the 20px default: the row
+                carries its own spacing (2026-07-20). */}
+            <Card style={{ padding: spacing.md }}>
+              <SermonRow
+                sermon={latestSermon}
+                size="featured"
+                onPress={() => {
+                  router.push({
+                    pathname: '/sermon/[id]',
+                    params: { id: latestSermon.id },
+                  });
+                }}
+              />
+            </Card>
+          </View>
+        ) : null}
+
+        {/* The guest's Join card (docs/spec/07 §7), the last block on the
+            screen: a member has their rhythm strip up under the service card
+            instead, so only one of the two ever renders. */}
+        {isMember ? null : (
           <Card>
             <Text
               style={{
