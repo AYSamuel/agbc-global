@@ -160,7 +160,7 @@ Every feature's acceptance criteria include the verification matrix: small phone
 
 ## Tablet & orientation (decision 2026-07-12: full tablet layouts in v1)
 
-- v1 ships real tablet layouts, not just a capped column. Direction: above ~600dp width, list-heavy tabs (Watch, Family, Events, Store) move to master-detail or multi-column grids; Home caps content width (~680px) and widens the quick-action row; player and reader support landscape on all devices.
+- v1 ships real tablet layouts, not just a capped column. Direction: above ~600dp width, list-heavy tabs (Watch, Family, Events, Store) move to master-detail or multi-column grids; Home caps content width (~680px) and splits its sections into a two-column dashboard grid (see the tablet HOME frames); player and reader support landscape on all devices.
 - Android 16+ ignores orientation/resizability locks on large screens, so tablet rendering is not optional; iPad support is claimed on the App Store (adds iPad screenshots to the store matrix, see `19`).
 - Each feature doc's screens are designed at phone AND tablet widths during the design phase; the frontend-bootstrap component library builds responsive primitives first (`Screen` handles width classes).
 

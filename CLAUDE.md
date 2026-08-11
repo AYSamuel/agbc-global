@@ -2,10 +2,18 @@
 
 Mobile app (iOS + Android) + leader web dashboard for Amazing Grace Bible Church: a multi-branch, diaspora-shaped ministry (Glasgow HQ, Berlin, Emmen, Ogbomosho). The wedge is "belonging made visible": testimonies, the prayer loop, and the global family map.
 
-## Current state (update as it changes)
+## Current state
+
+**Derive the real position from git history + the board every session (`25` §1). This section
+is an orientation, not a source of truth, and it goes stale between work items: it sat on
+"no app code yet" until 2026-08-11, well after the whole of Phase 1 and most of Phase 2 had
+shipped. If you find it wrong, correct it in the same change.**
 
 - The complete spec lives in `docs/spec/` (docs 00-25; the old `.dc.html` prototypes in `docs/spec/prototypes/`, ADRs in `docs/decisions/`, runbooks in `docs/runbooks/`).
-- W0.2 landed the restructure, pnpm workspace config, ADR backfill, and the GitHub board. No app code yet: `supabase/` arrives at W0.3, `apps/mobile`, `apps/dashboard`, `packages/shared` at W0.4.
+- **The code exists and is substantial.** `apps/mobile` (Expo Router: every Phase 1-2 screen), `apps/dashboard` (Next: moderation, people, reports, verses), `packages/shared`, `packages/config`, and `supabase/` (48 migrations, 33 pgTAP files, 10 edge functions, seeds, snippets). `pnpm test` runs 670 mobile + 178 dashboard tests. Assume a surface is already built and go read it before planning to build it.
+- **In flight:** W2.9 (#135). Slices 1-3 have merged (RSVP, the Academy pathway, and the shared `course_registrations` handoff per ADR 0017). What remains is the "add another email" claim surface, whose backend (`email-claim`, `profile_emails`) is deployed but which has no app screen and no mockup frame yet, so the frame comes first.
+- **Next:** W2.10 (#136), analytics + crash reporting + the Phase 2 exit audit.
+- **Track P:** P1 (the off-provider backup pipeline) has landed; P2-P6 remain (#17). The destructive-work gate below is therefore partly satisfied, not lifted.
 
 ## How to work in this repo
 

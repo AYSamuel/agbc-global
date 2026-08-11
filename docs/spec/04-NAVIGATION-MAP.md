@@ -29,7 +29,7 @@ No account is created in onboarding. Choices persist locally (branch, language, 
 
 ## Tab 1: HOME (`HOME`)
 
-Content: greeting (+name if member), **branch chip** (tap → `BRANCH-SWITCH`), **daily verse card**, **next service** card, **quick actions** (Plan a visit, Watch, Give, Academy), **latest message**, **testimony highlight**, (member) **rhythm streak** strip, **bell** (→ `NC`).
+Content, in render order: greeting (+name if member), **branch chip** (tap → `BRANCH-SWITCH`), **bell** (→ `NC`), then **next service** card, (member) **rhythm streak** strip, **daily verse card**, **testimony highlight**, **latest message**, (guest) **Join the family** card. There is no quick-actions tile row; see `07` for the ordering rationale and why it was removed.
 
 | Action | → Destination |
 |--------|---------------|

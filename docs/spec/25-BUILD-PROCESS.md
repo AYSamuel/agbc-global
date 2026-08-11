@@ -122,7 +122,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 **W1.4 · Home slice (guest) + daily verse**
 - Refs: `07`, `02` (daily_verses), mockup HOME frames.
 - Build BE: daily_verses migration + RLS + 90-day dev seed (WEB translation).
-- Build FE: HOME composition per `07` (verse card WITHOUT devotional CTA until Phase 4; next service computed from `branch_services` incl. the zero-rows fallback; quick actions; latest message; testimony highlight placeholder until W1.5 then wired; guest Join card); midnight rollover invalidation; BRANCH-SWITCH sheet (browse-context only at this stage); verse share (branded image/text).
+- Build FE: HOME composition per `07`, in its stated order and with no quick-actions row (verse card WITHOUT devotional CTA until Phase 4; next service computed from `branch_services` incl. the zero-rows fallback; testimony highlight placeholder until W1.5 then wired; latest message; guest Join card); midnight rollover invalidation; BRANCH-SWITCH sheet (browse-context only at this stage); verse share (branded image/text).
 - Done: `07` guest-relevant criteria; offline renders cached verse + service card.
 
 **W1.5 · Family read-only slice: the wedge domain lands** (multi-session, the heaviest migration set)

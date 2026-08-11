@@ -20,7 +20,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 
 ## Phase 1: Guest shell (no auth)
 - Onboarding (branch/language; notification permission comes later, in context, see `06`).
-- Home (branch-aware, daily verse, next service, quick actions, latest message): read-only.
+- Home (branch-aware, next service, daily verse, testimony highlight, latest message): read-only.
 - Watch (list + `SERMON` video, guest playback) from YouTube sync.
 - Family **read-only** (testimonies + prayers feeds, map) with scope toggle.
 - Give (link-out + bank details from `site.ts`).
