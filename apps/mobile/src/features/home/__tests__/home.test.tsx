@@ -59,8 +59,12 @@ jest.mock('../queries', () => {
   };
 });
 
+const mockSermons = jest.fn<
+  { data: unknown; isError: boolean; refetch: () => void },
+  []
+>();
 jest.mock('@/features/watch/queries', () => ({
-  useSermonsQuery: () => ({ data: [], isError: false, refetch: jest.fn() }),
+  useSermonsQuery: () => mockSermons(),
 }));
 
 // This suite is the GUEST composition; the member's rhythm read belongs to
@@ -141,7 +145,26 @@ beforeEach(() => {
   });
   // Default: the family has posted nothing, so the highlight shows its fallback.
   mockLatestTestimony.mockReturnValue({ data: null, isError: false });
+  // Default: no sermons synced yet, so the latest-message block stays hidden
+  // (docs/spec/07 states). Tests that need the block set their own row.
+  mockSermons.mockReturnValue({ data: [], isError: false, refetch: jest.fn() });
 });
+
+const sermonRow = {
+  id: 'aaa',
+  title: 'Grace That Carries You',
+  speaker: 'Rev Olayinka Ademiluka',
+  youtube_id: 'yt-1',
+  audio_url: null,
+  duration_sec: 2280,
+  thumbnail_url: '',
+  series: null,
+  published_at: '2026-07-18T10:00:00Z',
+  is_live: false,
+  live_checked_at: null,
+  kind: 'video',
+  status: 'available',
+};
 
 describe('localDateKey', () => {
   test('keys on the device-local date, not UTC (docs/spec/07 rollover)', () => {
@@ -208,12 +231,31 @@ describe('HOME composition (docs/spec/07)', () => {
     expect(screen.getByText(/Sunday Service/)).toBeOnTheScreen();
   });
 
-  test('quick actions route to their tabs', async () => {
+  // The section order is a decision (docs/spec/07, "Why this order"), not an
+  // accident of how the JSX was typed, so it is asserted rather than left to
+  // review. Home's only two headers are these sections, and getAllByRole
+  // returns them in render order, which is the order a reader scrolls through.
+  test('From the family comes before Latest message (docs/spec/07)', async () => {
+    mockSermons.mockReturnValue({
+      data: [sermonRow],
+      isError: false,
+      refetch: jest.fn(),
+    });
     await renderHome();
-    await fireEvent.press(screen.getByRole('button', { name: 'Give' }));
-    expect(mockPush).toHaveBeenCalledWith('/give');
-    await fireEvent.press(screen.getByRole('button', { name: 'Academy' }));
-    expect(mockPush).toHaveBeenCalledWith('/academy');
+    const headers = screen
+      .getAllByRole('header')
+      .map((node) => node.props.children as string);
+    expect(headers).toEqual(['From the family', 'Latest message']);
+  });
+
+  // The tile row that used to sit between the service card and the verse was
+  // removed on 2026-08-11: every destination it held is reachable without it
+  // (Plan a visit on the hero, Watch and Give as tabs, Academy in More), and
+  // 07 says not to reintroduce a shortcut grid without a frame.
+  test('no quick-actions tile row', async () => {
+    await renderHome();
+    expect(screen.queryByRole('button', { name: 'Academy' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Visit' })).toBeNull();
   });
 
   test('the guest Join card is present; no member rhythm strip', async () => {

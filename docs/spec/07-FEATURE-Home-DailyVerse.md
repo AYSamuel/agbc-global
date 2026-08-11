@@ -1,24 +1,27 @@
 # 07 · Feature: Home & Daily Verse
 
 ## Purpose
-The daily landing surface. It answers "what's happening for *my* family today," gives one spiritual touchpoint (the verse), the next concrete step (next service / plan a visit), and quick routes into the rest of the app. Branch-aware and person-aware.
+The daily landing surface. It answers "what's happening for *my* family today," gives the next concrete step (next service / plan a visit), shows a member their own rhythm, and offers one spiritual touchpoint (the verse) before handing off to the family. Branch-aware and person-aware.
 
 ## User stories
-- As a member, I open the app and see my branch, today's verse, my next service, and my rhythm.
+- As a member, I open the app and see my branch, my next service, my rhythm, and today's verse.
 - As a visitor, I see who this church is and how to take a next step.
-- As anyone, I can jump to Watch, Give, or Academy in one tap.
+- As anyone, I can see what the family is testifying to and hear the latest message without hunting for them.
 
 ## Screen: `HOME` (Tab 1)
 
 Composition, top to bottom:
 1. **Header**: greeting ("Good morning" / "Good morning, {name}" for members), **branch chip** (current branch → `BRANCH-SWITCH` sheet), **bell** → `NC` (unread dot).
-2. **Daily Verse card**: reference + text (from `daily_verses` for today, user language; EN v1; **WEB translation**, public domain, so storing and share-imaging the text is licensing-clean). Gold accent. Action: **Read today's devotional** → entitled members with an active plan go to `PLAN-DAY`; everyone else goes to the devotional's `BOOK-DETAIL` ("Get the devotional"; devotionals are paid, see `10`/`14`). Never an empty PLAN. Share verse (OS/WhatsApp).
-3. **Next service card**: for the current (browsed) branch: the next service is selected and any countdown computed from **`branch_services`** (the machine-readable schedule, see `02`); `service_times` strings are display-only. Address line, **"I'm here"** (attendance write, gate) and **Plan a visit** → `BRANCH-INFO`. If a service is imminent/live, show live/countdown treatment. **Zero `branch_services` rows** (new branch, schedule not entered yet): render the `service_times` display strings without countdown or "I'm here"; if those are empty too, "Service times coming soon" + Plan a visit; reminders and live detection skip such branches (same rule on `BRANCH-INFO`). **Midnight rollover:** date-anchored Home queries (daily verse, next service) key on the device-local date and invalidate at local midnight while foregrounded and on every foreground transition.
-4. **Quick actions row** (4): **Plan a visit · Watch · Give · Academy**. (This mirrors the website's "Start with a hello" but app-personal.)
-5. **Latest message**: most recent sermon (from `sermons`) → `SERMON`.
-6. **Testimony highlight**: a recent approved testimony → `TESTIMONY-DETAIL`; **Glory to God** inline (gate). "See all" → `FAMILY`.
-7. **(Member) Rhythm strip**: current streak + next milestone → `RHYTHM`. Grace-framed.
-8. **(Guest) Join the family card**: soft prompt → `GATE`/`AUTH-1`.
+2. **Next service card**: for the current (browsed) branch: the next service is selected and any countdown computed from **`branch_services`** (the machine-readable schedule, see `02`); `service_times` strings are display-only. Address line, **"I'm here"** (attendance write, gate) and **Plan a visit** → `BRANCH-INFO`. If a service is imminent/live, show live/countdown treatment. **Zero `branch_services` rows** (new branch, schedule not entered yet): render the `service_times` display strings without countdown or "I'm here"; if those are empty too, "Service times coming soon" + Plan a visit; reminders and live detection skip such branches (same rule on `BRANCH-INFO`). **Midnight rollover:** date-anchored Home queries (daily verse, next service) key on the device-local date and invalidate at local midnight while foregrounded and on every foreground transition.
+3. **(Member) Rhythm strip**: current streak + next milestone → `RHYTHM`. Grace-framed.
+4. **Daily Verse card**: reference + text (from `daily_verses` for today, user language; EN v1; **WEB translation**, public domain, so storing and share-imaging the text is licensing-clean). Gold accent. Action: **Read today's devotional** → entitled members with an active plan go to `PLAN-DAY`; everyone else goes to the devotional's `BOOK-DETAIL` ("Get the devotional"; devotionals are paid, see `10`/`14`). Never an empty PLAN. Share verse (OS/WhatsApp).
+5. **Testimony highlight**: a recent approved testimony → `TESTIMONY-DETAIL`; **Glory to God** inline (gate). "See all" → `FAMILY`.
+6. **Latest message**: most recent sermon (from `sermons`) → `SERMON`.
+7. **(Guest) Join the family card**: soft prompt → `GATE`/`AUTH-1`.
+
+**Why this order** (decided 2026-08-11, mockup reworked in the same change). The service card leads because it is the only time-bound thing on the screen and it carries the primary action. The rhythm strip sits directly under it so that the consequence of tapping **"I'm here"** is visible without scrolling: the tap and the streak it feeds are one loop and must not be separated. The verse follows as the small daily reason to open the app on a weekday. **The testimony highlight sits above the latest message on purpose**: sermons already own a bottom-tab (`WATCH`), while testimonies live two levels deep under `FAMILY`, so Home surfaces the harder-to-reach thing first, and it is the wedge. Members and guests share one composition; the only differences are the rhythm strip (members) and the Join card (guests).
+
+**There is no quick-actions tile row** (removed 2026-08-11; it previously sat between the service card and the verse with Plan a visit · Watch · Give · Academy). Every destination it held is reachable without it: Plan a visit is a button on the service card, Watch and Give are bottom tabs, and **Grace Academy** is the first row of the `MORE` hub. Do not reintroduce a shortcut grid on Home without a mockup frame and a decision recorded here.
 
 ## Branch context model (`BRANCH-SWITCH`): two distinct concepts, never conflated
 

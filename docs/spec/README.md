@@ -19,7 +19,7 @@ Read them in order. The numbered files build on each other.
 | 04 | `04-NAVIGATION-MAP.md` | Full screen graph: every screen, every action's destination, zero dead ends |
 | 05 | `05-DESIGN-SYSTEM.md` | Colors, type, tokens, components, light/dark theming |
 | 06 | `06-FEATURE-Onboarding.md` | Splash → branch → language → enter (notification permission is asked in context later, never here) |
-| 07 | `07-FEATURE-Home-DailyVerse.md` | Home feed, daily verse, next service, quick actions |
+| 07 | `07-FEATURE-Home-DailyVerse.md` | Home feed, next service, rhythm strip, daily verse, section order |
 | 08 | `08-FEATURE-Watch-SermonPlayer.md` | Sermon library, live, audio-only, background playback, resume |
 | 09 | `09-FEATURE-Family.md` | Testimonies, Glory reactions, prayer→answered→testimony loop, global map |
 | 10 | `10-FEATURE-Rhythm.md` | Attendance ("I'm here"), streaks, milestones, devotional plan |
