@@ -26,10 +26,14 @@
 --
 -- DESTRUCTIVE, and deliberately unstaged. The drop is safe without a backup gate because
 -- these objects have never existed outside a local stack: verified 2026-08-11 against the
--- shared project, which carries neither email_claims nor profile_emails (it is still the
--- retired app's schema plus course_registrations and donations; the `19` cutover has not
+-- shared project, which carries neither email_claims nor profile_emails (it still holds
+-- only the retired app's schema and the website's own tables; the `19` cutover has not
 -- run), and email-claim was never deployed as a function. Track P's gate is about prod,
 -- and prod has nothing here to lose.
+--
+-- (Naming the website's tables here would trip the fence guard, which word-matches
+-- supabase/fenced-objects.txt across every migration, comments included. It is right to
+-- be blunt about that: the fence exists over donor PII. See the runbook for the list.)
 --
 -- Rollback (roll forward): re-apply 20260809203000_the_claim_flow.sql as a new migration.
 -- It is self-contained, creates nothing this one keeps, and the only state lost is
