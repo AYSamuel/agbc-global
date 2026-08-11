@@ -62,9 +62,9 @@ select ok(
   (select bool_and(relforcerowsecurity) from pg_class
     where oid in ('public.courses'::regclass, 'public.course_fees_regional'::regclass,
                   'public.course_interest'::regclass, 'public.profile_emails'::regclass,
-                  'public.email_claims'::regclass, 'public.course_registrations'::regclass,
+                  'public.course_registrations'::regclass,
                   'public.course_handoff_tokens'::regclass)),
-  'all seven Academy tables force row level security');
+  'all six Academy tables force row level security');
 
 -- --- 2. the grant matrix, exactly --------------------------------------------------------------
 
@@ -126,7 +126,7 @@ select is(
     where table_schema = 'public' and table_name = 'profile_emails'
       and grantee = 'authenticated'),
   array['DELETE','SELECT'],
-  'proven addresses are readable and removable by their owner, writable only by the claim RPC');
+  'proven addresses are readable and removable by their owner, and writable by no client at all');
 
 select is(
   (select count(*)::int from information_schema.role_table_grants
@@ -138,15 +138,15 @@ select is(
      from (
        select grantee from information_schema.role_table_grants
         where table_schema = 'public'
-          and table_name in ('email_claims', 'course_handoff_tokens')
+          and table_name = 'course_handoff_tokens'
           and grantee in ('anon', 'authenticated', 'service_role')
        union all
        select grantee from information_schema.role_column_grants
         where table_schema = 'public'
-          and table_name in ('email_claims', 'course_handoff_tokens')
+          and table_name = 'course_handoff_tokens'
           and grantee in ('anon', 'authenticated', 'service_role')
      ) g),
-  0, 'claims and handoff tokens grant nothing to any API role: the RPCs are the only doors');
+  0, 'handoff tokens grant nothing to any API role: the RPCs are the only doors');
 
 -- --- 3. the catalog: public reads, converted money ---------------------------------------------
 
@@ -631,12 +631,8 @@ select is(
   (select count(id)::int from public.course_registrations where id = :'regE'),
   0, 'removing a proven address stops the matching, immediately');
 
--- --- 11. the two secret ledgers are closed rooms -----------------------------------------------
-
-select throws_ok(
-  $$select id from public.email_claims$$,
-  '42501', null,
-  'no client reads pending claims: a code''s hash and target are nobody''s business');
+-- --- 11. the secret ledger is a closed room ----------------------------------------------------
+-- email_claims was the other one until the self-service claim was retired (2026-08-11).
 
 select throws_ok(
   $$select id from public.course_handoff_tokens$$,
@@ -656,24 +652,29 @@ select ok(
 select ok(
   (select bool_and(has_function_privilege('service_role', f.signature, 'EXECUTE'))
      from unnest(array[
-       'public.request_email_claim(uuid, text)',
-       'public.verify_email_claim(uuid, text, text)',
        'public.mint_course_handoff(uuid, text)',
        'public.redeem_course_handoff(text, text, boolean)'
      ]) as f(signature)),
-  'the four RPCs answer the service role: the edge functions and the website');
+  'both RPCs answer the service role: the edge function and the website');
 
 select is(
   (select count(*)::int
      from unnest(array[
-       'public.request_email_claim(uuid, text)',
-       'public.verify_email_claim(uuid, text, text)',
        'public.mint_course_handoff(uuid, text)',
        'public.redeem_course_handoff(text, text, boolean)'
      ]) as f(signature)
      cross join unnest(array['anon', 'authenticated']) as r(who)
     where has_function_privilege(r.who, f.signature, 'EXECUTE')),
-  0, 'and no client may mint, redeem, request or verify directly');
+  0, 'and no client may mint or redeem directly');
+
+-- The claim RPCs were dropped with the self-service flow (2026-08-11, ADR 0017
+-- amendment). Asserted gone so a revert has to be deliberate rather than accidental.
+select is(
+  (select count(*)::int from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname in ('request_email_claim', 'verify_email_claim')),
+  0, 'the retired claim RPCs are gone, and profile_emails outlives them');
 
 select * from finish();
 rollback;

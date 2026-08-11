@@ -719,50 +719,6 @@ export type Database = {
           },
         ]
       }
-      email_claims: {
-        Row: {
-          attempts: number
-          code_hash: string
-          code_salt: string
-          consumed_at: string | null
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          profile_id: string
-        }
-        Insert: {
-          attempts?: number
-          code_hash: string
-          code_salt: string
-          consumed_at?: string | null
-          created_at?: string
-          email: string
-          expires_at: string
-          id?: string
-          profile_id: string
-        }
-        Update: {
-          attempts?: number
-          code_hash?: string
-          code_salt?: string
-          consumed_at?: string | null
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-          profile_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "email_claims_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       events: {
         Row: {
           branch_id: string | null
@@ -2081,13 +2037,6 @@ export type Database = {
         }[]
       }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
-      request_email_claim: {
-        Args: { p_email: string; p_profile: string }
-        Returns: {
-          code: string
-          outcome: string
-        }[]
-      }
       rhythm_gathering_rungs: { Args: { total: number }; Returns: number[] }
       rhythm_state: {
         Args: { p_branch_id?: string }
@@ -2113,13 +2062,6 @@ export type Database = {
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
-      verify_email_claim: {
-        Args: { p_code: string; p_email: string; p_profile: string }
-        Returns: {
-          linked_count: number
-          outcome: string
-        }[]
-      }
       verse_alert_batch: {
         Args: { floor_days?: number }
         Returns: {

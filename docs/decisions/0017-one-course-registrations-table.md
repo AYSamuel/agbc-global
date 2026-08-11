@@ -1,6 +1,6 @@
 # 0017 · One course registrations table, shared by the app and the website
 
-- Status: accepted
+- Status: accepted; **decision 3 amended 2026-08-11** (the self-service claim is cut; see the Amendment at the foot)
 - Date: 2026-08-09
 - Spec: `docs/spec/02-DATA-MODEL.md` §`courses` / `course_registrations` / `course_interest`, `13-FEATURE-Academy.md`, `19-PROD-MIGRATION.md`
 - Amends: the fence on `public.course_registrations` recorded in `CLAUDE.md` and `docs/runbooks/prod-audit-2026-07-30.md` (2026-07-30)
@@ -285,3 +285,58 @@ which is the hole this ADR exists to close.
 data held, and genuinely tempting. Rejected because the Academy is a pathway of several
 courses: the same member registers again, the proof is gone, and they are back to "not
 registered" having already proved exactly this once.
+
+---
+
+## Amendment · 2026-08-11 · the self-service claim is cut
+
+Ayo, 2026-08-11: the app will not carry a "this other address is also mine" surface.
+
+This reverses part of decision 3 and contradicts two of the rejections above outright:
+"Deferring the member self-claim to a later phase" and, in effect, "Email matching alone,
+with no human step". Recorded here rather than edited into the body, so the original
+reasoning stays readable and the change of mind is visible as a change of mind.
+
+### What is left standing
+
+Of the three answers decision 3 named for the member who paid under one address and
+signed in under another:
+
+1. **The automatic email match** stays exactly as specified, including reading the proven
+   address SET rather than only `auth.users`.
+2. **The self-service claim is gone.** `request_email_claim`, `verify_email_claim` and the
+   `email_claims` ledger are dropped (`20260811120000_the_claim_nobody_will_make.sql`); the
+   `email-claim` edge function and its shared contracts are deleted. It had shipped
+   backend-first in W2.9 slice 2 and its app screen was never built, so nothing a member
+   could reach is being taken away, and nothing was ever deployed beyond a local stack.
+3. **The leader link is now the only fallback, and it does not exist yet.** It was never
+   built. It is filed as its own work item against the dashboard (#164).
+
+### The consequence, stated plainly
+
+Between now and that tool shipping, the different-address member has **no path**. The app
+shows them as unregistered and the double-booking wall cannot help, because it keys on
+`(course_id, profile_id)` and their row has no `profile_id`. They can pay twice for one
+course. The ADR called this "ordinary rather than exotic" and it still is; what has
+changed is the appetite for a second OTP flow to solve it, against four registrations of
+real volume.
+
+The interim is manual: the member emails through the contact form (`13`) and someone sets
+`profile_id` on the row directly. Until the dashboard tool exists, "directly" means
+Supabase Studio, which is a leader looking at a stranger's payment record by hand, and is
+worth weighing if it starts happening often.
+
+### Why `profile_emails` survives the cut
+
+The table has no writer left, and it stays anyway:
+
+- Three `course_registrations` policies and `mint_course_handoff` read it through
+  `email_belongs_to_caller()`. Removing it means rewriting RLS on a table holding
+  strangers' names, emails and payment records to retire one empty table, which is a bad
+  trade against the risk.
+- The leader-linking tool is its natural writer: a hand-linked address belongs in the same
+  set the match already reads, so the tool inherits the mechanism instead of inventing one.
+
+`course_registration_link_method` keeps its `self` value: no row can carry it, dropping an
+enum value is a table rewrite, and the type sits on a table shared with the live website.
+`leader` is now the method a hand link will use.
