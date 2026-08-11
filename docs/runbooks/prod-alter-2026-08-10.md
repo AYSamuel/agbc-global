@@ -90,3 +90,10 @@ confirms enrolments via the Phase C dashboard (or a later reviewed step).
 - The claim/link machinery (`email_claims`, `profile_emails`, the linking pass) also
   arrives with the cutover; until then the 4 rows stay unlinked, which is fine: they
   are invisible to every API caller (no policies) and the app is not on prod.
+
+  > **Correction, 2026-08-11.** Only `profile_emails` will arrive. The self-service
+  > claim was cut (ADR 0017 amendment) and `email_claims`, `request_email_claim` and
+  > `verify_email_claim` were dropped before ever reaching prod. `profile_emails`
+  > arrives empty and stays empty until the dashboard's leader-linking tool ships, so
+  > those 4 rows stay unlinked past the cutover too, and linking them is manual.
+  > The rest of this runbook is a record of what ran on 2026-08-10 and is unchanged.

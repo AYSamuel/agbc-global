@@ -11,7 +11,7 @@ shipped. If you find it wrong, correct it in the same change.**
 
 - The complete spec lives in `docs/spec/` (docs 00-25; the old `.dc.html` prototypes in `docs/spec/prototypes/`, ADRs in `docs/decisions/`, runbooks in `docs/runbooks/`).
 - **The code exists and is substantial.** `apps/mobile` (Expo Router: every Phase 1-2 screen), `apps/dashboard` (Next: moderation, people, reports, verses), `packages/shared`, `packages/config`, and `supabase/` (48 migrations, 33 pgTAP files, 10 edge functions, seeds, snippets). `pnpm test` runs 670 mobile + 178 dashboard tests. Assume a surface is already built and go read it before planning to build it.
-- **In flight:** W2.9 (#135). Slices 1-3 have merged (RSVP, the Academy pathway, and the shared `course_registrations` handoff per ADR 0017). What remains is the "add another email" claim surface, whose backend (`email-claim`, `profile_emails`) is deployed but which has no app screen and no mockup frame yet, so the frame comes first.
+- **W2.9 (#135) is done.** Slices 1-3 shipped (RSVP, the Academy pathway, the shared `course_registrations` handoff per ADR 0017). Its last piece, the "add another email" claim surface, was **cut on 2026-08-11** (ADR 0017 amendment) and its backend removed with it. Consequence to know before touching the Academy: a member who paid on the website under a different address than their app account has NO path until the dashboard's leader-linking tool exists (#164), and can pay twice. The interim is manual.
 - **Next:** W2.10 (#136), analytics + crash reporting + the Phase 2 exit audit.
 - **Track P:** P1 (the off-provider backup pipeline) has landed; P2-P6 remain (#17). The destructive-work gate below is therefore partly satisfied, not lifted.
 
