@@ -7,6 +7,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./analytics": "./src/analytics/events.ts",
     "./theme": "./src/theme/index.ts",
     "./database": "./src/database.types.ts"
   },

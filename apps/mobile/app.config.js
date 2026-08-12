@@ -6,6 +6,24 @@
 // tooling regenerate credentials, never create new store records. versionCode floor
 // is 20 (highest Grace Portal upload is 19).
 
+// Sourcemap upload needs an org and a project, and the plugin fails a build when it has
+// neither. Conditional so a local prebuild and anyone else's checkout still work: the
+// plugin joins in only where SENTRY_ORG + SENTRY_PROJECT are set (EAS env, `21` §4), and
+// the auth token stays a secret there. Without it a release build still succeeds, with
+// minified stack traces, which the PR states rather than leaving to be discovered.
+const sentryPlugin =
+  process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+    ? [
+        [
+          '@sentry/react-native/expo',
+          {
+            organization: process.env.SENTRY_ORG,
+            project: process.env.SENTRY_PROJECT,
+          },
+        ],
+      ]
+    : [];
+
 /** @type {import('expo/config').ExpoConfig} */
 const config = {
   name: 'AGBC Global',
@@ -85,6 +103,7 @@ const config = {
         microphonePermission: false,
       },
     ],
+    ...sentryPlugin,
   ],
   experiments: {
     typedRoutes: true,

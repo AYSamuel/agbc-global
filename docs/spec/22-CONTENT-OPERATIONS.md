@@ -49,6 +49,8 @@ The software can pass every acceptance criterion and still die in month 3 if the
 
 Tool: PostHog EU cloud, consent-gated (`20`). Event names snake_case; standard properties: branch_id, scope, locale, role.
 
+**Instrumented from W2.10 slice 1 (2026-08-12).** The plan below is committed as a typed artifact in `packages/shared/src/analytics/events.ts`, including the six events no surface can fire yet (`plan_day_completed`, `devotional_purchased_matched`, `broadcast_received`, `broadcast_opened`, `notification_opened`, `reader_opened`), each naming the work item that lands it. Three things the list does not say on its own: `scope` is passed by the call sites that have one rather than read globally (the Family feed keeps it in component state, and mirroring it would give one fact two owners); `testimony_approved` is answered from moderation timestamps in SQL rather than sent from a leader's browser, which is also how north star 4 is computed; and the SDK's own lifecycle events (Application Opened and friends) are enabled deliberately, because north star 1 is a share OF MAU and without them MAU would only ever count contributors and read ~100%.
+
 **v1 events:** onboarding_completed, signup_completed, gate_shown / gate_converted (action_type), testimony_posted / testimony_approved, prayer_posted, glory_tapped (own_branch bool), i_prayed_tapped (own_branch bool), prayer_marked_answered, answered_converted_to_testimony, map_opened, scope_toggled, attendance_marked (source), plan_day_completed (plan_id), devotional_purchased_matched, sermon_played (mode), sermon_resumed, rsvp_set, give_tapped (method), broadcast_received / broadcast_opened, notification_opened (type), reader_opened (format).
 
 **North stars for "belonging made visible":**

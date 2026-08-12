@@ -8,6 +8,17 @@
   "themeDark": "Dark",
   "privacyData": "Privacy & data",
   "privacy": "Privacy",
+  "analytics": {
+    "toggleTitle": "Help improve the app",
+    "toggleBody": "Which screens and actions get used. No name, and nothing you write.",
+    "crashNote": "Crash reports are always sent so we can fix what breaks. They never carry your name, your email, or anything you write.",
+    "askTitle": "Help us make this better?",
+    "askBody": "We'd like to count which screens and actions get used, so we can see what helps and what gets in the way. Never your name, and never anything you write or pray.",
+    "askYes": "Yes, that's fine",
+    "askNo": "No thanks",
+    "askFootnote": "Everything works the same either way, and Settings has the switch whenever you want it. Crash reports are always sent, with your name and your words left out.",
+    "askDismissed": "Closed"
+  },
   "aboutSection": "About",
   "aboutRow": "About",
   "contact": "Contact",

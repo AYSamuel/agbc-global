@@ -18,13 +18,15 @@ Church membership, testimonies, and prayer requests reveal **religious beliefs**
 | Attendance / rhythm / plan progress | religious-practice data | consent (member opts in by using the feature) | 9(2)(a) |
 | Push notifications | device tokens | consent (opt-in prefs, `15`) | n/a |
 | Moderation & safety (reports, audit) | UGC + reports | legitimate interest (community safety) | 9(2)(d) |
-| Analytics / crash reporting | pseudonymous usage | consent (see below) | n/a |
+| Analytics (product events) | pseudonymous, device-scoped usage | consent (opt-in, see below) | n/a |
+| Crash reporting | scrubbed diagnostics, no identifiers | legitimate interest (keeping the service working) | n/a |
 
 ## Consent mechanics
 
 - The compose **consent step** (`09`) is the Art. 9 capture: plain words ("shared publicly with the church family worldwide; a leader reviews it first"), stored with a timestamp and the version of the wording shown.
 - Consent is withdrawable: deleting a post, or the account, withdraws it; the delete paths (`16`) are the mechanism.
-- **Analytics:** nothing non-essential fires before consent. v1: run PostHog in anonymous/cookieless mode OR behind an in-app opt-in (Settings toggle + first-run card). Sentry is configured to scrub PII: no email addresses or phone numbers, no user content in events or breadcrumbs.
+- **Analytics:** nothing non-essential fires before consent. **Settled 2026-08-12 (W2.10, ADR 0020), replacing the either/or this line used to offer:** PostHog is **opt-in**, asked once by a sheet on the first Home after onboarding (`ANALYTICS-ASK`) with the switch in `SETTINGS › Privacy & data`. The choice is stored **on the device**, not against a profile, because first run has no account and the gate funnel is a guest measurement. Yes, no and dismissing all count as answered, so nobody is asked twice, and refusing is one tap beside the yes. Anonymous/cookieless was considered and rejected: the SDK persists a device id either way, so it would not have removed the consent question, and it would have cost three of the five north stars in `22` §5. **No `identify()` ever:** events carry branch, scope, locale and role, never the member id, so religious-practice events never sit against an identified individual (the cost is that one person on two devices counts twice). IP-based geo enrichment is off; `branch_id` is both truer and less intrusive. Withdrawal reaches the data: turning the switch off opts out AND drops the stored device id.
+- **Crash reporting is NOT gated, and is scrubbed instead** (ADR 0020). A crash report is how the app gets fixed, and `21` §8's rollout halt criterion ("crash-free sessions < 99.5%") measures nothing if it only sees the members who opted in. What is refused: the user record (so no email, no IP), request bodies, headers, query strings, cookies, stack-frame locals, screenshots, view hierarchy, session replay, and console breadcrumbs whole. The privacy notice says this plainly, and so does the line under the analytics switch in Settings. This paragraph and the table above used to disagree with each other; the table now matches.
 
 ## Data residency
 

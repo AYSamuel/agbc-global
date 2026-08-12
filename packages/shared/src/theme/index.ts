@@ -329,10 +329,22 @@ export const motion = {
 // 12; hit targets 44 minimum, 48 preferred.
 export const hitTarget = { min: 44, preferred: 48 } as const;
 
+/**
+ * The toggle knob (mockup `.switch i`), CONSTANT in both themes like the verse card's
+ * surface above: the track carries the state (green on, hairline off) and the knob reads as
+ * a physical thing sliding on it, so theming it would make the control ambiguous rather
+ * than consistent. Track colours come from `palette.green` and the theme's `cardline`.
+ */
+export const control = {
+  knob: '#ffffff',
+  knobShadow: 'rgba(0,0,0,0.25)',
+} as const;
+
 export const tokens = {
   palette,
   onInk,
   verseCard,
+  control,
   color,
   fontFamily,
   typeScale,

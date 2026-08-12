@@ -16,6 +16,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { clientKey, createRateLimiter } from '../_shared/rateLimit.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import { isAllowedAttempt, parseReviewSignin } from './core.ts';
 
 const MAX_BODY_BYTES = 8 * 1024;
@@ -121,6 +122,7 @@ Deno.serve(async (req) => {
       'review-signin: admin call failed:',
       error instanceof Error ? error.name : 'unknown',
     );
+    await captureEdgeError('review-signin', error);
     return Response.json({ ok: false, error: 'unavailable' }, { status: 503 });
   }
 });

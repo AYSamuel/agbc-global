@@ -30,6 +30,7 @@ import Book from 'lucide-react-native/icons/book';
 import BookOpen from 'lucide-react-native/icons/book-open';
 import Bookmark from 'lucide-react-native/icons/bookmark';
 import Calendar from 'lucide-react-native/icons/calendar';
+import ChartColumnIncreasing from 'lucide-react-native/icons/chart-column-increasing';
 import Check from 'lucide-react-native/icons/check';
 import ChevronDown from 'lucide-react-native/icons/chevron-down';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
@@ -180,6 +181,9 @@ export const EditIcon = houseStyle(SquarePen, 'EditIcon');
 export const TrashIcon = houseStyle(Trash2, 'TrashIcon');
 export const BookmarkIcon = houseStyle(Bookmark, 'BookmarkIcon');
 export const FlameIcon = houseStyle(Flame, 'FlameIcon');
+/** ANALYTICS-ASK's `.gi` tile (W2.10). Lucide's `chart-column-increasing`, the glyph the
+ * frame draws: a chart says "we are counting", which is the whole subject of that sheet. */
+export const InsightsIcon = houseStyle(ChartColumnIncreasing, 'InsightsIcon');
 
 /** SETTINGS' home-branch row. Deliberately separate from `HomeTabIcon` even though
  * both draw Lucide's `house`: restyling the Home TAB must not silently change what a

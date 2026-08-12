@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import { probeLive } from './live.ts';
 import { isWithinServiceWindow, type ServiceWindow } from './windows.ts';
 
@@ -118,6 +119,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('live-detection failed:', error);
+    await captureEdgeError('live-detection', error);
     await pingDeadMan(healthcheckUrl, false);
     return Response.json({ error: 'live detection run failed' }, { status: 500 });
   }

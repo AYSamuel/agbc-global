@@ -22,9 +22,12 @@ import {
   PersonIcon,
   Screen,
   SegmentedControl,
+  ToggleList,
+  ToggleRow,
   useToast,
 } from '@/components/ui';
 import { useBlockedMembers } from '@/features/family/moderation';
+import { shutdownAnalytics, useAnalyticsConsentStore } from '@/lib/analytics';
 import { LANGUAGE_AUTONYMS, type SupportedLanguage } from '@/i18n';
 import { useAuthStore } from '@/state/auth';
 import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
@@ -56,6 +59,11 @@ export default function Settings() {
   // reads, so the number in the row and the list it opens are one fact; zero shows
   // nothing rather than a "0", which would read as a score.
   const blockedCount = useBlockedMembers().data?.length ?? 0;
+  // The consent store IS the switch's state: one fact, one owner. A local mirror here
+  // would be the second source, and the row would then disagree with what is captured.
+  const analyticsConsent = useAnalyticsConsentStore((s) => s.consent);
+  const grantAnalytics = useAnalyticsConsentStore((s) => s.grant);
+  const denyAnalytics = useAnalyticsConsentStore((s) => s.deny);
 
   const currentLanguage = LANGUAGE_AUTONYMS[i18n.language as SupportedLanguage];
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
@@ -140,6 +148,40 @@ export default function Settings() {
         </MenuCard>
 
         <MenuLabel label={t('settings:privacyData')} />
+        {/* The analytics switch (W2.10, mockup SETTINGS "Privacy & data"). Above the
+            Privacy row because it is the only thing in this section the member can
+            actually change here, and it works signed out: consent is per DEVICE, not per
+            account (ADR 0020). */}
+        <ToggleList>
+          <ToggleRow
+            title={t('settings:analytics.toggleTitle')}
+            body={t('settings:analytics.toggleBody')}
+            value={analyticsConsent === 'granted'}
+            onValueChange={(next) => {
+              if (next) {
+                grantAnalytics();
+                return;
+              }
+              denyAnalytics();
+              // Withdrawal has to reach the data, not just the future: stop sending and
+              // drop the stored device id (`20` §Consent mechanics).
+              void shutdownAnalytics();
+            }}
+          />
+        </ToggleList>
+        <Text
+          style={{
+            fontFamily: fontFamily.body.regular,
+            fontSize: 12,
+            lineHeight: 12 * 1.5,
+            color: colors.muted,
+            paddingHorizontal: spacing.md + 4,
+            paddingTop: spacing.sm + 4,
+            paddingBottom: spacing.sm + 4,
+          }}
+        >
+          {t('settings:analytics.crashNote')}
+        </Text>
         <MenuCard>
           <MenuRow
             icon={LockIcon}

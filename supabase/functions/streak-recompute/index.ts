@@ -18,6 +18,7 @@ import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 
 const JOB = 'streak-recompute';
 
@@ -46,6 +47,7 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('streak-recompute failed:', error);
+    await captureEdgeError('streak-recompute', error);
     await pingDeadMan(healthcheckUrl, false);
     return Response.json({ error: 'recompute run failed' }, { status: 500 });
   }

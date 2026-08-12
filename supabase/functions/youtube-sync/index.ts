@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import {
   planSync,
   STALE_LIVE_MINUTES,
@@ -110,6 +111,7 @@ Deno.serve(async (req) => {
     return Response.json(summary);
   } catch (error) {
     console.error('youtube-sync failed:', error);
+    await captureEdgeError('youtube-sync', error);
     await pingDeadMan(healthcheckUrl, false);
     // Generic outward error; detail stays in the function logs (no PII here).
     return Response.json({ error: 'sync run failed' }, { status: 500 });

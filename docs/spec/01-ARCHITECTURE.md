@@ -129,8 +129,8 @@ If a fully custom backend is preferred, here's what it takes and roughly what it
 
 ## 7. Analytics & observability
 
-- Product analytics: **PostHog (EU cloud)** (decision 2026-07-12; Firebase Analytics dropped). Consent-gated: anonymous/cookieless mode or in-app opt-in; nothing non-essential fires before consent (see `20`). The v1 event list and north-star metrics live in `22-CONTENT-OPERATIONS.md` §5; instrument in Phase 2.
-- Crash reporting: Sentry (Expo-compatible), configured to scrub PII (no email addresses, phone numbers, or user content in events/breadcrumbs).
+- Product analytics: **PostHog (EU cloud)** (decision 2026-07-12; Firebase Analytics dropped). **Opt-in, decided 2026-08-12 (ADR 0020)**, asked once and stored per device; nothing fires before consent, and events never carry a member id (see `20`). The v1 event list and north-star metrics live in `22-CONTENT-OPERATIONS.md` §5; instrumented in W2.10.
+- Crash reporting: Sentry (Expo-compatible) in the app, the dashboard and edge functions, **not consent-gated** and scrubbed instead (ADR 0020): no user record, bodies, headers, query strings, cookies, locals, screenshots or replay, and console breadcrumbs dropped. Scrubbing inventory and its two version traps: `21` §6.1.
 - Backend logs + DB metrics via Supabase dashboard (or provider equivalent).
 
 ## 8. Offline write policy
