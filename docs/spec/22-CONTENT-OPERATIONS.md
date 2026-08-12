@@ -47,7 +47,9 @@ The software can pass every acceptance criterion and still die in month 3 if the
 
 ## 5. Analytics: the wedge baseline (instrument in Phase 2, not Phase 4)
 
-Tool: PostHog EU cloud, consent-gated (`20`). Event names snake_case; standard properties: branch_id, scope, locale, role.
+Tool: PostHog EU cloud, consent-gated (`20`). Event names snake_case; standard properties: branch_id, scope, locale, role, **environment**.
+
+**`environment` was added 2026-08-13** (ADR 0020 amended) and is the one deviation from the four properties this section used to list. PostHog's free plan allows a single project and a second one requires a card on file, so dev builds and real members share one dataset; every event therefore carries `environment` ('development' or 'production'), derived from the build rather than configured, and every north-star insight filters on it. Without it the wedge baseline that launch week exists to capture would silently include our own testing.
 
 **Instrumented from W2.10 slice 1 (2026-08-12).** The plan below is committed as a typed artifact in `packages/shared/src/analytics/events.ts`, including the six events no surface can fire yet (`plan_day_completed`, `devotional_purchased_matched`, `broadcast_received`, `broadcast_opened`, `notification_opened`, `reader_opened`), each naming the work item that lands it. Three things the list does not say on its own: `scope` is passed by the call sites that have one rather than read globally (the Family feed keeps it in component state, and mirroring it would give one fact two owners); `testimony_approved` is answered from moderation timestamps in SQL rather than sent from a leader's browser, which is also how north star 4 is computed; and the SDK's own lifecycle events (Application Opened and friends) are enabled deliberately, because north star 1 is a share OF MAU and without them MAU would only ever count contributors and read ~100%.
 

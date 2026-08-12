@@ -64,6 +64,16 @@ export interface AnalyticsStandardProperties {
   scope: AnalyticsScope | null;
   locale: string;
   role: AnalyticsRole;
+  /**
+   * A fifth standard property, beyond `22` §5's four (added 2026-08-13, ADR 0020 amended).
+   *
+   * PostHog's free plan allows ONE project, and a second one needs a card on file, so dev
+   * traffic and real member activity share a dataset. Rather than leave the wedge's north
+   * stars quietly contaminated by our own testing, every event says which build it came
+   * from, and every insight filters on it. Derived from the build, never configured: nobody
+   * can forget to set it, and nobody can set it wrongly.
+   */
+  environment: 'development' | 'production';
 }
 
 /** No properties of its own. Present so `track()` can refuse a second argument. */

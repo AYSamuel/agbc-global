@@ -31,6 +31,14 @@ This app is also higher-stakes than the average: testimonies and prayers are Art
 - **Two separate switches** (crashes, analytics). Most honest-looking, and it puts a question in Settings that almost nobody will find, for a stream that is already scrubbed of everything identifying.
 - **`identify()` on sign-in.** Cross-device stitching and whole-journey queries. Rejected under decision 3.
 
+## Amendment, 2026-08-13 (keys collected)
+
+Decision 5 said unlisted product events are out of scope; this adds one PROPERTY, not an event, and records why.
+
+The consoles turned out to constrain the shape. PostHog's free plan allows **one project**, and creating a second (the clean way to keep dev traffic out of the launch baseline) requires a card on file, which is a spend decision and not one to make on somebody's behalf. Its per-project *environments* are not offered in this plan's UI either. So the single project carries both datasets, and a fifth standard property, `environment` ('development' | 'production'), is derived from the build so every insight can exclude our own testing with one clause. Free, immediate, and it cannot be forgotten or set wrongly because nothing configures it.
+
+Also settled while collecting the values: **three Sentry projects** (`agbc-mobile` react-native, `agbc-dashboard` nextjs, `agbc-edge` deno) in the `agbc-app` org, each created with error monitoring only, no tracing/replay/profiling/logging products. All three DSNs ingest at `ingest.de.sentry.io`, which verifies the EU-storage claim in `credentials.md` rather than trusting it. The mobile Sentry DSN is deliberately absent from local dev: the free tier is 5k errors a month and local crash noise would spend it on nothing.
+
 ## Consequences
 
 - `20` amended: the lawful-basis row for crash reporting, and §Consent mechanics restated to match decisions 1-4. `22` §5 gains a note that lifecycle events supply the MAU denominator. `21` §6.1 gains the DSN/scrubbing shape. `25`'s W2.10 entry records the slicing.
