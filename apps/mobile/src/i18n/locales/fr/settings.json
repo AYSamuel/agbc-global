@@ -8,6 +8,17 @@
   "themeDark": "Sombre",
   "privacyData": "Confidentialité et données",
   "privacy": "Confidentialité",
+  "analytics": {
+    "toggleTitle": "Aidez-nous à améliorer l'application",
+    "toggleBody": "Quels écrans et quelles actions sont utilisés. Aucun nom, et rien de ce que vous écrivez.",
+    "crashNote": "Les rapports d'erreur sont toujours envoyés pour que nous puissions réparer ce qui casse. Ils ne contiennent jamais votre nom, votre e-mail, ni ce que vous écrivez.",
+    "askTitle": "Nous aider à améliorer l'application ?",
+    "askBody": "Nous aimerions compter quels écrans et quelles actions sont utilisés, pour voir ce qui aide et ce qui gêne. Jamais votre nom, et jamais ce que vous écrivez ou priez.",
+    "askYes": "Oui, d'accord",
+    "askNo": "Non merci",
+    "askFootnote": "Tout fonctionne pareil dans les deux cas, et le réglage reste dans les Paramètres. Les rapports d'erreur sont toujours envoyés, sans votre nom ni vos mots.",
+    "askDismissed": "Fermé"
+  },
   "aboutSection": "À propos",
   "aboutRow": "À propos",
   "contact": "Contact",

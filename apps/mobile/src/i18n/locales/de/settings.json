@@ -8,6 +8,17 @@
   "themeDark": "Dunkel",
   "privacyData": "Datenschutz & Daten",
   "privacy": "Datenschutz",
+  "analytics": {
+    "toggleTitle": "Hilf uns, die App zu verbessern",
+    "toggleBody": "Welche Seiten und Aktionen genutzt werden. Kein Name, und nichts von dem, was du schreibst.",
+    "crashNote": "Fehlerberichte senden wir immer, damit wir reparieren können, was kaputtgeht. Sie enthalten nie deinen Namen, deine E-Mail-Adresse oder etwas, das du schreibst.",
+    "askTitle": "Hilf uns, das besser zu machen?",
+    "askBody": "Wir würden gern zählen, welche Seiten und Aktionen genutzt werden, um zu sehen, was hilft und was im Weg steht. Nie dein Name, und nie etwas, das du schreibst oder betest.",
+    "askYes": "Ja, gerne",
+    "askNo": "Nein, danke",
+    "askFootnote": "Alles funktioniert so oder so gleich, und in den Einstellungen findest du den Schalter jederzeit. Fehlerberichte senden wir immer, ohne deinen Namen und ohne deine Worte.",
+    "askDismissed": "Geschlossen"
+  },
   "aboutSection": "Über",
   "aboutRow": "Über",
   "contact": "Kontakt",

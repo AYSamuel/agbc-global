@@ -10,6 +10,7 @@ import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { resendSender, type EmailSender } from '../_shared/email.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { buildVerseAlerts, type DepthRow, type LedgerEntry } from './core.ts';
 
@@ -41,6 +42,7 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('verse-monitor failed:', error);
+    await captureEdgeError('verse-monitor', error);
     await pingDeadMan(healthcheckUrl, false);
     return Response.json({ error: 'monitor run failed' }, { status: 500 });
   }

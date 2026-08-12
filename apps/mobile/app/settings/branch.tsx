@@ -3,12 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 
-import {
-  fontFamily,
-  icon,
-  palette,
-  spacing,
-} from '@agbc/shared/theme';
+import { fontFamily, icon, palette, spacing } from '@agbc/shared/theme';
 
 import { ActionSheet, ClockIcon, HomeTabIcon, useToast } from '@/components/ui';
 import { AuthLayout } from '@/features/auth/AuthLayout';
@@ -78,7 +73,9 @@ export default function BranchChangeScreen() {
     <AuthLayout
       title={t('settings:branchChange.title')}
       lead={t('settings:branchChange.lead')}
-      icon={<HomeTabIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />}
+      icon={
+        <HomeTabIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />
+      }
       backLabel={t('back')}
       onBack={() => {
         router.back();
@@ -172,7 +169,9 @@ export default function BranchChangeScreen() {
       {/* Confirm: says plainly that nothing has changed yet. */}
       <ActionSheet
         visible={chosenBranch !== undefined && settledUntil === null}
-        icon={<HomeTabIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />}
+        icon={
+          <HomeTabIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />
+        }
         title={t('settings:branchChange.confirmTitle', {
           branch: chosenBranch?.name ?? '',
         })}
@@ -205,7 +204,9 @@ export default function BranchChangeScreen() {
       {/* The 90-day settle, met on arrival rather than after a wasted choice. */}
       <ActionSheet
         visible={settledUntil !== null && !tooSoonSeen}
-        icon={<ClockIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />}
+        icon={
+          <ClockIcon size={icon.x2l} color={palette.navy} strokeWidth={1.8} />
+        }
         title={t('settings:branchChange.tooSoonTitle', { date: askAgainOn })}
         body={t('settings:branchChange.tooSoonBody', {
           branch: current?.name ?? '',

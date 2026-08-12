@@ -1,7 +1,8 @@
 {
   "imports": {
     "zod": "npm:zod@4.4.3",
-    "@supabase/supabase-js": "npm:@supabase/supabase-js@2"
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "@sentry/deno": "npm:@sentry/deno@10.69.0"
   },
   "nodeModulesDir": "none",
   "compilerOptions": {

@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
@@ -27,6 +28,10 @@ export default function DashboardError({
 }) {
   useEffect(() => {
     console.error('dashboard error', error);
+    // The boundary already existed; what it never did was tell anyone. A leader hitting
+    // this at 8am on a Sunday will not file a report, so the report has to file itself
+    // (W2.10). A no-op when Sentry has no DSN.
+    Sentry.captureException(error);
   }, [error]);
 
   return (

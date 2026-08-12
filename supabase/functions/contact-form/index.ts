@@ -14,6 +14,7 @@
 // Logs never contain name, email, or message content (docs/spec/20).
 
 import { optionalEnv } from '../_shared/env.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import {
   buildEmail,
   clientKey,
@@ -99,6 +100,7 @@ Deno.serve(async (req) => {
       'contact-form: send failed:',
       error instanceof Error ? error.name : 'unknown',
     );
+    await captureEdgeError('contact-form', error);
     return Response.json({ ok: false, error: 'send_failed' }, { status: 502 });
   }
 });

@@ -223,9 +223,13 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Done: `11` + `13` acceptance criteria; RSVP against a cancelled event rejected server-side and reconciled quietly.
 
 **W2.10 · Analytics + crash reporting + Phase 2 exit**
-- Refs: `22` §5 (event list + north stars), `20` (consent gating), `01` §7, `18` Phase 2 exit.
+- Refs: `22` §5 (event list + north stars), `20` (consent gating), `01` §7, `18` Phase 2 exit, ADR 0020.
 - Build: PostHog EU (anonymous/cookieless or opt-in per `20`), the ~20 v1 events with standard properties; Sentry (app + dashboard + edge) with PII scrubbing; then the exit audit: Family loop E2E both platforms, nothing publishes without approval (attempt the bypasses once more via the app), Maestro journeys extended (OTP sign-in, post testimony → pending, Glory gate-return, RSVP, block).
 - Done: `18` Phase 2 exit; north-star events visible in PostHog from a dev device.
+- **Sliced 2026-08-12 into three, with the native rebuild between 1 and 2** so both SDKs ride one EAS build rather than two:
+  1. **The spine (landed 2026-08-12).** ADR 0020 settled the four decisions `20` had left open or contradictory (opt-in, device-scoped consent, no `identify()`, crashes not gated), and the two surfaces it needs were composed in `entry-flow.html` and approved BEFORE any code: `ANALYTICS-ASK` and the switch in SETTINGS' "Privacy & data". What landed: the typed tracking plan in `packages/shared` (all ~20 events, the six deferred ones naming their owning item), the consent store + gate, the PostHog client, Sentry across app + dashboard + edge with the scrubbing asserted in tests, and the shared `ToggleRow`/`ToggleList` that NOTIF-PREFS (W3.3) inherits. PostHog turned out to need NO native module (every native-ish peer is optional; it takes our AsyncStorage), so Sentry alone is why the dev clients need rebuilding.
+  2. **Instrumentation.** Fire the 14 events whose surfaces exist, at the mutation/hook layer rather than in components, then confirm the north-star events arriving in PostHog from a dev device.
+  3. **The exit audit.** The five Maestro journeys, the Family loop E2E on both physical devices, one more run at the publish bypasses through the app, then the Phase 2 exit sign-off (`18`, this file, `CLAUDE.md`, and deleting `docs/spec/plans/W2-phase-2-completion.md` as its own header instructs).
 
 ### Phase 3 · Media depth + notifications + Dashboard Phase B
 

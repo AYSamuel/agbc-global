@@ -37,6 +37,7 @@ export {
 } from './Gradient';
 export * from './icons';
 export { MenuCard, MenuLabel, MenuRow, type MenuRowProps } from './Menu';
+export { ToggleList, ToggleRow, type ToggleRowProps } from './ToggleRow';
 export {
   NoteBanner,
   type NoteBannerProps,

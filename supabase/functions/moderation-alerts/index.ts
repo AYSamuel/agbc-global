@@ -21,6 +21,7 @@ import { resendSender, type EmailSender } from '../_shared/email.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import { buildDigests, type AlertRow, type LedgerEntry } from './core.ts';
 
 const JOB = 'moderation-alerts';
@@ -51,6 +52,7 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('moderation-alerts failed:', error);
+    await captureEdgeError('moderation-alerts', error);
     await pingDeadMan(healthcheckUrl, false);
     // Generic outward error; detail stays in the function logs, which carry no addresses.
     return Response.json({ error: 'alert run failed' }, { status: 500 });

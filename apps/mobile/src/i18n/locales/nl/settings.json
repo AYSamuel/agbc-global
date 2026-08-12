@@ -8,6 +8,17 @@
   "themeDark": "Donker",
   "privacyData": "Privacy & gegevens",
   "privacy": "Privacy",
+  "analytics": {
+    "toggleTitle": "Help de app beter maken",
+    "toggleBody": "Welke schermen en acties gebruikt worden. Geen naam, en niets van wat je schrijft.",
+    "crashNote": "Foutmeldingen sturen we altijd, zodat we kunnen repareren wat stuk is. Ze bevatten nooit je naam, je e-mailadres of iets dat je schrijft.",
+    "askTitle": "Help je ons dit beter te maken?",
+    "askBody": "We willen graag tellen welke schermen en acties gebruikt worden, zodat we zien wat helpt en wat in de weg zit. Nooit je naam, en nooit iets dat je schrijft of bidt.",
+    "askYes": "Ja, dat is goed",
+    "askNo": "Nee, bedankt",
+    "askFootnote": "Alles werkt hoe dan ook hetzelfde, en in Instellingen vind je de schakelaar wanneer je wilt. Foutmeldingen sturen we altijd, zonder je naam en zonder je woorden.",
+    "askDismissed": "Gesloten"
+  },
   "aboutSection": "Over",
   "aboutRow": "Over",
   "contact": "Contact",

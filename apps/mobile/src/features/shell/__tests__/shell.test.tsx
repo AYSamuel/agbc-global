@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui';
 import i18n from '@/i18n';
+import { useAnalyticsConsentStore } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { ThemeScope } from '@/theme';
 import { useThemePrefStore } from '@/theme/store';
@@ -145,6 +146,62 @@ describe('SETTINGS, guest level (docs/spec/16)', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(mockPush).toHaveBeenCalledWith('/auth');
     expect(screen.getByText('AGBC · v1.0.0')).toBeOnTheScreen();
+  });
+
+  // The analytics switch (W2.10, mockup SETTINGS "Privacy & data"; ADR 0020). It lives in
+  // the GUEST block deliberately: consent is per device and has to be reversible without an
+  // account, since first run has no account and a guest's taps are what the funnel measures.
+  describe('the analytics switch', () => {
+    afterEach(() => {
+      useAnalyticsConsentStore.setState({ consent: 'unasked' });
+    });
+
+    test('reads off until somebody has agreed, and on once they have', async () => {
+      await inTheme(<Settings />);
+      // Queried BY its accessibility state, so this also pins that a screen reader is told
+      // which way the switch is set.
+      expect(
+        screen.getByRole('switch', {
+          name: 'Help improve the app',
+          checked: false,
+        }),
+      ).toBeOnTheScreen();
+
+      // Driven by the tap rather than by writing the store from outside React, which needs
+      // an act() wrapper to repaint and tests the store instead of the screen.
+      await fireEvent.press(
+        screen.getByRole('switch', { name: 'Help improve the app' }),
+      );
+      expect(
+        screen.getByRole('switch', {
+          name: 'Help improve the app',
+          checked: true,
+        }),
+      ).toBeOnTheScreen();
+    });
+
+    test('turning it on records consent; turning it off withdraws it', async () => {
+      await inTheme(<Settings />);
+      const row = screen.getByRole('switch', { name: 'Help improve the app' });
+
+      await fireEvent.press(row);
+      expect(useAnalyticsConsentStore.getState().consent).toBe('granted');
+
+      await fireEvent.press(row);
+      // 'denied' rather than 'unasked': the member has answered, and the first-run sheet
+      // must not reappear because they switched it off here.
+      expect(useAnalyticsConsentStore.getState().consent).toBe('denied');
+    });
+
+    test('says plainly that crash reports are not part of the choice', async () => {
+      await inTheme(<Settings />);
+
+      // `20`'s lawful-basis table was corrected to match this: crash reports are always
+      // sent, scrubbed, so the screen has to say so where the switch is.
+      expect(
+        screen.getByText(/Crash reports are always sent/i),
+      ).toBeOnTheScreen();
+    });
   });
 });
 

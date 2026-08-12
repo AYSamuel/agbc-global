@@ -5,6 +5,10 @@ packages:
 # pnpm blocks dependency lifecycle scripts by default (supply-chain posture, ~/.claude/standards/security.md).
 # Only vetted packages that genuinely need a build script get allowed here.
 allowBuilds:
+  # Its postinstall fetches the sentry-cli binary, which is what uploads sourcemaps during
+  # the native build (`21` §4). Without it the build still succeeds and every stack trace
+  # stays minified, which is the one failure mode crash reporting cannot survive.
+  '@sentry/cli': true
   sharp: true
   # Explicit deny: prebuilt napi binaries ship as optional deps; the install script is a
   # fallback we don't need (create-next-app's own scaffold denies it too).

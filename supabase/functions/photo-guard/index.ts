@@ -25,6 +25,7 @@ import {
 } from '../../../packages/shared/src/contracts/family.ts';
 import { requiredEnv } from '../_shared/env.ts';
 import { clientKey, createRateLimiter } from '../_shared/rateLimit.ts';
+import { captureEdgeError } from '../_shared/sentry.ts';
 import { judge, ownsPath, parsePhotoGuard, SNIFF_BYTES } from './core.ts';
 
 const MAX_BODY_BYTES = 4 * 1024;
@@ -125,6 +126,7 @@ Deno.serve(async (req) => {
       'photo-guard: storage read failed:',
       error instanceof Error ? error.name : 'unknown',
     );
+    await captureEdgeError('photo-guard', error);
     return fail('failed', 502);
   }
 
