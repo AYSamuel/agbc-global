@@ -1,0 +1,39 @@
+# W2.10 exit audit · Glory gate-return (docs/spec/21 §4; docs/spec/03 + 04 rule
+# 9): a guest taps Glory, meets the gate, signs in, and lands back on the feed
+# with the reaction already made. The count assertions (1 -> 2) are why a fresh
+# database is a precondition.
+#
+# Run against a FRESH local database and a running dev build + Metro:
+#   pnpm db:reset
+#   maestro test -e APP_URL=<dev-client deep link> \
+#     -e REVIEW_EMAIL=<from functions/.env> -e REVIEW_CODE=<same> \
+#     apps/mobile/maestro/glory-gate-return.yaml
+appId: com.oami.agbcapp
+---
+# A cleared dev client lands on the Expo launcher, not the app; clearState wipes
+# the guest's data and openLink then deep-links a fresh bundle. On a release build
+# APP_URL is the plain app scheme and this is just a clean launch into onboarding.
+- clearState
+- openLink: '${APP_URL}'
+- extendedWaitUntil:
+    visible: "I'm just looking"
+    timeout: 60000
+- tapOn: "I'm just looking"
+- extendedWaitUntil:
+    visible: 'Help us make this better?'
+    timeout: 10000
+- tapOn: 'No thanks'
+
+- tapOn: 'Family'
+# The seeded Ogbomosho testimony sits at exactly one Glory on a fresh database.
+- tapOn: 'Glory to God · 1'
+- assertVisible: 'Sign in to say Glory to God'
+- tapOn: 'Sign in'
+- runFlow: subflows/signin-review.yaml
+
+# Gate-return: the remembered action replays after AUTH-4, so the member lands
+# back on the feed with the reaction recorded (queued for delivery; the card
+# reads the optimistic cache either way).
+- extendedWaitUntil:
+    visible: 'Glory to God · 2'
+    timeout: 15000

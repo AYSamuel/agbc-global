@@ -3,7 +3,7 @@
 # Home > Watch > Family > Give bank details.
 #
 # Run locally against a running dev build (device/emulator):
-#   maestro test apps/mobile/maestro/guest-smoke.yaml
+#   maestro test -e APP_URL=<dev-client deep link> apps/mobile/maestro/guest-smoke.yaml
 #
 # In CI this runs on nightly.yml's `workflow_dispatch` ONLY. There is no cron yet:
 # Actions minutes are a shared pool across all repos, and a nightly emulator run is
@@ -14,11 +14,25 @@
 # the first real run; add testIDs if any prove flaky.
 appId: com.oami.agbcapp
 ---
-- launchApp:
-    clearState: true
+# A cleared dev client lands on the Expo launcher, not the app; clearState wipes
+# the guest's data and openLink then deep-links a fresh bundle. On a release build
+# APP_URL is the plain app scheme and this is just a clean launch into onboarding.
+- clearState
+- openLink: '${APP_URL}'
+- extendedWaitUntil:
+    visible: "I'm just looking"
+    timeout: 60000
 
 # ONB-1 Welcome: enter as a pure guest (no onboarding steps, no account).
 - tapOn: "I'm just looking"
+
+# First Home after onboarding: the analytics ask (W2.10 slice 1) always appears
+# on a cleared state and would otherwise sit over the taps below. Decline it:
+# an E2E device is not a member (docs/spec/20 opt-in).
+- extendedWaitUntil:
+    visible: 'Help us make this better?'
+    timeout: 10000
+- tapOn: 'No thanks'
 
 # HOME (guest shell): the 5-tab bar is present, so we reached the shell.
 - assertVisible: 'More'

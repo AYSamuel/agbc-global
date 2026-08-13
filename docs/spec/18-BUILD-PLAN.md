@@ -35,7 +35,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 - Member Home (greeting, streak strip, inline Glory), Watch personalization (resume, save, notes).
 - Attendance "I'm here" + streaks + milestones. (The devotional plan is PAID and moves to Phase 4 with the entitlement pipeline; until then the daily-verse card ships without the devotional CTA, see `07`.)
 - Events RSVP; Academy register; profile.
-- **Exit:** members can contribute; the Family loop works end-to-end; nothing publishes without approval.
+- **Exit (met on Android 2026-08-14, W2.10):** members can contribute; the Family loop works end-to-end; nothing publishes without approval. Verified by six green Maestro journeys on the Android device (`apps/mobile/maestro/`) plus publish-bypass attempts refused at both the app and RLS/trigger layers. The iOS half of the E2E is **owed** (no iPhone in the project yet, see the launch checklist). Two gaps found and carried to the checklist: the More tab has no member variant, and Sentry stores city-level geo from the sending IP.
 
 ## Phase 3: Media depth + notifications
 - **Audio-only sermons** (self-hosted), background + lock-screen playback, robust resume.
@@ -92,6 +92,9 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - [ ] Restore drill executed (prod dump restored into a scratch project, `21` §7).
 - [ ] Shipping on Expo SDK 56+ (Play target API 36 requirement from 2026-08-31).
 - [ ] Block, report, and moderation UGC controls verified against Apple 1.2 / Play UGC policy.
+- [ ] **iOS E2E owed:** the Maestro journeys and the Family loop have run on Android only (no iPhone in the project at W2.10). Run the suite on an iOS build once an Apple device exists; `21` §4 asks for both platforms pre-release.
+- [ ] **More tab member variant (scheduled W3.3, not a loose end):** `apps/mobile/app/(tabs)/more.tsx` is guest-only by design. A signed-in member still sees the "Join the family / Sign in" card and a "My Library · Sign in" badge; W1.2 built the hub with that card standing in for the member "My life" section, and `25` W3.3 owns building the section (its last row, Notifications/NC, only lands there). Verify it is built and every "My life" row navigates before launch. Until then a member reaches Profile / My Rhythm / My posts via Settings.
+- [ ] **Sentry geo minimisation:** crash events store city-level Geography derived from the sending IP even with `sendDefaultPii:false`. If unwanted under `20`, enable the project's "Prevent Storing of IP Addresses" setting (`21` §6.1).
 
 ---
 

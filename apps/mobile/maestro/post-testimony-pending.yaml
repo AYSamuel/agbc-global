@@ -1,0 +1,64 @@
+# W2.10 exit audit · post testimony -> pending (docs/spec/21 §4, docs/spec/18
+# Phase 2 exit "nothing publishes without approval"): a member posts a testimony
+# through consent and finds it In review on MY-POSTS, not in the public feed.
+#
+# Run against a FRESH local database and a running dev build + Metro:
+#   pnpm db:reset
+#   maestro test -e APP_URL=<dev-client deep link> \
+#     -e REVIEW_EMAIL=<from functions/.env> -e REVIEW_CODE=<same> \
+#     apps/mobile/maestro/post-testimony-pending.yaml
+appId: com.oami.agbcapp
+---
+# A cleared dev client lands on the Expo launcher, not the app; clearState wipes
+# the guest's data and openLink then deep-links a fresh bundle. On a release build
+# APP_URL is the plain app scheme and this is just a clean launch into onboarding.
+- clearState
+- openLink: '${APP_URL}'
+- extendedWaitUntil:
+    visible: "I'm just looking"
+    timeout: 60000
+- tapOn: "I'm just looking"
+- extendedWaitUntil:
+    visible: 'Help us make this better?'
+    timeout: 10000
+- tapOn: 'No thanks'
+
+- tapOn: 'More'
+- tapOn: 'Sign in'
+- runFlow: subflows/signin-review.yaml
+
+- tapOn: 'Family'
+- tapOn: 'Share your testimony'
+# The composer's body field carries the accessibility label 'Share a testimony'.
+- tapOn: 'Share a testimony'
+- inputText: 'The Lord kept this whole journey safe.'
+- hideKeyboard
+- tapOn: 'Continue'
+
+# The Art. 9 consent step gates the post (docs/spec/20).
+- assertVisible: 'Before you share'
+- tapOn: 'I agree to share this publicly.'
+- tapOn: 'Post testimony'
+- extendedWaitUntil:
+    visible: 'Sent for review'
+    timeout: 15000
+- tapOn: 'Back to Family'
+
+# The post is NOT in the public feed (it is pending), and MY-POSTS shows it
+# In review. The review account's posts can never be approved (docs/spec/03),
+# which is exactly the honest state this journey pins.
+# The body is wrapped in typographic quotes on the cards, and Maestro anchors the
+# regex to the whole text node, so match it as a substring here and below.
+- assertNotVisible: '.*The Lord kept this whole journey safe.*'
+# MY-POSTS lives behind More > Settings > Profile (Settings is below the fold on
+# the More hub, so scroll to it). The pending post is the author's to see here,
+# marked "In review", even though the public feed above does not carry it.
+- tapOn: 'More'
+- scrollUntilVisible:
+    element:
+      text: 'Settings'
+- tapOn: 'Settings'
+- tapOn: 'Profile'
+- tapOn: 'My posts'
+- assertVisible: 'In review'
+- assertVisible: '.*The Lord kept this whole journey safe.*'

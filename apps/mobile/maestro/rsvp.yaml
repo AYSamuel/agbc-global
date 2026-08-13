@@ -1,0 +1,42 @@
+# W2.10 exit audit · RSVP (docs/spec/21 §4; docs/spec/11 EVENT-DETAIL): a member
+# answers "I'm going" on an upcoming event and the answer stays said. The first
+# RSVP is a value moment (docs/spec/06), so the notification pre-permission
+# sheet appears on a cleared state and the journey declines it.
+#
+# Run against a FRESH local database and a running dev build + Metro:
+#   pnpm db:reset
+#   maestro test -e APP_URL=<dev-client deep link> \
+#     -e REVIEW_EMAIL=<from functions/.env> -e REVIEW_CODE=<same> \
+#     apps/mobile/maestro/rsvp.yaml
+appId: com.oami.agbcapp
+---
+# A cleared dev client lands on the Expo launcher, not the app; clearState wipes
+# the guest's data and openLink then deep-links a fresh bundle. On a release build
+# APP_URL is the plain app scheme and this is just a clean launch into onboarding.
+- clearState
+- openLink: '${APP_URL}'
+- extendedWaitUntil:
+    visible: "I'm just looking"
+    timeout: 60000
+- tapOn: "I'm just looking"
+- extendedWaitUntil:
+    visible: 'Help us make this better?'
+    timeout: 10000
+- tapOn: 'No thanks'
+
+- tapOn: 'More'
+- tapOn: 'Sign in'
+- runFlow: subflows/signin-review.yaml
+
+- tapOn: 'Events'
+# A seeded upcoming, RSVP-enabled, all-nations event (so it is visible to any
+# member regardless of home branch; a branch-scoped event would be filtered out).
+- tapOn: 'Global Family Sunday'
+# The primary RSVP button reads "RSVP · I'm going"; Maestro anchors the regex to
+# the full element text, so match the whole label rather than a substring.
+- tapOn: 'RSVP.*going'
+- extendedWaitUntil:
+    visible: 'Want a reminder before service?'
+    timeout: 10000
+- tapOn: 'Not now'
+- assertVisible: "You're going"

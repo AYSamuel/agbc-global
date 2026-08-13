@@ -1,0 +1,53 @@
+# Shared sign-in via the store-review bypass (docs/spec/03 §Security: the E2E
+# suite signs in with the allowlisted review email + fixed code; the flag is
+# always on in dev/preview). Starts ON AUTH-1 ("Join the family") and ends once
+# the caller is signed in, back on the origin screen. Callers navigate to AUTH-1.
+#
+# The email and code are NOT in the repo: they live in the untracked
+# supabase/functions/.env locally, and are passed in per run:
+#   maestro test -e REVIEW_EMAIL=... -e REVIEW_CODE=... <flow>
+#
+# The review account is provisioned WITH a member profile server-side, so it
+# signs in as a RETURNING member and normally skips both AUTH-3 and the AUTH-4
+# success step, landing straight back on the origin. But on the first sign-in
+# after a fresh `pnpm db:reset` there is a read-after-write race: the app can
+# check for the profile before the bypass function's insert is visible and show
+# AUTH-3 anyway. Both the profile step and the success step are therefore handled
+# as optional; the invariant this waits on is simply that the code screen is gone.
+appId: com.oami.agbcapp
+---
+- assertVisible: 'Join the family'
+- tapOn: 'you@example.com'
+- inputText: '${REVIEW_EMAIL}'
+- hideKeyboard
+- tapOn: 'Send code'
+- assertVisible: 'Enter your code'
+- inputText: '${REVIEW_CODE}'
+
+# Verification is done when the code screen is gone. The normal verifyOtp is
+# rejected first and the review fallback then mints the session
+# (reviewFallback.ts), so this is slower than a real OTP.
+- extendedWaitUntil:
+    notVisible: 'Enter your code'
+    timeout: 25000
+
+# AUTH-3, only if the race above surfaced it.
+- runFlow:
+    when:
+      visible: 'Complete your profile'
+    commands:
+      - tapOn: 'Your name'
+      - inputText: 'Review Member'
+      - hideKeyboard
+      - tapOn: "I'm 16 years or older."
+      - tapOn: 'Enter'
+      - extendedWaitUntil:
+          notVisible: 'Complete your profile'
+          timeout: 20000
+
+# AUTH-4 success step, only if the app shows it before returning to the origin.
+- runFlow:
+    when:
+      visible: "You're in!"
+    commands:
+      - tapOn: 'Continue'
