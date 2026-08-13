@@ -19,8 +19,8 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Vercel | Website + dashboard hosting | Ayo | TBC | TBC | Free | agbcglobal.com |
 | Domain registrar / DNS | agbcglobal.com, SPF/DKIM/DMARC, AASA/assetlinks | Ayo | TBC | TBC | Domain renewal (date TBC) | Registrar lock + MFA per security standard |
 | Expo / EAS | Builds, credentials store, push | TBC (created at W0.11) | TBC | TBC | Free until Starter ($19/mo) at launch | Will hold the Android keystore + FCM key + APNs key |
-| PostHog (EU) | Analytics | Ayo | GitHub OAuth | TBC | Free (1M events/mo) | Region-locked eu.posthog.com (created 2026-07-18) |
-| Sentry (EU) | Crash reporting | Ayo | GitHub OAuth | TBC | Free (5k errors/mo) | Data Storage Location = EU, unchangeable |
+| PostHog (EU) | Analytics | Ayo | GitHub OAuth | TBC | Free (1M events/mo) | Region-locked eu.posthog.com (created 2026-07-18). Org `AGBC app`; **project `Default project`, id 227300**, ingest `https://eu.i.posthog.com` (verified in the console 2026-08-13, W2.10). The write-only project key is publishable by design (it ships in the app bundle) and lives in EAS env plus the untracked local `apps/mobile/.env`; it is not a secret and is not mapped in `23` §2. **Free plan = ONE project** and a second needs a card on file, so dev builds and members share this dataset: every event carries `environment` ('development'/'production') and insights filter on it (ADR 0020 amendment). Renaming the project to something meaningful is an open nicety |
+| Sentry (EU) | Crash reporting | Ayo | GitHub OAuth | TBC | Free (5k errors/mo, per-key rate limits) | Data Storage Location = EU, unchangeable, and **verified 2026-08-13**: all DSNs ingest at `o4511757761380352.ingest.de.sentry.io`. Org slug `agbc-app`, team `#agbc-app`. **Three projects, one per runtime** (W2.10, ADR 0020): `agbc-mobile` (react-native), `agbc-dashboard` (nextjs), `agbc-edge` (deno), each created with error monitoring only, no tracing/replay/profiling/logging. DSNs are publishable identifiers and live in EAS env, Vercel env and the `SENTRY_DSN` function secret; the **`SENTRY_AUTH_TOKEN` for sourcemap upload IS a secret** and belongs in EAS env + GitHub secrets + the password manager (`23` §2). No repository integration connected |
 | healthchecks.io | Dead-man pings for jobs | Ayo | Email magic link | TBC | Free (20 checks) | Created 2026-07-18. Checks are per job and per environment; each ping URL is a function secret (`HEALTHCHECK_URL_*`, `21` §6.2). Two jobs are scheduled as of W2.7 slice 5: `moderation-alerts` (hourly) and `verse-monitor` (daily) |
 | UptimeRobot | Uptime monitors | Ayo | GitHub OAuth | TBC | Free (50 monitors) | Created 2026-07-18 |
 | Backblaze B2 | Off-provider prod backups (Track P P1, ADR 0018) | Ayo | TBC | TBC | Free (first 10 GB; standing use < 0.1 GB) | EU Central (Amsterdam). Bucket `agbc-prod-backup` (private, lifecycle: hide 30d + delete 1d); application key `agbc-backup-ci` (read+write, scoped to this bucket only) in GitHub `production` env secrets + password manager. **The age decryption key for these backups lives in the password manager ONLY** (entry `AGBC prod backup age key`): accepted single point of failure, Ayo's explicit choice 2026-08-10 (offered a church-safe offline copy, declined). Losing vault access = every backup unreadable |
@@ -86,8 +86,31 @@ project, after the migrations are applied.
 
 The Android upload keystore exists in: EAS credentials (at W0.11) + encrypted vault entry + offline USB in the church safe. Play App Signing means a lost upload key is recoverable via Google support, not fatal.
 
+## Observability values: what is set, and what is still owed (W2.10, 2026-08-13)
+
+The keys were collected and the accounts verified on 2026-08-13. Recorded here rather than
+left in a session, because three of the six placements are blocked on infrastructure that
+does not exist yet, and every one of them fails SILENTLY when missing: no key means no
+analytics, no DSN means no crash reporting, no auth token means readable-looking release
+builds whose stack traces are minified for ever. Nothing warns you.
+
+| Value | Where it belongs | State |
+|---|---|---|
+| `EXPO_PUBLIC_POSTHOG_KEY` | EAS env `preview` + `production` | **Set** 2026-08-13 |
+| `EXPO_PUBLIC_POSTHOG_KEY` | local untracked `apps/mobile/.env` | **Set** (so a dev device can verify events; tagged `environment=development`) |
+| `EXPO_PUBLIC_SENTRY_DSN` (`agbc-mobile`) | EAS env `preview` + `production` | **Set** 2026-08-13. Deliberately NOT local: the free tier is 5k errors/month |
+| `SENTRY_ORG` + `SENTRY_PROJECT` | EAS env `preview` + `production` | **Set** 2026-08-13 (`agbc-app` / `agbc-mobile`) |
+| `SENTRY_AUTH_TOKEN` | EAS env (`--visibility secret`) + GitHub secret + password manager | **OWED.** An organization token from Settings > Developer Settings > Organization Tokens. Ayo creates it; nobody else needs to see it. Until then sourcemaps do not upload |
+| `NEXT_PUBLIC_SENTRY_DSN` (`agbc-dashboard`) + `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN` | Vercel env, per environment | **OWED, blocked:** the dashboard is not linked to a Vercel project from this machine. Do it with the first dashboard deploy |
+| `SENTRY_DSN` (`agbc-edge`) | `supabase secrets set`, per hosted project | **OWED, blocked:** no Supabase project is linked locally, and the only known remote is prod, which the traffic fence and the destructive-work gate both cover. Do it with the armed-per-project checklist above, at the `19` cutover |
+| `SENTRY_ENVIRONMENT` (optional, edge) | `supabase secrets set` | Not set; the helper defaults to 'production' |
+
 ## Open actions
 
+- [ ] **Create `SENTRY_AUTH_TOKEN`** (organization token) and place it in EAS env + GitHub secrets + the password manager. Use `gh secret set --body`, never a pipe: piping appends a CRLF and corrupts the value silently
+- [ ] **At the first dashboard deploy:** add the `agbc-dashboard` DSN and the three sourcemap vars to Vercel env
+- [ ] **At the `19` cutover / first hosted edge deploy:** `supabase secrets set SENTRY_DSN=<agbc-edge DSN>` alongside the function secrets in the checklist above
+- [ ] Rename the PostHog project from `Default project` to something meaningful (cosmetic; the token does not change)
 - [ ] Name and add second owners (church officer) on: Supabase org, password-manager vault, Apple (once Ayo's Admin invite lands)
 - [ ] **Name a second HUMAN in-app admin** (a trustee or officer), which is the only thing that provides separation of duties over Art. 9 data. The break-glass account above covers availability, not oversight. Before Founding Members (ADR 0015)
 - [ ] Complete the five break-glass activation steps above, **in production, at Track P** (mobile onboarding, confirm the promotion, dashboard TOTP, seed offline, verify and leave)
