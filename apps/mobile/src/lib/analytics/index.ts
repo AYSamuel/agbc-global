@@ -54,6 +54,9 @@ function standardProperties(): AnalyticsStandardProperties {
     scope: null,
     locale: i18n.language,
     role: currentRole(),
+    // From the build, not from config: one PostHog project holds both datasets, and this is
+    // what keeps our own testing out of the wedge numbers (ADR 0020).
+    environment: __DEV__ ? 'development' : 'production',
   };
 }
 

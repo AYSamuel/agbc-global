@@ -209,6 +209,10 @@ describe('analytics consent gate', () => {
     expect(event?.properties?.scope).toBeNull();
     expect(event?.properties?.role).toBe('guest');
     expect(typeof event?.properties?.locale).toBe('string');
+    // The fifth standard property (ADR 0020 amendment): one PostHog project holds dev and
+    // production, so every event has to say which it is or the north stars include our own
+    // testing. Jest runs with __DEV__ true, which is exactly the case that must be tagged.
+    expect(event?.properties?.environment).toBe('development');
     // ADR 0020: analytics identity is the device and nothing else. Whatever else the SDK
     // decorates an event with, none of these may ever appear.
     const keys = Object.keys(event?.properties ?? {});
