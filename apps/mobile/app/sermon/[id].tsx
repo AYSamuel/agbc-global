@@ -44,6 +44,7 @@ import {
 } from '@/features/watch/playback';
 import { useFormattingLocale } from '@/i18n';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
+import { track } from '@/lib/analytics';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -76,6 +77,11 @@ function SermonVideo({
   const [startAt] = useState(
     () => resumeTarget(savedEntry, sermon.duration_sec) ?? 0,
   );
+  // A latch, because the iframe reports 'playing' again after every pause and
+  // buffer: only the first transition of this mount is the member starting the
+  // sermon. `startAt` (already the resume decision) says which event it is,
+  // and `mode` is a literal until W3.1: this player only exists for video.
+  const playReportedRef = useRef(false);
 
   const capturePosition = useCallback(async () => {
     try {
@@ -112,6 +118,12 @@ function SermonVideo({
       videoId={youtubeId}
       initialPlayerParams={{ start: startAt }}
       onChangeState={(state: string) => {
+        if (state === 'playing' && !playReportedRef.current) {
+          playReportedRef.current = true;
+          track(startAt > 0 ? 'sermon_resumed' : 'sermon_played', {
+            mode: 'video',
+          });
+        }
         // Sample on every transition (pause, buffer, end) so a position exists
         // even when playback stops without the screen unmounting.
         if (state === 'ended') {
@@ -373,6 +385,7 @@ export default function Sermon() {
                     // Notes are a member feature: open the gate (W2.2 wires
                     // gate-return so the note composer opens after sign-in).
                     onPress: () => {
+                      track('gate_shown', { action_type: 'sermon_notes' });
                       setGateVisible(true);
                     },
                   },

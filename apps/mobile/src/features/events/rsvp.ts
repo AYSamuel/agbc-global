@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useNotificationAskStore } from '@/features/notifications/ask';
+import { track } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 import { pushWrite, usePendingWrite } from '@/lib/writeQueue';
@@ -70,6 +71,10 @@ export function invalidateRsvp(eventId: string): void {
 export function queueRsvp(eventId: string, status: RsvpStatus): void {
   applyRsvpToCache(eventId, status);
   pushWrite('rsvp', eventId, status);
+  // The event follows the write, here so the gate-return path counts too. A
+  // cancellation IS an rsvp_set (the plan's status union says so): changing
+  // your mind is an answer, unlike the value moment below.
+  track('rsvp_set', { status });
   // A value moment (docs/spec/06), raised HERE rather than in the screen so the
   // gate-return path raises it too: the commonest first RSVP in the whole app is
   // a guest who taps "I'm going", signs in, and lands back with it done, and

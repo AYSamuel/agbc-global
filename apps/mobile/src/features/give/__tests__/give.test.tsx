@@ -45,6 +45,14 @@ jest.mock('../queries', () => ({
   useGivingConfigQuery: () => mockConfig(),
 }));
 
+// The analytics seam (W2.10): each way to give names its method at the tap.
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({
+  track: (...args: unknown[]) => {
+    mockTrack(...args);
+  },
+}));
+
 const openBrowser = jest.requireMock<{ openBrowserAsync: jest.Mock }>(
   'expo-web-browser',
 ).openBrowserAsync;
@@ -163,6 +171,9 @@ describe('GIVE tab (docs/spec/12)', () => {
     await renderScreen(<Give />);
     await fireEvent.press(screen.getByRole('button', { name: 'Give now' }));
     expect(openBrowser).toHaveBeenCalledWith('https://www.agbcglobal.com/give');
+    expect(mockTrack).toHaveBeenCalledWith('give_tapped', {
+      method: 'website',
+    });
   });
 
   test('PayPal opens the PayPal link', async () => {
@@ -174,6 +185,7 @@ describe('GIVE tab (docs/spec/12)', () => {
     await renderScreen(<Give />);
     await fireEvent.press(screen.getByRole('button', { name: 'PayPal' }));
     expect(openBrowser).toHaveBeenCalledWith('https://paypal.me/agbcglobal');
+    expect(mockTrack).toHaveBeenCalledWith('give_tapped', { method: 'paypal' });
   });
 
   test('Bank transfer navigates to the bank detail screen', async () => {
@@ -187,6 +199,9 @@ describe('GIVE tab (docs/spec/12)', () => {
       screen.getByRole('button', { name: 'Bank transfer' }),
     );
     expect(mockPush).toHaveBeenCalledWith('/give/bank');
+    // The row tap ("reached for bank details"), keeping all three methods at
+    // one altitude; the copy taps inside GIVE-BANK are not the event.
+    expect(mockTrack).toHaveBeenCalledWith('give_tapped', { method: 'bank' });
   });
 
   test('a config with no ways to give is friendly, never blank', async () => {

@@ -34,6 +34,7 @@ import { useBranchNames } from '@/features/family/useBranchNames';
 import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
 import { useMapBranches } from '@/features/family/useMapBranches';
 import { StubIcon } from '@/features/shell/StubIcon';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore, type GateAction } from '@/state/gate';
@@ -104,10 +105,30 @@ export default function Family() {
         ? t('family:subheadPrayer')
         : t('family:subheadMap');
 
+  // Wrapped setters so the two events follow the state writes they describe,
+  // and only real transitions count: both controls report taps on the segment
+  // that is already selected. The deep-link path above (the nonce block) runs
+  // during render and deliberately does not fire; nothing pushes `tab=map`
+  // today, so every way onto the map goes through here.
+  const changeTab = (next: SubTab) => {
+    if (next === 'map' && tab !== 'map') {
+      track('map_opened', { scope: effectiveScope });
+    }
+    setTab(next);
+  };
+  const changeScope = (to: FamilyScope) => {
+    if (to !== effectiveScope) track('scope_toggled', { to });
+    setScope(to);
+  };
+
   // Gate-return (W2.2): each trigger passes its typed action so AUTH-4 can
   // replay it; the sheet title follows the action (docs/spec/03 framing).
   const [gateAction, setGateAction] = useState<GateAction | null>(null);
   const openGate = (action: GateAction) => {
+    // The funnel's first half (docs/spec/22 §5): the sheet became visible, with
+    // the action the guest was reaching for. Beside the visibility write, since
+    // that state has no store to own it.
+    track('gate_shown', { action_type: action.kind });
     setGateAction(action);
     setGateVisible(true);
   };
@@ -188,6 +209,9 @@ export default function Family() {
             testimony={item}
             branchName={branchName}
             branchColor={branchColorFor(item.branch_id)}
+            // This screen is the one surface with a scope; the tap's event
+            // carries it from here (docs/spec/22 §5, W2.4's one-owner rule).
+            scope={effectiveScope}
             onPress={() => {
               router.push({
                 pathname: '/testimony/[id]',
@@ -240,6 +264,7 @@ export default function Family() {
           key={item.id}
           prayer={item}
           branchName={branchNames[item.branch_id] ?? null}
+          scope={effectiveScope}
           onOpen={() => {
             router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
           }}
@@ -293,14 +318,14 @@ export default function Family() {
             { key: 'map', label: t('family:tabMap') },
           ]}
           value={tab}
-          onChange={setTab}
+          onChange={changeTab}
           accessibilityLabel={t('family:sectionLabel')}
         />
 
         <View style={{ marginTop: spacing.md, marginBottom: spacing.sm }}>
           <ScopeToggle
             value={effectiveScope}
-            onChange={setScope}
+            onChange={changeScope}
             branchName={branch?.name ?? null}
           />
         </View>
@@ -401,15 +426,21 @@ export default function Family() {
 function PrayerRow({
   prayer,
   branchName,
+  scope,
   onOpen,
   onGate,
 }: {
   prayer: PrayerFeedItem;
   branchName: string | null;
+  scope: FamilyScope;
   onOpen: () => void;
   onGate: () => void;
 }) {
-  const { commitment, onPress, onUndo } = useIntercessionPress(prayer, onGate);
+  const { commitment, onPress, onUndo } = useIntercessionPress(
+    prayer,
+    onGate,
+    scope,
+  );
   return (
     <PrayerCard
       prayer={prayer}

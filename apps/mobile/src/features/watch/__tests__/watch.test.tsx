@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
 import { ToastProvider } from '@/components/ui';
@@ -6,6 +6,7 @@ import { ThemeScope } from '@/theme';
 
 import { durationMinutes, formatPublishedDate, joinMeta } from '../format';
 import { resolveLiveSermon } from '../live';
+import { usePlaybackStore } from '../playback';
 import type { SermonSummary } from '../queries';
 import { useSearchHistoryStore } from '../searchHistory';
 
@@ -37,15 +38,30 @@ jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(() => Promise.resolve({})),
 }));
 
-// The iframe wraps a native webview; the harness only needs its presence.
+// The iframe wraps a native webview; the harness needs its presence, and (for
+// the W2.10 playback events) the state callback the screen hands it.
+let mockPlayerProps: { onChangeState?: (state: string) => void } = {};
 jest.mock('react-native-youtube-iframe', () => {
   const { Text } =
     jest.requireActual<typeof import('react-native')>('react-native');
-  const MockPlayer = (props: { videoId: string }) => (
-    <Text testID="youtube-player">{props.videoId}</Text>
-  );
+  const MockPlayer = (props: {
+    videoId: string;
+    onChangeState?: (state: string) => void;
+  }) => {
+    mockPlayerProps = props;
+    return <Text testID="youtube-player">{props.videoId}</Text>;
+  };
   return { __esModule: true, default: MockPlayer };
 });
+
+// The analytics seam (W2.10): the wire is proven in lib/analytics/__tests__;
+// here only WHICH events the player raises, and when.
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({
+  track: (...args: unknown[]) => {
+    mockTrack(...args);
+  },
+}));
 
 const mockSermons = jest.fn<
   { data: SermonSummary[] | undefined; isError: boolean; refetch: () => void },
@@ -122,8 +138,10 @@ function renderScreen(ui: React.ReactElement) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockParams = {};
+  mockPlayerProps = {};
   // Deterministic empty-input state (zustand persists across tests in a file).
   useSearchHistoryStore.setState({ terms: [] });
+  usePlaybackStore.setState({ positions: {} });
 });
 
 describe('resolveLiveSermon (docs/spec/08 stale bound)', () => {
@@ -426,8 +444,63 @@ describe('SERMON player', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Notes' }));
     expect(screen.getByText('Sign in to take notes')).toBeOnTheScreen();
     expect(mockPush).not.toHaveBeenCalled();
+    // W2.10: the raise names the action the guest was reaching for.
+    expect(mockTrack).toHaveBeenCalledWith('gate_shown', {
+      action_type: 'sermon_notes',
+    });
     await fireEvent.press(screen.getByText('Sign in'));
     expect(mockPush).toHaveBeenCalledWith('/auth');
+  });
+
+  test('the first playing transition fires sermon_played, and only the first (W2.10)', async () => {
+    mockParams = { id: 'aaa' };
+    mockSermon.mockReturnValue({
+      data: sermon(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Sermon />);
+    expect(mockTrack).not.toHaveBeenCalled();
+
+    await act(() => {
+      mockPlayerProps.onChangeState?.('playing');
+    });
+    expect(mockTrack).toHaveBeenCalledWith('sermon_played', { mode: 'video' });
+
+    // The iframe reports 'playing' again after every pause; one open, one event.
+    await act(() => {
+      mockPlayerProps.onChangeState?.('paused');
+      mockPlayerProps.onChangeState?.('playing');
+    });
+    expect(
+      mockTrack.mock.calls.filter(([name]) => name === 'sermon_played'),
+    ).toHaveLength(1);
+  });
+
+  test('a saved position makes the same transition sermon_resumed (W2.10)', async () => {
+    mockParams = { id: 'aaa' };
+    mockSermon.mockReturnValue({
+      data: sermon(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    // Mid-sermon, past MIN_RESUME_SEC and clear of the end grace: the mount
+    // computes a non-zero start, which is already the app's resume decision.
+    usePlaybackStore.setState({
+      positions: { aaa: { positionSec: 600, updatedAt: 1 } },
+    });
+    await renderScreen(<Sermon />);
+
+    await act(() => {
+      mockPlayerProps.onChangeState?.('playing');
+    });
+    expect(mockTrack).toHaveBeenCalledWith('sermon_resumed', {
+      mode: 'video',
+    });
+    expect(mockTrack).not.toHaveBeenCalledWith(
+      'sermon_played',
+      expect.anything(),
+    );
   });
 
   test('sermon rot renders the unavailable state, never a dead end (docs/spec/08)', async () => {

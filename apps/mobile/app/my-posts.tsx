@@ -15,6 +15,7 @@ import {
 } from '@/components/ui';
 import { MyPostCard } from '@/features/family/MyPostCard';
 import { useMyPostsQuery, type MyPost } from '@/features/family/myPosts';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
 
@@ -66,6 +67,10 @@ export default function MyPostsScreen() {
             body={t('family:myPosts.guestBody')}
             actionLabel={t('common:signIn')}
             onAction={() => {
+              // This gate is a full-screen state, not a sheet, so "shown" has
+              // no earlier honest moment than the CTA tap: shown and the
+              // sign-in tap coincide for this kind (and for `rhythm`).
+              track('gate_shown', { action_type: 'my_posts' });
               beginGateSignIn({ kind: 'my_posts' });
               router.push('/auth');
             }}

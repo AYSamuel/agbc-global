@@ -40,6 +40,21 @@ jest.mock('../useBranches', () => ({
   useBranchesQuery: () => mockQuery(),
 }));
 
+// W2.10: completing onboarding raises an analytics event, and the analytics
+// module reads `role` from the auth store, whose module scope reaches the real
+// Supabase client (which refuses to build without env). Stub the client, as the
+// family suites do; launch.test.ts owns the event's own assertions.
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null } }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
+  },
+}));
+
 function inTheme(ui: React.ReactElement) {
   return render(<ThemeScope name="light">{ui}</ThemeScope>);
 }

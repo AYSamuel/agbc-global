@@ -20,6 +20,7 @@ import {
   useSheetDismiss,
   useToast,
 } from '@/components/ui';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
@@ -94,6 +95,7 @@ export function PostActionsMenu({
   const isTestimony = target === 'testimony';
 
   const openGate = (kind: 'report' | 'block') => {
+    track('gate_shown', { action_type: kind });
     setGateFor(kind);
     setSheet('gate');
   };

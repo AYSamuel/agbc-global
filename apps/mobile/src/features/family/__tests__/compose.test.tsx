@@ -88,6 +88,15 @@ jest.mock('../photo', () => ({
   },
 }));
 
+// The composer's analytics seam (W2.10): the wire is proven in
+// lib/analytics/__tests__; here only WHICH events the success path raises.
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({
+  track: (...args: unknown[]) => {
+    mockTrack(...args);
+  },
+}));
+
 const mockInsert = jest.fn<Promise<{ error: unknown }>, [unknown]>();
 const mockFrom = jest.fn<unknown, [string]>();
 
@@ -201,6 +210,14 @@ describe('TESTIMONY-COMPOSE', () => {
       }),
     );
     expect(await screen.findByText('Sent for review')).toBeTruthy();
+    // W2.10: a plain post is not a conversion, and the refusal above (before
+    // agreeing) must not have fired anything either.
+    expect(mockTrack).toHaveBeenCalledWith('testimony_posted', {
+      from_answered_prayer: false,
+    });
+    expect(mockTrack).not.toHaveBeenCalledWith(
+      'answered_converted_to_testimony',
+    );
   });
 
   test('a photo changes the consent shown AND the version recorded', async () => {
@@ -341,6 +358,12 @@ describe('TESTIMONY-COMPOSE from an answered prayer (W2.5)', () => {
         from_prayer_id: PRAYER_ID,
       }),
     );
+    // W2.10: the loop's conversion is the PAIR, at the same success point
+    // (north star 2 reads it; docs/spec/22 §5).
+    expect(mockTrack).toHaveBeenCalledWith('testimony_posted', {
+      from_answered_prayer: true,
+    });
+    expect(mockTrack).toHaveBeenCalledWith('answered_converted_to_testimony');
   });
 
   test("someone else's request composes a plain testimony, with no claim on it", async () => {
@@ -361,6 +384,14 @@ describe('TESTIMONY-COMPOSE from an answered prayer (W2.5)', () => {
     });
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({ from_prayer_id: null }),
+    );
+    // W2.10: the event follows what was WRITTEN, not the id in the URL: a
+    // dropped link is a plain post, or the conversion rate lies.
+    expect(mockTrack).toHaveBeenCalledWith('testimony_posted', {
+      from_answered_prayer: false,
+    });
+    expect(mockTrack).not.toHaveBeenCalledWith(
+      'answered_converted_to_testimony',
     );
   });
 
@@ -415,6 +446,7 @@ describe('PRAYER-COMPOSE', () => {
         consent_version: 'content-share-v1',
       }),
     );
+    expect(mockTrack).toHaveBeenCalledWith('prayer_posted');
   });
 });
 

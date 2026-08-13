@@ -13,7 +13,7 @@ import { ActionPill, Burst, GradientFill } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 import { initials, joinMeta } from './format';
-import type { TestimonyFeedItem } from './queries';
+import type { FamilyScope, TestimonyFeedItem } from './queries';
 import { TestimonyPhoto } from './TestimonyPhoto';
 import { useGloryPress } from './useGlory';
 import { useRelativeAgeLabel } from './useRelativeAgeLabel';
@@ -65,6 +65,7 @@ export function TestimonyCard({
   onPress,
   onGloryGate,
   onShare,
+  scope,
 }: {
   testimony: TestimonyFeedItem;
   branchName: string | null;
@@ -76,6 +77,9 @@ export function TestimonyCard({
    * reacts instead, through the write queue. */
   onGloryGate: () => void;
   onShare: () => void;
+  /** Which feed is showing this card, for `glory_tapped`. Only the Family feed
+   * has one; Home's highlight and the detail screen leave it out. */
+  scope?: FamilyScope;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -89,6 +93,10 @@ export function TestimonyCard({
     // never be from different moments (W2.4).
     testimony.reacted_by_me,
     onGloryGate,
+    {
+      branchId: testimony.branch_id,
+      ...(scope !== undefined ? { scope } : {}),
+    },
   );
 
   return (
