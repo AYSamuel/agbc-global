@@ -41,6 +41,9 @@ jest.mock('@/lib/supabase', () => ({
 
 const T = 'a1111111-1111-4111-8111-111111111111';
 const FEED = testimonyFeedKey('everywhere', null);
+// What every call passes for `glory_tapped` (W2.10). Inert here: nothing in
+// this file grants analytics consent, so track() never constructs a client.
+const ANALYTICS = { branchId: 'b1' };
 
 const ROW: TestimonyFeedItem = {
   id: T,
@@ -82,7 +85,13 @@ beforeEach(() => {
 describe('a member tapping Glory', () => {
   test('changes the card immediately and queues the write', async () => {
     const { result } = await renderHook(() =>
-      useGloryPress(T, ROW.glory_count, ROW.reacted_by_me, jest.fn()),
+      useGloryPress(
+        T,
+        ROW.glory_count,
+        ROW.reacted_by_me,
+        jest.fn(),
+        ANALYTICS,
+      ),
     );
     await act(() => {
       result.current.onPress();
@@ -99,7 +108,7 @@ describe('a member tapping Glory', () => {
       { ...ROW, glory_count: 15, reacted_by_me: true },
     ]);
     const { result } = await renderHook(() =>
-      useGloryPress(T, 15, true, jest.fn()),
+      useGloryPress(T, 15, true, jest.fn(), ANALYTICS),
     );
     await act(() => {
       result.current.onPress();
@@ -118,7 +127,7 @@ describe('a member tapping Glory', () => {
     let count = 14;
     const { result, rerender } = await renderHook(
       ({ c, r }: { c: number; r: boolean }) =>
-        useGloryPress(T, c, r, jest.fn()),
+        useGloryPress(T, c, r, jest.fn(), ANALYTICS),
       { initialProps: { c: count, r: reacted } },
     );
 
@@ -144,7 +153,7 @@ describe('a guest tapping Glory', () => {
     useAuthStore.setState({ status: 'guest' });
     const gate = jest.fn();
     const { result } = await renderHook(() =>
-      useGloryPress(T, 14, false, gate),
+      useGloryPress(T, 14, false, gate, ANALYTICS),
     );
     await act(() => {
       result.current.onPress();
@@ -162,7 +171,7 @@ describe('a guest tapping Glory', () => {
 describe('when the burst fires', () => {
   test('once per tap that turns Glory on', async () => {
     const { result } = await renderHook(() =>
-      useGloryPress(T, 14, false, jest.fn()),
+      useGloryPress(T, 14, false, jest.fn(), ANALYTICS),
     );
     expect(result.current.bursts).toBe(0);
     await act(() => {
@@ -173,7 +182,7 @@ describe('when the burst fires', () => {
 
   test('never when taking one back', async () => {
     const { result } = await renderHook(() =>
-      useGloryPress(T, 15, true, jest.fn()),
+      useGloryPress(T, 15, true, jest.fn(), ANALYTICS),
     );
     await act(() => {
       result.current.onPress();
@@ -183,7 +192,7 @@ describe('when the burst fires', () => {
 
   test('not when a refreshed row arrives saying the same thing', async () => {
     const { result, rerender } = await renderHook(
-      ({ r }: { r: boolean }) => useGloryPress(T, 14, r, jest.fn()),
+      ({ r }: { r: boolean }) => useGloryPress(T, 14, r, jest.fn(), ANALYTICS),
       { initialProps: { r: false } },
     );
     await act(() => {
@@ -198,7 +207,7 @@ describe('when the burst fires', () => {
   test('a guest tap celebrates nothing, because nothing happened', async () => {
     useAuthStore.setState({ status: 'guest' });
     const { result } = await renderHook(() =>
-      useGloryPress(T, 14, false, jest.fn()),
+      useGloryPress(T, 14, false, jest.fn(), ANALYTICS),
     );
     await act(() => {
       result.current.onPress();

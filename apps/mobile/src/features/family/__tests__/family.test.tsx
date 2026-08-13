@@ -87,6 +87,16 @@ jest.mock('@/state/branch', () => ({
     selector({ branch: mockBranch() }),
 }));
 
+// The screen's own analytics seam (W2.10). Mocked at OUR boundary: the wire
+// itself (real SDK, gzipped batches) is proven in lib/analytics/__tests__, and
+// these tests only pin WHICH events this screen's handlers raise.
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({
+  track: (...args: unknown[]) => {
+    mockTrack(...args);
+  },
+}));
+
 function testimony(
   overrides: Partial<TestimonyFeedItem> = {},
 ): TestimonyFeedItem {
@@ -304,6 +314,47 @@ describe('FAMILY tab · scope + navigation', () => {
     await renderScreen();
     // t1 is in b-gla; the card meta should read the branch name, not the id.
     expect(screen.getByText(/AGBC Glasgow · /)).toBeTruthy();
+  });
+});
+
+describe('FAMILY tab · analytics events (W2.10)', () => {
+  test('opening the map fires map_opened with the live scope', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Map'));
+    expect(mockTrack).toHaveBeenCalledWith('map_opened', {
+      scope: 'everywhere',
+    });
+  });
+
+  test('narrowing the scope fires scope_toggled; re-tapping the selected pill does not', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('AGBC Glasgow'));
+    expect(mockTrack).toHaveBeenCalledWith('scope_toggled', { to: 'branch' });
+
+    mockTrack.mockClear();
+    await fireEvent.press(screen.getByText('AGBC Glasgow'));
+    expect(mockTrack).not.toHaveBeenCalled();
+  });
+
+  test('a guest Glory tap fires gate_shown for the action, and no reaction event', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByText('Glory to God · 14'));
+    expect(mockTrack).toHaveBeenCalledWith('gate_shown', {
+      action_type: 'glory',
+    });
+    expect(mockTrack).not.toHaveBeenCalledWith(
+      'glory_tapped',
+      expect.anything(),
+    );
+  });
+
+  test('landing on the map from a route param does not fire map_opened', async () => {
+    // The nonce path applies the tab DURING render (see the screen), where an
+    // event must never fire; nothing pushes `tab=map` today, so the segmented
+    // control is the only live entry and the one instrumented.
+    mockParams.mockReturnValue({ tab: 'map', k: '1' });
+    await renderScreen();
+    expect(mockTrack).not.toHaveBeenCalledWith('map_opened', expect.anything());
   });
 });
 

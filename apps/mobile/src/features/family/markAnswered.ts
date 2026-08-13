@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { track } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase';
 
 import { PRAYER_SURFACE_KEYS, TESTIMONY_SURFACE_KEYS } from './keys';
@@ -44,7 +45,12 @@ export function useMarkAnswered() {
         .eq('id', prayerId);
       if (error) throw error;
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
+      // On success and not on the tap: this is an online write with an honest
+      // failure path (see the header), so the event waits for the server the
+      // same way the celebration screen does. The undo shares the mutation and
+      // is not a mark.
+      if (variables.answered) track('prayer_marked_answered');
       // Prayer surfaces AND My posts: the request's row changed, and MY-POSTS reads
       // `answered_at` off the base table for the same request (W2.6).
       await Promise.all(

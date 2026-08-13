@@ -33,6 +33,7 @@ import { useBranchColors } from '@/features/family/useBranchColors';
 import { useGloryPress } from '@/features/family/useGlory';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
+import { track } from '@/lib/analytics';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -63,8 +64,12 @@ export default function TestimonyDetail() {
     testimony?.glory_count ?? 0,
     testimony?.reacted_by_me ?? false,
     () => {
+      track('gate_shown', { action_type: 'glory' });
       setGateVisible(true);
     },
+    // No scope on a detail screen; the null branch cannot be tapped (the pill
+    // renders from the loaded row) and would drop the event rather than guess.
+    { branchId: testimony?.branch_id ?? null },
   );
 
   // Back, and also where a post goes when it stops being this member's to see: deleted,

@@ -32,6 +32,7 @@ import { shareText, testimonyShareText } from '@/features/family/share';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
 import { useIntercessionPress } from '@/features/family/useIntercession';
+import { track } from '@/lib/analytics';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -61,6 +62,7 @@ export default function PrayerDetail() {
     onPress: onCommit,
     onUndo,
   } = useIntercessionPress(prayer ?? PLACEHOLDER_PRAYER, () => {
+    track('gate_shown', { action_type: 'intercede' });
     setGateVisible(true);
   });
   const branchName = prayer ? (branchNames[prayer.branch_id] ?? null) : null;
@@ -393,7 +395,11 @@ export default function PrayerDetail() {
                       opacity: pressed ? 0.6 : 1,
                     })}
                   >
-                    <UndoIcon size={icon.sm} color={colors.blue} strokeWidth={2} />
+                    <UndoIcon
+                      size={icon.sm}
+                      color={colors.blue}
+                      strokeWidth={2}
+                    />
                     <Text
                       style={{
                         fontFamily: fontFamily.body.bold,

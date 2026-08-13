@@ -9,6 +9,7 @@ import { applyGloryToCaches } from '@/features/family/gloryCache';
 import { applyIntercessionToCaches } from '@/features/family/prayerCache';
 import { queueRsvp } from '@/features/events/rsvp';
 import { queueCheckIn } from '@/features/rhythm/useImHere';
+import { track } from '@/lib/analytics';
 import { pushWrite } from '@/lib/writeQueue';
 import type { GateAction } from '@/state/gate';
 
@@ -25,10 +26,25 @@ import type { GateAction } from '@/state/gate';
 
 export type ReplayOutcome = 'done' | 'noop' | 'failed';
 
+/**
+ * The one place that knows both the action and whether its replay actually
+ * completed, so `gate_converted` (the funnel's second half, docs/spec/22 §5)
+ * has one owner. 'done' only: the executor-less kinds resolve 'noop' and a
+ * member left to redo the action by hand was not converted by the gate.
+ */
+export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
+  return performReplay(action).then((outcome) => {
+    if (outcome === 'done') {
+      track('gate_converted', { action_type: action.kind });
+    }
+    return outcome;
+  });
+}
+
 // Returns a promise rather than being `async`: every executor here happens to
 // be synchronous today (one enqueue, one navigation), but the contract is
 // asynchronous because the ones still to land are not (rsvp, playback).
-export function replayGateAction(action: GateAction): Promise<ReplayOutcome> {
+function performReplay(action: GateAction): Promise<ReplayOutcome> {
   switch (action.kind) {
     case 'glory': {
       // The gated action was "say Glory to this", and it is queued rather than

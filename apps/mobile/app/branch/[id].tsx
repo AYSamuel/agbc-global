@@ -41,6 +41,7 @@ import { useBranchServicesQuery } from '@/features/home/queries';
 import { CheckedInBadge } from '@/features/rhythm/CheckedInBadge';
 import { useRhythmQuery } from '@/features/rhythm/queries';
 import { useImHerePress } from '@/features/rhythm/useImHere';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore } from '@/state/gate';
@@ -79,6 +80,7 @@ export default function BranchInfo() {
     branchId,
     rhythmQuery.data?.checkedIn ?? false,
     () => {
+      track('gate_shown', { action_type: 'im_here' });
       setGateVisible(true);
     },
   );

@@ -1,5 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {
+  failNetwork,
+  fakeNetwork,
+  sentEvents as decodeSent,
+  waitForEvent as waitOnWire,
+  type SentRequest,
+} from '@/test/postHogWire';
+
 // The consent gate, which is the one thing in W2.10 that must not be wrong: an event sent
 // before somebody agreed is a GDPR failure, not a bug to fix next week (docs/spec/20).
 //
@@ -7,13 +15,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // (~/.claude/standards/qa-testing.md: a hand-rolled stand-in for a library proves the code
 // matches your belief about the library, not that it works). Every assertion is therefore
 // about HTTP: nothing leaves the device before consent, and what leaves after it carries the
-// event, the standard properties, and no identity.
-//
-// Reading the wire needs two things the SDK does not advertise, both found by instrumenting
-// rather than guessing: it posts a GZIPPED Blob (a string body only for small payloads), and
-// it batches, so a test that flushes once immediately can look before anything has been
-// queued. `waitForEvent` flushes and re-reads until the event shows up, so the tests neither
-// sleep on a guessed duration nor race the batcher.
+// event, the standard properties, and no identity. The wire decoding itself (gzipped Blob
+// batches, flush-and-re-read polling) lives in @/test/postHogWire, shared with the W2.10
+// slice-2 instrumentation suite.
 
 // The analytics module reads `role` from the auth store, which imports the Supabase client,
 // which throws without EXPO_PUBLIC_* config. Mocked at the client exactly as the family
@@ -29,90 +33,27 @@ jest.mock('@/lib/supabase', () => ({
   },
 }));
 
-const fetchHost = globalThis as unknown as { fetch: typeof fetch };
+// One stable array: the fetch spy captures it by reference, so it is cleared in
+// place (`length = 0`) rather than reassigned.
+const requests: SentRequest[] = [];
 
-interface Sent {
-  url: string;
-  body: BodyInit | null | undefined;
-}
-
-interface BatchEvent {
-  event?: string;
-  properties?: Record<string, unknown>;
-}
-
-let requests: Sent[] = [];
-
-function fakeNetwork() {
-  return jest
-    .spyOn(fetchHost, 'fetch')
-    .mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
-      const url =
-        typeof input === 'string'
-          ? input
-          : input instanceof URL
-            ? input.href
-            : input.url;
-      requests.push({ url, body: init?.body });
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({}),
-        text: () => Promise.resolve('{}'),
-      } as Response);
-    });
-}
-
-/** Just enough of node's zlib to gunzip, typed locally: @types/node is not in this app. */
-interface Zlib {
-  gunzipSync: (input: Uint8Array) => { toString: (encoding: string) => string };
-}
-
-function parseOrNull(text: string): unknown {
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    return null;
-  }
-}
-
-/** Decodes one request body: plain JSON, or the gzipped Blob the SDK prefers. */
-async function decode(body: BodyInit | null | undefined): Promise<unknown> {
-  if (typeof body === 'string') return parseOrNull(body);
-  if (!(body instanceof Blob)) return null;
-
-  const bytes = new Uint8Array(await body.arrayBuffer());
-  const raw = new TextDecoder().decode(bytes);
-  if (raw.startsWith('{')) return parseOrNull(raw);
-  /* eslint-disable-next-line @typescript-eslint/no-require-imports */
-  const zlib = require('zlib') as Zlib;
-  return parseOrNull(zlib.gunzipSync(bytes).toString('utf8'));
-}
-
-/** Every event actually posted, flattened out of the SDK's batches. */
-async function sentEvents(): Promise<BatchEvent[]> {
-  const all: BatchEvent[] = [];
-  for (const request of requests) {
-    const payload = (await decode(request.body)) as {
-      batch?: BatchEvent[];
-    } | null;
-    all.push(...(payload?.batch ?? []));
-  }
-  return all;
+/** The shared reader, over this file's current `requests`. */
+async function sentEvents() {
+  return decodeSent(requests);
 }
 
 /** Flush and re-read until the event appears, or give up. Returns it, or undefined. */
 async function waitForEvent(
   client: { analyticsClient: () => { flush: () => Promise<void> } | null },
   name: string,
-): Promise<BatchEvent | undefined> {
-  for (let attempt = 0; attempt < 25; attempt += 1) {
-    await client.analyticsClient()?.flush();
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    const hit = (await sentEvents()).find((event) => event.event === name);
-    if (hit) return hit;
-  }
-  return undefined;
+) {
+  return waitOnWire(
+    requests,
+    async () => {
+      await client.analyticsClient()?.flush();
+    },
+    name,
+  );
 }
 
 // `require` rather than a dynamic import: this Jest runs without --experimental-vm-modules,
@@ -138,9 +79,9 @@ let loaded: ReturnType<typeof loadAnalytics> | null = null;
 
 describe('analytics consent gate', () => {
   beforeEach(async () => {
-    requests = [];
+    requests.length = 0;
     jest.clearAllMocks();
-    fakeNetwork();
+    fakeNetwork(requests);
     await AsyncStorage.clear();
   });
 
@@ -258,7 +199,7 @@ describe('analytics consent gate', () => {
 
     consent.useAnalyticsConsentStore.getState().deny();
     await analytics.shutdownAnalytics();
-    requests = [];
+    requests.length = 0;
 
     analytics.track('prayer_posted');
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -287,9 +228,7 @@ describe('analytics consent gate', () => {
 
   test('a network failure never breaks the tap that caused it', () => {
     jest.restoreAllMocks();
-    jest
-      .spyOn(fetchHost, 'fetch')
-      .mockRejectedValue(new Error('transport exploded'));
+    failNetwork(new Error('transport exploded'));
     loaded = loadAnalytics();
     const { analytics, consent } = loaded;
     consent.useAnalyticsConsentStore.getState().grant();

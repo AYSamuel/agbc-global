@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { track } from '@/lib/analytics';
 import { pushWrite } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
 
@@ -8,7 +9,7 @@ import {
   applyIntercessionToCaches,
   type IntercessionWish,
 } from './prayerCache';
-import type { PrayerFeedItem } from './queries';
+import type { FamilyScope, PrayerFeedItem } from './queries';
 
 // The two-step commitment: "I will pray", then later "I prayed" (docs/spec/09).
 //
@@ -49,10 +50,13 @@ export interface IntercessionControls {
 /**
  * @param onGateNeeded opens the screen's gate sheet, for a guest whose tap is an
  * invitation to join rather than a commitment they can make yet.
+ * @param scope passed only by the Family feed, which is the one surface that has
+ * one (it lives in that screen's component state; docs/spec/22 §5).
  */
 export function useIntercessionPress(
   prayer: PrayerFeedItem,
   onGateNeeded: () => void,
+  scope?: FamilyScope,
 ): IntercessionControls {
   const isMember = useAuthStore((state) => state.status === 'member');
   const commitment = commitmentOf(prayer);
@@ -82,7 +86,19 @@ export function useIntercessionPress(
       onGateNeeded();
       return;
     }
-    send(prayer.id, commitment === 'none' ? 'committed' : 'prayed');
+    const wish = commitment === 'none' ? 'committed' : 'prayed';
+    send(prayer.id, wish);
+    // Here on the STEP and never in `send`: the undo goes through `send` too,
+    // and a correction is not a tap. `own_branch` is north star 3 read at the
+    // source: the prayer's branch against the member's HOME branch, which is
+    // not the browsed branch `track()` already sends. The absent scope stays
+    // absent (spreading `scope: undefined` would erase the standard null).
+    track('i_prayed_tapped', {
+      own_branch:
+        prayer.branch_id === useAuthStore.getState().profile?.branchId,
+      stage: wish === 'committed' ? 'will_pray' : 'prayed',
+      ...(scope !== undefined ? { scope } : {}),
+    });
 
     if (timer.current) clearTimeout(timer.current);
     setCanUndo(true);

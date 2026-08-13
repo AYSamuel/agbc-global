@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { track } from '@/lib/analytics';
+
 interface LaunchState {
   hasOnboarded: boolean;
   /** True once the persisted state has loaded; SPLASH waits on it before routing. */
@@ -15,7 +17,14 @@ export const useLaunchStore = create<LaunchState>()(
     (set) => ({
       hasOnboarded: false,
       hydrated: false,
-      completeOnboarding: () => set({ hasOnboarded: true }),
+      completeOnboarding: () => {
+        set({ hasOnboarded: true });
+        // In the store action, which owns this fact, so both ends of first run
+        // count: ONB-3's Continue and ONB-1's "I'm just looking" (most members
+        // start as guests, and the funnel starts here; docs/spec/22 §5). Both
+        // callers set the branch first, so the event carries it.
+        track('onboarding_completed');
+      },
       setHydrated: () => set({ hydrated: true }),
     }),
     {

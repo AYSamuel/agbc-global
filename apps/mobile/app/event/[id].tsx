@@ -39,6 +39,7 @@ import { addEventToCalendar } from '@/features/events/calendar';
 import { useEventDetailQuery } from '@/features/events/queries';
 import { RsvpControls } from '@/features/events/RsvpControls';
 import { queueRsvp, useRsvpAnswer, useRsvpQuery } from '@/features/events/rsvp';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useBranchCities } from '@/features/events/useBranchCities';
@@ -385,6 +386,7 @@ export default function EventDetailScreen() {
                 // Browsing is free, contributing signs you in (docs/spec/03):
                 // the tap gates rather than the control being hidden.
                 if (!isMember) {
+                  track('gate_shown', { action_type: 'rsvp' });
                   setGateVisible(true);
                   return;
                 }

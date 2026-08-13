@@ -1,5 +1,6 @@
 import { localDateKey } from '@/features/home/queries';
 import { useNotificationAskStore } from '@/features/notifications/ask';
+import { track } from '@/lib/analytics';
 import { pushWrite, usePendingWrite } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
 
@@ -40,6 +41,17 @@ export function queueCheckIn(branchId: string): void {
   // moment the member is living, not to whenever the queue drains. RSVP joined
   // this at W2.9, which is why the moment says which one it is.
   useNotificationAskStore.getState().reachedValueMoment('check_in');
+  // Here for the same reason the value moment is: the gate-return path calls
+  // this too, and by then the member exists, so `visiting` can be answered in
+  // both. `visiting` compares the tapped branch with the HOME branch, not with
+  // the browsed chip `track()` already sends (docs/spec/07: attendance records
+  // where you are standing). `source` is a literal until W3.2's live-watch
+  // credit, whose own write must say `live_watch`.
+  const homeBranchId = useAuthStore.getState().profile?.branchId ?? null;
+  track('attendance_marked', {
+    source: 'here_button',
+    visiting: homeBranchId !== null && homeBranchId !== branchId,
+  });
 }
 
 /**

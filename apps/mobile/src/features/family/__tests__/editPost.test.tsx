@@ -82,6 +82,14 @@ interface ExistingRow {
   status: string;
 }
 
+// W2.10: the edit path must fire NO analytics event; asserted on our own seam.
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({
+  track: (...args: unknown[]) => {
+    mockTrack(...args);
+  },
+}));
+
 const mockExisting = jest.fn<
   { data: ExistingRow | null; error: unknown },
   []
@@ -201,6 +209,9 @@ test('saving sends only what an author may change, and never the consent evidenc
   expect(sent).not.toHaveProperty('consented_at');
   expect(sent).not.toHaveProperty('status');
   expect(sent).not.toHaveProperty('author_id');
+  // W2.10: a re-submission is not a second post, so the edit path fires no
+  // testimony_posted (the plan counts posts, not saves).
+  expect(mockTrack).not.toHaveBeenCalled();
 });
 
 test('an edit does not re-run the consent step, because there is nothing to record', async () => {

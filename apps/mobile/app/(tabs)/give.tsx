@@ -17,6 +17,7 @@ import {
 import { GiveHero } from '@/features/give/GiveHero';
 import { GiveRow } from '@/features/give/GiveRow';
 import { useGivingConfigQuery } from '@/features/give/queries';
+import { track } from '@/lib/analytics';
 import { localizedWebsiteUrl } from '@/lib/websiteUrl';
 import { StubIcon } from '@/features/shell/StubIcon';
 import { useTheme } from '@/theme';
@@ -120,6 +121,9 @@ export default function Give() {
                   variant="accent"
                   fullWidth
                   onPress={() => {
+                    // Outbound taps have no mutation layer: the handler IS the
+                    // act, so the three `give_tapped` calls live on it.
+                    track('give_tapped', { method: 'website' });
                     void WebBrowser.openBrowserAsync(
                       localizedWebsiteUrl(config.giveUrl ?? '', i18n.language),
                     );
@@ -164,6 +168,7 @@ export default function Give() {
                   subtitle={config.paypalUrl.replace(/^https?:\/\//, '')}
                   accessibilityLabel={t('give:paypalTitle')}
                   onPress={() => {
+                    track('give_tapped', { method: 'paypal' });
                     void WebBrowser.openBrowserAsync(config.paypalUrl ?? '');
                   }}
                 />
@@ -180,6 +185,9 @@ export default function Give() {
                   })}
                   accessibilityLabel={t('give:bankTitle')}
                   onPress={() => {
+                    // On the row into GIVE-BANK ("reached for bank details"),
+                    // keeping all three methods at one altitude on this screen.
+                    track('give_tapped', { method: 'bank' });
                     router.push('/give/bank');
                   }}
                 />

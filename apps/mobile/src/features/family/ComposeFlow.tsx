@@ -22,6 +22,7 @@ import {
   useToast,
 } from '@/components/ui';
 import i18n from '@/i18n';
+import { track } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/state/auth';
@@ -402,6 +403,16 @@ export function ComposeFlow({
     if (error) {
       setErrorKey(mapComposeError(error));
       return;
+    }
+    // The insert stood, so the events follow it here (never on the edit path
+    // above: a re-submission is not a second post). `from_answered_prayer` uses
+    // `linkId`, not `fromPrayerId`, because only the validated link was written
+    // to the row; the pair below is north star 2's numerator (docs/spec/22 §5).
+    if (target === 'testimony') {
+      track('testimony_posted', { from_answered_prayer: linkId !== undefined });
+      if (linkId !== undefined) track('answered_converted_to_testimony');
+    } else {
+      track('prayer_posted');
     }
     // The words are safely on the server now; the local copy has done its job.
     await clearDraft(target, editId, linkId);

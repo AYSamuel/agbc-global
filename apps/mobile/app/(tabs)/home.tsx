@@ -56,6 +56,7 @@ import { StreakStrip } from '@/features/rhythm/StreakStrip';
 import { useImHerePress } from '@/features/rhythm/useImHere';
 import { useSermonsQuery } from '@/features/watch/queries';
 import { SermonRow } from '@/features/watch/SermonRow';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore, type GateAction } from '@/state/gate';
@@ -152,6 +153,11 @@ export default function Home() {
   // of Home's gated taps (Glory on the highlight, and "I'm here") with its own
   // copy and its own gate-return (docs/spec/03).
   const [gateAction, setGateAction] = useState<GateAction | null>(null);
+  const openGate = (action: GateAction) => {
+    // The funnel's first half (docs/spec/22 §5), beside the visibility write.
+    track('gate_shown', { action_type: action.kind });
+    setGateAction(action);
+  };
 
   // Date-anchored reads re-key at local midnight and on foreground.
   const dateKey = useLocalDate();
@@ -222,7 +228,7 @@ export default function Home() {
     branch?.id ?? null,
     rhythm?.checkedIn ?? false,
     () => {
-      if (branch) setGateAction({ kind: 'im_here', branchId: branch.id });
+      if (branch) openGate({ kind: 'im_here', branchId: branch.id });
     },
   );
   // Browsing a branch that is not where they belong (docs/spec/07): the card
@@ -514,7 +520,7 @@ export default function Home() {
               }}
               onGloryGate={() => {
                 const id = testimonyHighlight.data?.id;
-                if (id) setGateAction({ kind: 'glory', testimonyId: id });
+                if (id) openGate({ kind: 'glory', testimonyId: id });
               }}
               // Sharing is outbound, not a gated contribution (matches the Family
               // feed): open the OS sheet rather than the gate.

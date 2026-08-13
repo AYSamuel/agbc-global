@@ -39,6 +39,7 @@ import {
 } from '@/features/academy/queries';
 import { RegistrationSheet } from '@/features/academy/RegistrationSheet';
 import { useFormattingLocale } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { useLocalizedText } from '@/lib/localizedJson';
 import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
@@ -154,6 +155,7 @@ export default function CourseDetail() {
 
   const register = async () => {
     if (!isMember) {
+      track('gate_shown', { action_type: 'course_register' });
       setGate('register');
       return;
     }
@@ -170,6 +172,7 @@ export default function CourseDetail() {
 
   const notify = () => {
     if (!isMember) {
+      track('gate_shown', { action_type: 'course_interest' });
       setGate('notify');
       return;
     }

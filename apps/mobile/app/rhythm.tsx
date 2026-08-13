@@ -37,6 +37,7 @@ import { NextMilestone } from '@/features/rhythm/NextMilestone';
 import { useRhythmQuery } from '@/features/rhythm/queries';
 import { StreakHero } from '@/features/rhythm/StreakHero';
 import { WheneverReadyCard } from '@/features/rhythm/WheneverReadyCard';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore } from '@/state/gate';
@@ -138,6 +139,9 @@ export default function RhythmScreen() {
           body={t('rhythm:guestBody')}
           actionLabel={t('common:signIn')}
           onAction={() => {
+            // Shown and the sign-in tap coincide here, as on MY-POSTS: the
+            // gate is the whole screen, and the tap is its first honest signal.
+            track('gate_shown', { action_type: 'rhythm' });
             beginGateSignIn({ kind: 'rhythm' });
             router.push('/auth');
           }}

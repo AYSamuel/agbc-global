@@ -75,6 +75,15 @@ jest.mock('@/lib/supabase', () => ({
   },
 }));
 
+// The analytics seam (W2.10): the flow raises signup_completed at AUTH-3 and
+// the replay raises gate_converted; the wire is proven in lib/analytics/__tests__.
+const mockTrack = jest.fn();
+jest.mock('@/lib/analytics', () => ({
+  track: (...args: unknown[]) => {
+    mockTrack(...args);
+  },
+}));
+
 const SESSION = {
   data: { session: { user: { id: 'user-1', email: 'ayo@test.local' } } },
 };
@@ -274,6 +283,9 @@ describe('AUTH-3 profile step', () => {
     expect(typeof written.onboarded_at).toBe('string');
     expect(typeof written.age_confirmed_at).toBe('string');
     expect(useAuthStore.getState().status).toBe('member');
+    // W2.10: the account now exists with a name and a branch, which is the
+    // definition of signup_completed.
+    expect(mockTrack).toHaveBeenCalledWith('signup_completed');
   });
 
   it('shows the save error and keeps the form when the write fails', async () => {
@@ -287,6 +299,8 @@ describe('AUTH-3 profile step', () => {
     await press(screen.getByRole('button', { name: 'Enter' }));
     await screen.findByText("We couldn't finish setting up. Please try again.");
     expect(screen.getByDisplayValue('Ayo')).toBeTruthy();
+    // No account came into being, so no signup was completed (W2.10).
+    expect(mockTrack).not.toHaveBeenCalledWith('signup_completed');
   });
 });
 
@@ -343,6 +357,13 @@ describe('gate-return replay (W2.2, docs/spec/03 + 04 rule 9)', () => {
       });
     });
     expect(useGateStore.getState().pending).toBeNull();
+    // W2.10: a completed replay IS the gate's conversion, measured where the
+    // outcome is known (the replay executor).
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('gate_converted', {
+        action_type: 'glory',
+      });
+    });
   });
 
   it('a sign-in without a pending action replays nothing', async () => {

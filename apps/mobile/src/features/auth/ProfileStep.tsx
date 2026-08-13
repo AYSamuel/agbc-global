@@ -5,13 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
 import { authProfileSchema, type AuthProfileForm } from '@agbc/shared';
-import {
-  fontFamily,
-  icon,
-  palette,
-  radius,
-  spacing,
-} from '@agbc/shared/theme';
+import { fontFamily, icon, palette, radius, spacing } from '@agbc/shared/theme';
 
 import { Button, Checkbox, TextField } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
@@ -26,6 +20,7 @@ import i18n, {
   SUPPORTED_LANGUAGES,
   type SupportedLanguage,
 } from '@/i18n';
+import { track } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore, type ProfileSnapshot } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
@@ -152,6 +147,12 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
       role: 'member',
     };
     markOnboarded(snapshot);
+    // AUTH-3 is done: the account exists with a name and a branch, and the two
+    // stores above are already set, so the event carries them. The resumed
+    // "already onboarded elsewhere" exit above deliberately does not fire: that
+    // account was completed on another device, and this one signing in is not a
+    // second signup.
+    track('signup_completed');
     onDone();
   });
 
@@ -220,7 +221,11 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
           }}
         >
           <Text style={pickrowValueStyle}>{selectedBranch?.name ?? ''}</Text>
-          <ChevronRightIcon size={icon.md} color={colors.muted} strokeWidth={2} />
+          <ChevronRightIcon
+            size={icon.md}
+            color={colors.muted}
+            strokeWidth={2}
+          />
         </View>
       </Pressable>
       <Pressable
@@ -240,7 +245,11 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
           }}
         >
           <Text style={pickrowValueStyle}>{LANGUAGE_AUTONYMS[language]}</Text>
-          <ChevronRightIcon size={icon.md} color={colors.muted} strokeWidth={2} />
+          <ChevronRightIcon
+            size={icon.md}
+            color={colors.muted}
+            strokeWidth={2}
+          />
         </View>
       </Pressable>
       <View style={{ marginTop: 8, marginBottom: 6 }}>
