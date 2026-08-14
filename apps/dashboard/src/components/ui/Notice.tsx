@@ -16,8 +16,11 @@ import type { ReactNode, Ref } from 'react';
  *    usually news you did not want, which is the mockup's own default.
  *  - `bad` outlines in danger and is for a refusal or a warning about consequences.
  *  - `off` mutes the icon: nothing is wrong with the news, or with the reader.
+ *  - `good` greens the icon into a check: the thing worked and the banner says what is
+ *    now true. First needed by the sermon-audio "uploaded and read" moment (W3.1 frames,
+ *    approved 2026-08-14); until then no banner in this product ever carried good news.
  */
-export type NoticeTone = 'plain' | 'bad' | 'off';
+export type NoticeTone = 'plain' | 'bad' | 'off' | 'good';
 
 export interface NoticeProps {
   tone?: NoticeTone;
@@ -48,6 +51,7 @@ const TONES: Record<
   // circle reads as "disconnected"; next to a sentence it reads as an unfinished radio
   // button, which is what it looked like on the refusal screen (seen 2026-08-01).
   off: { border: 'border-cardline', icon: 'text-muted', glyph: 'ℹ' },
+  good: { border: 'border-cardline', icon: 'text-success', glyph: '✓' },
 };
 
 export function Notice({

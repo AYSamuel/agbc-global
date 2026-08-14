@@ -20,7 +20,7 @@ interface Destination {
   icon: string;
 }
 
-const PHASE_A: Destination[] = [
+const BUILT: Destination[] = [
   {
     key: 'moderation',
     label: copy.nav.moderation,
@@ -33,6 +33,14 @@ const PHASE_A: Destination[] = [
   // at their own queue. A row that appears the day someone's role changes is a rail that
   // reshapes itself, which the dimmed-but-visible pattern above exists to avoid.
   { key: 'verses', label: copy.nav.verses, href: '/verses', icon: '✎' },
+  // The first row from a later phase to light up (W3.1, frames approved 2026-08-14).
+  // Same every-staff-caller linking as verses: `/sermon-audio` refuses a leader honestly.
+  {
+    key: 'sermonAudio',
+    label: copy.nav.sermonAudio,
+    href: '/sermon-audio',
+    icon: '♪',
+  },
   // ONE People row, two destinations, because People means different work depending on
   // who you are: an admin hands out roles, a leader decides who joins their branch. The
   // frames draw a single rail row for both, so the row points at whichever surface is
@@ -73,16 +81,23 @@ export function DashboardShell({
 }) {
   return (
     <div className="flex min-h-full flex-1 flex-col lg:flex-row">
+      {/* The rail never scrolls with the page (Ayo, 2026-08-14, seeing the 100-row
+          shelf walk it off screen): on desktop it pins to the viewport, exactly one
+          screen tall, and scrolls itself in the rare window too short for its rows.
+          Only at lg+, where it is a side column; stacked on a narrow window it is a
+          header and flows with the page like one. */}
       <nav
         aria-label={copy.nav.label}
-        className="flex flex-col gap-0.5 border-cardline bg-card p-3 lg:w-56 lg:border-r"
+        className="flex flex-col gap-0.5 border-cardline bg-card p-3 lg:sticky lg:top-0 lg:h-screen lg:w-56 lg:self-start lg:overflow-y-auto lg:border-r"
       >
         <p className="px-2.5 pt-1 pb-3.5 font-display text-[1rem] font-extrabold">
           {copy.nav.brand}
         </p>
 
-        <RailSection title="Phase A" />
-        {PHASE_A.map((destination) => (
+        {/* No section title over the lit rows since W3.1 lit the first later-phase one:
+            a phase name over a mixed list would be false. Lit rows are simply the
+            dashboard; "Later" keeps the dimmed tail (per the approved W3.1 frames). */}
+        {BUILT.map((destination) => (
           <RailRow
             key={destination.key}
             destination={

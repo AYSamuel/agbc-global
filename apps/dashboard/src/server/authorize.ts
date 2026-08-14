@@ -41,7 +41,11 @@ export const MFA_FRESHNESS_MS = 24 * 60 * 60 * 1000;
  * action is one entry here and cannot be half-added: the refusal, the caller it carries
  * and the reason code all follow from membership.
  */
-const ADMIN_ONLY = new Set<DashboardAction>(['assign_role', 'manage_verses']);
+const ADMIN_ONLY = new Set<DashboardAction>([
+  'assign_role',
+  'manage_verses',
+  'manage_sermon_audio',
+]);
 
 export type StaffRole = 'leader' | 'admin';
 
@@ -77,7 +81,16 @@ export type DashboardAction =
    * here, and not as a `role === 'admin'` line inside `/verses`, because the schedule now
    * spans four routes and a form; one of them would eventually be written without it.
    */
-  | 'manage_verses';
+  | 'manage_verses'
+  /**
+   * Stock the sermon-audio shelf: upload, attach, replace, remove (W3.1 slice 1b).
+   *
+   * Admin-only for the same product reason as the verses: one shelf serves every branch
+   * (`17` §4), so there is no branch-shaped version of this job. The storage policies
+   * repeat the rule at the data layer (live-table admin at aal2); this layer is what
+   * keeps the dashboard's refusal inside the shell and pointing somewhere useful.
+   */
+  | 'manage_sermon_audio';
 
 export interface AuthorizationRequest {
   action: DashboardAction;

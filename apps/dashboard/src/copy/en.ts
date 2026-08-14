@@ -91,6 +91,7 @@ export const copy = {
     moderation: 'Moderation',
     reports: 'Reports',
     verses: 'Daily verses',
+    sermonAudio: 'Sermon audio',
     people: 'People',
     later: 'Later',
     broadcasts: 'Broadcasts',
@@ -583,6 +584,156 @@ export const copy = {
           'That verse could not be saved. Check the date is YYYY-MM-DD and nothing is blank.',
         failed: 'Something went wrong and nothing was changed. Try again.',
       },
+    },
+  },
+
+  sermonAudio: {
+    title: 'Sermon audio',
+    scope: 'Every branch · one shelf',
+    // The frame's banner reads "Sunday's message has no audio yet", which is true only on
+    // a Sunday; the real screen names the message, which is true every day. The body
+    // carries the frame's argument for why the upload matters at all.
+    missingTitle: (title: string) => `${title} has no audio yet`,
+    missingBody:
+      'It is on YouTube, so members can watch it. Listening in the background, the thing members actually asked for, only exists once its MP3 is on the shelf.',
+    missingAction: 'Add audio',
+    stats: {
+      withAudio: 'With audio',
+      withoutAudio: 'Without audio',
+      audioOnly: 'Audio only',
+    },
+    guideTitle: 'Export speech quality, not music quality.',
+    guide:
+      '64–96 kbps mono MP3 sounds identical for a preached message and halves both storage and every member’s data. A full service lands near 25 MB; the shelf takes up to 150 MB.',
+    addAudioOnly: 'Add an audio-only message',
+    statsLabel: 'The shelf today',
+    filters: {
+      all: 'All',
+      without: 'Without audio',
+      with: 'With audio',
+      audioOnly: 'Audio only',
+    },
+    listLabel: 'Recent messages · newest first',
+    filtersLabel: 'Filter the list',
+    filterEmpty: 'Nothing in this view. The other tabs still hold messages.',
+    kind: {
+      video: 'Video',
+      live_replay: 'Live replay',
+      audioOnly: 'Audio only',
+    },
+    noAudioPill: 'No audio',
+    audioPill: (minutes: number) => `Audio · ${String(minutes)} min`,
+    minutesOnYouTube: (minutes: number) => `${String(minutes)} min on YouTube`,
+    sizeMb: (mb: number) => `${String(mb)} MB`,
+    neverOnYouTube: 'never on YouTube',
+    rowAdd: 'Add audio',
+    rowManage: 'Manage',
+    // Accessible names: a list of identical "Add audio"s tells a screen-reader user
+    // nothing (the verses `editOn` rule). Visible word first, per label-in-name.
+    rowAddFor: (title: string) => `Add audio to ${title}`,
+    rowManageFor: (title: string) => `Manage the audio on ${title}`,
+    emptyTitle: 'No messages here yet',
+    emptyBody:
+      'The nightly sync brings the channel’s messages in overnight. An audio-only message can be added right now; it does not wait on YouTube.',
+    notAdminTitle: 'The shelf is kept by a ministry admin',
+    notAdminBody:
+      'One shelf serves every branch, like the verse schedule, so it is stocked centrally rather than per branch. Nothing is wrong with your account.',
+    notAdminAction: 'Go to your queue',
+
+    attach: {
+      title: 'Add the audio',
+      fileLabel: 'The file',
+      dropTitle: 'Drop the MP3 here, or browse',
+      dropSub: 'MP3 or M4A · up to 150 MB',
+      browse: 'Choose a file',
+      dropHint:
+        'Straight from your editing export. Speech quality (64–96 kbps mono) is plenty; there is no need to re-encode a bigger file if that is what you have.',
+      speakerLabel: 'Speaker',
+      seriesLabel: 'Series',
+      seriesPlaceholder: 'None',
+      prefilledHint:
+        'Both come filled in from the message and land on the card members see. Fix them here if the sync guessed wrong.',
+      readingFile: 'Reading the file…',
+      uploadingLabel: 'Uploading',
+      uploadingProgress: (sentMb: number, totalMb: number) =>
+        `${String(sentMb)} of ${String(totalMb)} MB`,
+      uploadingHint:
+        'Keep this tab open until it finishes. Closing it stops the upload; nothing half-sent is ever shown to members.',
+      checkedTitle: (minutes: number, mb: number) =>
+        `${String(minutes)} ${minutes === 1 ? 'minute' : 'minutes'} of audio, ${String(mb)} MB`,
+      checkedBody:
+        'Read from the file itself. Saving puts Listen on this message in the app.',
+      save: 'Save the audio',
+      saving: 'Saving…',
+      startOver: 'Start over',
+      cancel: 'Cancel',
+      // Client-side early refusals: cheap, honest, and never the real check (the server
+      // reads the object's own bytes at save).
+      pickNotAudio:
+        'That does not look like an audio file. Export an MP3 or M4A and try again.',
+      pickTooBig: (mb: number) =>
+        `That file is ${String(mb)} MB and the shelf takes up to 150 MB. Export it at speech quality (64–96 kbps mono) and try again.`,
+      unreadable:
+        'That file could not be read as audio. Export it again and retry.',
+      uploadFailed:
+        'The upload did not finish. Check your connection and try again; nothing half-sent is ever shown to members.',
+      wrongKindTitle: 'That file is not an MP3 or M4A',
+      wrongKindBody:
+        'The file’s contents were checked, not its name. Nothing was saved and the upload was discarded; export the audio again and retry.',
+      speakerRequired: 'Name the speaker: it lands on the card members see.',
+      goneBody:
+        'That message is no longer there. Go back to the shelf and pick again.',
+      refusedBody:
+        'That is not yours to change. Your role may have changed since this page loaded.',
+      failedBody: 'Something went wrong and nothing was changed. Try again.',
+      offline:
+        'You appear to be offline. Check your connection and try again. Nothing was saved.',
+    },
+
+    manage: {
+      title: 'The audio on the shelf',
+      factsPill: (minutes: number) => `Audio · ${String(minutes)} min`,
+      shelvedOn: (date: string) => `shelved ${date}`,
+      removeHint:
+        'Removing takes Listen out of the app at once. Anyone mid-listen finishes their session (their link lives for up to a day), and nobody new can start. Replacing swaps a fresh file in the same way.',
+      replace: 'Replace the file',
+      remove: 'Remove the audio',
+      removing: 'Removing…',
+      // Said where the missing Remove button would otherwise read as an oversight, the
+      // reports `flagged` rule: it is a rule, and rules are better stated than inferred.
+      audioOnlyNoRemove:
+        'This message exists only as audio, so removing it would leave nothing at all. The audio can be replaced, never removed.',
+    },
+
+    create: {
+      title: 'An audio-only message',
+      scope: 'Sermon audio',
+      titleLabel: 'Title',
+      dateLabel: 'Date preached',
+      datePlaceholder: 'YYYY-MM-DD',
+      dateHint:
+        'Decides where it appears in the app’s rails. It shows an audio cover instead of a video, and everything else works the same: resume, save, notes.',
+      submit: 'Create the message',
+      submitting: 'Creating…',
+      titleRequired: 'Give the message a title.',
+      dateRequired: 'Write the day it was preached as YYYY-MM-DD.',
+    },
+
+    outcome: {
+      saved:
+        'The audio is on the shelf. Listen is live on this message in the app.',
+      replaced:
+        'The new file is on the shelf, and the old one is retired. Listeners mid-session finish on the old file for up to a day.',
+      created: 'The message is in Watch now, with Listen ready.',
+      removed:
+        'The audio is off the shelf. The message stays, and Listen is gone from the app.',
+      noAudio: 'That message had no audio, so nothing changed.',
+      gone: 'That message is no longer there, so nothing changed.',
+      audioOnly:
+        'That message exists only as audio, so its audio cannot be removed, only replaced. Nothing was changed.',
+      refused:
+        'That is not yours to change. Your role may have changed since this page loaded.',
+      failed: 'Something went wrong and nothing was changed. Try again.',
     },
   },
 
