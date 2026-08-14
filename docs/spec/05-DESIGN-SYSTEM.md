@@ -22,6 +22,8 @@ Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.htm
 
 Plus the `onInk` group for content on ink/photo surfaces (same in both themes): text `#ffffff`, sub `#9aa6bd`, link `#8db4ff`, scrim `rgba(14,20,32,0.15) → rgba(14,20,32,0.92)` (vertical), and `scrimSolid` `rgba(14,20,32,0.62)` for flat washes and controls drawn on a photo (the compose photo's remove disc and its "preparing" overlay; added W2.3 slice 3).
 
+And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scrub .bar` + `.pl-art`), theme-independent for the same reason `onInk` is: none of it sits on a themed surface. `track` `rgba(128,128,128,0.28)` is the scrub bar behind the gold fill, and it is a NEUTRAL grey on purpose, so the unfilled half reads on cream and on near-black alike; a themed surface token disappears into one of the two. `artFrom` `#22375f` → `artTo` `ink` is the artwork gradient a message with no thumbnail falls back to, `artScrim` `rgba(14,20,32,0.45)` is the wash over a real thumbnail (tuned on a device against a real photo: 58% rendered as the same navy as the fallback beside it, and 30% did not read as dimmed at all), and `tagBg` `rgba(14,20,32,0.72)` is the pill behind the "Listening" label.
+
 ### Light
 | Token | Value | Use |
 |-------|-------|-----|

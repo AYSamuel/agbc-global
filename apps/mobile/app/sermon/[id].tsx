@@ -19,6 +19,7 @@ import {
   icon,
   radius,
   spacing,
+  tonal,
   typeScale,
 } from '@agbc/shared/theme';
 
@@ -27,11 +28,23 @@ import {
   Button,
   EmptyState,
   GateSheet,
+  HeadphonesIcon,
+  InfoIcon,
+  NoteBanner,
+  NotesIcon,
   Screen,
   ShareIcon,
   Skeleton,
+  SpeedIcon,
   useToast,
 } from '@/components/ui';
+import { AudioMode } from '@/features/watch/AudioMode';
+import {
+  formatSpeedValue,
+  nextSpeed,
+  preferredPosition,
+} from '@/features/watch/audio';
+import { useSermonAudioUrlQuery } from '@/features/watch/audioSource';
 import {
   durationMinutes,
   formatPublishedDate,
@@ -42,9 +55,15 @@ import {
   shouldSave,
   usePlaybackStore,
 } from '@/features/watch/playback';
+import { SermonMeta } from '@/features/watch/SermonMeta';
+import {
+  saveServerPosition,
+  useServerPositionQuery,
+} from '@/features/watch/serverPosition';
 import { useFormattingLocale } from '@/i18n';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
 import { track } from '@/lib/analytics';
+import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -52,7 +71,7 @@ function youtubeUrl(youtubeId: string): string {
   return `https://www.youtube.com/watch?v=${youtubeId}`;
 }
 
-// The embed plus its local-resume wiring (decision 2026-07-20, docs/spec/08).
+// The embed plus its resume wiring (decision 2026-07-20, docs/spec/08).
 // Its own component so the start position is computed exactly once, when the
 // video mounts and the duration is known.
 function SermonVideo({
@@ -60,27 +79,28 @@ function SermonVideo({
   youtubeId,
   width,
   height,
+  startAtSec,
+  isMember,
   onError,
 }: {
   sermon: SermonSummary;
   youtubeId: string;
   width: number;
   height: number;
+  startAtSec: number;
+  isMember: boolean;
   onError: () => void;
 }) {
   const playerRef = useRef<YoutubeIframeRef>(null);
-  const savedEntry = usePlaybackStore((s) => s.positions[sermon.id]);
   const savePosition = usePlaybackStore((s) => s.save);
   const clearPosition = usePlaybackStore((s) => s.clear);
-  // Lazy initial state: read once on mount, so a save mid-session can never
-  // re-seek the player mid-playback.
-  const [startAt] = useState(
-    () => resumeTarget(savedEntry, sermon.duration_sec) ?? 0,
-  );
+  // Read once on mount, so a save mid-session can never re-seek the player
+  // mid-playback. The DECISION now lives on the screen, which is the only place
+  // that can see both stored positions (W3.1).
+  const [startAt] = useState(() => startAtSec);
   // A latch, because the iframe reports 'playing' again after every pause and
   // buffer: only the first transition of this mount is the member starting the
-  // sermon. `startAt` (already the resume decision) says which event it is,
-  // and `mode` is a literal until W3.1: this player only exists for video.
+  // sermon. `startAt` (already the resume decision) says which event it is.
   const playReportedRef = useRef(false);
 
   const capturePosition = useCallback(async () => {
@@ -88,11 +108,14 @@ function SermonVideo({
       const current = await playerRef.current?.getCurrentTime();
       if (typeof current === 'number' && shouldSave(current)) {
         savePosition(sermon.id, current);
+        // The position is per member and message, not per mode (W3.1): watch
+        // half on the tablet, finish it in the car on audio. One row, both.
+        if (isMember) void saveServerPosition(sermon.id, current);
       }
     } catch {
       // The webview can be torn down mid-call: losing one sample is fine.
     }
-  }, [sermon.id, savePosition]);
+  }, [isMember, sermon.id, savePosition]);
 
   // Save when the app backgrounds (the phone-call case), on a ~10s cadence
   // while open (docs/spec/08: survives the app being killed), and on exit.
@@ -137,11 +160,99 @@ function SermonVideo({
   );
 }
 
-// SERMON player (docs/spec/08, W1.3 scope): YouTube playback via the pinned
-// iframe with "Open on YouTube" as the tested fallback; guest playback only
-// (notes gate to /auth until W2.2); audio-only/download tiles are placeholders
-// until the audio slice (W3.1). Transport controls live in the embed for video;
-// the custom transport row arrives with audio. Rot state per 08.
+type TileState = 'idle' | 'on' | 'off';
+
+// Mockup `.pl-tiles` / `.pl-tile` with the two states W3.1 added: `on` for a mode
+// the member turned on (the same tinted gold `.glory.on` uses for a commitment
+// already made), `off` for a control that exists but has nothing to act on yet.
+// `off` still takes a tap: a dimmed tile that does nothing when pressed teaches
+// nothing, so each one answers with the reason it is dim.
+function PlayerTile({
+  label,
+  value,
+  hint,
+  state,
+  glyph,
+  onPress,
+}: {
+  label: string;
+  value?: string;
+  /** Why a dimmed tile is dimmed. Spoken on focus, so a screen-reader user
+   * learns the condition BEFORE activating rather than from the toast after. */
+  hint?: string;
+  state: TileState;
+  glyph: (color: string) => React.ReactNode;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={value === undefined ? label : `${label}, ${value}`}
+      accessibilityHint={hint}
+      // Deliberately NOT `disabled`. 08 asks the unavailable toggle to carry a
+      // tooltip, and a control that announces itself disabled while it still
+      // answers a tap is telling assistive tech something untrue. Dimmed, with
+      // the reason on focus and on press.
+      accessibilityState={{ selected: state === 'on' }}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        flex: 1,
+        alignItems: 'center',
+        // The row stretches all three tiles to the tallest, and Speed is three
+        // lines deep (icon, label, value) where the other two are two, so
+        // without this their contents sit at the top of a taller box and read
+        // as unseated.
+        justifyContent: 'center',
+        gap: 7,
+        backgroundColor: state === 'on' ? tonal.gold.bg : colors.alt,
+        borderWidth: 1,
+        borderColor: state === 'on' ? tonal.gold.border : colors.cardline,
+        borderRadius: radius.button,
+        paddingVertical: 14,
+        paddingHorizontal: spacing.xs,
+        opacity: state === 'off' ? 0.45 : pressed ? 0.85 : 1,
+      })}
+    >
+      {glyph(colors.text)}
+      <Text
+        maxFontSizeMultiplier={1.3}
+        style={{
+          fontFamily: fontFamily.body.bold,
+          fontSize: 11.5,
+          color: colors.text,
+          textAlign: 'center',
+        }}
+      >
+        {label}
+      </Text>
+      {/* The value line is rendered by EVERY tile, blank where there is nothing
+          to say. Only Speed carries a value, and a row of three stretches to
+          its tallest member either way, so without the reserved line the other
+          two centred their contents against a different number of lines and the
+          icons sat at two different heights across one row. A blank line costs
+          no space that the row was not already spending. */}
+      <Text
+        accessibilityElementsHidden={value === undefined}
+        importantForAccessibility={value === undefined ? 'no' : 'auto'}
+        maxFontSizeMultiplier={1.3}
+        numberOfLines={1}
+        style={{
+          fontFamily: fontFamily.body.bold,
+          fontSize: 11,
+          color: colors.eye,
+        }}
+      >
+        {value ?? ' '}
+      </Text>
+    </Pressable>
+  );
+}
+
+// SERMON player (docs/spec/08). Video via the pinned iframe with "Open on
+// YouTube" as the tested fallback, audio via the private bucket's signed URL
+// (W3.1 slice 3), and the resume that follows a member between the two. Guest
+// playback is free; notes gate. Rot state per 08.
 export default function Sermon() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -154,11 +265,42 @@ export default function Sermon() {
   const [playerError, setPlayerError] = useState(false);
   const [playerKey, setPlayerKey] = useState(0);
   const [gateVisible, setGateVisible] = useState(false);
+  const [audioRequested, setAudioRequested] = useState(false);
 
   const sermon = query.data ?? null;
+  const isMember = useAuthStore((s) => s.status === 'member');
+  const localEntry = usePlaybackStore((s) => s.positions[id]);
+  const speed = usePlaybackStore((s) => s.speed);
+  const setSpeed = usePlaybackStore((s) => s.setSpeed);
+
+  const audioPath = sermon?.audio_path ?? null;
+  const audioUrlQuery = useSermonAudioUrlQuery(id, audioPath);
+  const serverPositionQuery = useServerPositionQuery(id, isMember);
+
+  // Two ways to arrive with no video to go back to: a message that was never on
+  // YouTube (docs/spec/08: a row with only `audio_path`), and one whose video the
+  // sync has since marked gone, where 08 asks the player to fall back to the
+  // self-hosted audio. Either way audio is not a mode the member chose, so the
+  // toggle stops being a toggle and says why.
+  const noVideo =
+    sermon !== null &&
+    (sermon.youtube_id === null || sermon.status === 'unavailable');
+  const audioMode = audioPath !== null && (audioRequested || noVideo);
+
   // Screen gutter (20) each side, capped like the mockup player column.
   const videoWidth = Math.min(width - spacing.gutter * 2, 640);
   const videoHeight = Math.round((videoWidth * 9) / 16);
+  // The frame draws the artwork at 16/10, not the embed's 16/9.
+  const artHeight = Math.round((videoWidth * 10) / 16);
+
+  // The resume decision, made in the one place that can see both layers. Guests
+  // never wait on it; members wait for the row so the seek happens once.
+  const positionReady = !isMember || !serverPositionQuery.isPending;
+  const startAtSec =
+    resumeTarget(
+      preferredPosition(localEntry, serverPositionQuery.data ?? undefined),
+      sermon?.duration_sec ?? null,
+    ) ?? 0;
 
   const share = (s: SermonSummary) => {
     void Share.share({
@@ -167,6 +309,33 @@ export default function Sermon() {
         : s.title,
     });
   };
+
+  const eyebrow =
+    sermon === null
+      ? ''
+      : (sermon.series ?? formatPublishedDate(sermon.published_at, locale));
+  const meta =
+    sermon === null
+      ? ''
+      : joinMeta([
+          sermon.speaker || null,
+          durationMinutes(sermon.duration_sec) === null
+            ? null
+            : t('watch:minutes', {
+                count: durationMinutes(sermon.duration_sec) ?? 0,
+              }),
+        ]);
+
+  // Keyed on `refetch` (bound once by the query observer, stable) and never on
+  // the result object, whose identity moves with every fetch-state change. The
+  // engine's error effect keys on this callback, and the status it reads stays
+  // the OLD player's until the new one reports, so an identity change while the
+  // re-mint is in flight would count the one silent retry as spent and put the
+  // failure screen over a source that is about to play.
+  const { refetch: refetchAudioUrl } = audioUrlQuery;
+  const remintAudioUrl = useCallback(() => {
+    void refetchAudioUrl();
+  }, [refetchAudioUrl]);
 
   return (
     <Screen padded={false} widthClass="capped">
@@ -225,13 +394,12 @@ export default function Sermon() {
               router.back();
             }}
           />
-        ) : sermon.status === 'unavailable' ? (
-          // Sermon rot (08): never a dead end; notes/audio survive for members.
+        ) : sermon.status === 'unavailable' && sermon.audio_path === null ? (
+          // Sermon rot (08): never a dead end. With audio still on the shelf the
+          // message is playable, so the rot copy only stands when it is not.
           <EmptyState
             title={t('watch:rotTitle')}
-            body={
-              sermon.audio_path ? t('watch:rotBodyAudio') : t('watch:rotBody')
-            }
+            body={t('watch:rotBody')}
             actionLabel={t('watch:backToWatch')}
             onAction={() => {
               router.back();
@@ -239,120 +407,133 @@ export default function Sermon() {
           />
         ) : (
           <>
-            <View
-              style={{
-                borderRadius: radius.cardTight,
-                overflow: 'hidden',
-                backgroundColor: colors.band,
-                alignSelf: 'center',
-                width: videoWidth,
-                height: videoHeight,
-              }}
-            >
-              {sermon.youtube_id === null ? (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: spacing.xl,
-                  }}
-                >
-                  <Text
-                    style={[
-                      typeScale.body,
-                      { color: colors.bandtext, textAlign: 'center' },
-                    ]}
-                  >
-                    {t('watch:audioOnlyPending')}
-                  </Text>
-                </View>
-              ) : playerError ? (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: spacing.md,
-                    padding: spacing.xl,
-                  }}
-                >
-                  <Text
-                    style={[
-                      typeScale.body,
-                      { color: colors.bandtext, textAlign: 'center' },
-                    ]}
-                  >
-                    {t('watch:playerError')}
-                  </Text>
-                  <Button
-                    label={t('errors:tryAgain')}
-                    variant="accent"
-                    onPress={() => {
-                      setPlayerError(false);
-                      setPlayerKey((k) => k + 1);
-                    }}
-                  />
+            {sermon.status === 'unavailable' ? (
+              // The other half of 08's rot rule: the video is gone but the audio
+              // survived, so say what happened and keep playing rather than
+              // showing a dead end over a message that still works.
+              <View style={{ marginBottom: spacing.lg }}>
+                <NoteBanner
+                  tone="gold"
+                  icon={(accent) => <InfoIcon size={icon.lg} color={accent} />}
+                  lead={t('watch:rotTitle')}
+                  body={t('watch:rotBodyAudio')}
+                />
+              </View>
+            ) : null}
+            {audioMode ? (
+              audioUrlQuery.isError ? (
+                <EmptyState
+                  title={t('watch:audioErrorTitle')}
+                  body={t('watch:audioErrorBody')}
+                  actionLabel={t('errors:tryAgain')}
+                  onAction={remintAudioUrl}
+                />
+              ) : audioUrlQuery.data === undefined || !positionReady ? (
+                <View style={{ gap: spacing.lg }}>
+                  <Skeleton height={artHeight} />
+                  <Skeleton height={22} width="70%" />
+                  <Skeleton height={13} width="40%" />
                 </View>
               ) : (
-                <SermonVideo
-                  key={playerKey}
+                <AudioMode
                   sermon={sermon}
-                  youtubeId={sermon.youtube_id}
-                  width={videoWidth}
-                  height={videoHeight}
-                  onError={() => {
-                    setPlayerError(true);
-                  }}
+                  signedUrl={audioUrlQuery.data}
+                  eyebrow={eyebrow}
+                  meta={meta}
+                  startAtSec={startAtSec}
+                  isMember={isMember}
+                  artHeight={artHeight}
+                  onRemint={remintAudioUrl}
                 />
-              )}
-            </View>
+              )
+            ) : (
+              <>
+                <View
+                  style={{
+                    borderRadius: radius.cardTight,
+                    overflow: 'hidden',
+                    backgroundColor: colors.band,
+                    alignSelf: 'center',
+                    width: videoWidth,
+                    height: videoHeight,
+                  }}
+                >
+                  {sermon.youtube_id === null ? (
+                    // Neither a video nor an audio: broken data rather than a
+                    // state anyone designed, and still not a dead end.
+                    <View
+                      style={{
+                        flex: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: spacing.xl,
+                      }}
+                    >
+                      <Text
+                        style={[
+                          typeScale.body,
+                          { color: colors.bandtext, textAlign: 'center' },
+                        ]}
+                      >
+                        {t('watch:audioOnlyPending')}
+                      </Text>
+                    </View>
+                  ) : playerError ? (
+                    <View
+                      style={{
+                        flex: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: spacing.md,
+                        padding: spacing.xl,
+                      }}
+                    >
+                      <Text
+                        style={[
+                          typeScale.body,
+                          { color: colors.bandtext, textAlign: 'center' },
+                        ]}
+                      >
+                        {t('watch:playerError')}
+                      </Text>
+                      <Button
+                        label={t('errors:tryAgain')}
+                        variant="accent"
+                        onPress={() => {
+                          setPlayerError(false);
+                          setPlayerKey((k) => k + 1);
+                        }}
+                      />
+                    </View>
+                  ) : !positionReady ? (
+                    // The embed seeks once, at mount, so it does not mount until
+                    // the resume decision is in.
+                    <Skeleton height={videoHeight} />
+                  ) : (
+                    <SermonVideo
+                      key={playerKey}
+                      sermon={sermon}
+                      youtubeId={sermon.youtube_id}
+                      width={videoWidth}
+                      height={videoHeight}
+                      startAtSec={startAtSec}
+                      isMember={isMember}
+                      onError={() => {
+                        setPlayerError(true);
+                      }}
+                    />
+                  )}
+                </View>
+                <SermonMeta
+                  eyebrow={eyebrow}
+                  title={sermon.title}
+                  meta={meta}
+                />
+              </>
+            )}
 
-            <Text
-              style={[
-                typeScale.label,
-                {
-                  fontSize: 11,
-                  letterSpacing: 2,
-                  color: colors.eye,
-                  marginTop: spacing.lg,
-                },
-              ]}
-            >
-              {sermon.series ??
-                formatPublishedDate(sermon.published_at, locale)}
-            </Text>
-            <Text
-              style={{
-                fontFamily: fontFamily.display.extraBold,
-                fontSize: 24,
-                letterSpacing: -0.48,
-                color: colors.text,
-                marginTop: spacing.sm,
-              }}
-            >
-              {sermon.title}
-            </Text>
-            <Text
-              style={{
-                fontFamily: fontFamily.body.regular,
-                fontSize: 13.5,
-                color: colors.muted,
-                marginTop: 3,
-              }}
-            >
-              {joinMeta([
-                sermon.speaker || null,
-                durationMinutes(sermon.duration_sec) === null
-                  ? null
-                  : t('watch:minutes', {
-                      count: durationMinutes(sermon.duration_sec) ?? 0,
-                    }),
-              ])}
-            </Text>
-
-            {/* Mockup .pl-tiles: audio-only + download arrive with W3.1; notes
-                gate to the auth placeholder until W2.2. */}
+            {/* Mockup .pl-tiles. Speed took Download's slot at W3.1: 08 never
+                specified a download, and speed had no home in any frame. */}
             <View
               style={{
                 flexDirection: 'row',
@@ -360,71 +541,73 @@ export default function Sermon() {
                 marginTop: spacing.x2l,
               }}
             >
-              {(
-                [
-                  {
-                    key: 'audio',
-                    label: t('watch:audioOnly'),
-                    enabled: sermon.audio_path !== null,
-                    onPress: () => {
-                      toast.show(t('watch:comingWithAudio'));
-                    },
-                  },
-                  {
-                    key: 'download',
-                    label: t('watch:download'),
-                    enabled: false,
-                    onPress: () => {
-                      toast.show(t('watch:comingWithAudio'));
-                    },
-                  },
-                  {
-                    key: 'notes',
-                    label: t('watch:notes'),
-                    enabled: true,
-                    // Notes are a member feature: open the gate (W2.2 wires
-                    // gate-return so the note composer opens after sign-in).
-                    onPress: () => {
-                      track('gate_shown', { action_type: 'sermon_notes' });
-                      setGateVisible(true);
-                    },
-                  },
-                ] as const
-              ).map((tile) => (
-                <Pressable
-                  key={tile.key}
-                  accessibilityRole="button"
-                  accessibilityLabel={tile.label}
-                  accessibilityState={{ disabled: !tile.enabled }}
-                  disabled={!tile.enabled}
-                  onPress={tile.onPress}
-                  style={({ pressed }) => ({
-                    flex: 1,
-                    alignItems: 'center',
-                    gap: 7,
-                    backgroundColor: colors.alt,
-                    borderWidth: 1,
-                    borderColor: colors.cardline,
-                    borderRadius: radius.button,
-                    paddingVertical: 14,
-                    paddingHorizontal: spacing.xs,
-                    opacity: tile.enabled ? (pressed ? 0.85 : 1) : 0.45,
-                  })}
-                >
-                  <Text
-                    style={{
-                      fontFamily: fontFamily.body.bold,
-                      fontSize: 11.5,
-                      color: colors.text,
-                    }}
-                  >
-                    {tile.label}
-                  </Text>
-                </Pressable>
-              ))}
+              <PlayerTile
+                label={t('watch:audioOnly')}
+                hint={
+                  audioPath === null
+                    ? t('watch:audioMissing')
+                    : noVideo
+                      ? t('watch:audioIsTheMessage')
+                      : undefined
+                }
+                state={audioPath === null ? 'off' : audioMode ? 'on' : 'idle'}
+                glyph={(color) => (
+                  <HeadphonesIcon size={icon.xl} color={color} />
+                )}
+                onPress={() => {
+                  if (audioPath === null) {
+                    toast.show(t('watch:audioMissing'));
+                    return;
+                  }
+                  if (noVideo) {
+                    toast.show(t('watch:audioIsTheMessage'));
+                    return;
+                  }
+                  setAudioRequested((on) => !on);
+                }}
+              />
+              <PlayerTile
+                label={t('watch:speed')}
+                value={t('watch:speedValue', {
+                  value: formatSpeedValue(speed, locale),
+                })}
+                hint={audioMode ? undefined : t('watch:speedNeedsAudio')}
+                state={audioMode ? 'idle' : 'off'}
+                glyph={(color) => <SpeedIcon size={icon.xl} color={color} />}
+                onPress={() => {
+                  if (!audioMode) {
+                    toast.show(t('watch:speedNeedsAudio'));
+                    return;
+                  }
+                  setSpeed(nextSpeed(speed));
+                }}
+              />
+              <PlayerTile
+                label={t('watch:notes')}
+                state="idle"
+                glyph={(color) => <NotesIcon size={icon.xl} color={color} />}
+                // Notes are a member feature: open the gate (W2.2 wires
+                // gate-return so the note composer opens after sign-in).
+                onPress={() => {
+                  track('gate_shown', { action_type: 'sermon_notes' });
+                  setGateVisible(true);
+                }}
+              />
             </View>
 
-            {sermon.youtube_id !== null ? (
+            {audioMode ? (
+              <Text
+                style={{
+                  fontFamily: fontFamily.body.regular,
+                  fontSize: 12,
+                  color: colors.muted,
+                  textAlign: 'center',
+                  marginTop: spacing.lg,
+                }}
+              >
+                {t('watch:backgroundNote')}
+              </Text>
+            ) : sermon.youtube_id !== null ? (
               <View style={{ marginTop: spacing.lg }}>
                 <Button
                   label={t('watch:openOnYoutube')}
@@ -439,19 +622,27 @@ export default function Sermon() {
               </View>
             ) : null}
 
-            {/* Visible YouTube attribution (ToS box, docs/spec/08). */}
-            <Text
-              style={{
-                fontFamily: fontFamily.body.regular,
-                fontSize: 12,
-                color: colors.muted,
-                textAlign: 'center',
-                marginTop: spacing.lg,
-                marginBottom: spacing.md,
-              }}
-            >
-              {t('watch:viaYoutube')}
-            </Text>
+            {/* Visible YouTube attribution (ToS box, docs/spec/08), and only
+                where something on screen actually came from YouTube: a message
+                that was never on it borrows nothing to attribute. */}
+            {sermon.youtube_id !== null ? (
+              <Text
+                style={{
+                  fontFamily: fontFamily.body.regular,
+                  fontSize: 12,
+                  color: colors.muted,
+                  textAlign: 'center',
+                  marginTop: spacing.lg,
+                  marginBottom: spacing.md,
+                }}
+              >
+                {audioMode
+                  ? t('watch:artworkViaYoutube')
+                  : t('watch:viaYoutube')}
+              </Text>
+            ) : (
+              <View style={{ height: spacing.md }} />
+            )}
           </>
         )}
       </View>
@@ -464,7 +655,7 @@ export default function Sermon() {
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('watch:gateDismissed')}
         onSignIn={() => {
-          // Gate-return (W2.2): the notes executor itself lands at W3.1.
+          // Gate-return (W2.2): the notes executor itself lands at W3.1 slice 4.
           useGateStore
             .getState()
             .beginGateSignIn({ kind: 'sermon_notes', sermonId: id });

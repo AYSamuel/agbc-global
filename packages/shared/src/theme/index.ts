@@ -122,6 +122,29 @@ export const onInk = {
   scrimSolid: 'rgba(14,20,32,0.62)',
 } as const;
 
+// The SERMON player's media constants (mockup `.pl-scrub .bar` and `.pl-art`, the
+// W3.1 audio frames). Grouped like onInk because none of them sits on a themed
+// surface: the scrub track is a neutral grey the mockup keeps identical in both
+// themes precisely so the unfilled half reads on cream AND on near-black (a themed
+// surface token disappears into one of the two), and the artwork values are drawn
+// over an image or over ink. Values are the frames' literals verbatim.
+export const media = {
+  /** `.pl-scrub .bar` background, behind the gold progress fill. */
+  track: 'rgba(128,128,128,0.28)',
+  /** `.pl-art.none`: the fallback artwork for a message that was never on
+   * YouTube and therefore has no thumbnail at all. */
+  artFrom: '#22375f',
+  artTo: palette.ink,
+  /** `.pl-art .scrim`: the wash over a real thumbnail, which is a VIDEO frame
+   * with no video playing. Tuned ON A DEVICE against a real photo, not against
+   * the mockup's flat placeholder: 58% made it indistinguishable from the
+   * no-thumbnail fallback, and 30% did not read as dimmed at all once a bright
+   * thumbnail was behind it. */
+  artScrim: 'rgba(14,20,32,0.45)',
+  /** `.pl-art .tag`: the pill behind the "Listening" label. */
+  tagBg: 'rgba(14,20,32,0.72)',
+} as const;
+
 // The scripture card is a CONSTANT cream/gold surface in both themes: the
 // mockup's .verse carries no dark override, and the design language names the
 // "cream scripture card" as a signature element. Grouped like onInk because the

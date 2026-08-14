@@ -24,6 +24,7 @@ import type { SvgProps } from 'react-native-svg';
 // mockup's (its SVGs scale stroke with the glyph). Keeping it off is what makes the
 // six identical glyphs render pixel-for-pixel as they did before.
 
+import AudioLines from 'lucide-react-native/icons/audio-lines';
 import Ban from 'lucide-react-native/icons/ban';
 import Bell from 'lucide-react-native/icons/bell';
 import Book from 'lucide-react-native/icons/book';
@@ -44,8 +45,10 @@ import CreditCard from 'lucide-react-native/icons/credit-card';
 import Ellipsis from 'lucide-react-native/icons/ellipsis';
 import FileText from 'lucide-react-native/icons/file-text';
 import Flame from 'lucide-react-native/icons/flame';
+import Gauge from 'lucide-react-native/icons/gauge';
 import Globe from 'lucide-react-native/icons/globe';
 import GraduationCap from 'lucide-react-native/icons/graduation-cap';
+import Headphones from 'lucide-react-native/icons/headphones';
 import Heart from 'lucide-react-native/icons/heart';
 import House from 'lucide-react-native/icons/house';
 import Image from 'lucide-react-native/icons/image';
@@ -59,8 +62,12 @@ import Mail from 'lucide-react-native/icons/mail';
 import MapPin from 'lucide-react-native/icons/map-pin';
 import MessageCircle from 'lucide-react-native/icons/message-circle';
 import Minus from 'lucide-react-native/icons/minus';
+import NotebookPen from 'lucide-react-native/icons/notebook-pen';
+import Pause from 'lucide-react-native/icons/pause';
+import Play from 'lucide-react-native/icons/play';
 import Plus from 'lucide-react-native/icons/plus';
 import RotateCcw from 'lucide-react-native/icons/rotate-ccw';
+import RotateCw from 'lucide-react-native/icons/rotate-cw';
 import Search from 'lucide-react-native/icons/search';
 import Settings from 'lucide-react-native/icons/settings';
 import Share from 'lucide-react-native/icons/share';
@@ -189,6 +196,28 @@ export const InsightsIcon = houseStyle(ChartColumnIncreasing, 'InsightsIcon');
  * both draw Lucide's `house`: restyling the Home TAB must not silently change what a
  * member's home BRANCH looks like (same reasoning as GiveTabIcon vs HeartIcon). */
 export const HomeIcon = houseStyle(House, 'HomeIcon');
+
+// The SERMON player's audio half (W3.1 slice 3). Every one of these is the glyph the
+// frame already draws, verified path-for-path against entry-flow.html rather than
+// chosen by name: the mockup's transport SVGs ARE Lucide's `pause`, `rotate-ccw` and
+// `rotate-cw`, down to the rect geometry.
+export const HeadphonesIcon = houseStyle(Headphones, 'HeadphonesIcon');
+export const SpeedIcon = houseStyle(Gauge, 'SpeedIcon');
+/** The player's Notes tile. Lucide's `notebook-pen` IS the frame's glyph, path
+ * for path: ruled margin plus a pen, which reads as writing ON the message
+ * rather than the generic document `LegalIcon` draws. */
+export const NotesIcon = houseStyle(NotebookPen, 'NotesIcon');
+/** The gold disc's mark when a message is playing as audio (`.pl-art .mark`). */
+export const AudioIcon = houseStyle(AudioLines, 'AudioIcon');
+/** The transport's ±15s pair. Circular arrows, not the `skip-back`/`skip-forward`
+ * track-change glyphs: this seeks WITHIN one message, and there is no next track. */
+export const SkipBackIcon = houseStyle(RotateCcw, 'SkipBackIcon');
+export const SkipForwardIcon = houseStyle(RotateCw, 'SkipForwardIcon');
+// Filled, not stroked, at their call site: the frame draws these solid inside the
+// gold disc (`fill="#14213d" stroke="none"`), which is what a play/pause mark reads
+// as everywhere. Lucide honours a `fill` prop, so the call site passes one.
+export const PlayIcon = houseStyle(Play, 'PlayIcon');
+export const PauseIcon = houseStyle(Pause, 'PauseIcon');
 
 // A screen that genuinely needs a one-off glyph imports `react-native-svg` directly
 // (it is already a direct dependency) and draws it next to its own component, rather

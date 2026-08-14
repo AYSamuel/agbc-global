@@ -2,11 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import type { PlaybackSpeed, PositionSample } from './audio';
+
 // Local playback positions (decision 2026-07-20, docs/spec/08): losing your
 // place because a call came in is not acceptable, signed in or not. This store
 // is the DEVICE-LOCAL half: it works for guests and members alike and survives
-// process death. Members additionally sync `playback_positions` server-side so
-// the position follows across devices (W3.1); that layer wins when present.
+// process death. Members additionally sync `playback_positions` server-side
+// (W3.1), and `preferredPosition` decides between the two on open.
 
 /** Below this, the user has barely started: not worth saving or restoring. */
 export const MIN_RESUME_SEC = 15;
@@ -15,21 +17,26 @@ export const END_GRACE_SEC = 30;
 /** Bounded: an unbounded map would grow with every sermon ever opened. */
 const MAX_ENTRIES = 100;
 
-export interface PlaybackEntry {
-  positionSec: number;
-  updatedAt: number;
-}
+/** One name for the shape, whichever layer wrote it (see `preferredPosition`). */
+export type PlaybackEntry = PositionSample;
 
 interface PlaybackState {
   positions: Record<string, PlaybackEntry>;
+  /** Sticky across sermons: a member who listens at 1.25x means it every time. */
+  speed: PlaybackSpeed;
   save: (sermonId: string, positionSec: number, now?: number) => void;
   clear: (sermonId: string) => void;
+  setSpeed: (speed: PlaybackSpeed) => void;
 }
 
 export const usePlaybackStore = create<PlaybackState>()(
   persist(
     (set) => ({
       positions: {},
+      speed: 1,
+      setSpeed: (speed) => {
+        set({ speed });
+      },
       save: (sermonId, positionSec, now = Date.now()) => {
         set((state) => ({
           positions: prunePositions(
