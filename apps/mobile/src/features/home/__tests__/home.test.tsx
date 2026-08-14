@@ -155,7 +155,7 @@ const sermonRow = {
   title: 'Grace That Carries You',
   speaker: 'Rev Olayinka Ademiluka',
   youtube_id: 'yt-1',
-  audio_url: null,
+  audio_path: null,
   duration_sec: 2280,
   thumbnail_url: '',
   series: null,

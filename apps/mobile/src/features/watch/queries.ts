@@ -13,7 +13,8 @@ export interface SermonSummary {
   title: string;
   speaker: string;
   youtube_id: string | null;
-  audio_url: string | null;
+  /** Object path in the private sermon-audio bucket; playback URLs are minted signed (W3.1). */
+  audio_path: string | null;
   duration_sec: number | null;
   thumbnail_url: string;
   series: string | null;
@@ -26,7 +27,7 @@ export interface SermonSummary {
 }
 
 const SERMON_FIELDS =
-  'id, title, speaker, youtube_id, audio_url, duration_sec, thumbnail_url, series, published_at, is_live, live_checked_at, kind, status';
+  'id, title, speaker, youtube_id, audio_path, duration_sec, thumbnail_url, series, published_at, is_live, live_checked_at, kind, status';
 
 export const sermonsQueryOptions = {
   queryKey: ['sermons'] as const,

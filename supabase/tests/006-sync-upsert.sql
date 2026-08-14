@@ -22,10 +22,12 @@ select is(
   (select title from public.sermons where youtube_id = 'tap-yt-1'),
   'Retitled', 'the replay updated sync-owned fields');
 
--- Sync-owned fields ONLY: audio_url survives (dashboard-owned), and a null
--- source duration keeps the stored one (RSS mode carries none).
+-- Sync-owned fields ONLY: audio_path survives (dashboard-owned; renamed from
+-- audio_url in W3.1), and a null source duration keeps the stored one (RSS mode
+-- carries none). Written by the trusted path (no actor), so the shelf's
+-- existence guard does not apply; 034 owns that boundary.
 update public.sermons
-  set audio_url = 'https://example.test/audio/keep.mp3'
+  set audio_path = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa6.mp3'
   where youtube_id = 'tap-yt-1';
 select is(
   public.sync_upsert_sermons('[{"youtube_id":"tap-yt-1","title":"Retitled",
@@ -33,8 +35,8 @@ select is(
     "duration_sec":null}]'::jsonb),
   1, 'the null-duration replay still upserts the row');
 select is(
-  (select audio_url from public.sermons where youtube_id = 'tap-yt-1'),
-  'https://example.test/audio/keep.mp3',
+  (select audio_path from public.sermons where youtube_id = 'tap-yt-1'),
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa6.mp3',
   'the upsert never touches dashboard-owned fields');
 select is(
   (select duration_sec from public.sermons where youtube_id = 'tap-yt-1'),
