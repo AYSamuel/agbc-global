@@ -391,7 +391,30 @@
   .pl-transport .sk{background:none;border:none;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:700;cursor:pointer}
   .pl-transport .pp{width:64px;height:64px;border-radius:50%;background:var(--gold);color:#14213d;border:none;display:grid;place-items:center;cursor:pointer}
   .pl-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:auto}
-  .pl-tile{background:var(--alt);border:1px solid var(--border);border-radius:14px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--text);font-size:11.5px;font-weight:700}
+  /* justify-content:center added W3.1 slice 3: the grid stretches all three tiles to
+     the tallest one, and Speed is three lines deep (icon, label, value) where the other
+     two are two, so without it their contents sat at the top of a taller box and read
+     as unseated. */
+  .pl-tile{background:var(--alt);border:1px solid var(--border);border-radius:14px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--text);font-size:11.5px;font-weight:700}
+  /* W3.1: the tile row carries three states now. `on` is the same tinted-gold treatment
+     .glory.on and .glorybig.on use, for the same reason: a mode the member turned on, not
+     a button waiting to be pressed. `off` is a control that exists but has nothing to act
+     on (no audio uploaded yet, or speed while the YouTube embed owns playback). */
+  .pl-tile.on{background:rgba(255,207,74,.20);border-color:var(--gold)}
+  .pl-tile.off{opacity:.45}
+  .pl-tile .val{font-size:11px;font-weight:800;color:var(--eye)}
+  /* Audio mode: what stands where the embed was. A message that IS on YouTube shows its
+     own thumbnail under a scrim (dimmed, because nothing is playing there); a message that
+     was never on YouTube has no thumbnail at all (the dashboard inserts those rows with
+     thumbnail_url ''), so it falls back to the branded gradient the player already uses. */
+  .pl-art{border-radius:16px;aspect-ratio:16/10;position:relative;margin-bottom:18px;overflow:hidden;background:linear-gradient(135deg,#14213d,#2f6fed)}
+  .pl-art.none{background:linear-gradient(160deg,#22375f,#0e1420)}
+  /* Tuned against a real photo on the device, not against this frame's flat
+     placeholder: .58 rendered as the same navy as the no-thumbnail fallback beside it,
+     and .30 did not read as dimmed at all once a bright thumbnail was behind it. */
+  .pl-art .scrim{position:absolute;inset:0;background:rgba(14,20,32,.45)}
+  .pl-art .mark{position:absolute;top:calc(50% - 32px);left:calc(50% - 32px);width:64px;height:64px;border-radius:50%;background:var(--gold);color:#14213d;display:grid;place-items:center}
+  .pl-art .tag{position:absolute;left:14px;bottom:14px;background:rgba(14,20,32,.72);color:#fff;border-radius:100px;padding:6px 12px;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
   .pl-note{text-align:center;font-size:12px;color:var(--muted);margin-top:16px}
   .live-badge{background:var(--red);color:#fff;border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:6px}
   .live-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff}
@@ -1541,6 +1564,80 @@
   <div class="gallery t-dark" id="w210Dark"></div>
   <script>(function(){var l=document.getElementById('w210Light'),d=document.getElementById('w210Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
+  <h2 class="ghead" id="w31">&#127911; W3.1 &middot; Audio mode &middot; light</h2>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>SERMON (video)</b> &#8594; tap <b>Audio only</b> &#8594; the embed unmounts and <b>these</b> take its place. A message that was never on YouTube opens in the right-hand state directly. The video state itself is edited in place in the Light mode gallery below: SERMON is one screen, not four references.</p>
+  <p class="alwayson" style="padding:0 20px 10px">Two decisions this pair records (taken with Ayo 2026-08-14). <b>The artwork is the message's own thumbnail, dimmed:</b> a scrim, because the picture is a video frame and nothing is playing there. A message that was never on YouTube has no thumbnail at all (the dashboard inserts those rows with <code>thumbnail_url</code> empty, <code>sermonAudio.ts</code>), so it falls back to the branded gradient the player already uses, and the same fallback is what the lock screen gets. <b>Speed took the Download tile's slot:</b> <code>08</code> specifies play/pause/seek, &plusmn;15s, speed, notes, save, share and open-on-YouTube, and never download; the tile has sat dimmed since W1.3, and speed had no home anywhere in the mockup. The transport row belongs to audio alone: while the YouTube embed is up it draws its own controls (W1.3), so the scrub, the &plusmn;15s pair and the speed tile all arrive with this mode and are absent or dimmed without it.</p>
+  <div class="gallery t-light" id="w31Light">
+
+    <!-- SERMON · audio mode, message also on YouTube -->
+    <div class="device">
+      <p class="name"><b>SERMON</b> &middot; audio mode &middot; a message that is also on YouTube</p>
+      <div class="phone">
+        <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="player">
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></div>
+          <div class="pl-art">
+            <span class="scrim"></span>
+            <span class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg></span>
+            <span class="tag">Listening</span>
+          </div>
+          <span class="goldeye">Sunday &middot; AGBC Berlin</span>
+          <div class="pl-title">Grace for the Journey</div>
+          <div class="pl-speaker">Pastor Esther Olayinka</div>
+          <div class="pl-scrub"><div class="bar"><i></i></div><div class="times"><span>14:20</span><span>-23:40</span></div></div>
+          <div class="pl-transport">
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span>15s</span></button>
+            <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
+          </div>
+          <div class="pl-tiles">
+            <div class="pl-tile on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span><span class="val">&nbsp;</span></div>
+            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span>Speed</span><span class="val">1x</span></div>
+            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span><span class="val">&nbsp;</span></div>
+          </div>
+          <div class="pl-note">Plays in the background &amp; on your lock screen</div>
+          <div class="pl-note" style="margin-top:8px">Thumbnail and title via YouTube</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERMON · audio mode, never on YouTube -->
+    <div class="device">
+      <p class="name"><b>SERMON</b> &middot; audio mode &middot; a message that was never on YouTube</p>
+      <div class="phone">
+        <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="player">
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></div>
+          <div class="pl-art none">
+            <span class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg></span>
+            <span class="tag">Listening</span>
+          </div>
+          <span class="goldeye">Midweek &middot; AGBC Glasgow</span>
+          <div class="pl-title">The Table He Sets</div>
+          <div class="pl-speaker">Pastor AY Samuel</div>
+          <div class="pl-scrub"><div class="bar"><i style="width:8%"></i></div><div class="times"><span>2:41</span><span>-31:19</span></div></div>
+          <div class="pl-transport">
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span>15s</span></button>
+            <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
+          </div>
+          <div class="pl-tiles">
+            <div class="pl-tile on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span><span class="val">&nbsp;</span></div>
+            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span>Speed</span><span class="val">1.25x</span></div>
+            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span><span class="val">&nbsp;</span></div>
+          </div>
+          <div class="pl-note">Plays in the background &amp; on your lock screen</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="note" style="max-width:1400px"><b>No frames, on purpose.</b> The three tile refusals are toasts (the app&#39;s <code>Toast</code> primitive, announced through a live region, no frame by the same precedent as the check-in toasts): tapping <b>Audio only</b> on a message whose MP3 is not up yet says &#8220;Audio for this message isn&#39;t up yet.&#8221;; tapping it on a message that was never on YouTube says &#8220;This message is audio only.&#8221;; tapping <b>Speed</b> while the video is up says &#8220;Switch to Audio only to change speed.&#8221; <b>Loading, error and offline</b> keep their app-wide <code>STATE &middot;</code> frames. <b>Audio-only sermons carry no YouTube attribution line</b> and no &#8220;Open on YouTube&#8221; button, because nothing on that screen came from YouTube.</p>
+
+  <h2 class="ghead">&#127769; W3.1 &middot; Audio mode &middot; dark</h2>
+  <div class="gallery t-dark" id="w31Dark"></div>
+  <script>(function(){var l=document.getElementById('w31Light'),d=document.getElementById('w31Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>
   <p class="flow">FLOW &nbsp;·&nbsp; <b>Splash</b> &#8594; <b>Welcome</b> &#8594; <b>Pick branch</b> &#8594; <b>Language</b> &#8594; <b>Home (guest)</b></p>
   <div class="gallery t-light" id="lightGallery">
@@ -2571,9 +2668,12 @@
             <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
           </div>
           <div class="pl-tiles">
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span>Download</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span></div>
+            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span><span class="val">&nbsp;</span></div>
+            <!-- W3.1: Speed took this slot from Download, which 08 never specified. Dimmed
+                 here because the YouTube embed owns playback while it is up; it comes alive
+                 in the audio frames (W3.1 section, top of file). -->
+            <div class="pl-tile off"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span>Speed</span><span class="val">&nbsp;</span></div>
+            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span><span class="val">&nbsp;</span></div>
           </div>
           <div class="pl-note">Plays in the background &amp; on your lock screen</div>
         </div>

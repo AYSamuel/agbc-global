@@ -28,10 +28,43 @@ let mockParams: Record<string, string> = {};
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: mockBack }),
   useLocalSearchParams: () => mockParams,
+  useFocusEffect: (effect: () => (() => void) | undefined) => {
+    jest
+      .requireActual<typeof import('react')>('react')
+      .useEffect(effect, [effect]);
+  },
 }));
 
 jest.mock('expo-localization', () => ({
   getLocales: jest.fn(() => [{ languageCode: 'en' }]),
+}));
+
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return --
+   documented jest.mock factory shape */
+jest.mock('expo-audio', () => require('@/test/expoAudio'));
+/* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return */
+
+// The audio slice's own reads. This file covers the VIDEO half of SERMON; the
+// audio half has its own suite in sermonAudio.test.tsx.
+jest.mock('@/features/watch/audioSource', () => ({
+  useSermonAudioUrlQuery: () => ({
+    data: undefined,
+    isError: false,
+    refetch: jest.fn(),
+  }),
+}));
+jest.mock('@/features/watch/serverPosition', () => ({
+  useServerPositionQuery: () => ({ data: null, isPending: false }),
+  saveServerPosition: jest.fn(() => Promise.resolve(true)),
+}));
+
+// SERMON reads the session to decide whether to sync the position server-side.
+const mockAuthState = jest.fn<{ status: string }, []>(() => ({
+  status: 'guest',
+}));
+jest.mock('@/state/auth', () => ({
+  useAuthStore: (selector: (s: unknown) => unknown) =>
+    selector(mockAuthState()),
 }));
 
 jest.mock('expo-web-browser', () => ({
@@ -430,7 +463,7 @@ describe('SERMON player', () => {
     expect(screen.getByText('Videos play via YouTube')).toBeOnTheScreen();
   });
 
-  test('the audio tile is disabled without audio and Notes opens the gate', async () => {
+  test('the audio tile explains itself without audio, and Notes opens the gate', async () => {
     mockParams = { id: 'aaa' };
     mockSermon.mockReturnValue({
       data: sermon({ audio_path: null }),
@@ -438,7 +471,17 @@ describe('SERMON player', () => {
       refetch: jest.fn(),
     });
     await renderScreen(<Sermon />);
-    expect(screen.getByRole('button', { name: 'Audio only' })).toBeDisabled();
+    // Dimmed but answerable (W3.1): 08 wants the unavailable toggle to say WHY,
+    // so the reason is on the hint for a screen reader and on a toast for a tap.
+    const audioTile = screen.getByRole('button', { name: 'Audio only' });
+    expect(audioTile).not.toBeDisabled();
+    expect(screen.getByHintText("Audio for this message isn't up yet.")).toBe(
+      audioTile,
+    );
+    await fireEvent.press(audioTile);
+    expect(
+      screen.getByText("Audio for this message isn't up yet."),
+    ).toBeOnTheScreen();
     // Notes is a member feature: it opens the gate (not a bare push to /auth), so
     // W2.2 can wire gate-return through the sheet.
     await fireEvent.press(screen.getByRole('button', { name: 'Notes' }));
@@ -520,19 +563,22 @@ describe('SERMON player', () => {
     expect(mockBack).toHaveBeenCalled();
   });
 
-  test('an audio-first sermon without video explains itself', async () => {
-    mockParams = { id: 'audio' };
+  // A row with a video opens on the video; a row with only audio opens in audio
+  // mode (sermonAudio.test.tsx). This is the third case: neither, which is broken
+  // data rather than a state anyone designed, and still must not dead-end.
+  test('a sermon with neither a video nor audio still says something', async () => {
+    mockParams = { id: 'empty' };
     mockSermon.mockReturnValue({
-      data: sermon({ id: 'audio', youtube_id: null, audio_path: 'x.mp3' }),
+      data: sermon({ id: 'empty', youtube_id: null, audio_path: null }),
       isError: false,
       refetch: jest.fn(),
     });
     await renderScreen(<Sermon />);
     expect(
-      screen.getByText(
-        'This message is audio-first. Listening arrives in an upcoming update.',
-      ),
+      screen.getByText("This message isn't ready to play yet."),
     ).toBeOnTheScreen();
+    // And no YouTube attribution, because nothing here came from YouTube.
+    expect(screen.queryByText('Videos play via YouTube')).not.toBeOnTheScreen();
   });
 });
 
