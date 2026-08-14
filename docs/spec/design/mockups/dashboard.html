@@ -175,6 +175,18 @@
   .who2 .sb{font-size:12.5px;color:var(--muted);margin-top:2px}
   .arrow{color:var(--muted);flex:none}
   .rail a .ct{margin-left:auto;font-size:10.5px;font-weight:800;background:var(--btnBg);color:var(--btnText);border-radius:100px;padding:2px 7px;min-width:19px;text-align:center}
+
+  /* W3.1 · Sermon audio. .drop mirrors entry-flow's .addphoto (the dashed invitation, at
+     this file's radius scale), .prog is entry-flow's .pbar grown to desktop, and
+     .pill.good is the green state wash this file never needed before: nothing in
+     moderation is ever "done and healthy", and a shelved audio is. Green values verbatim
+     from entry-flow (.pill.live), which carries no dark override either. */
+  .drop{border:1px dashed var(--border);border-radius:14px;background:var(--card);padding:24px 18px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;color:var(--muted);font-weight:700;font-size:14px}
+  .drop b{color:var(--text);font-weight:800;font-size:14px}
+  .drop .sub{font-size:12px;color:var(--muted)}
+  .prog{height:8px;border-radius:100px;background:var(--alt);overflow:hidden;margin-top:10px}
+  .prog i{display:block;height:100%;border-radius:100px;background:var(--blue)}
+  .pill.good{background:rgba(31,138,91,.14);color:var(--green)}
 </style>
 
 <div class="stage t-light">
@@ -986,6 +998,449 @@
   <p class="ghead">W2.7 slice 4 &middot; DAILY VERSES &middot; dark</p>
   <div class="gallery t-dark" id="w27vDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
   <script>(function(){var l=document.getElementById('w27vLight'),d=document.getElementById('w27vDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
+  <p class="ghead">W3.1 &middot; SERMON AUDIO &middot; admin only, the weekly shelf</p>
+  <p class="gnote"><span>The "listen while driving" promise (<b>08</b>) exists only for a message
+    whose MP3 was actually shelved, and this is where the shelf is fed: one upload per service,
+    every week, a standing media-team task (<b>18</b> assigns its owner before launch). YouTube
+    cannot substitute: background listening is a Premium feature and pulling the audio out of a
+    video breaks YouTube's terms. The bucket is private and the app mints 24-hour signed links
+    (decision 2026-08-14), so a copied URL dies within a day. Two flows live here: attach audio
+    to a synced message, and create a message that was never on YouTube at all.</span></p>
+  <div class="gallery" id="w31aLight">
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO</b> &middot; the shelf &middot; Sunday's message is missing its audio and the screen says so</p>
+      <!-- Modeled on VERSES: the banner carries the one urgent fact (the weekly task not yet
+           done), the stats say how the shelf stands, the guide teaches the format once, and
+           the list is for scanning, one affordance per row. The rail: Sermon audio is the
+           first row from a later phase to light up, so the "Phase A" section title retires
+           (a phase name over a mixed list would be false); lit rows are simply the
+           dashboard, and "Later" keeps the dimmed tail. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a class="on" href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Sermon audio</h2>
+                <p class="scope">Every branch &middot; one shelf</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>Sunday's message has no audio yet</h4>
+                <p>The Grace That Finds You is on YouTube, so members can watch it. Listening in
+                  the background, the thing members actually asked for, only exists once its MP3
+                  is on the shelf.</p>
+              </div>
+              <span class="act"><button class="btn outline" style="white-space:nowrap">Add audio</button></span>
+            </div>
+
+            <div class="mlabel">The shelf today</div>
+            <div class="stats" style="margin-top:0">
+              <div class="ps"><div class="n">31</div><div class="l">With audio</div></div>
+              <div class="ps low"><div class="n">3</div><div class="l">Without audio</div></div>
+              <div class="ps"><div class="n">2</div><div class="l">Audio only</div></div>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9834;</span>
+              <p><b>Export speech quality, not music quality.</b> 64&#8211;96 kbps mono MP3 sounds
+                identical for a preached message and halves both storage and every member's data.
+                A full service lands near 25 MB; the shelf takes up to 150 MB.</p>
+            </div>
+
+            <div class="actions" style="border:none;padding-top:18px">
+              <button class="btn outline">Add an audio-only message</button>
+            </div>
+
+            <div class="seg">
+              <button class="on">All</button>
+              <button>Without audio 3</button>
+              <button>With audio 31</button>
+              <button>Audio only 2</button>
+            </div>
+
+            <div class="mlabel">Recent messages &middot; newest first</div>
+
+            <!-- One affordance per row, the VERSES lesson: this list is for scanning, and the
+                 destructive actions live on the screen "Manage" opens, where the file being
+                 destroyed is on screen to see. -->
+            <div class="item">
+              <div class="top">
+                <span class="pill late">No audio</span>
+                <span class="pill lang">Video</span>
+                <span class="spacer"></span>
+                <span class="time">Sunday 9 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Add audio</button>
+              </div>
+              <div class="body">The Grace That Finds You</div>
+              <div class="meta">
+                <span>Pastor Olayinka</span><span class="dot"></span><span>47 min on YouTube</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill late">No audio</span>
+                <span class="pill lang">Live replay</span>
+                <span class="spacer"></span>
+                <span class="time">Sunday 9 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Add audio</button>
+              </div>
+              <div class="body">Sunday Service Live &middot; 9 August</div>
+              <div class="meta">
+                <span>AGBC Glasgow</span><span class="dot"></span><span>1 h 58 min on YouTube</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill good">Audio &middot; 38 min</span>
+                <span class="pill lang">Audio only</span>
+                <span class="spacer"></span>
+                <span class="time">Wednesday 6 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Manage</button>
+              </div>
+              <div class="body">Midweek: Prayer That Holds</div>
+              <div class="meta">
+                <span>Pastor Olayinka</span><span class="dot"></span><span>19 MB</span><span class="dot"></span><span>never on YouTube</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill good">Audio &middot; 42 min</span>
+                <span class="pill lang">Video</span>
+                <span class="spacer"></span>
+                <span class="time">Sunday 2 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Manage</button>
+              </div>
+              <div class="body">A Table in the Wilderness</div>
+              <div class="meta">
+                <span>Pastor Olayinka</span><span class="dot"></span><span>27 MB</span><span class="dot"></span><span>shelved 4 August</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-ATTACH</b> &middot; add the audio &middot; before a file is chosen</p>
+      <!-- No Save button yet, deliberately: the house rule is that a primary action operating
+           on data that is not there yet is HIDDEN, not disabled. Save appears with the checked
+           state (next frame). Speaker and series arrive prefilled from the message row; the
+           upload goes straight from the browser to storage under the admin's own session, so
+           a 30 MB file never rides through the dashboard server. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/attach</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>Add the audio</h2>
+                <p class="scope">The Grace That Finds You &middot; Sunday 9 August</p>
+              </div>
+            </div>
+            <div class="field" style="max-width:640px">
+              <span class="lab">The file</span>
+              <div class="drop">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+                <b>Drop the MP3 here, or browse</b>
+                <span class="sub">MP3 or M4A &middot; up to 150 MB</span>
+              </div>
+              <div class="hint">Straight from your editing export. Speech quality (64&#8211;96 kbps
+                mono) is plenty; there is no need to re-encode a bigger file if that is what you
+                have.</div>
+            </div>
+            <div class="field">
+              <span class="lab">Speaker</span>
+              <div class="inp">Pastor Olayinka</div>
+            </div>
+            <div class="field">
+              <span class="lab">Series</span>
+              <div class="inp ph">None</div>
+              <div class="hint">Both come filled in from the message and land on the card members
+                see. Fix them here if the sync guessed wrong.</div>
+            </div>
+            <div class="actions" style="border:none">
+              <button class="btn ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-ATTACH</b> &middot; uploading, checked, or refused</p>
+      <!-- Three moments of the same screen. While uploading, the number is honest (MB, not a
+           spinner) and leaving is named as the cost. "Checked" is the browser reading the
+           file's own duration; the server repeats the real check (magic bytes, never the
+           file's name or declared type) when Save is pressed, so a renamed .exe dies at the
+           save with nothing kept. That refusal is the third moment. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/attach</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>Add the audio</h2>
+                <p class="scope">The Grace That Finds You &middot; Sunday 9 August</p>
+              </div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">Uploading</span>
+              <div class="inp" style="display:block">
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>sunday-message.mp3</span><span style="color:var(--muted)">18 of 29 MB</span></div>
+                <div class="prog"><i style="width:62%"></i></div>
+              </div>
+              <div class="hint">Keep this tab open until it finishes. Closing it stops the upload;
+                nothing half-sent is ever shown to members.</div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">Uploaded and read</span>
+              <div class="banner" style="margin-top:0">
+                <span class="bi" style="color:var(--green)">&#10003;</span>
+                <div>
+                  <h4>42 minutes of audio, 29 MB</h4>
+                  <p>Read from the file itself. Saving puts Listen on this message in the app.</p>
+                </div>
+              </div>
+              <div class="actions" style="border:none;padding-top:14px">
+                <button class="btn primary">Save the audio</button>
+                <button class="btn ghost">Start over</button>
+              </div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">If the file is not what it claims</span>
+              <div class="banner bad" style="margin-top:0">
+                <span class="bi">&#9888;</span>
+                <div>
+                  <h4>That file is not an MP3 or M4A</h4>
+                  <p>The file's contents were checked, not its name. Nothing was saved and the
+                    upload was discarded; export the audio again and retry.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-MANAGE</b> &middot; replace or remove &middot; the file is on screen to see</p>
+      <!-- The destructive pair lives here and only here (the VERSES rule). The order the copy
+           promises is the order the database enforces: removal clears the message's reference
+           first and deletes the file second, and a file still referenced simply refuses to
+           delete. Files are write-once, so Replace is a new file swapped in, never bytes
+           changed under a link somebody may be listening to. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/manage</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>The audio on the shelf</h2>
+                <p class="scope">A Table in the Wilderness &middot; Sunday 2 August</p>
+              </div>
+            </div>
+            <div class="item" style="max-width:640px">
+              <div class="top">
+                <span class="pill good">Audio &middot; 42 min</span>
+                <span class="spacer"></span>
+                <span class="time">shelved 4 August</span>
+              </div>
+              <div class="meta" style="margin-top:6px">
+                <span>27 MB</span><span class="dot"></span><span>MP3</span><span class="dot"></span><span>by Pastor AY Samuel</span>
+              </div>
+            </div>
+            <div class="hint" style="max-width:60ch">Removing takes Listen out of the app at once.
+              Anyone mid-listen finishes their session (their link lives for up to a day), and
+              nobody new can start. Replacing swaps a fresh file in the same way.</div>
+            <div class="actions">
+              <button class="btn outline">Replace the file</button>
+              <span class="spacer"></span>
+              <button class="btn danger">Remove the audio</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-NEW</b> &middot; an audio-only message &middot; it was never on YouTube</p>
+      <!-- The second flow: a message that exists only as our own recording (a midweek word, a
+           prayer meeting). It appears in Watch like any other message, with an audio cover in
+           place of a video player; the app has rendered that state since W1.3. Date preached
+           decides where it sorts in the rails. The same hidden-Save rule applies: the frame
+           shows the moment after the upload passed, so Save is present here. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/new</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>An audio-only message</h2>
+                <p class="scope">Sermon audio</p>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">Title</span>
+              <div class="inp">Midweek: The Quiet Work of God</div>
+            </div>
+            <div class="field">
+              <span class="lab">Speaker</span>
+              <div class="inp">Pastor Olayinka</div>
+            </div>
+            <div class="field">
+              <span class="lab">Series</span>
+              <div class="inp ph">None</div>
+            </div>
+            <div class="field">
+              <span class="lab">Date preached</span>
+              <div class="inp">2026-08-13</div>
+              <div class="hint">Decides where it appears in the app's rails. It shows an audio
+                cover instead of a video, and everything else works the same: resume, save,
+                notes.</div>
+            </div>
+            <div class="field" style="max-width:640px">
+              <span class="lab">The file</span>
+              <div class="banner" style="margin-top:0">
+                <span class="bi" style="color:var(--green)">&#10003;</span>
+                <div>
+                  <h4>38 minutes of audio, 19 MB</h4>
+                  <p>midweek-13-08.m4a &middot; read from the file itself.</p>
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn primary">Create the message</button>
+              <button class="btn ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO</b> &middot; empty &middot; the sync has not run yet</p>
+      <!-- Empty means a fresh environment before the first nightly sync, which is the one
+           moment this screen has no list to show. The audio-only door stays open: our own
+           recordings never wait on YouTube. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead"><div><h2>Sermon audio</h2><p class="scope">Every branch &middot; one shelf</p></div></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+              <h3>No messages here yet</h3>
+              <p>The nightly sync brings the channel's messages in overnight. An audio-only
+                message can be added right now; it does not wait on YouTube.</p>
+              <div class="actions" style="border:none;justify-content:center"><button class="btn primary">Add an audio-only message</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-LOADING</b> and <b>SERMON-AUDIO-ERROR</b> &middot; the shelf counts never guess</p>
+      <!-- Same discipline as VERSES: the stat numbers are skeletons while loading rather than
+           zeros, because "0 with audio" flashing into "31" is the one wrong number this screen
+           must never print. Offline disables uploading by omission (the banner says so), never
+           with a dead button under a skeleton. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:200px;height:26px"></div>
+            <div class="skel" style="width:170px;height:14px;margin-top:9px"></div>
+            <div class="stats" style="margin-top:18px">
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:34px;height:22px"></div><div class="skel" style="width:56px;height:10px;margin-top:7px"></div></div>
+            </div>
+            <div class="mlabel">Recent messages &middot; newest first</div>
+            <div class="item">
+              <div class="skel" style="width:96px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:100%;height:14px;margin-top:12px"></div>
+              <div class="skel" style="width:60%;height:14px;margin-top:8px"></div>
+            </div>
+            <div class="banner bad" style="margin-top:20px">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>We could not load the shelf</h4>
+                <p>That is on us, not you. Nothing was uploaded or removed in the meantime.</p>
+              </div>
+              <span class="act"><button class="btn outline">Try again</button></span>
+            </div>
+            <div class="banner off" style="margin-top:12px">
+              <span class="bi">&#9711;</span>
+              <div>
+                <h4>You are offline</h4>
+                <p>Showing the shelf as it was 4 minutes ago. Uploading is disabled until you are
+                  back, so a file cannot be half sent.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-REFUSED</b> &middot; a leader followed the rail &middot; never a dead end</p>
+      <!-- The same shape as VERSES-REFUSED: the rail shows Sermon audio to every staff caller,
+           the shelf is admin work (17 §4, one shelf serves every branch), and the refusal
+           names what IS theirs and routes onward. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead"><div><h2>Sermon audio</h2><p class="scope">Every branch &middot; one shelf</p></div></div>
+            <div class="banner off">
+              <span class="bi">&#9711;</span>
+              <div>
+                <h4>The shelf is kept by a ministry admin</h4>
+                <p>One shelf serves every branch, like the verse schedule, so it is stocked
+                  centrally rather than per branch. Nothing is wrong with your account.</p>
+              </div>
+              <span class="act"><button class="btn outline">Go to your queue</button></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="ghead">W3.1 &middot; SERMON AUDIO &middot; dark</p>
+  <div class="gallery t-dark" id="w31aDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
+  <script>(function(){var l=document.getElementById('w31aLight'),d=document.getElementById('w31aDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
   <p class="ghead">1 · QUEUE (leader) &middot; scoped to one branch</p>
   <p class="gnote">A leader sees only their own branch, and the scope line says so out loud rather

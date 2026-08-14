@@ -13,12 +13,17 @@ import type { ReactNode } from 'react';
  *  - `info`    blue. A neutral classification: a prayer request.
  *  - `quiet`   the alt surface. Metadata rather than news: a language, a past move.
  *  - `urgent`  red. Something is late.
+ *  - `good`    green. Done and healthy: audio on the shelf. The fifth tone this file said
+ *              would take a conversation, and it took one: nothing in moderation is ever
+ *              "done and healthy", so the meaning genuinely did not exist here until the
+ *              sermon-audio frames (W3.1, approved 2026-08-14) needed it. Wash verbatim
+ *              from entry-flow's `.pill.live`, which carries no dark override either.
  *
  * If a future surface needs a tone that is none of these, that is worth a conversation
- * rather than a fifth colour: four is already the point at which a reader stops decoding
+ * rather than a sixth colour: five is already the point at which a reader stops decoding
  * them and starts ignoring them.
  */
-export type PillTone = 'notice' | 'info' | 'quiet' | 'urgent';
+export type PillTone = 'notice' | 'info' | 'quiet' | 'urgent' | 'good';
 
 const TONES: Record<PillTone, string> = {
   // Washes taken from the mockup's `.pill` rules; the gold uses the deep token because
@@ -27,6 +32,7 @@ const TONES: Record<PillTone, string> = {
   info: 'bg-[rgba(47,111,237,0.14)] text-blue',
   quiet: 'bg-alt text-muted',
   urgent: 'bg-[rgba(224,52,44,0.14)] text-danger',
+  good: 'bg-[rgba(31,138,91,0.14)] text-success',
 };
 
 export function Pill({
