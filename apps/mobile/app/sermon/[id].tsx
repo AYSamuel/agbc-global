@@ -230,7 +230,7 @@ export default function Sermon() {
           <EmptyState
             title={t('watch:rotTitle')}
             body={
-              sermon.audio_url ? t('watch:rotBodyAudio') : t('watch:rotBody')
+              sermon.audio_path ? t('watch:rotBodyAudio') : t('watch:rotBody')
             }
             actionLabel={t('watch:backToWatch')}
             onAction={() => {
@@ -365,7 +365,7 @@ export default function Sermon() {
                   {
                     key: 'audio',
                     label: t('watch:audioOnly'),
-                    enabled: sermon.audio_url !== null,
+                    enabled: sermon.audio_path !== null,
                     onPress: () => {
                       toast.show(t('watch:comingWithAudio'));
                     },

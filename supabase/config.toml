@@ -114,8 +114,10 @@ port = 55324
 
 [storage]
 enabled = true
-# The maximum file size allowed (e.g. "5MB", "500KB").
-file_size_limit = "50MiB"
+# The maximum file size allowed (e.g. "5MB", "500KB"). The global ceiling; per-bucket
+# limits refine it downward. 200MiB clears the sermon-audio bucket's 150MiB cap (W3.1);
+# PROD's equivalent is a dashboard setting raised at the `19` cutover (Pro plan, P6).
+file_size_limit = "200MiB"
 
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]

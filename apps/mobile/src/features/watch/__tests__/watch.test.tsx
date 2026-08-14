@@ -114,7 +114,7 @@ function sermon(overrides: Partial<SermonSummary> = {}): SermonSummary {
     title: 'Grace That Carries You',
     speaker: 'Rev Olayinka Ademiluka',
     youtube_id: 'yt-1',
-    audio_url: null,
+    audio_path: null,
     duration_sec: 2280,
     thumbnail_url: '',
     series: null,
@@ -433,7 +433,7 @@ describe('SERMON player', () => {
   test('the audio tile is disabled without audio and Notes opens the gate', async () => {
     mockParams = { id: 'aaa' };
     mockSermon.mockReturnValue({
-      data: sermon({ audio_url: null }),
+      data: sermon({ audio_path: null }),
       isError: false,
       refetch: jest.fn(),
     });
@@ -523,7 +523,7 @@ describe('SERMON player', () => {
   test('an audio-first sermon without video explains itself', async () => {
     mockParams = { id: 'audio' };
     mockSermon.mockReturnValue({
-      data: sermon({ id: 'audio', youtube_id: null, audio_url: 'x.mp3' }),
+      data: sermon({ id: 'audio', youtube_id: null, audio_path: 'x.mp3' }),
       isError: false,
       refetch: jest.fn(),
     });

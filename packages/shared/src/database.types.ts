@@ -1480,7 +1480,7 @@ export type Database = {
       }
       sermons: {
         Row: {
-          audio_url: string | null
+          audio_path: string | null
           branch_id: string | null
           created_at: string
           duration_sec: number | null
@@ -1498,7 +1498,7 @@ export type Database = {
           youtube_id: string | null
         }
         Insert: {
-          audio_url?: string | null
+          audio_path?: string | null
           branch_id?: string | null
           created_at?: string
           duration_sec?: number | null
@@ -1516,7 +1516,7 @@ export type Database = {
           youtube_id?: string | null
         }
         Update: {
-          audio_url?: string | null
+          audio_path?: string | null
           branch_id?: string | null
           created_at?: string
           duration_sec?: number | null
@@ -1920,6 +1920,10 @@ export type Database = {
       assert_photo_validated: { Args: { target: string }; Returns: undefined }
       assert_prayer_link_allowed: {
         Args: { target_prayer: string }
+        Returns: undefined
+      }
+      assert_sermon_audio_exists: {
+        Args: { target: string }
         Returns: undefined
       }
       attendance_service_date: {

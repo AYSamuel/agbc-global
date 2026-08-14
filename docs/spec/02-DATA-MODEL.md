@@ -76,7 +76,7 @@ The app writes with the anon key + the user's JWT, which can set ANY column unle
 | `testimony-photos` | private | 5 MiB, jpeg/png only. A member writes only inside their own `<author_id>/` folder, and `testimonies.image_path` is trigger-checked to sit in that same folder, so a reference cannot be pointed at a stranger's object. Objects are **write-once**: there is no UPDATE policy, so replacing a photo is a new random object plus a delete, and the bytes behind a validated path cannot change under it. Reads are decided by a `storage.objects` SELECT policy: own object, OR referenced by an `approved` non-deleted testimony, OR the caller moderates that testimony's branch. A signed URL cannot be minted without passing it, so pending photos are unreachable pre-review. **Amended W2.3:** this used to say an edge function would mint the URLs; the RLS policy gives the identical guarantee with no extra service on the read path, and one less place to re-implement the rule wrongly |
 | `book-files` | private | signed URL per request after an `entitlements` check, short TTL (minutes); see `14` |
 | `avatars` | public-read | low sensitivity; still re-encoded on upload |
-| `sermon-audio` | public-read or modest-TTL signed | choose per bandwidth posture; see `08` |
+| `sermon-audio` | private, signed URLs (24h TTL) | **Decided 2026-08-14 (W3.1, with Ayo):** the audios are the church's own uploads (some sermons are never on YouTube), so a URL copied out of the app's traffic dies within a day instead of becoming a permanent free door; 24h cannot expire mid-listen and the player re-mints on open. 150 MiB, audio mimes only. Writers: live-table admins at aal2 (the aal2 claim is safe here where it was NOT on content tables: no mobile member writes this bucket). Object names machine-minted `<uuid>.<ext>`. SELECT (= the mint permission) covers `anon`: guest listening is a `08` requirement, so the TTL is the whole fence. Write-once like `testimony-photos`; see `08` |
 
 All uploads: authenticated, size-capped, magic-byte validated (never trust client Content-Type), images re-encoded with EXIF/GPS stripped (a testimony photo can carry a member's home coordinates), random object ids. Docs `14`/`16`/`20` reference this section.
 
@@ -304,7 +304,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | title | text | |
 | speaker | text | |
 | youtube_id | text null | **partial unique index** `where youtube_id is not null`; sync upserts `on conflict (youtube_id) do update` (idempotent retries) |
-| audio_url | text null | self-hosted file (Storage) |
+| audio_path | text null | object PATH in the private `sermon-audio` bucket, never a URL (playback URLs are signed and expire; the same shape lesson as `testimonies.image_path`). Trigger-checked to reference an existing object, and a referenced object is not deletable (clear the column first). Dashboard-owned; the sync never writes it. Renamed from `audio_url` in W3.1, before it ever held a value |
 | duration_sec | int null | |
 | thumbnail_url | text | |
 | series | text null | |
