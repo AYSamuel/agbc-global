@@ -178,6 +178,21 @@
   .rthumb .play::after{content:"";border-left:8px solid #14213d;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px}
   .rrow .t{font-size:14.5px;font-weight:700;line-height:1.25}
   .rrow .m{font-size:12px;color:var(--muted);margin-top:4px}
+  /* MY-LIST rows only (W3.1 slice 4). The list IS the saving, so the control that
+     unsaves sits on the row rather than behind a menu, and it is the same filled
+     bookmark the player's top bar shows: one glyph means "saved" everywhere. */
+  .rrow .rgrow{flex:1;min-width:0}
+  .rrow .rsave{width:36px;height:36px;border-radius:50%;background:var(--alt);color:var(--gold);display:grid;place-items:center;flex:none}
+  /* A saved message whose video the sync has since lost (08 rot handling): greyed,
+     still listed, and removable. Not a failure of the member's, so it is dimmed
+     rather than marked in red. */
+  /* The row dims; its way out does not, which is why the dimming sits on the two
+     parts rather than on the row. Caught in the Chrome render: with .55 on the
+     wrapper, the one control still worth pressing was the faintest thing there,
+     and a child cannot climb back out of a parent's opacity. */
+  .rrow.gone .rthumb{filter:grayscale(1);opacity:.55}
+  .rrow.gone .rgrow{opacity:.55}
+  .rrow .gonem{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700}
   .seg{display:flex;gap:4px;margin:12px 16px 0;background:var(--alt);border-radius:13px;padding:4px}
   .seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:var(--font);font-weight:700;font-size:13px;padding:9px 0;border-radius:10px;cursor:pointer}
   .seg button.on{background:var(--raised);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.10)}
@@ -377,10 +392,21 @@
   .phone:has(.player) .status.onphoto{color:var(--text)}
   .pl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
   .pl-top .ib{width:40px;height:40px;border-radius:50%;background:var(--alt);border:none;color:var(--text);display:grid;place-items:center;cursor:pointer}
+  /* Save joins Share in the top bar (W3.1 slice 4). It could not be a fourth tile:
+     the row is a three-column grid and 08's own list (audio, speed, notes) fills it.
+     `.on` borrows the tiles' gold, so "this is yours now" looks the same everywhere. */
+  .pl-top .ibs{display:flex;gap:8px}
+  .pl-top .ib.on{background:rgba(255,207,74,.20);color:var(--gold)}
   .pl-top .lbl{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
   .pl-video{border-radius:16px;aspect-ratio:16/10;background:linear-gradient(160deg,#22375f,#0e1420);position:relative;margin-bottom:18px}
   .pl-video .pc{position:absolute;top:calc(50% - 32px);left:calc(50% - 32px);width:64px;height:64px;border-radius:50%;background:var(--gold);display:grid;place-items:center}
   .pl-video .pc::after{content:"";border-left:18px solid #14213d;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px}
+  /* The embed's OWN control, not one of ours (synced 2026-08-14, W3.1 slice 4). The
+     gold disc that used to sit here said the app draws a play button over the video,
+     and it does not: what stands in that well is the YouTube iframe, drawing its
+     chrome, which is also why no scrub and no +/-15s belong to this state. */
+  .pl-video .yt{position:absolute;top:calc(50% - 20px);left:calc(50% - 29px);width:58px;height:40px;border-radius:11px;background:#ff0000;display:grid;place-items:center}
+  .pl-video .yt::after{content:"";border-left:15px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent;margin-left:3px}
   .player .goldeye{color:var(--eye)}
   .pl-title{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.02em;margin:8px 0 3px;color:var(--text)}
   .pl-speaker{font-size:13.5px;color:var(--muted);margin-bottom:18px}
@@ -416,6 +442,52 @@
   .pl-art .mark{position:absolute;top:calc(50% - 32px);left:calc(50% - 32px);width:64px;height:64px;border-radius:50%;background:var(--gold);color:#14213d;display:grid;place-items:center}
   .pl-art .tag{position:absolute;left:14px;bottom:14px;background:rgba(14,20,32,.72);color:#fff;border-radius:100px;padding:6px 12px;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
   .pl-note{text-align:center;font-size:12px;color:var(--muted);margin-top:16px}
+
+  /* ---- Player controls, three directions (W3.1 slice 4, 2026-08-14) ----------------
+     The row of three identical tiles dresses three different kinds of control the same
+     way: Audio only is a MODE, Speed is a VALUE you cycle, Notes is a DESTINATION. Each
+     direction below tells them apart differently. In all three, Speed appears only in
+     audio mode rather than sitting dimmed with a rate nothing is playing at, while the
+     Audio control stays put and dims when a message has no MP3 yet, because that one has
+     something to explain. */
+
+  /* A · mode segment + two quiet actions. Reuses the .seg control GIVE already uses. */
+  .pl-seg{display:flex;gap:4px;background:var(--alt);border-radius:13px;padding:4px;margin-top:20px}
+  .pl-seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:var(--font);font-weight:700;font-size:13px;padding:11px 0;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+  .pl-seg button.on{background:var(--raised);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.10)}
+  .pl-seg button.off{opacity:.45}
+  .pl-acts{display:flex;gap:10px;margin-top:10px}
+  .pl-act{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:1px solid var(--border);border-radius:12px;padding:13px 10px;font-family:var(--font);font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer}
+  .pl-act .v{color:var(--eye);font-weight:800}
+
+  /* B · one bar, three segments, hairlines between them. */
+  .pl-bar{display:flex;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:20px}
+  .pl-bar .b{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 6px;font-size:13px;font-weight:700;color:var(--text);border-left:1px solid var(--border)}
+  .pl-bar .b:first-child{border-left:none}
+  .pl-bar .b.on{background:rgba(255,207,74,.16);color:var(--eye)}
+  .pl-bar .b.off{opacity:.45}
+
+  /* C · discs, no boxes. Speed's disc holds the rate itself: the value IS the control. */
+  .pl-icons{display:flex;justify-content:center;gap:34px;margin-top:22px}
+  .pl-icons .i{display:flex;flex-direction:column;align-items:center;gap:9px;font-size:11.5px;font-weight:700;color:var(--sub)}
+  .pl-icons .d{width:54px;height:54px;border-radius:50%;background:var(--alt);display:grid;place-items:center;color:var(--text)}
+  .pl-icons .i.on{color:var(--eye)}
+  .pl-icons .i.on .d{background:rgba(255,207,74,.22);color:var(--eye);box-shadow:inset 0 0 0 1px var(--gold)}
+  .pl-icons .i.off{opacity:.45}
+  .pl-icons .sp{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em}
+  /* Open on YouTube as a text link rather than a full outline button: in the video state
+     it was the heaviest thing on a screen whose subject is the video (part of the same
+     redesign, so each direction shows it). */
+  .pl-link{display:block;text-align:center;margin-top:16px;font-size:13.5px;font-weight:700;color:var(--blue)}
+  /* Attribution in audio mode (2026-08-15). YouTube's developer policies ask a screen
+     showing their thumbnails and titles to name them as the source "by displaying YouTube
+     Brand Features", and their branding guidelines require any YouTube mark in an app to
+     link back to YouTube. A sentence did neither: this is their badge, and it is the way
+     to the video that audio mode otherwise lacked. Absent on a message that was never on
+     YouTube, which borrows nothing to credit. */
+  .ytcredit{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;font-size:13px;font-weight:700;color:var(--text)}
+  .ytcredit .badge{width:34px;height:24px;border-radius:7px;background:#ff0000;display:grid;place-items:center;flex:none}
+  .ytcredit .badge::after{content:"";border-left:9px solid #fff;border-top:5.5px solid transparent;border-bottom:5.5px solid transparent;margin-left:2px}
   .live-badge{background:var(--red);color:#fff;border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:6px}
   .live-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff}
   .watching{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);font-weight:600;margin:16px 0}
@@ -485,6 +557,19 @@
   .notecard .nb{font-size:14.5px;line-height:1.5;color:var(--text);margin-top:6px}
   .noteadd{display:flex;align-items:center;gap:10px;margin:4px 16px 0;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 14px;color:var(--muted);font-size:14.5px}
   .noteadd .plus{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;flex:none;font-size:18px;font-weight:700}
+  /* The notes surface is ONE document (W3.1 slice 4). `sermon_notes` holds one body
+     per member per message and 08 autosaves it, so the cards this frame used to draw
+     were a data shape the database does not have; the timestamps survive as text the
+     Add button writes into the page, which is what a paper notebook does anyway. */
+  .npage{margin:2px 16px 0;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px 16px;min-height:212px;font-size:14.5px;line-height:1.55;color:var(--text)}
+  .npage .ph{color:var(--muted)}
+  .ntime{font-size:11px;font-weight:800;color:var(--eye);letter-spacing:.04em}
+  .ncaret{display:inline-block;width:2px;height:15px;background:var(--blue);vertical-align:-2px}
+  /* Autosave has to be visible or it is a promise nobody can check. Three words in
+     the slot the mockup gave a Save button, because there is nothing left to press. */
+  .nstat{font-size:12.5px;font-weight:700;color:var(--muted)}
+  .nstat.ok{color:var(--green)}
+  .nstat.wait{color:var(--eye)}
   .profhead{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 20px 6px}
   .profhead .pa{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#b98600,#14213d);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:30px;margin-bottom:12px}
   .profhead .pn{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--text)}
@@ -1566,8 +1651,52 @@
 
   <h2 class="ghead" id="w31">&#127911; W3.1 &middot; Audio mode &middot; light</h2>
   <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>SERMON (video)</b> &#8594; tap <b>Audio only</b> &#8594; the embed unmounts and <b>these</b> take its place. A message that was never on YouTube opens in the right-hand state directly. The video state itself is edited in place in the Light mode gallery below: SERMON is one screen, not four references.</p>
-  <p class="alwayson" style="padding:0 20px 10px">Two decisions this pair records (taken with Ayo 2026-08-14). <b>The artwork is the message's own thumbnail, dimmed:</b> a scrim, because the picture is a video frame and nothing is playing there. A message that was never on YouTube has no thumbnail at all (the dashboard inserts those rows with <code>thumbnail_url</code> empty, <code>sermonAudio.ts</code>), so it falls back to the branded gradient the player already uses, and the same fallback is what the lock screen gets. <b>Speed took the Download tile's slot:</b> <code>08</code> specifies play/pause/seek, &plusmn;15s, speed, notes, save, share and open-on-YouTube, and never download; the tile has sat dimmed since W1.3, and speed had no home anywhere in the mockup. The transport row belongs to audio alone: while the YouTube embed is up it draws its own controls (W1.3), so the scrub, the &plusmn;15s pair and the speed tile all arrive with this mode and are absent or dimmed without it.</p>
+  <p class="alwayson" style="padding:0 20px 10px">Two decisions this pair records (taken with Ayo 2026-08-14). <b>The artwork is the message's own thumbnail, dimmed:</b> a scrim, because the picture is a video frame and nothing is playing there. A message that was never on YouTube has no thumbnail at all (the dashboard inserts those rows with <code>thumbnail_url</code> empty, <code>sermonAudio.ts</code>), so it falls back to the branded gradient the player already uses, and the same fallback is what the lock screen gets. <b>Speed took the Download control's place:</b> <code>08</code> specifies play/pause/seek, &plusmn;15s, speed, notes, save, share and open-on-YouTube, and never download; that control had sat dimmed since W1.3, and speed had no home anywhere in the mockup. The transport belongs to audio alone: while the YouTube embed is up it draws its own controls (W1.3), so the scrub, the &plusmn;15s pair and speed all arrive with this mode and are gone without it. <b>The controls themselves were redrawn on 2026-08-14 (W3.1 slice 4, direction A of three shown to Ayo):</b> the row of three identical tiles gave one shape to a MODE, a VALUE and a DESTINATION, so mode became a segmented Video/Audio control that says what it is, and Speed and Notes became quiet actions beneath it. Speed is absent rather than dimmed while the video plays; the segment above it is the answer to "why". The old <code>.pl-tiles</code> row still dresses LIVE and the tablet frame, both of which belong to later items.</p>
   <div class="gallery t-light" id="w31Light">
+
+    <!-- SERMON · audio mode, just switched (paused) -->
+    <div class="device">
+      <p class="name"><b>SERMON</b> &middot; audio mode &middot; just switched, nothing playing yet</p>
+      <!-- Composed 2026-08-15, Ayo's call: switching to audio no longer starts playing.
+           Choosing a MODE is not pressing play, and a message that begins talking by
+           itself is talking to a room that did not ask for it, which on a phone in a
+           quiet place is worse than an extra tap. This is therefore the state EVERY
+           listen now starts in, and the two frames beside it are what comes after the
+           play button. Three things differ and all three are the truth of it: the disc
+           holds a play triangle, the pill says PAUSED rather than LISTENING, and the
+           scrub sits where the resume left it (the seek still happens on switch, so
+           pressing play continues rather than restarts). -->
+      <div class="phone">
+        <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="player">
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><span class="ibs"><button class="ib" aria-label="Save"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></button><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></span></div>
+          <div class="pl-art">
+            <span class="scrim"></span>
+            <span class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg></span>
+            <span class="tag">Paused</span>
+          </div>
+          <span class="goldeye">Sunday &middot; AGBC Berlin</span>
+          <div class="pl-title">Grace for the Journey</div>
+          <div class="pl-speaker">Pastor Esther Olayinka</div>
+          <div class="pl-scrub"><div class="bar"><i></i></div><div class="times"><span>14:20</span><span>-23:40</span></div></div>
+          <div class="pl-transport">
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span>15s</span></button>
+            <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
+          </div>
+          <div class="pl-seg">
+            <button><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg> Video</button>
+            <button class="on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg> Audio</button>
+          </div>
+          <div class="pl-acts">
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg> Speed <span class="v">1x</span></button>
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg> Notes</button>
+          </div>
+          <div class="pl-note">Plays in the background &amp; on your lock screen</div>
+          <div class="ytcredit"><span class="badge"></span> Watch on YouTube</div>
+        </div>
+      </div>
+    </div>
 
     <!-- SERMON · audio mode, message also on YouTube -->
     <div class="device">
@@ -1575,7 +1704,7 @@
       <div class="phone">
         <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="player">
-          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></div>
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><span class="ibs"><button class="ib on" aria-label="Saved"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></button><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></span></div>
           <div class="pl-art">
             <span class="scrim"></span>
             <span class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg></span>
@@ -1590,13 +1719,16 @@
             <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
             <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
           </div>
-          <div class="pl-tiles">
-            <div class="pl-tile on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span><span class="val">&nbsp;</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span>Speed</span><span class="val">1x</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span><span class="val">&nbsp;</span></div>
+          <div class="pl-seg">
+            <button><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg> Video</button>
+            <button class="on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg> Audio</button>
+          </div>
+          <div class="pl-acts">
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg> Speed <span class="v">1x</span></button>
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg> Notes</button>
           </div>
           <div class="pl-note">Plays in the background &amp; on your lock screen</div>
-          <div class="pl-note" style="margin-top:8px">Thumbnail and title via YouTube</div>
+          <div class="ytcredit"><span class="badge"></span> Watch on YouTube</div>
         </div>
       </div>
     </div>
@@ -1607,7 +1739,7 @@
       <div class="phone">
         <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="player">
-          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></div>
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><span class="ibs"><button class="ib" aria-label="Save"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></button><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></span></div>
           <div class="pl-art none">
             <span class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg></span>
             <span class="tag">Listening</span>
@@ -1621,10 +1753,17 @@
             <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
             <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
           </div>
-          <div class="pl-tiles">
-            <div class="pl-tile on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span><span class="val">&nbsp;</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span>Speed</span><span class="val">1.25x</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span><span class="val">&nbsp;</span></div>
+          <!-- Video is dimmed rather than absent: this message never had one, and a
+               control that vanishes teaches nothing. Tapping it says so (the same toast
+               the old dimmed tile carried, "This message is audio only"), and the reason
+               reaches a screen reader on focus rather than only after the tap. -->
+          <div class="pl-seg">
+            <button class="off"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg> Video</button>
+            <button class="on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg> Audio</button>
+          </div>
+          <div class="pl-acts">
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg> Speed <span class="v">1.25x</span></button>
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg> Notes</button>
           </div>
           <div class="pl-note">Plays in the background &amp; on your lock screen</div>
         </div>
@@ -1637,6 +1776,7 @@
   <h2 class="ghead">&#127769; W3.1 &middot; Audio mode &middot; dark</h2>
   <div class="gallery t-dark" id="w31Dark"></div>
   <script>(function(){var l=document.getElementById('w31Light'),d=document.getElementById('w31Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
 
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>
   <p class="flow">FLOW &nbsp;·&nbsp; <b>Splash</b> &#8594; <b>Welcome</b> &#8594; <b>Pick branch</b> &#8594; <b>Language</b> &#8594; <b>Home (guest)</b></p>
@@ -2652,30 +2792,53 @@
 
     <!-- SERMON PLAYER -->
     <div class="device">
+      <!-- Synced to the built screen 2026-08-14 (W3.1 slice 4), after Ayo spotted the
+           disagreement. Three things left this frame, and all three were the frame being
+           wrong rather than the app: the gold play disc (what stands in that well is the
+           YouTube iframe, which draws its own control), and the scrub and the +/-15s pair,
+           which belong to audio alone because the embed owns playback while it is up. That
+           decision was already recorded in the W3.1 section's note and in 08; only this
+           frame had not heard.
+
+           Two things arrived, both of which 08 requires and no frame had drawn: the
+           OPEN ON YOUTUBE button, the tested fallback path when the embed fails, and the
+           attribution line, which the YouTube ToS box makes non-optional wherever their
+           material is on screen. The background-playback note left with them: it is true
+           of the self-hosted audio and false of an embed, so it stays on the audio frames
+           where it belongs. -->
       <p class="name"><b>SERMON</b> · player (video + audio)</p>
       <div class="phone">
         <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="player">
-          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></div>
-          <div class="pl-video"><span class="pc"></span></div>
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><span class="ibs"><button class="ib" aria-label="Save"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></button><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></span></div>
+          <div class="pl-video"><span class="yt"></span></div>
           <span class="goldeye">Sunday &middot; AGBC Berlin</span>
           <div class="pl-title">Grace for the Journey</div>
           <div class="pl-speaker">Pastor Esther Olayinka</div>
-          <div class="pl-scrub"><div class="bar"><i></i></div><div class="times"><span>14:20</span><span>-23:40</span></div></div>
-          <div class="pl-transport">
-            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span>15s</span></button>
-            <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
-            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
+          <!-- Direction A, chosen with Ayo 2026-08-14 over two alternatives (one bar of
+               hairline segments; three discs on no background). What it fixes: the row it
+               replaces gave ONE shape to three different kinds of control, so a mode, a
+               value and a destination all looked like the same card, and the dimmed one
+               read as broken rather than as unavailable. Mode is now a segmented control
+               that says what it is; Speed and Notes are quiet actions under it.
+
+               Speed is ABSENT here, not dimmed: with the embed up there is no rate to
+               change, and the segment right above says why in one tap. It returns with
+               audio. The old `.pl-tiles` row survives for LIVE and the tablet frame, both
+               of which belong to later items. -->
+          <div class="pl-seg" style="margin-top:24px">
+            <button class="on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg> Video</button>
+            <button><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg> Audio</button>
           </div>
-          <div class="pl-tiles">
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg><span>Audio only</span><span class="val">&nbsp;</span></div>
-            <!-- W3.1: Speed took this slot from Download, which 08 never specified. Dimmed
-                 here because the YouTube embed owns playback while it is up; it comes alive
-                 in the audio frames (W3.1 section, top of file). -->
-            <div class="pl-tile off"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span>Speed</span><span class="val">&nbsp;</span></div>
-            <div class="pl-tile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg><span>Notes</span><span class="val">&nbsp;</span></div>
+          <div class="pl-acts">
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg> Notes</button>
           </div>
-          <div class="pl-note">Plays in the background &amp; on your lock screen</div>
+          <!-- No attribution line here (decided with Ayo 2026-08-14). The embed above
+               carries YouTube's own logo and its "Watch on YouTube" control, which IS the
+               attribution the ToS box asks for, so a second credit under it only repeats
+               what the screen already says. The audio frames keep theirs, because there
+               the thumbnail and title are shown bare with no YouTube chrome anywhere. -->
+          <a class="pl-link">Open on YouTube</a>
         </div>
       </div>
     </div>
@@ -2826,9 +2989,77 @@
         <div class="screen">
           <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My List</span><span style="width:40px"></span></div>
           <div class="mlabel">12 saved</div>
-          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div><div class="t">Grace for the Journey</div><div class="m">Pastor Esther Olayinka &middot; 38 min</div></div></div>
-          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div><div class="t">The Father&#39;s Heart</div><div class="m">Pastor Blossom Anukposi &middot; 35 min</div></div></div>
-          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div><div class="t">Rooted &amp; Rising</div><div class="m">Pastor AY Samuel &middot; 41 min</div></div></div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">Grace for the Journey</div><div class="m">Pastor Esther Olayinka &middot; 38 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">The Father&#39;s Heart</div><div class="m">Pastor Blossom Anukposi &middot; 35 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">Rooted &amp; Rising</div><div class="m">Pastor AY Samuel &middot; 41 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY-LIST · nothing saved yet -->
+    <div class="device">
+      <p class="name"><b>MY-LIST</b> &middot; nothing saved yet</p>
+      <!-- Composed W3.1 slice 4 (2026-08-14): the frame beside this one draws a full list and
+           the screen has to answer for the member who opens it before saving anything, which
+           is every member until the first bookmark. 08 asks for "Save messages to watch
+           later" and a browse CTA, so the empty state teaches the gesture rather than
+           apologising for the absence, and sends them where the messages are. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My List</span><span style="width:40px"></span></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></div>
+            <h3>Nothing saved yet</h3>
+            <p>Save a message to watch or listen to later, and it will be waiting here for you.</p>
+            <button class="btn primary" style="max-width:230px">Browse messages</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY-LIST · guest -->
+    <div class="device">
+      <p class="name"><b>MY-LIST</b> &middot; guest (a list belongs to somebody)</p>
+      <!-- Composed W3.1 slice 4 (2026-08-14): reachable by deep link only, since the PROFILE
+           row that leads here exists only for a member and the Save gate stands in front of
+           the action. Same PERSON glyph and same sentence shape as the MY-POSTS and PROFILE
+           guest frames, because they are all saying the one thing: the account is what holds
+           the answer. Watching and listening stay free; only the keeping needs a name. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My List</span><span style="width:40px"></span></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <h3>Sign in to keep a list</h3>
+            <p>Messages you save stay with your account, ready on whichever phone you sign in on.</p>
+            <button class="btn primary" style="max-width:220px">Sign in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY-LIST · a saved message that is no longer available -->
+    <div class="device">
+      <p class="name"><b>MY-LIST</b> &middot; a saved message the channel lost</p>
+      <!-- Composed W3.1 slice 4 (2026-08-14). 08's rot handling says My List renders an
+           unavailable message greyed with a remove action, and no frame drew it. The row is
+           dimmed rather than marked in red: nothing has gone wrong on the member's side, the
+           video simply left the channel, and the sync marks rows unavailable instead of
+           deleting them precisely so a saved message never vanishes without explanation. It
+           keeps the same remove control every other row has, so the way out is where the
+           hand already expects it. A row whose audio survived still plays (08), so only the
+           ones with nothing left to hear are drawn this way. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My List</span><span style="width:40px"></span></div>
+          <div class="mlabel">3 saved</div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">Grace for the Journey</div><div class="m">Pastor Esther Olayinka &middot; 38 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div class="rrow gone"><div class="rthumb"></div><div class="rgrow"><div class="t">The Father&#39;s Heart</div><div class="gonem">No longer available</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">Rooted &amp; Rising</div><div class="m">Pastor AY Samuel &middot; 41 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
           <div style="height:14px"></div>
         </div>
       </div>
@@ -2837,16 +3068,98 @@
     <!-- SERMON-NOTES -->
     <div class="device">
       <p class="name"><b>SERMON-NOTES</b> · notes for a message</p>
+      <!-- Recomposed W3.1 slice 4 (2026-08-14), with Ayo. This frame drew separate note
+           cards and a blue Save, and neither exists in the app being built: `sermon_notes`
+           holds ONE body per member per message (02) and 08 autosaves it, so cards would
+           have been a data shape the database does not have and a Save button would have
+           been a control with nothing to do. What survives is everything the cards were
+           for: the timestamps stay, written into the page by the Add button at the second
+           the message is paused at, exactly as a hand does in a paper notebook. The Save
+           slot becomes the autosave status, because a promise to save without a word on
+           screen is a promise nobody can check.
+
+           The message pauses while this screen is open (the player pauses on blur since
+           slice 3), which is why the Add line can name one fixed second. -->
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
-          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">Sermon notes</span><span style="font-size:14px;font-weight:700;color:var(--blue)">Save</span></div>
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">Sermon notes</span><span class="nstat ok">Saved &#10003;</span></div>
           <div style="padding:2px 16px 0"><div style="font-size:11px;font-weight:800;color:var(--eye);letter-spacing:.06em;text-transform:uppercase">Grace for the Journey</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Pastor Esther Olayinka</div></div>
           <div class="mlabel">My notes</div>
-          <div class="notecard"><div class="nt">14:20</div><div class="nb">Grace is not a reward for the strong, it is a gift for the weak. Lean in.</div></div>
-          <div class="notecard"><div class="nt">22:05</div><div class="nb">&#8220;My grace is sufficient for you.&#8221; Sufficiency, not surplus, is the promise.</div></div>
+          <div class="npage"><span class="ntime">14:20</span><br>Grace is not a reward for the strong, it is a gift for the weak. Lean in.<br><br><span class="ntime">22:05</span><br>&#8220;My grace is sufficient for you.&#8221; Sufficiency, not surplus, is the promise.<span class="ncaret"></span></div>
           <div class="noteadd"><span class="plus">+</span> Add a note at 26:41</div>
           <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERMON-NOTES · nothing written yet -->
+    <div class="device">
+      <p class="name"><b>SERMON-NOTES</b> &middot; nothing written yet</p>
+      <!-- Composed W3.1 slice 4 (2026-08-14): the first thing every member meets on this
+           screen, since a note only exists once somebody writes one. The placeholder asks
+           the question the screen is for rather than labelling the box, and the Add line is
+           already there, so the first tap can be the timestamp. Nothing to save yet, so the
+           status slot stays empty instead of claiming a save that never happened.
+
+           The Add line needs a second to name, so it is ABSENT when there is none: opened
+           from PROFILE, or by a link, on a message nobody has played, there is no position
+           to write down and "Add a note at 0:00" would be a lie about where you are. No
+           frame for that: it is this frame with one row missing. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">Sermon notes</span><span style="width:40px"></span></div>
+          <div style="padding:2px 16px 0"><div style="font-size:11px;font-weight:800;color:var(--eye);letter-spacing:.06em;text-transform:uppercase">Grace for the Journey</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Pastor Esther Olayinka</div></div>
+          <div class="mlabel">My notes</div>
+          <div class="npage"><span class="ncaret"></span><span class="ph">What is God saying to you in this message?</span></div>
+          <div class="noteadd"><span class="plus">+</span> Add a note at 26:41</div>
+          <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERMON-NOTES · written, not saved yet -->
+    <div class="device">
+      <p class="name"><b>SERMON-NOTES</b> &middot; written, not saved yet (offline)</p>
+      <!-- Composed W3.1 slice 4 (2026-08-14). The app-wide STATE &middot; offline frame covers a
+           surface that cannot LOAD; this one can be written on with no connection at all,
+           which is a different thing and needed saying. The writing is kept on the phone
+           and goes up when the signal does, so the status tells the truth ("not saved yet")
+           without ever asking the member to stop or to copy their words somewhere safe. The
+           same status carries a save that is merely in flight, as "Saving...". -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">Sermon notes</span><span class="nstat wait">Not saved yet</span></div>
+          <div style="padding:2px 16px 0"><div style="font-size:11px;font-weight:800;color:var(--eye);letter-spacing:.06em;text-transform:uppercase">Grace for the Journey</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Pastor Esther Olayinka</div></div>
+          <div class="mlabel">My notes</div>
+          <div class="npage"><span class="ntime">14:20</span><br>Grace is not a reward for the strong, it is a gift for the weak. Lean in.<span class="ncaret"></span></div>
+          <div style="font-size:12.5px;color:var(--muted);padding:10px 20px 0;text-align:center">Kept on this phone. We will save it when you are back online.</div>
+          <div class="noteadd" style="margin-top:10px"><span class="plus">+</span> Add a note at 26:41</div>
+          <div style="height:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERMON-NOTES · guest -->
+    <div class="device">
+      <p class="name"><b>SERMON-NOTES</b> &middot; guest (notes belong to somebody)</p>
+      <!-- Composed W3.1 slice 4 (2026-08-14): reachable by deep link only, because the Notes
+           tile on the player opens the gate first. Same PERSON glyph and shape as the
+           MY-POSTS, PROFILE and MY-LIST guest frames. The second sentence earns its place:
+           these are the most private things a person writes in this app, so the screen says
+           who can read them before asking anybody to sign in. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">Sermon notes</span><span style="width:40px"></span></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <h3>Sign in to keep your notes</h3>
+            <p>Your notes are private to you, and they stay with your account so they are there on any phone.</p>
+            <button class="btn primary" style="max-width:220px">Sign in</button>
+          </div>
         </div>
       </div>
     </div>

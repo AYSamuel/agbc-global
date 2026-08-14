@@ -140,11 +140,21 @@ function renderScreen() {
   );
 }
 
-/** Enter audio mode the way a member does, then report a loaded source. */
+/** Enter audio mode the way a member does, then report a loaded source.
+ *
+ * A `tab`, not a button, since W3.1 slice 4: mode is a segmented control now,
+ * because the tile row dressed a mode, a value and a destination identically. */
 async function enterAudio() {
-  await fireEvent.press(screen.getByRole('button', { name: 'Audio only' }));
+  await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
   await act(() => {
-    setAudioStatus({ isLoaded: true, duration: 2280, playing: true });
+    setAudioStatus({ isLoaded: true, duration: 2280 });
+  });
+  // Audio does not autoplay (2026-08-15), so the member presses play and the
+  // fake then reports what the real player would. Every test below this line
+  // therefore starts from a message somebody chose to hear.
+  await fireEvent.press(screen.getByRole('button', { name: 'Play' }));
+  await act(() => {
+    setAudioStatus({ playing: true });
   });
 }
 
@@ -182,7 +192,16 @@ describe('entering audio mode', () => {
       screen.getByRole('button', { name: 'Back 15 seconds' }),
     ).toBeOnTheScreen();
     expect(
-      screen.getByRole('button', { name: 'Audio only', selected: true }),
+      screen.getByRole('tab', { name: 'Audio', selected: true }),
+    ).toBeOnTheScreen();
+    // And Speed arrives with the mode: with the embed up there is no rate to
+    // change, so the action is absent rather than dimmed (W3.1 slice 4).
+    expect(screen.getByRole('button', { name: 'Speed, 1x' })).toBeOnTheScreen();
+    // Attribution comes with the mode too: the thumbnail and title on screen are
+    // YouTube's, shown with none of their chrome, so their badge names them as
+    // the source and links back to the video (their policy asks for both).
+    expect(
+      screen.getByRole('link', { name: 'Watch on YouTube' }),
     ).toBeOnTheScreen();
     expect(
       screen.getByText('Plays in the background and on your lock screen'),
@@ -215,18 +234,25 @@ describe('entering audio mode', () => {
     });
 
     expect(screen.getByRole('button', { name: 'Pause' })).toBeOnTheScreen();
-    // Nothing on the screen came from YouTube, so nothing attributes it.
-    expect(screen.queryByText('Videos play via YouTube')).not.toBeOnTheScreen();
+    // Nothing on the screen came from YouTube, so nothing credits them and
+    // there is nowhere to send anybody: no badge, no link.
     expect(
-      screen.queryByText('Artwork and title via YouTube'),
+      screen.queryByRole('link', { name: 'Watch on YouTube' }),
     ).not.toBeOnTheScreen();
     expect(
-      screen.queryByRole('button', { name: 'Open on YouTube' }),
+      screen.queryByRole('link', { name: 'Open on YouTube' }),
     ).not.toBeOnTheScreen();
 
-    // And the toggle stops being a toggle: there is nothing to go back to.
-    await fireEvent.press(screen.getByRole('button', { name: 'Audio only' }));
+    // And the Video half of the segment stays, dimmed, with the reason: a
+    // control that vanishes teaches nothing, and it still answers a press
+    // rather than announcing itself disabled while reacting.
+    const video = screen.getByRole('tab', { name: 'Video' });
+    expect(screen.getByHintText('This message is audio only.')).toBe(video);
+    await fireEvent.press(video);
     expect(screen.getByText('This message is audio only.')).toBeOnTheScreen();
+    expect(
+      screen.getByRole('tab', { name: 'Audio', selected: true }),
+    ).toBeOnTheScreen();
   });
 
   test('a message whose video died still plays, and says why', async () => {
@@ -248,6 +274,25 @@ describe('entering audio mode', () => {
     await renderScreen();
     await enterAudio();
     expect(mockTrack).toHaveBeenCalledWith('sermon_played', { mode: 'audio' });
+  });
+
+  test('does not start playing by itself', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
+    await act(() => {
+      setAudioStatus({ isLoaded: true, duration: 2280 });
+    });
+
+    // Choosing a mode is not pressing play (2026-08-15). The source is loaded
+    // and seeked, and then it waits.
+    expect(audioPlayer.play).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Play' })).toBeOnTheScreen();
+    // And the pill tells the truth about it rather than claiming a listen.
+    expect(screen.getByLabelText('Paused')).toBeOnTheScreen();
+    // The funnel is not credited with a message nobody has heard.
+    expect(mockTrack).not.toHaveBeenCalledWith('sermon_played', {
+      mode: 'audio',
+    });
   });
 });
 
@@ -298,19 +343,14 @@ describe('the transport', () => {
   });
 });
 
-describe('the speed tile', () => {
-  test('refuses while the video is up, and says what to do instead', async () => {
+describe('speed', () => {
+  test('is absent while the video is up, because there is no rate to change', async () => {
     await renderScreen();
-    const tile = screen.getByRole('button', { name: 'Speed, 1x' });
-    // The reason reaches a screen reader on FOCUS, before the tap that would
-    // otherwise be the only way to find out.
-    expect(
-      screen.getByHintText('Switch to Audio only to change the speed.'),
-    ).toBe(tile);
-    await fireEvent.press(tile);
-    expect(
-      screen.getByText('Switch to Audio only to change the speed.'),
-    ).toBeOnTheScreen();
+    // Absent, not dimmed (W3.1 slice 4). While the embed owns playback there is
+    // nothing for a rate to apply to, and the mode segment right above it is the
+    // answer to "why", so a greyed control stating "1x" would only be a number
+    // that is not true of anything.
+    expect(screen.queryByRole('button', { name: /Speed/ })).toBeNull();
     expect(audioPlayer.setPlaybackRate).not.toHaveBeenCalled();
   });
 
@@ -400,9 +440,9 @@ describe('resume', () => {
     mockAuthState.mockReturnValue({ status: 'member' });
     mockServerPosition.mockReturnValue({ data: null, isPending: true });
     await renderScreen();
-    // The tile is still there to press, but the surface below is the skeleton:
+    // The segment is still there to press, but the surface below is the skeleton:
     // seeking twice is what a premature mount would cost.
-    await fireEvent.press(screen.getByRole('button', { name: 'Audio only' }));
+    await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
     expect(
       screen.queryByRole('button', { name: 'Pause' }),
     ).not.toBeOnTheScreen();
@@ -534,7 +574,7 @@ describe('when the source fails', () => {
       refetch: mockRefetchUrl,
     });
     await renderScreen();
-    await fireEvent.press(screen.getByRole('button', { name: 'Audio only' }));
+    await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
     expect(screen.getByText("The audio couldn't play")).toBeOnTheScreen();
   });
 });

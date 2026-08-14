@@ -24,7 +24,9 @@
   "nowPlaying": "Speelt nu",
   "minutes": "{{count}} min",
   "share": "Delen",
-  "audioOnly": "Alleen audio",
+  "playbackMode": "Afspeelmodus",
+  "video": "Video",
+  "audio": "Audio",
   "notes": "Notities",
   "audioOnlyPending": "Deze boodschap kan nog niet worden afgespeeld.",
   "openOnYoutube": "Openen op YouTube",
@@ -40,6 +42,7 @@
   "notesGateBody": "Bewaar notities bij deze boodschap en vind ze terug op elk apparaat.",
   "gateDismissed": "Je kunt als gast blijven kijken.",
   "listening": "Luisteren",
+  "paused": "Gepauzeerd",
   "audioLoading": "Laden",
   "play": "Afspelen",
   "pause": "Pauzeren",
@@ -49,11 +52,10 @@
   "progress": "Afspeelpositie",
   "speed": "Snelheid",
   "speedValue": "{{value}}x",
-  "speedNeedsAudio": "Schakel naar Alleen audio om de snelheid te wijzigen.",
   "audioMissing": "De audio bij deze boodschap staat er nog niet op.",
   "audioIsTheMessage": "Deze boodschap is alleen audio.",
   "audioErrorTitle": "De audio kon niet afspelen",
   "audioErrorBody": "Controleer je verbinding en probeer het opnieuw.",
   "backgroundNote": "Speelt op de achtergrond en op je vergrendelscherm",
-  "artworkViaYoutube": "Beeld en titel via YouTube"
+  "watchOnYoutube": "Bekijk op YouTube"
 }

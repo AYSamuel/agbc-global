@@ -86,6 +86,7 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - [ ] Staged rollout plan with written halt criteria (Play staged %, iOS phased release); crash + ANR reporting live before widening.
 - [ ] Moderation coverage: at least one leader per branch trained on the dashboard; pending-item notifications + 48h admin escalation working (`17`).
 - [ ] Audio owner assigned: weekly sermon MP3 upload is someone's named job (`08`).
+- [ ] **YouTube brand asset swap** (`08`, added W3.1 slice 4, 2026-08-15): audio mode attributes YouTube with a badge **we drew** (`features/watch/YouTubeCredit.tsx`). Their developer policies ask for YouTube Brand Features, which means their own asset, so take the official mark from YouTube's branding kit and replace the drawn one before submission. Nothing about the placement or the link changes.
 - [ ] **Play Console `mediaPlayback` foreground-service declaration** (`08`, added W3.1 slice 3): the app now holds `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (expo-audio's config plugin) and uses it for background sermon audio, which the app-content form must declare or the release is rejected. Nothing to build; someone has to fill the form.
 - [ ] Seed content: branches, first daily verses, a devotional plan, courses, initial sermons synced.
 - [ ] Legal: privacy policy + terms reachable in-app; DPAs on file; analytics consent implemented; web deletion page live (`20`, `16`).

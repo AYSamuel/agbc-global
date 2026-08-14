@@ -458,12 +458,16 @@ describe('SERMON player', () => {
     expect(screen.getByTestId('youtube-player')).toBeOnTheScreen();
     expect(screen.getByText('Grace That Carries You')).toBeOnTheScreen();
     expect(
-      screen.getByRole('button', { name: 'Open on YouTube' }),
+      screen.getByRole('link', { name: 'Open on YouTube' }),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Videos play via YouTube')).toBeOnTheScreen();
+    // No attribution line on the video state (W3.1 slice 4, with Ayo): the embed
+    // itself carries YouTube's logo and its own "Watch on YouTube" control, so a
+    // second credit under it says nothing the screen was not already saying. The
+    // audio state, where the thumbnail is shown bare, keeps its line.
+    expect(screen.queryByText('Videos play via YouTube')).not.toBeOnTheScreen();
   });
 
-  test('the audio tile explains itself without audio, and Notes opens the gate', async () => {
+  test('the audio segment explains itself without audio, and Notes opens the gate', async () => {
     mockParams = { id: 'aaa' };
     mockSermon.mockReturnValue({
       data: sermon({ audio_path: null }),
@@ -473,12 +477,12 @@ describe('SERMON player', () => {
     await renderScreen(<Sermon />);
     // Dimmed but answerable (W3.1): 08 wants the unavailable toggle to say WHY,
     // so the reason is on the hint for a screen reader and on a toast for a tap.
-    const audioTile = screen.getByRole('button', { name: 'Audio only' });
-    expect(audioTile).not.toBeDisabled();
+    const audio = screen.getByRole('tab', { name: 'Audio' });
+    expect(audio).not.toBeDisabled();
     expect(screen.getByHintText("Audio for this message isn't up yet.")).toBe(
-      audioTile,
+      audio,
     );
-    await fireEvent.press(audioTile);
+    await fireEvent.press(audio);
     expect(
       screen.getByText("Audio for this message isn't up yet."),
     ).toBeOnTheScreen();

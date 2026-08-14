@@ -24,7 +24,9 @@
   "nowPlaying": "Läuft gerade",
   "minutes": "{{count}} Min.",
   "share": "Teilen",
-  "audioOnly": "Nur Audio",
+  "playbackMode": "Wiedergabemodus",
+  "video": "Video",
+  "audio": "Audio",
   "notes": "Notizen",
   "audioOnlyPending": "Diese Botschaft kann noch nicht abgespielt werden.",
   "openOnYoutube": "Auf YouTube öffnen",
@@ -40,6 +42,7 @@
   "notesGateBody": "Halte Notizen zu dieser Botschaft fest und finde sie auf jedem Gerät wieder.",
   "gateDismissed": "Du kannst als Gast weiter zuschauen.",
   "listening": "Hören",
+  "paused": "Pausiert",
   "audioLoading": "Lädt",
   "play": "Abspielen",
   "pause": "Pause",
@@ -49,11 +52,10 @@
   "progress": "Wiedergabeposition",
   "speed": "Tempo",
   "speedValue": "{{value}}x",
-  "speedNeedsAudio": "Wechsle zu „Nur Audio“, um das Tempo zu ändern.",
   "audioMissing": "Das Audio zu dieser Botschaft ist noch nicht da.",
   "audioIsTheMessage": "Diese Botschaft gibt es nur als Audio.",
   "audioErrorTitle": "Das Audio konnte nicht abgespielt werden",
   "audioErrorBody": "Prüfe deine Verbindung und versuche es erneut.",
   "backgroundNote": "Läuft im Hintergrund und auf deinem Sperrbildschirm",
-  "artworkViaYoutube": "Bild und Titel via YouTube"
+  "watchOnYoutube": "Auf YouTube ansehen"
 }
