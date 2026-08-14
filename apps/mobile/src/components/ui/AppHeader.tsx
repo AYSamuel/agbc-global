@@ -6,6 +6,7 @@ import {
   icon,
   radius,
   spacing,
+  typeScale,
 } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
@@ -31,6 +32,14 @@ export interface AppHeaderProps {
   leading?: 'back' | 'close';
   /** Right-side slot: bell, branch chip, overflow menu. */
   trailing?: ReactNode;
+  /**
+   * How the title is set. `title` is `.chead`, which nearly every screen wears.
+   * `eyebrow` is the player's `.pl-top .lbl`: small, tracked, uppercase and muted,
+   * because on that screen the message's own title is the heading and a second
+   * bold one above it competes with it (synced 2026-08-14, W3.1 slice 4: the
+   * player had been wearing the settings header since W1.3).
+   */
+  titleStyle?: 'title' | 'eyebrow';
 }
 
 export function AppHeader({
@@ -39,8 +48,10 @@ export function AppHeader({
   backLabel = 'Back',
   leading = 'back',
   trailing,
+  titleStyle = 'title',
 }: AppHeaderProps) {
   const { colors } = useTheme();
+  const eyebrow = titleStyle === 'eyebrow';
 
   return (
     <View
@@ -82,14 +93,28 @@ export function AppHeader({
       <Text
         accessibilityRole="header"
         numberOfLines={1}
-        style={{
-          fontFamily: fontFamily.display.extraBold,
-          fontSize: 18,
-          letterSpacing: -0.36,
-          color: colors.text,
-          flex: 1,
-          textAlign: 'center',
-        }}
+        style={
+          eyebrow
+            ? [
+                typeScale.label,
+                {
+                  // `.pl-top .lbl`: 11px / 800 / .16em, uppercase, muted.
+                  fontSize: 11,
+                  letterSpacing: 1.76,
+                  color: colors.muted,
+                  flex: 1,
+                  textAlign: 'center',
+                },
+              ]
+            : {
+                fontFamily: fontFamily.display.extraBold,
+                fontSize: 18,
+                letterSpacing: -0.36,
+                color: colors.text,
+                flex: 1,
+                textAlign: 'center',
+              }
+        }
       >
         {title}
       </Text>

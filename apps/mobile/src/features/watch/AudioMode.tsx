@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -58,15 +58,21 @@ export function AudioMode({
   });
 
   // The same two events the video path raises, told apart by `mode` (the
-  // tracking plan has carried 'audio' since W2.10). Fired on mount because
-  // entering audio mode IS starting to listen: playback begins by itself.
+  // tracking plan has carried 'audio' since W2.10).
+  //
+  // Raised on the first PLAY, not on mount (2026-08-15): audio no longer starts
+  // by itself, so mounting this only means the member chose the mode, and
+  // counting that as a play would credit the funnel with messages nobody heard.
+  // A latch, like the video path's, because the player reports `playing` again
+  // after every pause and every buffer.
+  const reported = useRef(false);
   useEffect(() => {
+    if (!audio.playing || reported.current) return;
+    reported.current = true;
     track(startAtSec > 0 ? 'sermon_resumed' : 'sermon_played', {
       mode: 'audio',
     });
-    // Once per entry into audio mode, never again on a re-render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [audio.playing, startAtSec]);
 
   if (audio.failed) {
     return (
@@ -85,7 +91,16 @@ export function AudioMode({
     <View>
       <SermonArtwork
         thumbnailUrl={sermon.thumbnail_url === '' ? null : sermon.thumbnail_url}
-        label={audio.busy ? t('watch:audioLoading') : t('watch:listening')}
+        // Three states, not two, since audio stopped autoplaying: the pill said
+        // "Listening" over a message sitting silently at 0:00, which is the kind
+        // of small lie that teaches people to distrust the rest of the screen.
+        label={
+          audio.busy
+            ? t('watch:audioLoading')
+            : audio.playing
+              ? t('watch:listening')
+              : t('watch:paused')
+        }
         height={artHeight}
       />
       <SermonMeta eyebrow={eyebrow} title={sermon.title} meta={meta} />

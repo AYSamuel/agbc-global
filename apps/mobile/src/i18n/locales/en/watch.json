@@ -24,7 +24,9 @@
   "nowPlaying": "Now playing",
   "minutes": "{{count}} min",
   "share": "Share",
-  "audioOnly": "Audio only",
+  "playbackMode": "Playback mode",
+  "video": "Video",
+  "audio": "Audio",
   "notes": "Notes",
   "audioOnlyPending": "This message isn't ready to play yet.",
   "openOnYoutube": "Open on YouTube",
@@ -40,6 +42,7 @@
   "notesGateBody": "Keep notes on this message and find them on any device.",
   "gateDismissed": "You can keep watching as a guest.",
   "listening": "Listening",
+  "paused": "Paused",
   "audioLoading": "Loading",
   "play": "Play",
   "pause": "Pause",
@@ -49,11 +52,10 @@
   "progress": "Playback position",
   "speed": "Speed",
   "speedValue": "{{value}}x",
-  "speedNeedsAudio": "Switch to Audio only to change the speed.",
   "audioMissing": "Audio for this message isn't up yet.",
   "audioIsTheMessage": "This message is audio only.",
   "audioErrorTitle": "The audio couldn't play",
   "audioErrorBody": "Check your connection and try again.",
   "backgroundNote": "Plays in the background and on your lock screen",
-  "artworkViaYoutube": "Artwork and title via YouTube"
+  "watchOnYoutube": "Watch on YouTube"
 }

@@ -19,7 +19,6 @@ import {
   icon,
   radius,
   spacing,
-  tonal,
   typeScale,
 } from '@agbc/shared/theme';
 
@@ -33,11 +32,15 @@ import {
   NoteBanner,
   NotesIcon,
   Screen,
+  SegmentedControl,
   ShareIcon,
   Skeleton,
   SpeedIcon,
+  VideoIcon,
   useToast,
 } from '@/components/ui';
+import { PlayerAction, PlayerActions } from '@/features/watch/PlayerAction';
+import { YouTubeCredit } from '@/features/watch/YouTubeCredit';
 import { AudioMode } from '@/features/watch/AudioMode';
 import {
   formatSpeedValue,
@@ -160,95 +163,6 @@ function SermonVideo({
   );
 }
 
-type TileState = 'idle' | 'on' | 'off';
-
-// Mockup `.pl-tiles` / `.pl-tile` with the two states W3.1 added: `on` for a mode
-// the member turned on (the same tinted gold `.glory.on` uses for a commitment
-// already made), `off` for a control that exists but has nothing to act on yet.
-// `off` still takes a tap: a dimmed tile that does nothing when pressed teaches
-// nothing, so each one answers with the reason it is dim.
-function PlayerTile({
-  label,
-  value,
-  hint,
-  state,
-  glyph,
-  onPress,
-}: {
-  label: string;
-  value?: string;
-  /** Why a dimmed tile is dimmed. Spoken on focus, so a screen-reader user
-   * learns the condition BEFORE activating rather than from the toast after. */
-  hint?: string;
-  state: TileState;
-  glyph: (color: string) => React.ReactNode;
-  onPress: () => void;
-}) {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={value === undefined ? label : `${label}, ${value}`}
-      accessibilityHint={hint}
-      // Deliberately NOT `disabled`. 08 asks the unavailable toggle to carry a
-      // tooltip, and a control that announces itself disabled while it still
-      // answers a tap is telling assistive tech something untrue. Dimmed, with
-      // the reason on focus and on press.
-      accessibilityState={{ selected: state === 'on' }}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        flex: 1,
-        alignItems: 'center',
-        // The row stretches all three tiles to the tallest, and Speed is three
-        // lines deep (icon, label, value) where the other two are two, so
-        // without this their contents sit at the top of a taller box and read
-        // as unseated.
-        justifyContent: 'center',
-        gap: 7,
-        backgroundColor: state === 'on' ? tonal.gold.bg : colors.alt,
-        borderWidth: 1,
-        borderColor: state === 'on' ? tonal.gold.border : colors.cardline,
-        borderRadius: radius.button,
-        paddingVertical: 14,
-        paddingHorizontal: spacing.xs,
-        opacity: state === 'off' ? 0.45 : pressed ? 0.85 : 1,
-      })}
-    >
-      {glyph(colors.text)}
-      <Text
-        maxFontSizeMultiplier={1.3}
-        style={{
-          fontFamily: fontFamily.body.bold,
-          fontSize: 11.5,
-          color: colors.text,
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </Text>
-      {/* The value line is rendered by EVERY tile, blank where there is nothing
-          to say. Only Speed carries a value, and a row of three stretches to
-          its tallest member either way, so without the reserved line the other
-          two centred their contents against a different number of lines and the
-          icons sat at two different heights across one row. A blank line costs
-          no space that the row was not already spending. */}
-      <Text
-        accessibilityElementsHidden={value === undefined}
-        importantForAccessibility={value === undefined ? 'no' : 'auto'}
-        maxFontSizeMultiplier={1.3}
-        numberOfLines={1}
-        style={{
-          fontFamily: fontFamily.body.bold,
-          fontSize: 11,
-          color: colors.eye,
-        }}
-      >
-        {value ?? ' '}
-      </Text>
-    </Pressable>
-  );
-}
-
 // SERMON player (docs/spec/08). Video via the pinned iframe with "Open on
 // YouTube" as the tested fallback, audio via the private bucket's signed URL
 // (W3.1 slice 3), and the resume that follows a member between the two. Guest
@@ -341,6 +255,9 @@ export default function Sermon() {
     <Screen padded={false} widthClass="capped">
       <AppHeader
         title={t('watch:nowPlaying')}
+        // The frame's `.pl-top .lbl`, not `.chead`: the message's own title is the
+        // heading on this screen (W3.1 slice 4, after the frame diff caught it).
+        titleStyle="eyebrow"
         backLabel={t('back')}
         onBack={() => {
           router.back();
@@ -532,67 +449,77 @@ export default function Sermon() {
               </>
             )}
 
-            {/* Mockup .pl-tiles. Speed took Download's slot at W3.1: 08 never
-                specified a download, and speed had no home in any frame. */}
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: spacing.sm + 2,
-                marginTop: spacing.x2l,
-              }}
-            >
-              <PlayerTile
-                label={t('watch:audioOnly')}
-                hint={
-                  audioPath === null
-                    ? t('watch:audioMissing')
-                    : noVideo
+            {/* Mockup `.pl-seg` + `.pl-acts` (direction A, chosen with Ayo on
+                2026-08-14). The row of three tiles that stood here dressed a
+                MODE, a VALUE and a DESTINATION identically, and its dimmed
+                member read as broken rather than unavailable. Mode is now a
+                segmented control that says what it is; the other two are quiet
+                actions under it. */}
+            <View style={{ marginTop: spacing.x2l }}>
+              <SegmentedControl
+                accessibilityLabel={t('watch:playbackMode')}
+                value={audioMode ? 'audio' : 'video'}
+                segments={[
+                  {
+                    key: 'video',
+                    label: t('watch:video'),
+                    icon: (color) => <VideoIcon size={icon.md} color={color} />,
+                    // A message that was never on YouTube, or one whose video
+                    // the sync has lost: the half that exists is the audio.
+                    unavailable: noVideo,
+                    hint: noVideo ? t('watch:audioIsTheMessage') : undefined,
+                  },
+                  {
+                    key: 'audio',
+                    label: t('watch:audio'),
+                    icon: (color) => (
+                      <HeadphonesIcon size={icon.md} color={color} />
+                    ),
+                    unavailable: audioPath === null,
+                    hint:
+                      audioPath === null ? t('watch:audioMissing') : undefined,
+                  },
+                ]}
+                onChange={(key) => {
+                  setAudioRequested(key === 'audio');
+                }}
+                onUnavailable={(key) => {
+                  toast.show(
+                    key === 'video'
                       ? t('watch:audioIsTheMessage')
-                      : undefined
-                }
-                state={audioPath === null ? 'off' : audioMode ? 'on' : 'idle'}
-                glyph={(color) => (
-                  <HeadphonesIcon size={icon.xl} color={color} />
-                )}
-                onPress={() => {
-                  if (audioPath === null) {
-                    toast.show(t('watch:audioMissing'));
-                    return;
-                  }
-                  if (noVideo) {
-                    toast.show(t('watch:audioIsTheMessage'));
-                    return;
-                  }
-                  setAudioRequested((on) => !on);
+                      : t('watch:audioMissing'),
+                  );
                 }}
               />
-              <PlayerTile
-                label={t('watch:speed')}
-                value={t('watch:speedValue', {
-                  value: formatSpeedValue(speed, locale),
-                })}
-                hint={audioMode ? undefined : t('watch:speedNeedsAudio')}
-                state={audioMode ? 'idle' : 'off'}
-                glyph={(color) => <SpeedIcon size={icon.xl} color={color} />}
-                onPress={() => {
-                  if (!audioMode) {
-                    toast.show(t('watch:speedNeedsAudio'));
-                    return;
-                  }
-                  setSpeed(nextSpeed(speed));
-                }}
-              />
-              <PlayerTile
-                label={t('watch:notes')}
-                state="idle"
-                glyph={(color) => <NotesIcon size={icon.xl} color={color} />}
-                // Notes are a member feature: open the gate (W2.2 wires
-                // gate-return so the note composer opens after sign-in).
-                onPress={() => {
-                  track('gate_shown', { action_type: 'sermon_notes' });
-                  setGateVisible(true);
-                }}
-              />
+              <PlayerActions>
+                {/* Speed is ABSENT with the embed up, not dimmed: there is no
+                    rate to change while YouTube owns playback, and the segment
+                    immediately above is the answer to "why". */}
+                {audioMode ? (
+                  <PlayerAction
+                    label={t('watch:speed')}
+                    value={t('watch:speedValue', {
+                      value: formatSpeedValue(speed, locale),
+                    })}
+                    glyph={(color) => (
+                      <SpeedIcon size={icon.md} color={color} />
+                    )}
+                    onPress={() => {
+                      setSpeed(nextSpeed(speed));
+                    }}
+                  />
+                ) : null}
+                <PlayerAction
+                  label={t('watch:notes')}
+                  glyph={(color) => <NotesIcon size={icon.md} color={color} />}
+                  // Notes are a member feature: open the gate (W2.2 wires
+                  // gate-return so the note composer opens after sign-in).
+                  onPress={() => {
+                    track('gate_shown', { action_type: 'sermon_notes' });
+                    setGateVisible(true);
+                  }}
+                />
+              </PlayerActions>
             </View>
 
             {audioMode ? (
@@ -608,11 +535,45 @@ export default function Sermon() {
                 {t('watch:backgroundNote')}
               </Text>
             ) : sermon.youtube_id !== null ? (
-              <View style={{ marginTop: spacing.lg }}>
-                <Button
-                  label={t('watch:openOnYoutube')}
-                  variant="outline"
-                  fullWidth
+              // A text link, not the outline button it used to be (W3.1 slice
+              // 4): on a screen whose subject is the video, a full-width button
+              // was the heaviest thing on it while being the way OUT of the app.
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => {
+                  void WebBrowser.openBrowserAsync(
+                    youtubeUrl(sermon.youtube_id ?? ''),
+                  );
+                }}
+                style={({ pressed }) => ({
+                  marginTop: spacing.lg,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    fontFamily: fontFamily.body.bold,
+                    fontSize: 13.5,
+                    color: colors.blue,
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('watch:openOnYoutube')}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {/* YouTube attribution (ToS box, docs/spec/08). AUDIO mode only,
+                decided with Ayo 2026-08-14: there the thumbnail and title are
+                shown bare, with no YouTube chrome anywhere on the screen, so
+                this line is the only thing crediting them. The video state
+                needs no line because the embed carries YouTube's own logo and
+                its "Watch on YouTube" control, which is the attribution. A
+                message that was never on YouTube borrows nothing either way. */}
+            {audioMode && sermon.youtube_id !== null ? (
+              <View style={{ marginBottom: spacing.md }}>
+                <YouTubeCredit
+                  label={t('watch:watchOnYoutube')}
                   onPress={() => {
                     void WebBrowser.openBrowserAsync(
                       youtubeUrl(sermon.youtube_id ?? ''),
@@ -620,26 +581,6 @@ export default function Sermon() {
                   }}
                 />
               </View>
-            ) : null}
-
-            {/* Visible YouTube attribution (ToS box, docs/spec/08), and only
-                where something on screen actually came from YouTube: a message
-                that was never on it borrows nothing to attribute. */}
-            {sermon.youtube_id !== null ? (
-              <Text
-                style={{
-                  fontFamily: fontFamily.body.regular,
-                  fontSize: 12,
-                  color: colors.muted,
-                  textAlign: 'center',
-                  marginTop: spacing.lg,
-                  marginBottom: spacing.md,
-                }}
-              >
-                {audioMode
-                  ? t('watch:artworkViaYoutube')
-                  : t('watch:viaYoutube')}
-              </Text>
             ) : (
               <View style={{ height: spacing.md }} />
             )}

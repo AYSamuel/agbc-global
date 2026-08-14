@@ -86,9 +86,13 @@ export function useSermonAudio({
     if (isMember) void saveServerPosition(sermonId, at);
   }, [isMember, sermonId, savePosition]);
 
-  // Configure the session, seek to the resume point, then play. All three belong
-  // together and all three run again after a re-mint, because the new player
-  // inherits none of it.
+  // Configure the session and seek to the resume point. Both belong together and
+  // both run again after a re-mint, because the new player inherits neither.
+  //
+  // What deliberately does NOT happen here is playing (2026-08-15, Ayo's call):
+  // switching to audio is choosing a MODE, not pressing play, and a message that
+  // starts talking by itself is a message talking to a room that did not ask.
+  // The seek still happens, so the play button picks up where the listening was.
   useEffect(() => {
     if (!status.isLoaded) return;
     if (seekedForRef.current === player.id) return;
@@ -113,7 +117,6 @@ export function useSermonAudio({
       );
       if (positionRef.current > 0) await player.seekTo(positionRef.current);
       if (run.cancelled) return;
-      player.play();
     })();
     return () => {
       run.cancelled = true;

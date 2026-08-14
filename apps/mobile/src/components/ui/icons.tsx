@@ -78,6 +78,7 @@ import Star from 'lucide-react-native/icons/star';
 import Trash2 from 'lucide-react-native/icons/trash-2';
 import User from 'lucide-react-native/icons/user';
 import Users from 'lucide-react-native/icons/users';
+import Video from 'lucide-react-native/icons/video';
 import X from 'lucide-react-native/icons/x';
 
 export interface IconProps extends SvgProps {
@@ -203,6 +204,9 @@ export const HomeIcon = houseStyle(House, 'HomeIcon');
 // `rotate-cw`, down to the rect geometry.
 export const HeadphonesIcon = houseStyle(Headphones, 'HeadphonesIcon');
 export const SpeedIcon = houseStyle(Gauge, 'SpeedIcon');
+/** The Video half of the player's mode segment (W3.1 slice 4). Lucide's `video`
+ * is the frame's glyph path for path: the lens wedge plus the body rect. */
+export const VideoIcon = houseStyle(Video, 'VideoIcon');
 /** The player's Notes tile. Lucide's `notebook-pen` IS the frame's glyph, path
  * for path: ruled margin plus a pen, which reads as writing ON the message
  * rather than the generic document `LegalIcon` draws. */
