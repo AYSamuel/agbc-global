@@ -103,6 +103,28 @@ const config = {
         microphonePermission: false,
       },
     ],
+    [
+      // Background listening (docs/spec/08, W3.1 slice 2): UIBackgroundModes audio on
+      // iOS; FOREGROUND_SERVICE + FOREGROUND_SERVICE_MEDIA_PLAYBACK and the media
+      // session service on Android, which is what keeps audio alive past ~3 minutes
+      // with the screen off. The app PLAYS and never records, so the recording half is
+      // switched off outright: recordAudioAndroid=false drops RECORD_AUDIO, and
+      // microphonePermission=false blocks the iOS mic string (the expo-image-picker
+      // precedent: a permission the app never uses is a store-privacy lie). Option
+      // names verified against the installed expo-audio 57.0.3 plugin source, not
+      // from memory.
+      'expo-audio',
+      {
+        enableBackgroundPlayback: true,
+        recordAudioAndroid: false,
+        microphonePermission: false,
+      },
+    ],
+    // Push (docs/spec/15) is W3.3's item; only the NATIVE half rides this build so the
+    // dev clients need one rebuild instead of two (decided with Ayo 2026-08-14, the
+    // same trick W2.10 used with Sentry). Bare on purpose: icon, color and the six
+    // Android channels are W3.3's decisions, made when the sending side exists.
+    'expo-notifications',
     ...sentryPlugin,
   ],
   experiments: {
