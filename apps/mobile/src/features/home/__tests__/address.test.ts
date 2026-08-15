@@ -26,10 +26,10 @@ describe('resolveAddressLine', () => {
   test('skips blank lines', () => {
     expect(
       resolveAddressLine(
-        { line1: '   ', line2: '7815 RE Emmen' },
+        { line1: '   ', line2: '7811 KZ Emmen' },
         'AGBC Emmen',
       ),
-    ).toBe('7815 RE Emmen');
+    ).toBe('7811 KZ Emmen');
   });
 
   test('yields null when there is nothing usable', () => {
