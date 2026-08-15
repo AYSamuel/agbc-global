@@ -22,6 +22,7 @@ const SWATCHES = [
   'card',
   'cardline',
   'band',
+  'bandline',
   'accent',
   'blue',
   'eye',

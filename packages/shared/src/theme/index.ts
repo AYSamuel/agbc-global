@@ -179,6 +179,22 @@ export interface ColorTokens {
   raised: string;
   band: string;
   bandtext: string;
+  /** The hairline that gives a band its edge. `band` is ink in BOTH themes, and
+   * in dark the page behind it is the same ink (`bg` and `palette.ink` are both
+   * `#0e1420`), so an unbordered band stops reading as a surface and becomes
+   * floating text. `05` already states the rule this answers: in dark, borders
+   * carry separation, not shadows. Transparent in light, where the ink inverts
+   * against a cream page and needs no help; always applied, so a band measures
+   * identically in both themes and only its colour changes.
+   *
+   * Promoted to a token on 2026-08-15 (W3.3 slice 1). It was found twice before
+   * that and patched in place twice, in `StatusPanel` (seen on the phone
+   * 2026-08-08) and `StreakHero`, while the two other surfaces that needed it,
+   * the guest sign-in card and the `Toast`, had no such patch. The splash and
+   * the player's media box draw on ink too and are deliberately left without
+   * one: the first is full-screen with nothing behind it, and the second always
+   * has a player, artwork or the branded gradient inside it. */
+  bandline: string;
   accent: string;
   blue: string;
   eye: string;
@@ -206,6 +222,7 @@ export const color: Record<ThemeName, ColorTokens> = {
     raised: '#ffffff',
     band: palette.ink,
     bandtext: '#ffffff',
+    bandline: 'transparent',
     accent: palette.gold,
     blue: palette.blue,
     eye: '#b98600',
@@ -226,6 +243,10 @@ export const color: Record<ThemeName, ColorTokens> = {
     raised: '#28323f',
     band: palette.ink,
     bandtext: '#ffffff',
+    // Same value as `cardline`, and deliberately its own name rather than a
+    // reference: a card's hairline and a band's hairline answer to different
+    // surfaces and either may move without the other.
+    bandline: '#28323f',
     accent: palette.gold,
     // Mockup keeps --blue #2f6fed in dark; 05 deliberately lightens it for contrast
     // on dark cards. Keeping 05's correction (flagged in 05).

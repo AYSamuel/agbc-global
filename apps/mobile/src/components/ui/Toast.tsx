@@ -64,6 +64,12 @@ export function ToastProvider({ children }: PropsWithChildren) {
           <View
             style={{
               backgroundColor: colors.band,
+              // A toast is the band surface with the least to lean on: it floats
+              // over whatever screen is behind it, carries no shadow, and in dark
+              // its ink is the page's own colour, so without the hairline it is
+              // white text hanging in the middle of nothing (`bandline`).
+              borderWidth: 1,
+              borderColor: colors.bandline,
               borderRadius: radius.button,
               paddingHorizontal: spacing.xl,
               paddingVertical: spacing.md,

@@ -59,7 +59,7 @@ export function StatusPanel({
   ring = null,
   accessibilityLabel,
 }: StatusPanelProps) {
-  const { name, colors } = useTheme();
+  const { colors } = useTheme();
   const grouped = accessibilityLabel !== undefined;
   const gold = Math.max(0, Math.min(1, ring?.fraction ?? 0)) * CIRCUMFERENCE;
 
@@ -70,14 +70,11 @@ export function StatusPanel({
       style={{
         backgroundColor: palette.ink,
         borderRadius: radius.card,
-        // The band is ink in both themes, and in DARK the page behind it is the
-        // same ink: on device it stopped reading as a surface at all and became
-        // floating text (seen on the phone, 2026-08-08). A hairline gives it its
-        // edge back, which is the rule `05` already states for dark ("borders,
-        // not shadows, carry separation there"). The border is always present so
-        // the box measures identically in both themes; only its colour changes.
+        // Why a band needs a hairline at all, and why it is always present, now
+        // lives on the `bandline` token (packages/shared). This was one of the
+        // two places that hand-rolled it before it had a name.
         borderWidth: 1,
-        borderColor: name === 'dark' ? colors.cardline : 'transparent',
+        borderColor: colors.bandline,
         padding: spacing.lg,
         flexDirection: 'row',
         alignItems: 'center',
