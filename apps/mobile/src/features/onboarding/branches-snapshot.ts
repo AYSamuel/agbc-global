@@ -78,9 +78,9 @@ export const BRANCHES_SNAPSHOT: BranchSummary[] = [
     is_hq: false,
     youtube_channel_id: null,
     timezone: 'Europe/Amsterdam',
-    address: { line1: 'Flintstraat 29C05', line2: '7815 RE Emmen' },
-    lat: 52.7862,
-    lng: 6.8917,
+    address: { line1: 'De Bukakkers 18B4', line2: '7811 KZ Emmen' },
+    lat: 52.7769,
+    lng: 6.8935,
     order: 3,
   },
   {

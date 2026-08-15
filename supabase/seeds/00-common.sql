@@ -64,9 +64,9 @@ values
     'Nederlands / English',
     null,
     'oami.gospel@gmail.com',
-    52.7862, 6.8917, -- Flintstraat, Emmen (venue-level approximation)
+    52.7769, 6.8935, -- De Bukakkers, Emmen (venue-level approximation)
     '{"sunday": "11:00 AM", "midweek": "Woensdag 19:00 uur (CET)"}'::jsonb,
-    '{"line1": "Flintstraat 29C05", "line2": "7815 RE Emmen"}'::jsonb,
+    '{"line1": "De Bukakkers 18B4", "line2": "7811 KZ Emmen"}'::jsonb,
     '{"name": "Pastor Blossom Anukposi", "role": "Lead Pastor, Emmen"}'::jsonb,
     '[]'::jsonb,
     'Welkom. There is a place for you in Emmen.',
