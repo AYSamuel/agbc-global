@@ -245,16 +245,17 @@ describe('the four states of rhythm_state (docs/spec/10)', () => {
 });
 
 describe('the history', () => {
-  test('a live-watch Sunday reads as watched live, not as a branch visit', async () => {
+  test('every attended day reads as a branch visit (ADR 0021)', async () => {
+    // This used to prove a live-watch Sunday read as "Watched live". That source was
+    // the cut LIVE screen's credit-on-open rule and nothing ever wrote it, so in-person
+    // is now the only way a row gets here.
     signIn();
     mockAttendance.mockReturnValue(
-      query([
-        ...attendance(['2026-08-02']),
-        ...attendance(['2026-07-26'], 'live_watch'),
-      ]),
+      query([...attendance(['2026-08-02']), ...attendance(['2026-07-26'])]),
     );
     await renderRhythm();
-    expect(screen.getByText('Watched live')).toBeOnTheScreen();
+    expect(screen.queryByText('Watched live')).not.toBeOnTheScreen();
+    expect(screen.getAllByText(/In person/).length).toBeGreaterThan(0);
   });
 });
 

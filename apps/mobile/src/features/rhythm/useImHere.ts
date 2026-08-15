@@ -45,8 +45,8 @@ export function queueCheckIn(branchId: string): void {
   // this too, and by then the member exists, so `visiting` can be answered in
   // both. `visiting` compares the tapped branch with the HOME branch, not with
   // the browsed chip `track()` already sends (docs/spec/07: attendance records
-  // where you are standing). `source` is a literal until W3.2's live-watch
-  // credit, whose own write must say `live_watch`.
+  // where you are standing). `source` is a literal and stays one:
+  // there is no other way to attend (ADR 0021 cut the live-watch credit with W3.2).
   const homeBranchId = useAuthStore.getState().profile?.branchId ?? null;
   track('attendance_marked', {
     source: 'here_button',

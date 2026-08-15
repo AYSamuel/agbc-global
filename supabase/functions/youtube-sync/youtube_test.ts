@@ -107,10 +107,12 @@ Deno.test('API mode mirrors the website: tabs, premiere drop, running broadcast'
   assertEquals(byId.get('vid-normal')?.durationSec, 2400);
   assertEquals(byId.get('vid-normal')?.thumbnailUrl, 'https://img/high.jpg');
 
+  // `live_replay` is the TAB it was synced from, and it survives ADR 0021: those rows
+  // are recorded messages feeding Watch's "Recent live streams" rail.
   assertEquals(byId.get('live-vod')?.kind, 'live_replay');
-  assertEquals(byId.get('live-vod')?.isLive, false);
 
-  // The running broadcast came from the UU peek: watchable, flagged live.
-  assertEquals(byId.get('running-now')?.isLive, true);
+  // A broadcast that is running right now still syncs as an ordinary row. Nothing marks
+  // it as playing, because the app carries no live state (ADR 0021); it simply becomes
+  // watchable like everything else once it has ended.
   assertEquals(byId.get('running-now')?.durationSec, null);
 });

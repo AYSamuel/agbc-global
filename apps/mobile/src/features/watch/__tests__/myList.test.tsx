@@ -82,8 +82,6 @@ function sermon(
     thumbnail_url: '',
     series: null,
     published_at: '2026-07-18T10:00:00Z',
-    is_live: false,
-    live_checked_at: null,
     kind: 'video',
     status: 'available',
     ...overrides,

@@ -1,16 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
-import {
-  fontFamily,
-  icon,
-  palette,
-  radius,
-  spacing,
-  tonal,
-} from '@agbc/shared/theme';
+import { fontFamily, icon, radius, spacing } from '@agbc/shared/theme';
 
-import { ChurchIcon, LiveIcon } from '@/components/ui';
+import { ChurchIcon } from '@/components/ui';
 import { joinMeta } from '@/features/family/format';
 import { useTheme } from '@/theme';
 import { useFormattingLocale } from '@/i18n';
@@ -61,18 +54,18 @@ export function AttendanceList({
       }}
     >
       {entries.map((entry, index) => {
-        const live = entry.source === 'live_watch';
         const when = formatAttendanceDate(entry.serviceDate, locale);
-        const where = live
-          ? t('rhythm:watchedLive')
-          : // A branch the lookup has not got (a branch since retired, an
-            // offline cold start before the list arrives) leaves the row with
-            // its date and "In person", which is still true, rather than with a
-            // stray separator or a raw id.
-            joinMeta([
-              branchNames[entry.branchId] ?? null,
-              t('rhythm:inPerson'),
-            ]);
+        // Every attendance row is an in-person one now (ADR 0021): the branch that
+        // rendered "Watched live" belonged to the cut LIVE screen's credit-on-open rule,
+        // which nothing ever wrote.
+        //
+        // A branch the lookup has not got (a branch since retired, an offline cold start
+        // before the list arrives) leaves the row with its date and "In person", which is
+        // still true, rather than with a stray separator or a raw id.
+        const where = joinMeta([
+          branchNames[entry.branchId] ?? null,
+          t('rhythm:inPerson'),
+        ]);
 
         return (
           <View
@@ -96,16 +89,14 @@ export function AttendanceList({
                 width: 40,
                 height: 40,
                 borderRadius: 11,
-                backgroundColor: live ? tonal.redSoft.bg : colors.alt,
+                backgroundColor: colors.alt,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              {live ? (
-                <LiveIcon size={icon.lg} color={palette.red} />
-              ) : (
-                <ChurchIcon size={icon.lg} color={colors.text} />
-              )}
+              {/* One icon, because there is one way to attend (ADR 0021). The red
+                  LiveIcon variant went with the live-watch source. */}
+              <ChurchIcon size={icon.lg} color={colors.text} />
             </View>
             <View style={{ flex: 1 }}>
               <Text

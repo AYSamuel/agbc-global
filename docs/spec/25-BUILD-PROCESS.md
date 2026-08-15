@@ -115,8 +115,8 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W1.3 · Watch slice: sermons domain + video** (multi-session)
 - Refs: `08`, `02` (sermons, playback_positions, sermon_notes, saved_items), `21` §5 (sync job).
-- Build BE: sermons domain migrations (partial unique `youtube_id`, `status`, `live_checked_at`) + RLS + pgTAP; YouTube sync edge function (playlistItems.list, upsert on conflict, unavailable/restore logic, dead-man ping) + `deno test`; live-detection function around `branch_services` windows; dev seed of a few sermon rows.
-- Build FE: WATCH tab (hero, rails, live banner state, search entry), WATCH-SEARCH, SERMON player (YouTube via `react-native-youtube-iframe`, "Open on YouTube" fallback, ToS box rules from `08`); guest playback only (resume/save/notes gate in Phase 2).
+- Build BE: sermons domain migrations (partial unique `youtube_id`, `status`) + RLS + pgTAP; YouTube sync edge function (playlistItems.list, upsert on conflict, unavailable/restore logic, dead-man ping) + `deno test`; dev seed of a few sermon rows.
+- Build FE: WATCH tab (hero, rails, search entry), WATCH-SEARCH, SERMON player (YouTube via `react-native-youtube-iframe`, "Open on YouTube" fallback, ToS box rules from `08`); guest playback only (resume/save/notes gate in Phase 2).
 - Done: `08` guest criteria; sync run against the real channel on dev; four states on WATCH; sermon rot state renders.
 
 **W1.4 · Home slice (guest) + daily verse**
@@ -239,11 +239,10 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Build FE: expo-audio engine (background config plugin, `setActiveForLockScreen`, interruption handling), audio-only toggle (only when `audio_path`, tooltip otherwise), ±15s, speed, throttled `playback_positions` writes + resume, SERMON-NOTES + MY-LIST + Save (now gated member features live). NOTE: the DEVICE-LOCAL half of resume (guests included) shipped early during the Watch/Home window (decision 2026-07-20, `08`); what remains here is the server-synced member layer that carries the position across devices.
 - Done: `08` acceptance criteria: background + lock-screen playback survives 10+ minutes on both physical devices; resume within seconds; Play Console mediaPlayback declaration noted for release.
 
-**W3.2 · LIVE slice**
-- Refs: `08` (LIVE, credit-on-open, fail state machine), `21` §10 (presence aggregation).
-- Build BE: watching-now server-side aggregator broadcasting a single count every 10-15s; live-detection hardening (`live_checked_at` staleness bound).
-- Build FE: LIVE screen (player, watching-now, subscribe on focus/unsubscribe on blur, poll fallback), credit-on-open attendance (`source='live_watch'`), scheduled-but-absent state machine ("We'll be live soon" → 15 min → "We couldn't go live today" + latest message).
-- Done: fake a service window on dev and walk all three states; attendance row written once on open; count updates via broadcast, never raw presence.
+**W3.2 · LIVE slice · CUT 2026-08-15 (ADR 0021)**
+- **Not deferred, removed.** Members are not to join a live stream from inside the app, so there is nothing here to build later. The item is kept in this list rather than deleted so the numbering of W3.1/W3.3 stays stable and so the next reader finds the decision instead of the gap.
+- What went with it, in the same change: the `LIVE` screen and its three frames, the watching-now aggregator (`21` §10), the credit-on-open attendance rule (`source='live_watch'`, retired in place), `sermons.is_live` / `live_checked_at` and their staleness bound, the live banner on WATCH, the red LIVE badge, and the `live-detection` edge function.
+- What deliberately stayed: `kind='live_replay'` and WATCH's "Recent live streams" rail. That value is the channel TAB a row was synced from, not a live state; those rows are recorded messages. Watching a replay is not joining live.
 
 **W3.3 · Push infrastructure slice** (multi-session)
 - Refs: `15` (channels, ordering, payload privacy, localization model, receipts, deep links), `02` (notifications, push_tickets), `21` §5.

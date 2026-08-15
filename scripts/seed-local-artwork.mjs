@@ -2,10 +2,19 @@
 // with it (docs/spec/08, W3.1 slice 5). Without this, every message on device
 // shows its YouTube thumbnail and the one thing this slice changed is invisible.
 //
-// ONE sermon, deliberately, and the newest one that also carries dev audio: the
-// state worth seeing on a device is OUR picture winning over a YouTube thumbnail
-// that exists, which needs a message that has both. The message beside it keeps
-// its thumbnail, so the rails show the two side by side.
+// ONE sermon, deliberately, and the newest LIVE REPLAY: the state worth seeing on a
+// device is OUR picture winning over a YouTube thumbnail that exists, which needs a
+// message that has both, and the rows beside it keep their thumbnails so the rails show
+// the two side by side.
+//
+// A live replay rather than "the newest message with audio" (corrected 2026-08-15, after
+// Ayo saw the result on the device). Watch's hero is always the newest `kind='video'`, so
+// the old rule put this picture on the hero whenever the newest message happened to be a
+// video, and a flat generated placeholder at hero size reads as a MISSING thumbnail
+// rather than as artwork. A replay always sits in a rail, where the picture is plainly a
+// card image and the hero keeps the real photograph it syncs from YouTube. The generated
+// image below carries a mark for the same reason: a dev seed must never make the app look
+// broken to the person testing it.
 //
 // The audio-only case (a message with our artwork and no YouTube half at all) is
 // NOT seeded on purpose: it is created through the dashboard, which is the flow
@@ -70,10 +79,14 @@ if (!key) {
 let file = supplied;
 let generated = null;
 if (!file) {
-  generated = join(tmpdir(), `agbc-dev-artwork-${SIZE}.jpg`);
+  generated = join(tmpdir(), `agbc-dev-artwork-${SIZE}-v2.jpg`);
   if (!existsSync(generated)) {
-    // The mockup's own gold-to-navy cover (`.artprev.own`), so what lands on the
-    // device is the thing the frame promised rather than a grey rectangle.
+    // The mockup's own gold-to-navy cover (`.artprev.own`) with three bars struck across
+    // it. The bars are what stop this reading as a missing image: a bare gradient is what
+    // a card with NO picture looks like, so a placeholder that is only a gradient makes a
+    // working feature look broken (seen on the device, 2026-08-15). `drawbox` is used
+    // rather than `drawtext` on purpose: text needs libfreetype and a font PATH, which is
+    // the one thing about ffmpeg that is not portable across these machines.
     execFileSync(
       'ffmpeg',
       [
@@ -84,6 +97,12 @@ if (!file) {
         'lavfi',
         '-i',
         `gradients=s=${SIZE}:c0=0xb98600:c1=0x14213d:x0=0:y0=0:x1=1600:y1=900:d=1`,
+        '-vf',
+        [
+          'drawbox=x=140:y=330:w=620:h=54:color=0xfbf8f3@0.92:t=fill',
+          'drawbox=x=140:y=430:w=980:h=54:color=0xfbf8f3@0.92:t=fill',
+          'drawbox=x=140:y=530:w=430:h=54:color=0xffcf4a@0.95:t=fill',
+        ].join(','),
         '-frames:v',
         '1',
         '-y',
@@ -115,7 +134,7 @@ if (!upload.ok) {
 }
 
 const patch = await fetch(
-  `${url}/rest/v1/sermons?id=eq.${await newestWithAudio(url, key)}`,
+  `${url}/rest/v1/sermons?id=eq.${await newestRailMessage(url, key)}`,
   {
     method: 'PATCH',
     headers: {
@@ -145,11 +164,16 @@ console.log(
   `dev artwork on the shelf: ${OBJECT} (${String(Math.round(bytes.length / 1024))} KiB) on ${String(stamped.length)} sermon(s)`,
 );
 
-async function newestWithAudio(apiUrl, serviceKey) {
-  // Ordered the same way seed-local-audio stamps, so the two scripts agree on
-  // which message is "the newest one" without either reading the other's state.
+async function newestRailMessage(apiUrl, serviceKey) {
+  // The newest LIVE REPLAY, never simply the newest message. Watch's hero is always the
+  // newest `kind='video'`, so targeting "newest" put this picture on the hero whenever a
+  // video happened to be latest, which is the one place a generated placeholder looks
+  // like a missing thumbnail instead of a cover. A replay is always a rail row.
+  //
+  // Deliberately NOT coupled to `audio_path` any more either: the point is a message that
+  // has a YouTube thumbnail for ours to win against, and every synced row has one.
   const res = await fetch(
-    `${apiUrl}/rest/v1/sermons?select=id&audio_path=not.is.null&order=published_at.desc&limit=1`,
+    `${apiUrl}/rest/v1/sermons?select=id&kind=eq.live_replay&status=eq.available&order=published_at.desc&limit=1`,
     { headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey } },
   );
   if (!res.ok) {
@@ -159,7 +183,7 @@ async function newestWithAudio(apiUrl, serviceKey) {
   const rows = await res.json();
   if (rows.length === 0) {
     console.error(
-      'no sermon carries audio yet: run `pnpm db:seed-audio` first (sermons are synced, never seeded).',
+      'no live replay to stamp: run `pnpm db:sync-sermons` first (sermons are synced, never seeded).',
     );
     process.exit(1);
   }

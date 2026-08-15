@@ -12,7 +12,6 @@ import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import {
   planSync,
-  STALE_LIVE_MINUTES,
   type ExistingSermonRow,
   type SyncMode,
 } from './core.ts';
@@ -49,7 +48,7 @@ Deno.serve(async (req) => {
 
     const { data: existingRows, error: existingError } = await supabase
       .from('sermons')
-      .select('youtube_id, status, is_live, live_checked_at')
+      .select('youtube_id, status')
       .not('youtube_id', 'is', null);
     if (existingError) {
       throw new Error(`sermons read failed: ${existingError.message}`);
@@ -72,30 +71,10 @@ Deno.serve(async (req) => {
       if (error) throw new Error(`unavailable update failed: ${error.message}`);
     }
 
-    // A running broadcast seen by the sync gets stamped like live-detection
-    // would (API mode only; the 5-minute job maintains it between syncs).
-    const liveNow = fetched.filter((v) => v.isLive).map((v) => v.youtubeId);
-    if (liveNow.length > 0) {
-      const { error } = await supabase
-        .from('sermons')
-        .update({ is_live: true, live_checked_at: new Date().toISOString() })
-        .in('youtube_id', liveNow);
-      if (error) throw new Error(`live stamp failed: ${error.message}`);
-    }
-
-    // The nightly sync clears any stale is_live it finds (docs/spec/08).
-    const staleBefore = new Date(
-      Date.now() - STALE_LIVE_MINUTES * 60_000,
-    ).toISOString();
-    const { data: cleared, error: staleError } = await supabase
-      .from('sermons')
-      .update({ is_live: false })
-      .eq('is_live', true)
-      .or(`live_checked_at.is.null,live_checked_at.lt.${staleBefore}`)
-      .select('id');
-    if (staleError) {
-      throw new Error(`stale-live clear failed: ${staleError.message}`);
-    }
+    // No live stamping and no stale-flag clearing: the app carries no live state at all
+    // (ADR 0021). A currently-running broadcast is simply a row like any other, and it
+    // becomes watchable here the same way every other message does, once it ends and
+    // lands in the channel's Live tab as a replay.
 
     const summary = {
       mode,
@@ -104,7 +83,6 @@ Deno.serve(async (req) => {
       upserted: (upserted as number | null) ?? 0,
       markedUnavailable: plan.unavailableIds.length,
       restored: plan.restoredCount,
-      staleLiveCleared: cleared?.length ?? 0,
     };
 
     await pingDeadMan(healthcheckUrl, true);

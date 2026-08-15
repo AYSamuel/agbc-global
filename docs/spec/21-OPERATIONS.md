@@ -86,7 +86,7 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 - **Every job takes a lease** (`claim_job_lease` / `release_job_lease`, `public.job_leases`) so an overrunning run and the next tick cannot both send. The lease is given back when the run ends; its expiry is only the net under a run that died holding it. Advisory locks cannot serve here: the jobs reach Postgres through PostgREST, so every statement is a different pooled session.
 - **A job that cannot deliver pings FAILURE**, never a quiet 200: "reminders silently stop" is the canonical failure of this whole table.
 - What is still per-environment, and still Track P's: the two vault secrets, the healthchecks.io checks, and prod's six pre-existing cron jobs from the retired app (`docs/runbooks/prod-audit-2026-07-30.md`). Locally, `pnpm db:reset` (or `pnpm jobs:arm-local`) writes the vault secrets from the machine's own CLI keys; nothing is committed.
-- `youtube-sync` and `live-detection` are still unscheduled by choice: the sermon sync runs from `pnpm db:reset` locally, and both get their schedules with the first hosted deployment that must auto-run them, now a one-line migration each rather than a design question.
+- `youtube-sync` is still unscheduled by choice: it runs from `pnpm db:reset` locally, and gets its schedule with the first hosted deployment that must auto-run it, now a one-line migration rather than a design question. (`live-detection` was listed here too and was deleted with ADR 0021: its one line will never be written.)
 
 ## 6. Observability (the minimal owned alert set)
 
@@ -130,7 +130,17 @@ Cadence: per PR = everything except E2E; nightly = Maestro + migration-history +
 | PostHog Free | 1M events/mo, EU cloud | generous; consent-gated per `20` | events dropped |
 | healthchecks.io / UptimeRobot | free tiers (20 checks / 50 monitors) | sufficient | n/a |
 
-## 10. Realtime capacity at the Sunday-live peak
+## 10. Realtime capacity (the live peak this planned for no longer exists)
+
+**Amended 2026-08-15 (ADR 0021): the app does not carry LIVE.** There is no live screen, no
+watching-now count and no server-side presence aggregator, so the peak this section sized
+for cannot occur. What survives is the FAMILY channel, whose subscribe-on-focus /
+unsubscribe-on-blur rule and the degrade-to-polling behaviour at the connection cap still
+apply and are still the reason clients never subscribe to raw Presence. The original sizing
+is kept below because it is the arithmetic any future realtime surface should be measured
+against, not because anything is currently expected to reach it.
+
+### Original sizing (for a live peak that is no longer built)
 
 Concurrent Realtime connections: Free 200 / Pro 500; messages: Free 2M/mo, Pro 5M/mo. The peak (HQ live, all branches watching) is exactly when every open app could hold a connection, and raw per-client Presence is O(N²): ~1M messages in ONE Sunday service at 400 concurrent, which exhausts Free in two Sundays and sits at Pro's included quota with join-storm rate-cap risk. **Rules:** clients never subscribe to raw Presence; a server-side aggregator tracks presence and broadcasts a single watching-now count every 10-15s (~1.2M msgs/mo at peak: clears Pro comfortably). ALL channels (live AND family) subscribe on screen focus and unsubscribe on blur. Any channel-join rejection at the connection cap degrades to the same 15s polling (static stability: counters degrade before streams do). Load-test the first big live event on the preview build; alert at 80% of connections.
 
