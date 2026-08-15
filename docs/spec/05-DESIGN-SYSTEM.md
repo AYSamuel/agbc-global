@@ -39,6 +39,7 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `mapLand` | `rgba(20,33,61,0.10)` | Family map landmass, a translucent wash over the sea so it reads soft (mockup `--mapland`) |
 | `band` | `#0e1420` | ink bands / hero (constant across themes) |
 | `bandtext` | `#ffffff` | text on band |
+| `bandline` | `transparent` | a band's hairline. Nothing to do in light, where ink inverts against cream; see the dark table for why it exists |
 | `accent` | `#ffcf4a` | **gold**: highlights, key CTAs |
 | `blue` | `#2f6fed` | **hopeful blue**: links, active tabs |
 | `eye` / `count` | `#b98600` | eyebrows, counters (burnished gold on cream) |
@@ -58,6 +59,7 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `mapSea` | `#0b111b` (Family map ocean, mockup `--mapsea`) |
 | `mapLand` | `rgba(255,255,255,0.07)` (Family map landmass, mockup `--mapland`) |
 | `band` | `#0e1420` |
+| `bandline` | `#28323f` (a band's hairline. `band` is the same ink in both themes and dark `bg` is that same `#0e1420`, so without this a band has literally no edge at night and becomes floating text. The rule above, "borders carry separation in dark", applied to the one surface that had been left out of it. Same value as `cardline`, kept as its own name because the two answer to different surfaces. Promoted from two in-place patches, `StatusPanel` and `StreakHero`, on 2026-08-15) |
 | `accent` | `#ffcf4a` (gold holds in both themes) |
 | `blue` | `#5a9bff` (deliberate deviation: the mockup keeps `#2f6fed` in dark, lightened here for contrast on dark cards) |
 | `eye` / `count` | `#ffcf4a` |

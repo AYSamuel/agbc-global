@@ -59,6 +59,8 @@ export default function More() {
           style={{
             marginTop: spacing.sm,
             backgroundColor: colors.band,
+            borderWidth: 1,
+            borderColor: colors.bandline,
             borderRadius: radius.card,
             padding: 18,
           }}
