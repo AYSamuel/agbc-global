@@ -51,7 +51,6 @@
   "weeksToGo_one": "{{count}} to go",
   "weeksToGo_other": "{{count}} to go",
   "inPerson": "In person",
-  "watchedLive": "Watched live",
   "wheneverReady": "Whenever you're ready",
   "servicePattern": "{{day}}s · {{time}}",
   "branchDetails": "Branch details",

@@ -6,14 +6,13 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 ## User stories
 - As a member, I can listen to a sermon in the background while driving and pick up where I left off.
 - As a visitor, I can watch the latest message without an account.
-- As anyone, I can watch the HQ Sunday live stream.
 
 ## Screens
-`WATCH` (tab) · `SERMON` (player) · `LIVE` · `WATCH-SEARCH` · `SERMON-NOTES` · `MY-LIST`
+`WATCH` (tab) · `SERMON` (player) · `WATCH-SEARCH` · `SERMON-NOTES` · `MY-LIST`
 
 ### `WATCH` (Tab 2)
 - **Featured hero**: latest/pinned message → `SERMON`.
-- **Live state**: if HQ is live now, a live banner → `LIVE`. Otherwise no dead "live" tab; show replays.
+- **No live state**: nothing on Watch ever announces a stream playing now (ADR 0021). The hero is simply the newest message, and past streams sit in the "Recent live streams" rail as the recorded messages they are.
 - **Rails (mirrors the website's watch page, decision 2026-07-20)**: **Recent messages** = the channel's Videos tab only (UULF playlist: long-form uploads, no Shorts, no stream recordings), three shown + See all; **Recent live streams** = the Live tab (UULV playlist), three shown + See all; Series chips; (later) per-branch. Scheduled premieres (`liveBroadcastContent = 'upcoming'`) never appear: nothing watchable exists yet and their thumbnails are placeholders.
 - **Search** icon → `WATCH-SEARCH`.
 - Each card: thumbnail, title, speaker, duration, **progress bar** (member resume), **Save** (gate), overflow (Share, audio-only).
@@ -25,12 +24,17 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 - Actions: play/pause/seek, ±15s, speed (1x/1.25x/1.5x), **Add note** → `SERMON-NOTES` (gate), **Save** (gate), **Share** (OS/WhatsApp), **Open on YouTube** (fallback). The transport (scrub, ±15s) belongs to AUDIO mode alone: while the YouTube embed is up it draws its own controls (W1.3). The scrub SHOWS progress and takes no drag; ±15s is the seek, which is also the tap alternative a drag would owe. **Speed took the mockup Download control's place** (W3.1 slice 3): nothing in this document ever specified a download, that control had sat dimmed since W1.3, and speed had no home in any frame.
 - **How those controls are drawn (redesigned 2026-08-14, W3.1 slice 4, with Ayo, direction A of three).** The three identical tiles are gone: they gave one shape to a MODE (audio-only), a VALUE (speed) and a DESTINATION (notes), and the dimmed one read as broken rather than unavailable. **Mode is a segmented `Video | Audio` control**, so switching says what it is and is reversible in one tap. **Speed and Notes are quiet outlined actions beneath it.** Two rules follow from the shapes. **Speed is ABSENT in video mode**, not dimmed: while the embed owns playback there is no rate to change, and the segment directly above it is the answer to "why". **The mode segment always keeps both halves**, dimming the one that cannot be chosen with its reason (`Video` on a message that was never on YouTube or whose video the sync lost; `Audio` on a message whose MP3 is not up yet). A dimmed half still answers a press with that reason rather than announcing itself disabled and saying nothing, and the reason reaches a screen reader on focus.
 
-### `LIVE`
-- Live video (HQ channel `/live` or precise stream via YouTube Data API).
-- **"Watching now"** realtime count.
-- **Auto-attendance (precise rule):** opening `LIVE` during an active `branch_services` window of the streaming branch (v1: HQ) writes attendance ONCE, immediately, with `source='live_watch'` and `branch_id` = the streaming branch. The row stands even if the stream never goes live: **credit-on-open IS the failed-stream protection**, no separate grace mechanism needed. Counts toward rhythm.
-- Ends → replay (`SERMON`) or back to `WATCH`.
-- **Scheduled-but-absent state machine (the stream fails on Sunday):** during a `branch_services` window with no live stream, show "We'll be live soon: hold on" with replays below; after 15 minutes degrade to "We couldn't go live today" + the latest message. Never a spinner, never a countdown reaching zero into nothing. Members who opened `LIVE` during the window already have their attendance row (credit-on-open, above), so a failed stream never breaks a streak.
+### `LIVE` · CUT (ADR 0021, 2026-08-15)
+**The app does not carry LIVE at all.** Members are not to join a live stream from inside
+the app, so the whole real-time layer is gone rather than deferred: no `LIVE` screen, no
+"watching now" count, no auto-attendance for watching one (`source='live_watch'` is retired),
+no scheduled-but-absent state machine, no `is_live` / `live_checked_at` on `sermons`, no
+staleness bound, and no live-detection function. This section previously specified all of
+them; the reasoning and the alternatives considered are in the ADR.
+
+**What that does NOT touch:** `kind='live_replay'` and Watch's "Recent live streams" rail.
+That value is the channel TAB a row was synced from, not a live state; those rows are
+recorded messages and a large part of the catalogue. Watching a replay is not joining live.
 
 ### `WATCH-SEARCH`
 - Query title/speaker/series. Empty → recent searches / suggestions. No results → "No messages found" + clear.
@@ -55,17 +59,15 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 - **Operational commitment:** the "listen while driving" promise only exists for sermons whose MP3 was actually uploaded. Uploading the week's audio via the dashboard is a standing weekly task; assign its owner (media team) before launch (`18`).
 - **Sync (job spec, see `21` §5):** nightly edge function (Supabase Cron) pulls the **Videos-tab (UULF) and Live-tab (UULV) playlists** via `playlistItems.list` plus one `videos.list` batch (1 quota unit per call; never `search.list` at 100 units; mirrors the website's youtube-api client, 2026-07-20), records each row's `kind`, drops scheduled premieres, and upserts `on conflict (youtube_id) do update` (partial unique index, idempotent retries). Videos that vanish from the channel are marked `status='unavailable'`, never deleted: resume positions, notes, and My List survive. Keyless RSS fallback caps at 15, cannot tell tabs or premieres apart (degraded by design), and never overwrites a stored `kind`.
 - **Sermon rot handling:** an `unavailable` sermon's player shows "This message is no longer available" and falls back to the self-hosted audio if `audio_path` survives; My List renders it greyed with a remove action; notes stay reachable. **Restore is symmetric:** the nightly sync sets `status='available'` for any row whose youtube_id reappears in the uploads playlist (`unavailable` is only ever the reflection of the last sync).
-- **Stale live-flag bound:** `sermons` gains `live_checked_at`; clients treat `is_live` as false when `live_checked_at` is older than 15 minutes (a dead detection job can never advertise a live service into dead air), and the nightly sync clears any stale `is_live` it finds.
 
 ## Data
 - Reads: `sermons`, `playback_positions`, `saved_items`, `sermon_notes`.
-- Writes: `playback_positions` (throttled), `saved_items` (queued), `sermon_notes` (debounced autosave, not queued: content is not a one-tap wish, `01` §8), `attendance` (live watch).
+- Writes: `playback_positions` (throttled), `saved_items` (queued), `sermon_notes` (debounced autosave, not queued: content is not a one-tap wish, `01` §8), `attendance` (the "I'm here" button; ADR 0021 cut the live-watch credit).
 - **On the two personal tables, identity is not an input** (`20260815120000`): `profile_id` defaults to `auth.uid()` and the INSERT grant excludes the column, so the client never sends it and a forged one is refused at the grant layer before RLS is consulted. Their blanket privileges (#96) are replaced by column-scoped grants in the same migration; `saved_items` has no UPDATE for anyone, because a membership row has nothing to change.
 
 ## States / edge cases
 - **Guest:** watch/listen freely; Save/notes gate, each with its own copy ("Sign in to save this message" / "Sign in to take notes") and its own gate-return: Save queues the save so the member lands back on the player with the bookmark filled, Notes opens the page. **Resume works for guests too**, from the device-local position (decision 2026-07-20, superseding the earlier "guests always start at 0" rule); only the cross-device sync of that position is a member perk.
 - **No network:** show cached list; player shows retry + "open on YouTube."
-- **Live not running:** live banner hidden; `/live` handled gracefully.
 - **Audio missing for a sermon:** audio-only disabled with tooltip.
 - **Playback interrupted (call/route change):** pause + preserve position. The YouTube embed lives in a WebView that Android may tear down while backgrounded, so the position is captured on the AppState transition rather than trusted to survive inside the player.
 - **Backgrounded then killed:** position already persisted server-side (throttled writes) so resume survives app death.

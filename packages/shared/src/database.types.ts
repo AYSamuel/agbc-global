@@ -1486,9 +1486,7 @@ export type Database = {
           created_at: string
           duration_sec: number | null
           id: string
-          is_live: boolean
           kind: Database["public"]["Enums"]["sermon_kind"]
-          live_checked_at: string | null
           published_at: string
           series: string | null
           speaker: string
@@ -1505,9 +1503,7 @@ export type Database = {
           created_at?: string
           duration_sec?: number | null
           id?: string
-          is_live?: boolean
           kind?: Database["public"]["Enums"]["sermon_kind"]
-          live_checked_at?: string | null
           published_at?: string
           series?: string | null
           speaker?: string
@@ -1524,9 +1520,7 @@ export type Database = {
           created_at?: string
           duration_sec?: number | null
           id?: string
-          is_live?: boolean
           kind?: Database["public"]["Enums"]["sermon_kind"]
-          live_checked_at?: string | null
           published_at?: string
           series?: string | null
           speaker?: string

@@ -52,7 +52,6 @@ Content: featured hero, **Live** state (if HQ live now), rails (Recent, Series),
 | Action | → Destination |
 |--------|---------------|
 | Featured / any sermon | `SERMON` |
-| Live (when live) | `LIVE` player |
 | Search icon | `WATCH-SEARCH` |
 | Save to My List | write (gate) |
 | My List entry (More) | `MY-LIST` |
@@ -67,9 +66,6 @@ Video (YouTube) or audio; **resume** from last position; **audio-only** switch; 
 | Save | write (gate) |
 | Share | OS share / WhatsApp |
 | Back | previous |
-
-### `LIVE`
-Live video + **"watching now"** count (realtime) + auto-attendance (`live_watch`). Ends → falls back to `SERMON` (replay) or WATCH.
 
 ## Tab 3: FAMILY (`FAMILY`), the wedge
 

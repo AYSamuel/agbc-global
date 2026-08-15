@@ -26,8 +26,6 @@ export interface SermonSummary {
   thumbnail_url: string;
   series: string | null;
   published_at: string;
-  is_live: boolean;
-  live_checked_at: string | null;
   /** Channel tab the sync sourced it from (mirrors the website, 2026-07-20). */
   kind: 'video' | 'live_replay';
   status: 'available' | 'unavailable';
@@ -36,7 +34,7 @@ export interface SermonSummary {
 // Exported for My List's embedded read (features/watch/saved.ts), so the two
 // cannot drift a column apart.
 export const SERMON_FIELDS =
-  'id, title, speaker, youtube_id, audio_path, artwork_path, duration_sec, thumbnail_url, series, published_at, is_live, live_checked_at, kind, status';
+  'id, title, speaker, youtube_id, audio_path, artwork_path, duration_sec, thumbnail_url, series, published_at, kind, status';
 
 export const sermonsQueryOptions = {
   queryKey: ['sermons'] as const,

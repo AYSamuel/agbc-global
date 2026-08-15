@@ -5,7 +5,6 @@ import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
 import { durationMinutes, formatPublishedDate, joinMeta } from '../format';
-import { resolveLiveSermon } from '../live';
 import { usePlaybackStore } from '../playback';
 import type { SermonSummary } from '../queries';
 import { useSearchHistoryStore } from '../searchHistory';
@@ -165,8 +164,6 @@ function sermon(overrides: Partial<SermonSummary> = {}): SermonSummary {
     thumbnail_url: '',
     series: null,
     published_at: '2026-07-18T10:00:00Z',
-    is_live: false,
-    live_checked_at: null,
     kind: 'video',
     status: 'available',
     ...overrides,
@@ -190,36 +187,8 @@ beforeEach(() => {
   usePlaybackStore.setState({ positions: {} });
 });
 
-describe('resolveLiveSermon (docs/spec/08 stale bound)', () => {
-  const now = new Date('2026-07-19T12:00:00Z');
-
-  test('a freshly-checked live sermon resolves', () => {
-    const live = sermon({
-      id: 'live',
-      is_live: true,
-      live_checked_at: '2026-07-19T11:50:00Z',
-    });
-    expect(resolveLiveSermon([sermon(), live], now)?.id).toBe('live');
-  });
-
-  test('a stale live flag never advertises dead air', () => {
-    const stale = sermon({
-      id: 'stale',
-      is_live: true,
-      live_checked_at: '2026-07-19T11:30:00Z',
-    });
-    expect(resolveLiveSermon([stale], now)).toBeNull();
-  });
-
-  test('an unstamped live flag is ignored', () => {
-    expect(
-      resolveLiveSermon(
-        [sermon({ is_live: true, live_checked_at: null })],
-        now,
-      ),
-    ).toBeNull();
-  });
-});
+// `resolveLiveSermon` and its stale-bound tests lived here until 2026-08-15 and went
+// with ADR 0021: the app carries no live state, so there is no flag to bound.
 
 describe('format helpers', () => {
   test('durationMinutes rounds and floors at one minute', () => {
@@ -293,29 +262,25 @@ describe('WATCH tab four states (docs/spec/04)', () => {
     ).toBeOnTheScreen();
   });
 
-  test('a fresh live sermon takes the hero with the LIVE badge', async () => {
+  test('nothing on Watch ever announces a live stream (ADR 0021)', async () => {
+    // The hero used to be taken by a running broadcast, wearing a red LIVE badge. The
+    // app carries no live state now, so the newest message simply leads and no surface
+    // claims anything is playing right now.
     mockSermons.mockReturnValue({
       data: [
         sermon({ id: 'newest', title: 'Newest Message' }),
-        sermon({
-          id: 'live',
-          title: 'Sunday Service',
-          is_live: true,
-          live_checked_at: new Date().toISOString(),
-        }),
+        sermon({ id: 'stream', title: 'Sunday Service', kind: 'live_replay' }),
       ],
       isError: false,
       refetch: jest.fn(),
     });
     await renderScreen(<Watch />);
-    expect(screen.getByText('LIVE')).toBeOnTheScreen();
-    await fireEvent.press(
-      screen.getByRole('button', { name: 'Sunday Service' }),
-    );
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/sermon/[id]',
-      params: { id: 'live' },
-    });
+    expect(screen.queryByText('LIVE')).not.toBeOnTheScreen();
+    expect(screen.getByText('Newest Message')).toBeOnTheScreen();
+    // And the replay is still listed: it is a recorded message, not a live one.
+    expect(
+      screen.getByRole('button', { name: /Sunday Service/ }),
+    ).toBeOnTheScreen();
   });
 
   test('live replays get their own section, capped at three (website mirror)', async () => {

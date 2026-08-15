@@ -1,9 +1,12 @@
 import { z } from 'zod';
 
-// Contracts for the Watch background jobs (docs/spec/21 §5, 25 §3.5). Both are
+// Contract for the Watch background job (docs/spec/21 §5, 25 §3.5). It is
 // cron/service-invoked (never client-called): the request carries no body worth
 // validating, so the contract is the response summary each run returns, used by
 // deno tests, manual invocations, and later the dashboard's job-health view.
+//
+// `liveDetectionSummarySchema` was here until 2026-08-15 and went with its function
+// (ADR 0021: the app carries no live state, so nothing detects one).
 
 export const syncModeSchema = z.enum(['api', 'rss']);
 export type SyncMode = z.infer<typeof syncModeSchema>;
@@ -18,16 +21,5 @@ export const youtubeSyncSummarySchema = z.object({
   markedUnavailable: z.number().int().nonnegative(),
   /** Rows whose youtube_id reappeared (restore is symmetric, docs/spec/08). */
   restored: z.number().int().nonnegative(),
-  /** Stale is_live flags cleared (older than the 15-minute bound). */
-  staleLiveCleared: z.number().int().nonnegative(),
 });
 export type YoutubeSyncSummary = z.infer<typeof youtubeSyncSummarySchema>;
-
-export const liveDetectionSummarySchema = z.object({
-  /** False outside every service window: the run exits without YouTube calls. */
-  inServiceWindow: z.boolean(),
-  channelId: z.string().nullable(),
-  liveVideoId: z.string().nullable(),
-  flagsCleared: z.number().int().nonnegative(),
-});
-export type LiveDetectionSummary = z.infer<typeof liveDetectionSummarySchema>;

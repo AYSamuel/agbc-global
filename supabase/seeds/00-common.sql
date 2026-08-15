@@ -19,9 +19,9 @@ values
     true,
     'Europe/London',
     'English',
-    -- Olayinka Ademiluka Ministries International (docs/spec/01 §4); the sync
-    -- and live-detection jobs read this (W1.3). Verified via the channel's RSS
-    -- feed 2026-07-20.
+    -- Olayinka Ademiluka Ministries International (docs/spec/01 §4); the nightly
+    -- sermon sync reads this (W1.3). Verified via the channel's RSS feed
+    -- 2026-07-20.
     'UCTwx8j2Z0DZPlUhPyqfilfA',
     'oami.gospel@gmail.com',
     55.8622, -4.0245, -- Summerlee Museum, Coatbridge (venue-level approximation)

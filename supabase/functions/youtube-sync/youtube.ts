@@ -178,8 +178,11 @@ export async function fetchApiVideos(
       durationSec: item?.contentDetails?.duration
         ? parseIsoDuration(item.contentDetails.duration)
         : null,
+      // `live_replay` is the channel TAB this row came from, not a live state: those
+      // are recorded messages and they feed Watch's "Recent live streams" rail. The app
+      // carries no live state at all (ADR 0021), so `liveBroadcastContent` is read only
+      // to DROP scheduled premieres above, never to mark anything as playing now.
       kind: liveSet.has(id) ? 'live_replay' : 'video',
-      isLive: snippet.liveBroadcastContent === 'live',
     });
   }
   return videos;

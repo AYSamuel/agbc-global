@@ -17,7 +17,6 @@ function video(id: string, title = `Video ${id}`): FetchedVideo {
     thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     durationSec: 1800,
     kind: 'video',
-    isLive: false,
   };
 }
 
@@ -25,7 +24,7 @@ function existing(
   id: string,
   status: ExistingSermonRow['status'] = 'available',
 ): ExistingSermonRow {
-  return { youtube_id: id, status, is_live: false, live_checked_at: null };
+  return { youtube_id: id, status };
 }
 
 Deno.test('planSync upserts every fetched video with its kind', () => {
@@ -105,10 +104,9 @@ Deno.test('parseRssFeed extracts entries and decodes entities', () => {
   assertEquals(videos[0].title, "Grace & Truth '26");
   assertEquals(videos[0].thumbnailUrl, 'https://i.ytimg.com/vi/abc123/hqdefault.jpg');
   assertEquals(videos[0].durationSec, null);
-  // RSS cannot tell tabs or premieres apart: kind stays null (server keeps
-  // the stored value) and nothing is marked live.
+  // RSS cannot tell tabs or premieres apart: kind stays null and the server keeps
+  // whatever it already stored.
   assertEquals(videos[0].kind, null);
-  assertEquals(videos[0].isLive, false);
 });
 
 Deno.test('run summaries satisfy the shared zod contract', () => {
@@ -120,7 +118,6 @@ Deno.test('run summaries satisfy the shared zod contract', () => {
     upserted: plan.upserts.length,
     markedUnavailable: plan.unavailableIds.length,
     restored: plan.restoredCount,
-    staleLiveCleared: 0,
   });
   assertEquals(summary.restored, 1);
 });

@@ -311,8 +311,6 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | thumbnail_url | text | |
 | series | text null | |
 | published_at | timestamptz | |
-| is_live | bool | current live flag |
-| live_checked_at | timestamptz null | stale-live bound (`08`): clients treat `is_live` as false when older than 15 min (synced from `08`, 2026-07-20) |
 | kind | enum | `video` \| `live_replay`: which channel tab the sync sourced it from (Videos = UULF playlist, Live = UULV; mirrors the website's watch page, decision 2026-07-20) |
 | status | enum | `available` \| `unavailable` (sync marks vanished YouTube videos unavailable, never deletes rows: saves resume/notes/My List, see `08`) |
 
@@ -353,7 +351,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | branch_id | uuid FK | the branch attended (may differ from home branch when visiting; see `07` branch-context model) |
 | client_taken_at | timestamptz | device UTC instant captured at tap time; basis for `service_date` (see invariants: 72h clamp) so offline replays land on the attended day |
 | service_date | date | derived by trigger from `client_taken_at` in the branch timezone; one row per member per date (same-day double services deliberately collapse) |
-| source | enum | `here_button` \| `live_watch` |
+| source | enum | `here_button` only. `live_watch` is RETIRED (ADR 0021): it belonged to the cut LIVE screen's credit-on-open rule, nothing ever wrote it, and the enum value survives solely because Postgres cannot drop one || `live_watch` |
 | - | unique(profile_id, service_date) | idempotent under offline replays |
 
 ### `streaks` (derived, cached)

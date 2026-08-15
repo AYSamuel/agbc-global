@@ -51,7 +51,6 @@
   "weeksToGo_one": "encore {{count}}",
   "weeksToGo_other": "encore {{count}}",
   "inPerson": "Sur place",
-  "watchedLive": "Suivi en direct",
   "wheneverReady": "Quand vous voulez",
   "servicePattern": "Les {{day}}s · {{time}}",
   "branchDetails": "Voir le lieu",

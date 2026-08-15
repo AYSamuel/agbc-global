@@ -14,7 +14,6 @@ import {
 } from '@/components/ui';
 import { sermonArtworkUrl } from '@/features/watch/artwork';
 import { durationMinutes, joinMeta } from '@/features/watch/format';
-import { resolveLiveSermon } from '@/features/watch/live';
 import { MediaHero } from '@/features/watch/MediaHero';
 import { useSermonsQuery, type SermonSummary } from '@/features/watch/queries';
 import { SermonRow } from '@/features/watch/SermonRow';
@@ -76,8 +75,8 @@ function SectionHeader({
   );
 }
 
-// WATCH tab (docs/spec/08): featured hero (live banner when the stale-bound
-// allows), Recent messages (Videos tab) + Recent live streams (Live tab)
+// WATCH tab (docs/spec/08): featured hero (the newest message), Recent messages
+// (Videos tab) + Recent live streams (Live tab)
 // sections, Series chips, search entry. Four states per docs/spec/04.
 export default function Watch() {
   const router = useRouter();
@@ -93,15 +92,16 @@ export default function Watch() {
   };
 
   const sermons = query.data ?? [];
-  const live = resolveLiveSermon(sermons, new Date());
   const videos = sermons.filter((s) => s.kind === 'video');
+  // `live_replay` is the channel TAB these were synced from, not a live state: they are
+  // recorded messages, and this rail survives the LIVE cut untouched (ADR 0021).
   const liveReplays = sermons.filter((s) => s.kind === 'live_replay');
   // Explicit length check: without noUncheckedIndexedAccess, [0] types non-null.
   const featured = videos.length > 0 ? videos[0] : null;
-  const hero = live ?? featured;
+  // The hero is simply the newest message now. It used to be led by a running broadcast
+  // when one was detected; the app carries no live state at all any more.
+  const hero = featured;
   const rail = videos.filter((s) => s.id !== hero?.id).slice(0, SECTION_LIMIT);
-  // A running broadcast stays listed here even while it leads as the hero
-  // (mirrors the website's live section).
   const liveRail = liveReplays.slice(0, SECTION_LIMIT);
 
   return (
@@ -188,26 +188,17 @@ export default function Watch() {
             {hero ? (
               <View style={{ marginTop: spacing.xs + spacing.xs }}>
                 <MediaHero
-                  eyebrow={
-                    live
-                      ? t('watch:liveEyebrow')
-                      : (hero.series ?? t('watch:latestMessage'))
-                  }
+                  eyebrow={hero.series ?? t('watch:latestMessage')}
                   title={hero.title}
-                  meta={
-                    live
-                      ? t('watch:liveNow')
-                      : joinMeta([
-                          hero.speaker || null,
-                          durationMinutes(hero.duration_sec) === null
-                            ? null
-                            : t('watch:minutes', {
-                                count: durationMinutes(hero.duration_sec) ?? 0,
-                              }),
-                        ])
-                  }
+                  meta={joinMeta([
+                    hero.speaker || null,
+                    durationMinutes(hero.duration_sec) === null
+                      ? null
+                      : t('watch:minutes', {
+                          count: durationMinutes(hero.duration_sec) ?? 0,
+                        }),
+                  ])}
                   artworkUrl={sermonArtworkUrl(hero)}
-                  liveBadge={live ? t('watch:liveBadge') : undefined}
                   onPress={() => {
                     openSermon(hero);
                   }}

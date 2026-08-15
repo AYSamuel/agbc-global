@@ -73,7 +73,6 @@ import Settings from 'lucide-react-native/icons/settings';
 import Share from 'lucide-react-native/icons/share';
 import ShoppingBag from 'lucide-react-native/icons/shopping-bag';
 import SquarePen from 'lucide-react-native/icons/square-pen';
-import SquarePlay from 'lucide-react-native/icons/square-play';
 import Star from 'lucide-react-native/icons/star';
 import Trash2 from 'lucide-react-native/icons/trash-2';
 import User from 'lucide-react-native/icons/user';
@@ -147,11 +146,11 @@ export const ClockIcon = houseStyle(Clock, 'ClockIcon');
  * `rotate-ccw`, not `undo-2`, which is a straight arrow bending left. */
 export const UndoIcon = houseStyle(RotateCcw, 'UndoIcon');
 
-// RHYTHM (W2.8): the two ways a gathering is attended. The church fronts an
-// in-person row and RHYTHM's empty state; the screen fronts a live-watch row, which
-// `10` counts exactly the same so a diaspora member keeps their rhythm.
+// RHYTHM (W2.8): how a gathering is attended. One way now, so one icon: the church
+// fronts every attendance row and RHYTHM's empty state. `LiveIcon` (SquarePlay) stood
+// beside it for the live-watch row and went with ADR 0021, along with the source that
+// produced that row.
 export const ChurchIcon = houseStyle(Church, 'ChurchIcon');
-export const LiveIcon = houseStyle(SquarePlay, 'LiveIcon');
 
 // The five tab glyphs.
 export const HomeTabIcon = houseStyle(House, 'HomeTabIcon');

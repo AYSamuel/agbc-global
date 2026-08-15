@@ -18,7 +18,6 @@ export interface MediaHeroProps {
   meta: string;
   /** Already resolved by `sermonArtworkUrl`: ours, else YouTube's, else null. */
   artworkUrl: string | null;
-  liveBadge?: string;
   onPress: () => void;
   accessibilityLabel: string;
 }
@@ -28,7 +27,6 @@ export function MediaHero({
   title,
   meta,
   artworkUrl,
-  liveBadge,
   onPress,
   accessibilityLabel,
 }: MediaHeroProps) {
@@ -68,40 +66,8 @@ export function MediaHero({
         fromOpacity={0.15}
         toOpacity={0.92}
       />
-      {liveBadge ? (
-        <View
-          style={{
-            position: 'absolute',
-            top: 14,
-            left: 14,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            backgroundColor: palette.red,
-            borderRadius: 100,
-            paddingVertical: 5,
-            paddingHorizontal: 11,
-          }}
-        >
-          <View
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: 4,
-              backgroundColor: onInk.text,
-            }}
-          />
-          <Text
-            style={{
-              fontFamily: fontFamily.body.bold,
-              fontSize: 11.5,
-              color: onInk.text,
-            }}
-          >
-            {liveBadge}
-          </Text>
-        </View>
-      ) : null}
+      {/* The red LIVE badge lived here until 2026-08-15 and went with ADR 0021: the app
+          carries no live state, so there is nothing for it to announce. */}
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"

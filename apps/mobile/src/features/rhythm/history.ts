@@ -18,7 +18,11 @@ import { supabase } from '@/lib/supabase';
 // anything unflagged when a session ends, so the next member on a shared phone
 // never meets the last one's history.
 
-export type AttendanceSource = 'here_button' | 'live_watch';
+// The row's `source` is deliberately NOT read or carried any more (ADR 0021). It existed
+// so the list could tell a live-watch day from a branch visit, and there is now one way to
+// attend; `here_button` is the only value the product can produce. The column and its enum
+// stay in the database, where `live_watch` survives only because Postgres cannot drop an
+// enum value, but nothing up here has an opinion about it.
 
 export interface AttendanceEntry {
   /** The day it counted for, in the ATTENDED branch's timezone, fixed at write
@@ -26,7 +30,6 @@ export interface AttendanceEntry {
    * instant: rendering it must not re-apply a timezone. */
   serviceDate: string;
   branchId: string;
-  source: AttendanceSource;
 }
 
 /**
@@ -46,14 +49,13 @@ export function attendanceQueryOptions(enabled: boolean) {
     queryFn: async (): Promise<AttendanceEntry[]> => {
       const { data, error } = await supabase
         .from('attendance')
-        .select('service_date, branch_id, source')
+        .select('service_date, branch_id')
         .order('service_date', { ascending: false })
         .limit(ATTENDANCE_PAGE);
       if (error) throw new Error(error.message);
       return data.map((row) => ({
         serviceDate: row.service_date,
         branchId: row.branch_id,
-        source: row.source,
       }));
     },
     enabled,

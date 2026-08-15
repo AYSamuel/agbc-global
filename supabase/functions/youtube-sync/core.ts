@@ -15,15 +15,11 @@ export interface FetchedVideo {
   durationSec: number | null;
   /** Which channel tab (API mode); null in RSS mode (kept server-side). */
   kind: SermonKind | null;
-  /** A currently running broadcast (API mode only; RSS cannot tell). */
-  isLive: boolean;
 }
 
 export interface ExistingSermonRow {
   youtube_id: string;
   status: SermonStatus;
-  is_live: boolean;
-  live_checked_at: string | null;
 }
 
 export interface UpsertRow {
@@ -42,8 +38,6 @@ export interface SyncPlan {
   /** Rows the upsert will flip back to available (restore is symmetric, 08). */
   restoredCount: number;
 }
-
-export const STALE_LIVE_MINUTES = 15;
 
 export function planSync(
   existing: ExistingSermonRow[],
@@ -110,7 +104,6 @@ export function parseRssFeed(xml: string): FetchedVideo[] {
       thumbnailUrl: `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
       durationSec: null,
       kind: null,
-      isLive: false,
     });
   }
   return videos;
