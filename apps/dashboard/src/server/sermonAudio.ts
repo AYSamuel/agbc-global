@@ -2,9 +2,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@agbc/shared/database';
 
+import { retireArtwork, verifyArtworkObject } from './sermonArtwork';
+
 /**
  * The sermon-audio shelf (docs/spec/17 §4, docs/spec/08, frames approved 2026-08-14;
- * the storage contract is `docs/spec/plans/W3.1-audio-slice.md`).
+ * the storage contract is `docs/spec/02` §Storage).
  *
  * Everything runs through the CALLER's own client. The storage policies are the boundary
  * (live-table admin at aal2 writes; everyone mints reads) and the sermons admin policy
@@ -49,6 +51,10 @@ export interface ShelfRow {
   series: string | null;
   youtubeId: string | null;
   audioPath: string | null;
+  /** The message's OWN picture (W3.1 slice 5), never `thumbnail_url`, which the sync owns. */
+  artworkPath: string | null;
+  /** What the sync found on YouTube, or empty for a message that was never there. */
+  thumbnailUrl: string;
   durationSec: number | null;
   publishedAt: string;
   kind: 'video' | 'live_replay';
@@ -64,7 +70,7 @@ export interface Shelf {
 export type ShelfFilter = 'all' | 'without' | 'with' | 'audio_only';
 
 const SERMON_FIELDS =
-  'id, title, speaker, series, youtube_id, audio_path, duration_sec, published_at, kind';
+  'id, title, speaker, series, youtube_id, audio_path, artwork_path, thumbnail_url, duration_sec, published_at, kind';
 
 /**
  * The shelf: recent messages newest-first, and the three counts.
@@ -112,17 +118,7 @@ export async function loadShelf(
   }
 
   return {
-    rows: list.data.map((row) => ({
-      id: row.id,
-      title: row.title,
-      speaker: row.speaker,
-      series: row.series,
-      youtubeId: row.youtube_id,
-      audioPath: row.audio_path,
-      durationSec: row.duration_sec,
-      publishedAt: row.published_at,
-      kind: row.kind,
-    })),
+    rows: list.data.map(toShelfRow),
     withAudio: withAudio.count ?? 0,
     withoutAudio: withoutAudio.count ?? 0,
     audioOnly: audioOnly.count ?? 0,
@@ -148,17 +144,7 @@ export async function loadNewestMissing(
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return null;
-  return {
-    id: data.id,
-    title: data.title,
-    speaker: data.speaker,
-    series: data.series,
-    youtubeId: data.youtube_id,
-    audioPath: data.audio_path,
-    durationSec: data.duration_sec,
-    publishedAt: data.published_at,
-    kind: data.kind,
-  };
+  return toShelfRow(data);
 }
 
 export async function loadSermon(
@@ -172,16 +158,39 @@ export async function loadSermon(
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return null;
+  return toShelfRow(data);
+}
+
+/**
+ * One mapper for all three reads, which used to be three copies of the same object
+ * literal. W3.1 slice 5 added two columns and would have had to add them in three places;
+ * a shape that has to be edited in triplicate is a shape that drifts.
+ */
+function toShelfRow(row: {
+  id: string;
+  title: string;
+  speaker: string;
+  series: string | null;
+  youtube_id: string | null;
+  audio_path: string | null;
+  artwork_path: string | null;
+  thumbnail_url: string;
+  duration_sec: number | null;
+  published_at: string;
+  kind: 'video' | 'live_replay';
+}): ShelfRow {
   return {
-    id: data.id,
-    title: data.title,
-    speaker: data.speaker,
-    series: data.series,
-    youtubeId: data.youtube_id,
-    audioPath: data.audio_path,
-    durationSec: data.duration_sec,
-    publishedAt: data.published_at,
-    kind: data.kind,
+    id: row.id,
+    title: row.title,
+    speaker: row.speaker,
+    series: row.series,
+    youtubeId: row.youtube_id,
+    audioPath: row.audio_path,
+    artworkPath: row.artwork_path,
+    thumbnailUrl: row.thumbnail_url,
+    durationSec: row.duration_sec,
+    publishedAt: row.published_at,
+    kind: row.kind,
   };
 }
 
@@ -305,6 +314,8 @@ export interface AttachInput {
   durationSec: number;
   speaker: string;
   series: string | null;
+  /** W3.1 slice 5: an artwork object already uploaded in the same form, or null. */
+  artworkPath: string | null;
 }
 
 export type AttachOutcome =
@@ -312,7 +323,13 @@ export type AttachOutcome =
   | {
       ok: false;
       reason:
-        'invalid' | 'not_audio' | 'missing' | 'gone' | 'refused' | 'failed';
+        | 'invalid'
+        | 'not_audio'
+        | 'not_image'
+        | 'missing'
+        | 'gone'
+        | 'refused'
+        | 'failed';
     };
 
 /**
@@ -342,9 +359,28 @@ export async function attachAudio(
     return { ok: false, reason: 'not_audio' };
   }
 
+  // Both files are checked before EITHER is referenced, so a form carrying good audio and
+  // a renamed .exe for its picture saves nothing at all rather than half of itself. The
+  // artwork module discards its own failure, the same way the block above does.
+  //
+  // The good AUDIO is deliberately NOT discarded with it. It stays shelved and
+  // unreferenced, which is storage garbage rather than a defect, and it is what lets the
+  // reader fix the picture and press Save again without re-sending 30 MB they already
+  // sent. Discarding it here would be tidier for the bucket and worse for the person.
+  if (input.artworkPath !== null) {
+    const picture = await verifyArtworkObject(supabase, input.artworkPath);
+    if (picture !== 'image') {
+      return {
+        ok: false,
+        reason: picture === 'not_image' ? 'not_image' : 'missing',
+      };
+    }
+  }
+
   const current = await loadSermon(supabase, input.sermonId);
   if (!current) return { ok: false, reason: 'gone' };
   const previousPath = current.audioPath;
+  const previousArtwork = current.artworkPath;
 
   // duration_sec is written ONLY for an audio-only row. On a synced row the sync owns
   // duration (20260720190000's field policy), and the file's read duration overwriting
@@ -358,6 +394,11 @@ export async function attachAudio(
     series: input.series,
   };
   if (current.youtubeId === null) changes.duration_sec = input.durationSec;
+  // Only when one was chosen. An absent artwork field means "leave the picture alone",
+  // never "remove it": removal is its own control on the manage screen, and a form that
+  // silently deleted a picture because a field was empty would be the worst kind of
+  // surprise on a screen whose subject is the audio.
+  if (input.artworkPath !== null) changes.artwork_path = input.artworkPath;
 
   // `.select()` for the same reason removeVerse reads its rows back: RLS turns a refused
   // update into a successful statement that touches nothing, and reporting that as saved
@@ -369,6 +410,17 @@ export async function attachAudio(
     .select('id');
   if (error) return { ok: false, reason: 'failed' };
   if (data.length === 0) return { ok: false, reason: 'refused' };
+
+  // Both retirements run only after the row has moved on, because the delete policies
+  // refuse to remove a referenced object. An orphan left by a failure here is storage
+  // garbage, not a member-facing defect.
+  //
+  // Guarded on a picture having actually been chosen, and not left to the delete policy to
+  // refuse: with no new artwork the row still points at the old one, so this would be a
+  // request asking the database to do something the code did not mean.
+  if (input.artworkPath !== null) {
+    await retireArtwork(supabase, previousArtwork, input.artworkPath);
+  }
 
   if (previousPath && previousPath !== input.path) {
     const removed = await supabase.storage
@@ -406,13 +458,21 @@ export interface CreateAudioOnlyInput {
   publishedOn: string;
   path: string;
   durationSec: number;
+  /** W3.1 slice 5. The flow this field exists for: nothing else gives this row a picture. */
+  artworkPath: string | null;
 }
 
 export type CreateOutcome =
   | { ok: true; sermonId: string }
   | {
       ok: false;
-      reason: 'invalid' | 'not_audio' | 'missing' | 'refused' | 'failed';
+      reason:
+        | 'invalid'
+        | 'not_audio'
+        | 'not_image'
+        | 'missing'
+        | 'refused'
+        | 'failed';
     };
 
 /**
@@ -437,6 +497,16 @@ export async function createAudioOnlySermon(
     return { ok: false, reason: 'not_audio' };
   }
 
+  if (input.artworkPath !== null) {
+    const picture = await verifyArtworkObject(supabase, input.artworkPath);
+    if (picture !== 'image') {
+      return {
+        ok: false,
+        reason: picture === 'not_image' ? 'not_image' : 'missing',
+      };
+    }
+  }
+
   const { data, error } = await supabase
     .from('sermons')
     .insert({
@@ -445,6 +515,7 @@ export async function createAudioOnlySermon(
       series: input.series,
       published_at: `${input.publishedOn}T12:00:00Z`,
       audio_path: input.path,
+      artwork_path: input.artworkPath,
       duration_sec: input.durationSec,
     })
     .select('id')
@@ -469,6 +540,8 @@ function validateCreate(input: CreateAudioOnlyInput): string | null {
     durationSec: input.durationSec,
     speaker: input.speaker,
     series: input.series,
+    // The picture's own name rule is checked by verifyArtworkObject, which owns it.
+    artworkPath: null,
   });
 }
 

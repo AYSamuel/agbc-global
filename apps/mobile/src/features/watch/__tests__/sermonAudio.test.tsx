@@ -126,6 +126,7 @@ function sermon(overrides: Partial<SermonSummary> = {}): SermonSummary {
     speaker: 'Rev Olayinka Ademiluka',
     youtube_id: 'yt-1',
     audio_path: 'one.mp3',
+    artwork_path: null,
     duration_sec: 2280,
     thumbnail_url: 'https://img.test/one.jpg',
     series: null,
@@ -228,6 +229,34 @@ describe('entering audio mode', () => {
       }),
       expect.objectContaining({ showSeekForward: true }),
     );
+  });
+
+  test('the lock screen gets OUR artwork when the message has some', async () => {
+    // W3.1 slice 5, and the sharpest edge of the public-bucket decision: the OS fetches
+    // this URL itself, out of our process, possibly hours into a background listen. What
+    // it must never be handed is a credential with an expiry.
+    const before = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://stack.test';
+    try {
+      mockSermon.mockReturnValue({
+        data: sermon({ artwork_path: 'cover.jpg' }),
+        isError: false,
+        refetch: jest.fn(),
+      });
+      await renderScreen();
+      await enterAudio();
+      expect(audioPlayer.setActiveForLockScreen).toHaveBeenCalledWith(
+        true,
+        expect.objectContaining({
+          artworkUrl:
+            'https://stack.test/storage/v1/object/public/sermon-artwork/cover.jpg',
+        }),
+        expect.anything(),
+      );
+    } finally {
+      if (before === undefined) delete process.env.EXPO_PUBLIC_SUPABASE_URL;
+      else process.env.EXPO_PUBLIC_SUPABASE_URL = before;
+    }
   });
 
   test('a message that was never on YouTube opens straight into audio', async () => {

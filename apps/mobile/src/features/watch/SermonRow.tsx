@@ -8,6 +8,7 @@ import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
 import { GradientFill } from '@/components/ui';
 import { useTheme } from '@/theme';
 
+import { sermonArtworkUrl } from './artwork';
 import { durationMinutes, joinMeta } from './format';
 import type { SermonSummary } from './queries';
 
@@ -47,6 +48,9 @@ export function SermonRow({
   const dims = SIZES[size];
   const { colors } = useTheme();
   const { t } = useTranslation();
+  // The message's own artwork where it has some, else the YouTube thumbnail, else
+  // the gradient below (W3.1 slice 5; the precedence lives in `artwork.ts`).
+  const artwork = sermonArtworkUrl(sermon);
   const minutes = durationMinutes(sermon.duration_sec);
   const meta = gone
     ? t('watch:noLongerAvailable')
@@ -86,9 +90,9 @@ export function SermonRow({
         }}
       >
         <GradientFill from={palette.navy} to={palette.blue} />
-        {!gone && sermon.thumbnail_url ? (
+        {!gone && artwork ? (
           <Image
-            source={{ uri: sermon.thumbnail_url }}
+            source={{ uri: artwork }}
             style={{ position: 'absolute', width: '100%', height: '100%' }}
             contentFit="cover"
             transition={150}

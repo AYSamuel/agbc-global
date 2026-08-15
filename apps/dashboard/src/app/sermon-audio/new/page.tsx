@@ -3,7 +3,11 @@ import { PageHeader } from '@/components/PageHeader';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 
-import { createAudioOnlyAction, mintUploadAction } from '../actions';
+import {
+  createAudioOnlyAction,
+  mintArtworkUploadAction,
+  mintUploadAction,
+} from '../actions';
 import { shelfAccess } from '../guard';
 import { NewMessagePanel } from '../NewMessagePanel';
 import { ShelfRefusal } from '../Refusal';
@@ -21,6 +25,7 @@ export default async function NewAudioOnlyPage() {
         <NewMessagePanel
           create={createAudioOnlyAction}
           mint={mintUploadAction}
+          mintArtwork={mintArtworkUploadAction}
         />
       ) : (
         <>

@@ -17,6 +17,10 @@ export type MintAction = (extension: string) => Promise<MintResult>;
  */
 export type SaveProblem =
   | 'not_audio'
+  // W3.1 slice 5: its own reason rather than folding into `not_audio`, because the two
+  // name different files on the same form and "that file is not an MP3" over a rejected
+  // picture would send the reader back to re-export the wrong thing.
+  | 'not_image'
   | 'missing'
   | 'gone'
   | 'invalid'

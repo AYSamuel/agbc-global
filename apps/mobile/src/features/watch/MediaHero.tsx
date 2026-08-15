@@ -6,12 +6,18 @@ import { fontFamily, onInk, palette, typeScale } from '@agbc/shared/theme';
 import { GradientFill } from '@/components/ui';
 
 // Mockup .mediahero: 20-radius ink card, gradient + heavy bottom scrim over the
-// thumbnail, optional LIVE badge, gold play circle, eyebrow + title + meta.
+// picture, optional LIVE badge, gold play circle, eyebrow + title + meta.
+//
+// W3.1 slice 5: it takes a resolved artwork URL rather than the YouTube thumbnail
+// by name. This is the biggest picture in the app, so it is the one place where
+// showing the gradient while the rail row below it showed real artwork would be
+// most obviously wrong.
 export interface MediaHeroProps {
   eyebrow: string;
   title: string;
   meta: string;
-  thumbnailUrl: string | null;
+  /** Already resolved by `sermonArtworkUrl`: ours, else YouTube's, else null. */
+  artworkUrl: string | null;
   liveBadge?: string;
   onPress: () => void;
   accessibilityLabel: string;
@@ -21,7 +27,7 @@ export function MediaHero({
   eyebrow,
   title,
   meta,
-  thumbnailUrl,
+  artworkUrl,
   liveBadge,
   onPress,
   accessibilityLabel,
@@ -41,15 +47,15 @@ export function MediaHero({
       })}
     >
       <GradientFill direction="diagonal" from="#33507f" to={palette.ink} />
-      {thumbnailUrl ? (
+      {artworkUrl ? (
         <Image
-          source={{ uri: thumbnailUrl }}
+          source={{ uri: artworkUrl }}
           style={{ position: 'absolute', width: '100%', height: '100%' }}
           contentFit="cover"
           transition={150}
           onError={(event) => {
             // Decorative: the gradient below is the fallback, but say so in dev.
-            console.warn('hero thumbnail failed:', thumbnailUrl, event.error);
+            console.warn('hero artwork failed:', artworkUrl, event.error);
           }}
         />
       ) : null}

@@ -19,7 +19,7 @@ import {
 
 /**
  * The shelf, attempted as real callers against the real local stack (docs/spec/21 §4;
- * the storage contract is `docs/spec/plans/W3.1-audio-slice.md`).
+ * the storage contract is `docs/spec/02` §Storage).
  *
  * pgTAP 034 proves the policies in SQL; this file proves them THROUGH THE STORAGE API,
  * which is a different road (the W2.7 column-grants lesson: a privilege proven in the
@@ -173,6 +173,7 @@ describe('attach: bytes checked before the row points at them', () => {
       durationSec: 2520,
       speaker: 'Pastor Olayinka',
       series: 'Grace',
+      artworkPath: null,
     });
     expect(outcome).toMatchObject({ ok: true, replaced: false });
 
@@ -201,6 +202,7 @@ describe('attach: bytes checked before the row points at them', () => {
       durationSec: 2520,
       speaker: 'Pastor Olayinka',
       series: null,
+      artworkPath: null,
     });
     expect(outcome).toEqual({ ok: false, reason: 'not_audio' });
 
@@ -227,6 +229,7 @@ describe('attach: bytes checked before the row points at them', () => {
       durationSec: 2520,
       speaker: 'Pastor Olayinka',
       series: null,
+      artworkPath: null,
     });
     expect(outcome).toEqual({ ok: false, reason: 'refused' });
   }, 30_000);
@@ -240,6 +243,7 @@ describe('attach: bytes checked before the row points at them', () => {
       durationSec: 2520,
       speaker: 'Pastor Olayinka',
       series: null,
+      artworkPath: null,
     });
     expect(attached.ok).toBe(true);
 
@@ -250,6 +254,7 @@ describe('attach: bytes checked before the row points at them', () => {
       durationSec: 2530,
       speaker: 'Pastor Olayinka',
       series: null,
+      artworkPath: null,
     });
     expect(replaced).toMatchObject({
       ok: true,
@@ -271,6 +276,7 @@ describe('remove: the row lets go before the file does', () => {
       durationSec: 2520,
       speaker: 'Pastor Olayinka',
       series: null,
+      artworkPath: null,
     });
 
     const direct = await verifiedAdmin
@@ -291,6 +297,7 @@ describe('remove: the row lets go before the file does', () => {
       durationSec: 2520,
       speaker: 'Pastor Olayinka',
       series: null,
+      artworkPath: null,
     });
 
     const outcome = await removeAudio(verifiedAdmin.serverClient(), sermonId);
@@ -316,6 +323,7 @@ describe('the audio-only message', () => {
       publishedOn: '2026-08-13',
       path,
       durationSec: 2280,
+      artworkPath: null,
     });
     if (!created.ok) throw new Error(`create refused: ${created.reason}`);
     sermonIds.push(created.sermonId);
@@ -345,6 +353,7 @@ describe('the audio-only message', () => {
       publishedOn: '2026-08-13',
       path,
       durationSec: 2280,
+      artworkPath: null,
     });
     expect(created).toEqual({ ok: false, reason: 'refused' });
   }, 30_000);

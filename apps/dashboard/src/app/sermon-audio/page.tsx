@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * The shelf (docs/spec/17 §4, frames approved 2026-08-14; slice plan
- * `docs/spec/plans/W3.1-audio-slice.md`).
+ * `docs/spec/02` §Storage).
  *
  * ADMIN ONLY, asked for by name (`manage_sermon_audio` in `authorize()`); a leader who
  * follows the rail here is told so inside the shell with their own queue one click away

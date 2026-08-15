@@ -435,6 +435,12 @@
      thumbnail_url ''), so it falls back to the branded gradient the player already uses. */
   .pl-art{border-radius:16px;aspect-ratio:16/10;position:relative;margin-bottom:18px;overflow:hidden;background:linear-gradient(135deg,#14213d,#2f6fed)}
   .pl-art.none{background:linear-gradient(160deg,#22375f,#0e1420)}
+  /* W3.1 slice 5: the message's OWN artwork, uploaded in the dashboard. A third source for
+     the same slot, drawn differently here only so the frame is legible; in the app all
+     three are the same element with a different picture in it, and the scrim sits over
+     ours for the same reason it sits over YouTube's (the gold disc and the state pill are
+     on top of it and have to stay readable over a photograph nobody has seen yet). */
+  .pl-art.own{background:linear-gradient(118deg,#b98600,#14213d 64%)}
   /* Tuned against a real photo on the device, not against this frame's flat
      placeholder: .58 rendered as the same navy as the no-thumbnail fallback beside it,
      and .30 did not read as dimmed at all once a bright thumbnail was behind it. */
@@ -1654,7 +1660,7 @@
 
   <h2 class="ghead" id="w31">&#127911; W3.1 &middot; Audio mode &middot; light</h2>
   <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>SERMON (video)</b> &#8594; tap <b>Audio only</b> &#8594; the embed unmounts and <b>these</b> take its place. A message that was never on YouTube opens in the right-hand state directly. The video state itself is edited in place in the Light mode gallery below: SERMON is one screen, not four references.</p>
-  <p class="alwayson" style="padding:0 20px 10px">Two decisions this pair records (taken with Ayo 2026-08-14). <b>The artwork is the message's own thumbnail, dimmed:</b> a scrim, because the picture is a video frame and nothing is playing there. A message that was never on YouTube has no thumbnail at all (the dashboard inserts those rows with <code>thumbnail_url</code> empty, <code>sermonAudio.ts</code>), so it falls back to the branded gradient the player already uses, and the same fallback is what the lock screen gets. <b>Speed took the Download control's place:</b> <code>08</code> specifies play/pause/seek, &plusmn;15s, speed, notes, save, share and open-on-YouTube, and never download; that control had sat dimmed since W1.3, and speed had no home anywhere in the mockup. The transport belongs to audio alone: while the YouTube embed is up it draws its own controls (W1.3), so the scrub, the &plusmn;15s pair and speed all arrive with this mode and are gone without it. <b>The controls themselves were redrawn on 2026-08-14 (W3.1 slice 4, direction A of three shown to Ayo):</b> the row of three identical tiles gave one shape to a MODE, a VALUE and a DESTINATION, so mode became a segmented Video/Audio control that says what it is, and Speed and Notes became quiet actions beneath it. Speed is absent rather than dimmed while the video plays; the segment above it is the answer to "why". The old <code>.pl-tiles</code> row still dresses LIVE and the tablet frame, both of which belong to later items.</p>
+  <p class="alwayson" style="padding:0 20px 10px">Two decisions this pair records (taken with Ayo 2026-08-14). <b>The artwork is the message's own thumbnail, dimmed:</b> a scrim, because the picture is a video frame and nothing is playing there. A message that was never on YouTube has no thumbnail at all (the dashboard inserts those rows with <code>thumbnail_url</code> empty, <code>sermonAudio.ts</code>), so it falls back to the branded gradient the player already uses, and the same fallback is what the lock screen gets. <b>Amended by W3.1 slice 5 (2026-08-15):</b> that fallback is no longer the only thing such a message can show. The dashboard can now give any message its own artwork, held in its own column and its own bucket, and the app prefers it over the YouTube thumbnail everywhere the two could both exist: here, on every rail and search row, on every MY-LIST row, and on the lock screen. The gradient stays exactly where it was, as the fallback for a message with neither. The scrim stays too, over ours as much as theirs: the gold disc and the state pill sit on top of it and have to stay readable over a photograph nobody has seen yet. <b>Speed took the Download control's place:</b> <code>08</code> specifies play/pause/seek, &plusmn;15s, speed, notes, save, share and open-on-YouTube, and never download; that control had sat dimmed since W1.3, and speed had no home anywhere in the mockup. The transport belongs to audio alone: while the YouTube embed is up it draws its own controls (W1.3), so the scrub, the &plusmn;15s pair and speed all arrive with this mode and are gone without it. <b>The controls themselves were redrawn on 2026-08-14 (W3.1 slice 4, direction A of three shown to Ayo):</b> the row of three identical tiles gave one shape to a MODE, a VALUE and a DESTINATION, so mode became a segmented Video/Audio control that says what it is, and Speed and Notes became quiet actions beneath it. Speed is absent rather than dimmed while the video plays; the segment above it is the answer to "why". The old <code>.pl-tiles</code> row still dresses LIVE and the tablet frame, both of which belong to later items.</p>
   <div class="gallery t-light" id="w31Light">
 
     <!-- SERMON · audio mode, just switched (paused) -->
@@ -1773,8 +1779,60 @@
       </div>
     </div>
 
+    <!-- SERMON · audio mode, never on YouTube, with its own artwork (W3.1 slice 5) -->
+    <div class="device">
+      <p class="name"><b>SERMON</b> &middot; audio mode &middot; never on YouTube, with its own artwork</p>
+      <!-- Composed 2026-08-15 (W3.1 slice 5). The frame beside this one is the same message
+           before the dashboard gave it a picture, and the pair is the whole slice: until now
+           the navy gradient was the ONLY thing an audio-only message could ever show, here
+           and in every rail and on the lock screen, because `thumbnail_url` is written by
+           the nightly sync and a message that was never on YouTube is never synced.
+           Artwork is a separate column and a separate bucket for exactly that reason.
+
+           Nothing else on the screen moves, and that is deliberate: the artwork slot already
+           knew how to hold a picture, so this adds a SOURCE rather than a state. Our picture
+           takes precedence over YouTube's thumbnail wherever both exist (a message the church
+           made a cover for should show the cover), and the branded gradient stays as the
+           fallback for a message with neither.
+
+           Still no attribution here, and the reason is worth writing down because slice 5
+           does not change it: the title on this screen is the church's own too, so nothing
+           in the frame came from YouTube. On a SYNCED message our artwork replaces their
+           thumbnail but the title is still theirs (the sync owns it, 20260720190000), so the
+           badge stays there. Attribution follows the title, not the picture. -->
+      <div class="phone">
+        <div class="status onphoto"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="player">
+          <div class="pl-top"><button class="ib" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="lbl">Now playing</span><span class="ibs"><button class="ib" aria-label="Save"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></button><button class="ib" aria-label="Share"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></button></span></div>
+          <div class="pl-art own">
+            <span class="scrim"></span>
+            <span class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg></span>
+            <span class="tag">Listening</span>
+          </div>
+          <span class="goldeye">Midweek &middot; AGBC Glasgow</span>
+          <div class="pl-title">The Table He Sets</div>
+          <div class="pl-speaker">Pastor AY Samuel</div>
+          <div class="pl-scrub"><div class="bar"><i style="width:8%"></i></div><div class="times"><span>2:41</span><span>-31:19</span></div></div>
+          <div class="pl-transport">
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span>15s</span></button>
+            <button class="pp"><svg width="26" height="26" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
+            <button class="sk"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>15s</span></button>
+          </div>
+          <div class="pl-seg">
+            <button class="off"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg> Video</button>
+            <button class="on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg> Audio</button>
+          </div>
+          <div class="pl-acts">
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg> Speed <span class="v">1.25x</span></button>
+            <button class="pl-act"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg> Notes</button>
+          </div>
+          <div class="pl-note">Plays in the background &amp; on your lock screen</div>
+        </div>
+      </div>
+    </div>
+
   </div>
-  <p class="note" style="max-width:1400px"><b>No frames, on purpose.</b> The three tile refusals are toasts (the app&#39;s <code>Toast</code> primitive, announced through a live region, no frame by the same precedent as the check-in toasts): tapping <b>Audio only</b> on a message whose MP3 is not up yet says &#8220;Audio for this message isn&#39;t up yet.&#8221;; tapping it on a message that was never on YouTube says &#8220;This message is audio only.&#8221;; tapping <b>Speed</b> while the video is up says &#8220;Switch to Audio only to change speed.&#8221; <b>Loading, error and offline</b> keep their app-wide <code>STATE &middot;</code> frames. <b>Audio-only sermons carry no YouTube attribution line</b> and no &#8220;Open on YouTube&#8221; button, because nothing on that screen came from YouTube.</p>
+  <p class="note" style="max-width:1400px"><b>No frames, on purpose.</b> The three tile refusals are toasts (the app&#39;s <code>Toast</code> primitive, announced through a live region, no frame by the same precedent as the check-in toasts): tapping <b>Audio only</b> on a message whose MP3 is not up yet says &#8220;Audio for this message isn&#39;t up yet.&#8221;; tapping it on a message that was never on YouTube says &#8220;This message is audio only.&#8221;; tapping <b>Speed</b> while the video is up says &#8220;Switch to Audio only to change speed.&#8221; <b>Loading, error and offline</b> keep their app-wide <code>STATE &middot;</code> frames. <b>Audio-only sermons carry no YouTube attribution line</b> and no &#8220;Open on YouTube&#8221; button, because nothing on that screen came from YouTube. <b>Slice 5 does not move that line</b>, and the reason is worth stating so it is not re-litigated: attribution follows the TITLE, which the nightly sync owns on every synced row (<code>20260720190000</code>), not the picture. Giving a synced message our own artwork removes their thumbnail from the screen but not their title, so the badge stays; a message that was never on YouTube has neither, which is what makes it the one screen that owes nothing.</p>
 
   <h2 class="ghead">&#127769; W3.1 &middot; Audio mode &middot; dark</h2>
   <div class="gallery t-dark" id="w31Dark"></div>
