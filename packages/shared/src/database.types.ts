@@ -1411,7 +1411,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          profile_id: string
+          profile_id?: string
           sermon_id: string
         }
         Update: {
@@ -1449,7 +1449,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          profile_id: string
+          profile_id?: string
           sermon_id: string
           updated_at?: string
         }

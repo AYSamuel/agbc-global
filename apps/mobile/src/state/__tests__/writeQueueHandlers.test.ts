@@ -6,7 +6,7 @@ import { writeHandlers } from '../writeQueueHandlers';
 // leaves a doomed write in the queue forever.
 
 const mockUpsert = jest.fn<Promise<{ error: unknown }>, [unknown, unknown]>();
-const mockDelete = jest.fn<Promise<{ error: unknown }>, [string, string]>();
+const mockDelete = jest.fn<Promise<{ error: unknown }>, string[]>();
 const mockGetSession = jest.fn<Promise<unknown>, []>();
 const mockUpdate = jest.fn<Promise<{ error: unknown }>, [unknown, string[]]>();
 const mockInvalidate = jest.fn<Promise<void>, [{ queryKey: unknown[] }]>();
@@ -34,13 +34,21 @@ jest.mock('@/lib/supabase', () => ({
     },
     from: () => ({
       upsert: (row: unknown, options: unknown) => mockUpsert(row, options),
+      // A thenable chain rather than "resolve at the second eq": the glory and
+      // intercession deletes scope by two columns, while the saved delete
+      // scopes by ONE (RLS already owns the profile side since 20260815120000),
+      // so the await itself is what fires the recorded call.
       delete: () => {
         const eqs: string[] = [];
         const chain = {
           eq: (column: string, value: string) => {
             eqs.push(`${column}=${value}`);
-            return eqs.length < 2 ? chain : mockDelete(eqs[0], eqs[1]);
+            return chain;
           },
+          then: (
+            resolve: (value: { error: unknown }) => unknown,
+            reject: (reason: unknown) => unknown,
+          ) => mockDelete(...eqs).then(resolve, reject),
         };
         return chain;
       },
@@ -256,6 +264,65 @@ describe('the intercession handler', () => {
   test('no session is a race with sign-out, not a refusal', async () => {
     mockGetSession.mockResolvedValue({ data: { session: null } });
     await expect(writeHandlers.intercession(COMMIT)).resolves.toBe('retry');
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+});
+
+const SAVE = {
+  kind: 'saved',
+  entityId: 's1',
+  state: 'on',
+  queuedAt: 1,
+} as const;
+const UNSAVE = {
+  kind: 'saved',
+  entityId: 's1',
+  state: 'off',
+  queuedAt: 1,
+} as const;
+
+describe('the saved handler (W3.1 slice 4)', () => {
+  test('an "on" wish is a conflict-tolerant insert that never names the member', async () => {
+    // The absence of profile_id IS the migration's posture (20260815120000):
+    // the column defaults to auth.uid() and the INSERT grant refuses a client
+    // that names it, so sending it would turn every save into a refusal.
+    await expect(writeHandlers.saved(SAVE)).resolves.toBe('done');
+    expect(mockUpsert).toHaveBeenCalledWith(
+      { sermon_id: 's1' },
+      { onConflict: 'profile_id,sermon_id', ignoreDuplicates: true },
+    );
+  });
+
+  test('an "off" wish deletes by sermon alone: RLS owns the profile side', async () => {
+    await expect(writeHandlers.saved(UNSAVE)).resolves.toBe('done');
+    expect(mockDelete).toHaveBeenCalledWith('sermon_id=s1');
+  });
+
+  test('a landed write changes nothing on screen', async () => {
+    // The bookmark and the list were patched at the tap (features/watch/saved).
+    await writeHandlers.saved(SAVE);
+    expect(mockInvalidate).not.toHaveBeenCalled();
+  });
+
+  test('a refusal refetches both saved surfaces, quietly', async () => {
+    // The sermon row was deleted outright (23503): only the server can say
+    // what the list holds now.
+    mockUpsert.mockResolvedValue({ error: { code: '23503' } });
+    await expect(writeHandlers.saved(SAVE)).resolves.toBe('refused');
+    expect(mockInvalidate).toHaveBeenCalled();
+  });
+
+  test('a transport failure keeps the wish and touches nothing', async () => {
+    mockUpsert.mockResolvedValue({
+      error: { message: 'Network request failed' },
+    });
+    await expect(writeHandlers.saved(SAVE)).resolves.toBe('retry');
+    expect(mockInvalidate).not.toHaveBeenCalled();
+  });
+
+  test('no session is a race with sign-out, not a refusal', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null } });
+    await expect(writeHandlers.saved(SAVE)).resolves.toBe('retry');
     expect(mockUpsert).not.toHaveBeenCalled();
   });
 });

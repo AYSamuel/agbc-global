@@ -4,6 +4,7 @@ import {
   TESTIMONY_SURFACE_KEYS,
 } from '@/features/family/keys';
 import { invalidateRsvp } from '@/features/events/rsvp';
+import { invalidateSaved, savedListQueryKey } from '@/features/watch/saved';
 import { announceCheckIn } from '@/features/rhythm/announce';
 import { toRhythmState } from '@/features/rhythm/queries';
 import {
@@ -261,11 +262,58 @@ async function handleRsvp(write: QueuedWrite): Promise<ReplayOutcome> {
   return outcome;
 }
 
+/**
+ * My List membership (docs/spec/08, W3.1 slice 4). Glory's two branches with
+ * one difference worth noticing: nothing here names `profile_id`. Since
+ * `20260815120000` identity is not an input on `saved_items`: the column
+ * defaults to auth.uid(), the INSERT grant excludes it (sending it would be
+ * refused), and the delete needs no profile filter because RLS already scopes
+ * the rows. The conflict target still resolves by name alone.
+ */
+async function handleSaved(write: QueuedWrite): Promise<ReplayOutcome> {
+  const { data } = await supabase.auth.getSession();
+  // Signed out between the tap and the replay: a race, not a state. The queue
+  // is cleared on sign-out, so keep the wish and let that clear win.
+  if (!data.session?.user.id) return 'retry';
+
+  const error =
+    write.state === 'on'
+      ? // Conflict-tolerant: a repeat replay, or a message already saved on
+        // another device, must leave the list exactly as it is.
+        (
+          await supabase
+            .from('saved_items')
+            .upsert(
+              { sermon_id: write.entityId },
+              { onConflict: 'profile_id,sermon_id', ignoreDuplicates: true },
+            )
+        ).error
+      : // Removing something already gone is a success: the member's wish is
+        // that the message not be listed, and it is not.
+        (
+          await supabase
+            .from('saved_items')
+            .delete()
+            .eq('sermon_id', write.entityId)
+        ).error;
+
+  const outcome = outcomeFor(error);
+
+  // Success changes nothing on screen: the bookmark and the list were patched
+  // at the tap (features/watch/saved.ts). A refusal (the sermon row was
+  // deleted outright) is the one case that must, quietly (docs/spec/01 §8).
+  if (outcome === 'refused') {
+    invalidateSaved(write.entityId);
+  }
+  return outcome;
+}
+
 export const writeHandlers: WriteHandlers = {
   glory: handleGlory,
   intercession: handleIntercession,
   attendance: handleAttendance,
   rsvp: handleRsvp,
+  saved: handleSaved,
 };
 
 /**
@@ -273,11 +321,19 @@ export const writeHandlers: WriteHandlers = {
  * has to drop to stay under its cap: `01` §8 requires eviction to revert the
  * optimistic UI, and since the tap wrote that state into the cache, only a
  * refetch can say what is actually true now.
+ *
+ * The callback carries no entity (the queue can drop several at once), so this
+ * refetches the surfaces a dropped wish could have painted. My List joined at
+ * W3.1 slice 4: without it an evicted save leaves a filled bookmark and a listed
+ * row with nothing left to deliver either, which is the exact promise `01` §8
+ * forbids breaking silently.
  */
 function revertEvicted(): void {
   for (const queryKey of TESTIMONY_SURFACE_KEYS) {
     void queryClient.invalidateQueries({ queryKey });
   }
+  void queryClient.invalidateQueries({ queryKey: savedListQueryKey });
+  void queryClient.invalidateQueries({ queryKey: ['saved'] });
 }
 
 /** Called once from the root layout, before the queue starts draining. */

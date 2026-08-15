@@ -6,17 +6,20 @@
 // type here exists to make that shape impossible to misuse.
 
 /**
- * One entity kind the queue knows how to replay. `01` §8 lists six; four are
- * live (glory and intercession at W2.4, attendance at W2.8, rsvp at W2.9) and
- * the rest are registered by the work item that builds their surface:
- * `playback` (W3.1), `plan_day` (Phase 4).
+ * One entity kind the queue knows how to replay. Five are live (glory and
+ * intercession at W2.4, attendance at W2.8, rsvp at W2.9, saved at W3.1);
+ * `plan_day` (Phase 4) registers with the work item that builds its surface.
+ * Playback position is deliberately NOT a kind: it supersedes itself every ten
+ * seconds and rides its own throttled direct write instead
+ * (features/watch/serverPosition.ts; `01` §8 says both).
  *
  * Adding a kind here without a handler is caught at compile time by the
  * registry, and without a stored-state rule by `storage.VALID_STATE`. Both
  * checks exist because a kind that is only half-registered does not fail: it
  * quietly drops the member's tap (W2.9).
  */
-export type QueuedKind = 'glory' | 'intercession' | 'attendance' | 'rsvp';
+export type QueuedKind =
+  'glory' | 'intercession' | 'attendance' | 'rsvp' | 'saved';
 
 /**
  * The end state per kind. Glory is a toggle because `09` says "tap again to
@@ -48,6 +51,12 @@ export interface QueuedStates {
    * answer, and exactly one write replays.
    */
   rsvp: 'going' | 'interested' | 'cancelled';
+  /**
+   * Glory's shape for the same reason (docs/spec/08, W3.1 slice 4): My List
+   * membership is a toggle, so save-unsave-save while offline collapses to the
+   * one wish still standing, and exactly one idempotent write replays.
+   */
+  saved: 'on' | 'off';
 }
 
 export type QueuedWrite = {
@@ -55,8 +64,8 @@ export type QueuedWrite = {
     kind: K;
     /**
      * Testimony id for glory, prayer id for an intercession, event id for an
-     * RSVP, and for attendance the DEVICE-LOCAL date of the tap
-     * (`features/home/queries` localDateKey).
+     * RSVP, sermon id for a save, and for attendance the DEVICE-LOCAL date of
+     * the tap (`features/home/queries` localDateKey).
      *
      * That date is bookkeeping and nothing else: it is never displayed, never
      * sent, and never decides anything. `service_date` stays the server's, from

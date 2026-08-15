@@ -149,10 +149,13 @@ set local role authenticated;
 set local request.jwt.claims to
   '{"sub": "30000000-0000-4000-8000-00000000aaaa", "role": "authenticated", "user_role": "member", "branch_id": "00000000-0000-4000-8000-000000000001"}';
 
+-- Since 20260815120000 identity is not an input on these two tables: the
+-- member's own inserts omit profile_id (the auth.uid() default assigns it),
+-- and the forgeries below now refuse at the GRANT layer (naming the column at
+-- all is the refusal) before RLS ever looks. Same code, earlier door.
 select lives_ok(
-  $$insert into public.saved_items (profile_id, sermon_id)
-    values ('30000000-0000-4000-8000-00000000aaaa',
-            '20000000-0000-4000-8000-000000000002')$$,
+  $$insert into public.saved_items (sermon_id)
+    values ('20000000-0000-4000-8000-000000000002')$$,
   'a member saves a sermon to My List');
 select throws_ok(
   $$insert into public.saved_items (profile_id, sermon_id)
@@ -162,9 +165,8 @@ select throws_ok(
 select is((select count(*) from public.saved_items)::int, 1,
   'a member sees only their own My List');
 select lives_ok(
-  $$insert into public.sermon_notes (profile_id, sermon_id, body)
-    values ('30000000-0000-4000-8000-00000000aaaa',
-            '20000000-0000-4000-8000-000000000001', 'A private note')$$,
+  $$insert into public.sermon_notes (sermon_id, body)
+    values ('20000000-0000-4000-8000-000000000001', 'A private note')$$,
   'a member writes their own sermon note');
 select throws_ok(
   $$insert into public.sermon_notes (profile_id, sermon_id, body)

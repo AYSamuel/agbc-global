@@ -10,10 +10,14 @@ jest.mock('@/features/events/rsvp', () => ({
 }));
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
-    push: (href: string) => {
+    push: (href: unknown) => {
       mockPush(href);
+    },
+    replace: (href: unknown) => {
+      mockReplace(href);
     },
   },
 }));
@@ -125,5 +129,54 @@ describe('replayGateAction: glory', () => {
     await replayGateAction({ kind: 'glory', testimonyId: 't1' });
     await replayGateAction({ kind: 'glory', testimonyId: 't1' });
     expect(useWriteQueueStore.getState().queue['glory:t1']?.state).toBe('on');
+  });
+});
+
+// W3.1 slice 4. Save takes Glory's path: the replay owes the member that the
+// wish is RECORDED (the bookmark on the screen they land back on reads it),
+// and the queue owns delivery.
+describe('replayGateAction: save_sermon', () => {
+  it('records the save as a queued wish', async () => {
+    await expect(
+      replayGateAction({ kind: 'save_sermon', sermonId: 's1' }),
+    ).resolves.toBe('done');
+    expect(useWriteQueueStore.getState().queue['saved:s1']).toMatchObject({
+      kind: 'saved',
+      entityId: 's1',
+      state: 'on',
+    });
+    // Nothing navigates: AUTH-4 has already returned them to the player.
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('only ever saves: a replay never unsaves what another device kept', async () => {
+    await replayGateAction({ kind: 'save_sermon', sermonId: 's1' });
+    await replayGateAction({ kind: 'save_sermon', sermonId: 's1' });
+    expect(useWriteQueueStore.getState().queue['saved:s1']?.state).toBe('on');
+  });
+});
+
+// W3.1 slice 4. The gated action WAS "open my notes for this message", so the
+// replay is the screen: pushed, not replaced, because Back from the notes
+// belongs on the player AUTH-4 returned them to.
+describe('replayGateAction: sermon_notes', () => {
+  it('opens the notes page for the message the gate named', async () => {
+    await expect(
+      replayGateAction({ kind: 'sermon_notes', sermonId: 's1' }),
+    ).resolves.toBe('done');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/sermon/notes/[id]',
+      params: { id: 's1' },
+    });
+  });
+});
+
+// W3.1 slice 4. Navigation-shaped like my_posts, and `replace` for the same
+// reason: no finished sign-in left in the back stack.
+describe('replayGateAction: my_list', () => {
+  it('lands on MY-LIST with no sign-in behind it', async () => {
+    await expect(replayGateAction({ kind: 'my_list' })).resolves.toBe('done');
+    expect(mockReplace).toHaveBeenCalledWith('/my-list');
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

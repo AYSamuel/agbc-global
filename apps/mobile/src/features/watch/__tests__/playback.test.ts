@@ -39,12 +39,24 @@ describe('resumeTarget', () => {
 });
 
 describe('shouldSave', () => {
-  test('saves only meaningful, finite positions', () => {
+  test('saves any real position, however early', () => {
     expect(shouldSave(120)).toBe(true);
     expect(shouldSave(MIN_RESUME_SEC)).toBe(true);
-    expect(shouldSave(3)).toBe(false);
+    // The first seconds count too (2026-08-15). They are what lets
+    // SERMON-NOTES offer "Add a note at 0:03"; being RESTORED to second three
+    // is a different question, and resumeTarget still says no to it below.
+    expect(shouldSave(3)).toBe(true);
+    expect(shouldSave(0)).toBe(false);
     expect(shouldSave(Number.NaN)).toBe(false);
     expect(shouldSave(Number.POSITIVE_INFINITY)).toBe(false);
+  });
+
+  test('storing an early position does not make it a resume point', () => {
+    // The two rules are separate now, so this is the pair that proves the
+    // separation rather than an accident of one shared constant.
+    const early = { positionSec: 3, updatedAt: 1 };
+    expect(shouldSave(early.positionSec)).toBe(true);
+    expect(resumeTarget(early, 2400)).toBeNull();
   });
 });
 

@@ -42,7 +42,8 @@
     "cancelFailed": "Das hat gerade nicht geklappt. Versuche es gleich noch einmal.",
     "errorLoad": "Dein Profil konnte gerade nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
     "activitySection": "Deine Aktivität",
-    "myPosts": "Meine Beiträge"
+    "myPosts": "Meine Beiträge",
+    "savedMessages": "Gespeicherte Botschaften"
   },
   "branchChange": {
     "title": "Deine Gemeinde",

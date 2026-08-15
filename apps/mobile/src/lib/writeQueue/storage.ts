@@ -38,6 +38,7 @@ const VALID_STATE: Readonly<Record<QueuedKind, (state: string) => boolean>> = {
   attendance: (state) => state.length > 0,
   rsvp: (state) =>
     state === 'going' || state === 'interested' || state === 'cancelled',
+  saved: (state) => state === 'on' || state === 'off',
 };
 
 const KINDS = Object.keys(VALID_STATE) as readonly QueuedKind[];

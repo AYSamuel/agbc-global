@@ -9,6 +9,7 @@ import { applyGloryToCaches } from '@/features/family/gloryCache';
 import { applyIntercessionToCaches } from '@/features/family/prayerCache';
 import { queueRsvp } from '@/features/events/rsvp';
 import { queueCheckIn } from '@/features/rhythm/useImHere';
+import { queueSave } from '@/features/watch/saved';
 import { track } from '@/lib/analytics';
 import { pushWrite } from '@/lib/writeQueue';
 import type { GateAction } from '@/state/gate';
@@ -127,7 +128,31 @@ function performReplay(action: GateAction): Promise<ReplayOutcome> {
         () => 'failed' as const,
       );
     }
-    // Executors land with their work items: save/notes/resume (W3.1),
+    case 'save_sermon': {
+      // The gated action was "save this message", and it takes the same path an
+      // ordinary tap does: show it, then queue it. The member lands back on the
+      // player with the bookmark already filled, and the queue delivers the
+      // wish when it can (docs/spec/01 §8).
+      queueSave(action.sermonId, true);
+      return Promise.resolve('done');
+    }
+    case 'sermon_notes': {
+      // The gated action WAS "open my notes for this message", so replaying it
+      // is the screen. `push`, not `replace`: AUTH-4 has already returned them
+      // to the player, which is exactly where Back from the notes should land.
+      router.push({
+        pathname: '/sermon/notes/[id]',
+        params: { id: action.sermonId },
+      });
+      return Promise.resolve('done');
+    }
+    case 'my_list': {
+      // Same shape as my_posts: the gated action WAS the screen, and `replace`
+      // leaves no finished sign-in in the back stack.
+      router.replace('/my-list');
+      return Promise.resolve('done');
+    }
+    // Executors land with their work items: resume (W3.1 remainder),
     // notifications (W3.3).
     default:
       return Promise.resolve('noop');
