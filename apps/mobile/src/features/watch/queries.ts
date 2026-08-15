@@ -15,7 +15,14 @@ export interface SermonSummary {
   youtube_id: string | null;
   /** Object path in the private sermon-audio bucket; playback URLs are minted signed (W3.1). */
   audio_path: string | null;
+  /**
+   * Object path in the PUBLIC sermon-artwork bucket: the message's own picture, uploaded in
+   * the dashboard (W3.1 slice 5). Preferred over `thumbnail_url` wherever both exist;
+   * `features/watch/artwork.ts` owns that precedence for every surface.
+   */
+  artwork_path: string | null;
   duration_sec: number | null;
+  /** What the nightly sync found on YouTube, or '' for a message that was never there. */
   thumbnail_url: string;
   series: string | null;
   published_at: string;
@@ -29,7 +36,7 @@ export interface SermonSummary {
 // Exported for My List's embedded read (features/watch/saved.ts), so the two
 // cannot drift a column apart.
 export const SERMON_FIELDS =
-  'id, title, speaker, youtube_id, audio_path, duration_sec, thumbnail_url, series, published_at, is_live, live_checked_at, kind, status';
+  'id, title, speaker, youtube_id, audio_path, artwork_path, duration_sec, thumbnail_url, series, published_at, is_live, live_checked_at, kind, status';
 
 export const sermonsQueryOptions = {
   queryKey: ['sermons'] as const,

@@ -625,6 +625,7 @@ export const copy = {
     audioPill: (minutes: number) => `Audio · ${String(minutes)} min`,
     minutesOnYouTube: (minutes: number) => `${String(minutes)} min on YouTube`,
     sizeMb: (mb: number) => `${String(mb)} MB`,
+    sizeKb: (kb: number) => `${String(kb)} KB`,
     neverOnYouTube: 'never on YouTube',
     rowAdd: 'Add audio',
     rowManage: 'Manage',
@@ -705,6 +706,59 @@ export const copy = {
         'This message exists only as audio, so removing it would leave nothing at all. The audio can be replaced, never removed.',
     },
 
+    // W3.1 slice 5 (frames: the artwork field on `SERMON-AUDIO-ATTACH` and
+    // `SERMON-AUDIO-NEW`, its own block on `SERMON-AUDIO-MANAGE`, and its four moments on
+    // `SERMON-AUDIO-ARTWORK`). The field is optional and its hint says the opposite thing
+    // in the two situations it appears in, which is the whole reason there are two hints:
+    // arguing for an upload a message does not need is how a shelf fills with pictures
+    // nobody asked for.
+    artwork: {
+      label: 'The artwork · optional',
+      sectionLabel: 'The artwork',
+      dropTitle: 'Drop a picture here, or browse',
+      dropSub: 'JPG, PNG or WebP · up to 5 MB',
+      hasThumbnailHint:
+        'This message already shows its YouTube thumbnail, so it needs nothing. Add a picture only to override it: a wide one, 1280×720 or larger, since it is cropped square on a lock screen.',
+      noThumbnailHint:
+        'There is no picture for this one, so it shows the plain navy cover everywhere: in every list, on the player and on the lock screen. A wide picture, 1280×720 or larger, is cropped square on a lock screen.',
+      hasArtworkHint:
+        'Choosing a picture replaces the one above; the old one is retired as soon as the new one is saved. A wide picture, 1280×720 or larger, is cropped square on a lock screen.',
+      // What the preview beside the field is showing, so the tile is never an unlabelled
+      // rectangle. Also its alt text: a decorative image would be wrong here, because
+      // WHICH picture is on the cards is the fact the reader came for.
+      onCardsNow: 'On cards now',
+      onCards: 'On cards',
+      chosen: 'Chosen',
+      previewOwn: 'The picture on this message',
+      previewYouTube: 'The thumbnail YouTube gives this message',
+      previewNone: 'The plain navy cover this message shows today',
+      sending: 'Sending it',
+      sendingLabel: 'Uploading the picture',
+      readyTitle: (kb: number) => `Picture ready, ${String(kb)} KB`,
+      readyBody: 'It lands on every card as soon as this is saved.',
+      chooseAnother: 'Choose a different picture',
+      clear: 'Remove',
+      replace: 'Replace the picture',
+      remove: 'Remove the picture',
+      removing: 'Removing…',
+      save: 'Save the picture',
+      saving: 'Saving…',
+      removeHint: (size: string, added: string) =>
+        `${size}, added ${added}. Members see it on every list, on the player and on their lock screen. Removing it puts the plain navy cover back; nothing else changes.`,
+      // Client-side early refusals: cheap, honest, and never the real check.
+      pickNotImage:
+        'That does not look like a picture. Choose a JPG, PNG or WebP and try again.',
+      pickTooBig: (mb: number) =>
+        `That picture is ${String(mb)} MB and the limit is 5 MB. Export it smaller and try again.`,
+      uploadFailed:
+        'The picture did not finish uploading. Check your connection and try again.',
+      // HEIC named on purpose: a photo straight off an iPhone is the likeliest real
+      // failure on this screen, and naming the fix beats restating the rule.
+      wrongKindTitle: 'That file is not a JPG, PNG or WebP',
+      wrongKindBody:
+        'The file’s contents were checked, not its name. Nothing was saved and the upload was discarded. A photo straight off an iPhone is often HEIC: export or save it as JPG and try again.',
+    },
+
     create: {
       title: 'An audio-only message',
       scope: 'Sermon audio',
@@ -727,6 +781,20 @@ export const copy = {
       created: 'The message is in Watch now, with Listen ready.',
       removed:
         'The audio is off the shelf. The message stays, and Listen is gone from the app.',
+      artworkSet:
+        'The picture is up. It is on every card, on the player and on the lock screen.',
+      artworkReplaced:
+        'The new picture is up and the old one is retired. Devices holding the old one see it until they next load the card.',
+      artworkRemoved:
+        'The picture is gone and the plain navy cover is back. Nothing else changed.',
+      // Its own line rather than reusing the forms' `wrongKindBody`. That body reads under
+      // a Notice whose TITLE names the problem; the manage screen refuses through a
+      // redirect, where an alert saying only "the contents were checked, not the name"
+      // never tells the reader what was actually wrong (caught driving the real file pick,
+      // 2026-08-15).
+      artworkNotImage:
+        'That file is not a JPG, PNG or WebP. Its contents were checked, not its name, so nothing was saved and the upload was discarded. A photo straight off an iPhone is often HEIC: export or save it as JPG and try again.',
+      noArtwork: 'That message had no picture, so nothing changed.',
       noAudio: 'That message had no audio, so nothing changed.',
       gone: 'That message is no longer there, so nothing changed.',
       audioOnly:

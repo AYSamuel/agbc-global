@@ -9,6 +9,8 @@ import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
 
 import { CONTROL, FIELD, HINT, LABEL } from '../people/fields';
+import type { ArtworkSubject } from './ArtworkPreview';
+import { ArtworkUploader, type ArtworkSeams } from './ArtworkUploader';
 import { AudioUploader, type UploaderSeams } from './AudioUploader';
 import {
   NOT_SAVED,
@@ -37,31 +39,55 @@ export function AttachPanel({
   scopeLine,
   speaker,
   series,
+  artwork,
   attach,
   mint,
+  mintArtwork,
   seams,
 }: {
   sermonId: string;
   scopeLine: string;
   speaker: string;
   series: string | null;
+  /** What members see on this message's card right now (W3.1 slice 5). */
+  artwork: ArtworkSubject;
   attach: SaveAction;
   mint: MintAction;
-  seams?: UploaderSeams;
+  mintArtwork: MintAction;
+  seams?: UploaderSeams & ArtworkSeams;
 }) {
   const [state, submit] = useActionState(guarded(attach), NOT_SAVED);
   const text = copy.sermonAudio.attach;
+  const picture = copy.sermonAudio.artwork;
+
+  const wrongKind =
+    state.status === 'failed' &&
+    (state.reason === 'not_audio' || state.reason === 'not_image');
 
   return (
     <>
       <PageHeader title={text.title} scope={scopeLine} />
 
-      {state.status === 'failed' && state.reason === 'not_audio' ? (
-        <Notice tone="bad" live="assertive" title={text.wrongKindTitle}>
-          {text.wrongKindBody}
+      {/* Two files on one form, so the refusal has to name WHICH one: "that file is not an
+          MP3" over a rejected picture would send the reader to re-export the wrong thing. */}
+      {wrongKind ? (
+        <Notice
+          tone="bad"
+          live="assertive"
+          title={
+            state.reason === 'not_image'
+              ? picture.wrongKindTitle
+              : text.wrongKindTitle
+          }
+        >
+          {state.reason === 'not_image'
+            ? picture.wrongKindBody
+            : text.wrongKindBody}
         </Notice>
       ) : null}
-      {state.status === 'failed' && state.reason !== 'not_audio' ? (
+      {state.status === 'failed' &&
+      state.reason !== 'not_audio' &&
+      state.reason !== 'not_image' ? (
         <div className="mt-4">
           <Alert>{PROBLEMS[state.reason]}</Alert>
         </div>
@@ -78,6 +104,15 @@ export function AttachPanel({
             submittingLabel={text.saving}
             seams={seams}
           />
+        </div>
+
+        {/* Directly under the audio because both are files, and optional because on a
+            synced message the YouTube thumbnail is usually the right answer. It owns no
+            Save: the audio uploader's covers the whole form, and this contributes the
+            hidden `artworkPath` the action reads. */}
+        <div className={FIELD} style={{ maxWidth: '40rem' }}>
+          <span className={LABEL}>{picture.label}</span>
+          <ArtworkUploader subject={artwork} mint={mintArtwork} seams={seams} />
         </div>
 
         <div className={FIELD}>
@@ -124,7 +159,10 @@ export function AttachPanel({
   );
 }
 
-const PROBLEMS: Record<Exclude<SaveProblem, 'not_audio'>, string> = {
+const PROBLEMS: Record<
+  Exclude<SaveProblem, 'not_audio' | 'not_image'>,
+  string
+> = {
   missing: copy.sermonAudio.attach.uploadFailed,
   gone: copy.sermonAudio.attach.goneBody,
   invalid: copy.sermonAudio.attach.speakerRequired,

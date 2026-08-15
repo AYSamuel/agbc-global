@@ -103,6 +103,7 @@ function sermon(): SermonSummary {
     speaker: 'Pastor Esther Olayinka',
     youtube_id: 'yt-1',
     audio_path: null,
+    artwork_path: null,
     duration_sec: 2280,
     thumbnail_url: '',
     series: null,

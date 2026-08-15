@@ -38,6 +38,7 @@ function sermon(
     speaker: 'Pastor Test',
     youtube_id: `yt-${id}`,
     audio_path: null,
+    artwork_path: null,
     duration_sec: 2280,
     thumbnail_url: '',
     series: null,

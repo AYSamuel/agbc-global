@@ -1,5 +1,6 @@
 import {
   color,
+  media,
   onInk,
   palette,
   radius,
@@ -46,6 +47,14 @@ function brandVariables(): string {
     // plain accent on dark. It was being typed as a hex in two components before it had
     // a name here.
     '--t-gold-deep': palette.goldDeep,
+    // The message artwork's two constants (W3.1 slice 5), from the same `media` group the
+    // player reads. Brand rather than theme for the reason that group records: neither
+    // sits on a themed surface. The fallback cover is drawn where a picture would be, and
+    // the caption pill sits on top of one, so both are identical in light and dark, and
+    // the mockup's `.pl-art.none` carries no dark override either.
+    '--t-art-from': media.artFrom,
+    '--t-art-to': media.artTo,
+    '--t-tag-bg': media.tagBg,
     '--t-radius-control': `${String(radius.control)}px`,
     '--t-radius-button': `${String(radius.button)}px`,
     '--t-radius-card': `${String(radius.card)}px`,

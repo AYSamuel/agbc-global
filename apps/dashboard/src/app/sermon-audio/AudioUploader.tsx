@@ -11,6 +11,7 @@ import { MAX_AUDIO_BYTES } from '@/server/sermonAudio';
 
 import { wholeMb, wholeMinutes } from './format';
 import type { MintAction } from './state';
+import { uploadViaXhr } from './upload';
 
 /**
  * The file half of both shelf forms (frames: `SERMON-AUDIO-ATTACH`, approved 2026-08-14):
@@ -335,35 +336,5 @@ function readDurationViaAudio(file: File): Promise<number> {
       reject(new Error('the file could not be decoded'));
     };
     probe.src = url;
-  });
-}
-
-/**
- * XHR rather than fetch, for one reason only: upload progress events. The PUT and the
- * headers mirror what supabase-js sends to a signed upload URL; the token is inside the
- * URL the server minted.
- */
-function uploadViaXhr(
-  signedUrl: string,
-  file: File,
-  contentType: string,
-  onProgress: (sentBytes: number) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('PUT', signedUrl);
-    xhr.setRequestHeader('content-type', contentType);
-    xhr.setRequestHeader('x-upsert', 'false');
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) onProgress(event.loaded);
-    };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`upload refused with ${String(xhr.status)}`));
-    };
-    xhr.onerror = () => {
-      reject(new Error('the upload did not reach storage'));
-    };
-    xhr.send(file);
   });
 }

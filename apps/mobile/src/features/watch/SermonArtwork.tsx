@@ -8,23 +8,28 @@ import { AudioIcon, GradientFill } from '@/components/ui';
 // Mockup `.pl-art` (W3.1 frames): what stands where the YouTube embed was once
 // audio-only is on.
 //
-// Two cases, and the difference is the point. A message that IS on YouTube shows
-// its own thumbnail under a light scrim, so the screen still looks like the thing
-// you tapped; the scrim is there because that picture is a video frame and no
-// video is playing. A message that was never on YouTube has no thumbnail at all
-// (the dashboard inserts those rows with `thumbnail_url` empty), so it falls back
-// to the branded gradient the player already uses, which is also what the lock
-// screen gets.
+// Two cases, and the difference is the point. A message with a picture shows it
+// under a light scrim, so the screen still looks like the thing you tapped. A
+// message with none falls back to the branded gradient the player already uses,
+// which is also what the lock screen gets.
+//
+// W3.1 slice 5: WHICH picture is no longer this component's business. It used to
+// take the YouTube thumbnail by name; a message can now carry its own artwork
+// instead, and `features/watch/artwork.ts` decides between them for every surface
+// at once. The scrim stays over ours as much as over theirs: the gold disc and
+// the state pill sit on top of it and have to stay readable over a photograph
+// nobody has seen yet.
 
 export interface SermonArtworkProps {
-  thumbnailUrl: string | null;
+  /** Already resolved by `sermonArtworkUrl`: ours, else YouTube's, else null. */
+  artworkUrl: string | null;
   /** Localized `.tag` copy. Also the region's accessible name. */
   label: string;
   height: number;
 }
 
 export function SermonArtwork({
-  thumbnailUrl,
+  artworkUrl,
   label,
   height,
 }: SermonArtworkProps) {
@@ -49,18 +54,18 @@ export function SermonArtwork({
         from={media.artFrom}
         to={media.artTo}
       />
-      {thumbnailUrl ? (
+      {artworkUrl ? (
         <>
           <Image
-            source={{ uri: thumbnailUrl }}
+            source={{ uri: artworkUrl }}
             style={{ position: 'absolute', width: '100%', height: '100%' }}
             contentFit="cover"
             transition={150}
             onError={(event) => {
               // Decorative: the gradient underneath is the fallback, and it is
-              // the SAME one an audio-only message gets, so a dead thumbnail
+              // the SAME one a message with no picture gets, so a dead image
               // degrades into a state the design already covers.
-              console.warn('sermon artwork failed:', thumbnailUrl, event.error);
+              console.warn('sermon artwork failed:', artworkUrl, event.error);
             }}
           />
           {/* `.pl-art .scrim`. Tuned on the device against a real photo: 58%

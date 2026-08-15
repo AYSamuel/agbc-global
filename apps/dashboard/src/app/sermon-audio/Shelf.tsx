@@ -12,6 +12,7 @@ import type {
 } from '@/server/sermonAudio';
 
 import { preachedOn, wholeMinutes } from './format';
+import { OUTCOMES } from './outcomes';
 
 /**
  * The shelf itself (frame: `SERMON-AUDIO · the shelf`, approved 2026-08-14): the banner
@@ -247,15 +248,3 @@ const FILTERS: {
     count: (shelf) => String(shelf.audioOnly),
   },
 ];
-
-const OUTCOMES: Record<string, { text: string; bad: boolean } | undefined> = {
-  saved: { text: copy.sermonAudio.outcome.saved, bad: false },
-  replaced: { text: copy.sermonAudio.outcome.replaced, bad: false },
-  created: { text: copy.sermonAudio.outcome.created, bad: false },
-  removed: { text: copy.sermonAudio.outcome.removed, bad: false },
-  no_audio: { text: copy.sermonAudio.outcome.noAudio, bad: false },
-  gone: { text: copy.sermonAudio.outcome.gone, bad: false },
-  audio_only: { text: copy.sermonAudio.outcome.audioOnly, bad: false },
-  refused: { text: copy.sermonAudio.outcome.refused, bad: true },
-  failed: { text: copy.sermonAudio.outcome.failed, bad: true },
-};

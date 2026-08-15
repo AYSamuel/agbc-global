@@ -12,6 +12,7 @@ import {
   WatchTabIcon,
   useManualRefresh,
 } from '@/components/ui';
+import { sermonArtworkUrl } from '@/features/watch/artwork';
 import { durationMinutes, joinMeta } from '@/features/watch/format';
 import { resolveLiveSermon } from '@/features/watch/live';
 import { MediaHero } from '@/features/watch/MediaHero';
@@ -205,7 +206,7 @@ export default function Watch() {
                               }),
                         ])
                   }
-                  thumbnailUrl={hero.thumbnail_url || null}
+                  artworkUrl={sermonArtworkUrl(hero)}
                   liveBadge={live ? t('watch:liveBadge') : undefined}
                   onPress={() => {
                     openSermon(hero);

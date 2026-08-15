@@ -7,6 +7,7 @@ import { spacing } from '@agbc/shared/theme';
 import { EmptyState } from '@/components/ui';
 import { track } from '@/lib/analytics';
 
+import { sermonArtworkUrl } from './artwork';
 import { SKIP_SEC } from './audio';
 import { AudioTransport } from './AudioTransport';
 import type { SermonSummary } from './queries';
@@ -43,15 +44,17 @@ export function AudioMode({
   onRemint,
 }: AudioModeProps) {
   const { t } = useTranslation();
+  // Resolved once and handed to both consumers, so the lock screen and the screen
+  // cannot disagree about which picture this message has (W3.1 slice 5). Its own
+  // artwork wins over the YouTube thumbnail; null means neither, and expo-audio
+  // simply omits the art rather than drawing a hole.
+  const artwork = sermonArtworkUrl(sermon);
   const audio = useSermonAudio({
     sermonId: sermon.id,
     signedUrl,
     title: sermon.title,
     artist: sermon.speaker,
-    // The lock screen gets exactly what the artwork above shows, and nothing
-    // when there is nothing: a message that was never on YouTube has no
-    // thumbnail, and expo-audio simply omits the art rather than drawing a hole.
-    artworkUrl: sermon.thumbnail_url === '' ? null : sermon.thumbnail_url,
+    artworkUrl: artwork,
     startAtSec,
     isMember,
     onRemint,
@@ -90,7 +93,7 @@ export function AudioMode({
   return (
     <View>
       <SermonArtwork
-        thumbnailUrl={sermon.thumbnail_url === '' ? null : sermon.thumbnail_url}
+        artworkUrl={artwork}
         // Three states, not two, since audio stopped autoplaying: the pill said
         // "Listening" over a message sitting silently at 0:00, which is the kind
         // of small lie that teaches people to distrust the rest of the screen.

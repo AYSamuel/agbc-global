@@ -187,6 +187,23 @@
   .prog{height:8px;border-radius:100px;background:var(--alt);overflow:hidden;margin-top:10px}
   .prog i{display:block;height:100%;border-radius:100px;background:var(--blue)}
   .pill.good{background:rgba(31,138,91,.14);color:var(--green)}
+
+  /* W3.1 slice 5 · Message artwork. The picture is shown AT THE SHAPE MEMBERS SEE IT
+     (16/9, the slot a YouTube thumbnail stands in), never as a filename: the reader is
+     choosing what a card looks like, and a name in a row proves nothing about that. The
+     three modifiers are the three things that can be in the slot, and each is a real
+     state of a real message: `.yt` is the thumbnail the sync already gave us, `.none` is
+     entry-flow's `.pl-art.none` gradient verbatim (what a message created here shows
+     today, and the whole reason for this slice), `.own` is ours. Flat gradients stand in
+     for photographs the way every other frame in this file does. */
+  .artprev{width:176px;aspect-ratio:16/9;border-radius:12px;border:1px solid var(--border);overflow:hidden;position:relative;flex:none;background:var(--alt)}
+  .artprev.yt{background:linear-gradient(135deg,#14213d,#2f6fed)}
+  .artprev.none{background:linear-gradient(160deg,#22375f,#0e1420)}
+  .artprev.own{background:linear-gradient(118deg,#b98600,#14213d 64%)}
+  .artprev .cp{position:absolute;left:0;right:0;bottom:0;background:rgba(14,20,32,.72);color:#fff;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 6px;text-align:center}
+  .artrow{display:flex;gap:14px;align-items:flex-start;margin-top:8px}
+  .artrow .rt{min-width:0;flex:1}
+  .artrow .rt .hint{margin-top:0}
 </style>
 
 <div class="stage t-light">
@@ -1006,7 +1023,15 @@
     cannot substitute: background listening is a Premium feature and pulling the audio out of a
     video breaks YouTube's terms. The bucket is private and the app mints 24-hour signed links
     (decision 2026-08-14), so a copied URL dies within a day. Two flows live here: attach audio
-    to a synced message, and create a message that was never on YouTube at all.</span></p>
+    to a synced message, and create a message that was never on YouTube at all.</span>
+    <span style="margin-top:8px"><b>Slice 5 adds the picture.</b> A message created here had none
+    anywhere: the sync writes <code>thumbnail_url</code> for what it finds on YouTube and nothing
+    writes it for what it does not, so a midweek word was a blank navy card in the rails, a blank
+    cover on the player and no art at all on a lock screen. The artwork is its own object in its
+    own bucket (<code>artwork_path</code>, never <code>thumbnail_url</code>, which the nightly
+    sync owns and would overwrite), it is optional everywhere, and unlike the audio it is
+    <b>public-read</b>: it is the picture on every card in a guest-first app, so there is nothing
+    in it to fence and a rotating signed URL would defeat the image cache it depends on.</span></p>
   <div class="gallery" id="w31aLight">
 
     <div class="device">
@@ -1152,7 +1177,16 @@
            on data that is not there yet is HIDDEN, not disabled. Save appears with the checked
            state (next frame). Speaker and series arrive prefilled from the message row; the
            upload goes straight from the browser to storage under the admin's own session, so
-           a 30 MB file never rides through the dashboard server. -->
+           a 30 MB file never rides through the dashboard server.
+
+           W3.1 slice 5 adds the artwork field, directly under the audio because both are
+           files and the metadata belongs together beneath them. It is OPTIONAL and says so
+           in its own label (the standards rule: mark what is optional, never what is
+           required), and the preview beside it is the point of the whole field: the reader
+           sees what a card looks like RIGHT NOW before deciding whether to change it. On a
+           synced message that is YouTube's thumbnail, so most weeks the honest answer is to
+           leave it alone, and the hint says that out loud rather than nudging for an upload
+           the message does not need. -->
       <div class="win narrow">
         <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/attach</span></div>
         <div class="app">
@@ -1173,6 +1207,22 @@
               <div class="hint">Straight from your editing export. Speech quality (64&#8211;96 kbps
                 mono) is plenty; there is no need to re-encode a bigger file if that is what you
                 have.</div>
+            </div>
+            <div class="field" style="max-width:640px">
+              <span class="lab">The artwork &middot; optional</span>
+              <div class="artrow">
+                <div class="artprev yt"><span class="cp">On cards now</span></div>
+                <div class="rt">
+                  <div class="drop" style="padding:16px 14px">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <b>Drop a picture here, or browse</b>
+                    <span class="sub">JPG, PNG or WebP &middot; up to 5 MB</span>
+                  </div>
+                  <div class="hint">This message already shows its YouTube thumbnail, so it needs
+                    nothing. Add a picture only to override it: a wide one, 1280&#215;720 or
+                    larger, since it is cropped square on a lock screen.</div>
+                </div>
+              </div>
             </div>
             <div class="field">
               <span class="lab">Speaker</span>
@@ -1286,6 +1336,43 @@
               <span class="spacer"></span>
               <button class="btn danger">Remove the audio</button>
             </div>
+
+            <!-- W3.1 slice 5. The artwork gets its own block rather than a third button in the
+                 row above, because it is a different object with a different consequence:
+                 removing the audio takes the message out of the app, removing the picture
+                 just puts the navy cover back. Its Remove is therefore an ordinary button,
+                 not the danger one, and it is never refused the way audio removal is on an
+                 audio-only message. This is the only place artwork can be changed after the
+                 fact, which is why it lives on the screen that already shows what is there.
+
+                 REPLACE IS THE PICKER ITSELF, not a button that reveals one (amended
+                 2026-08-15, after the built screen). Audio's "Replace the file" opens a
+                 separate screen because an audio upload drags a form of metadata behind it;
+                 a picture is one file and nothing else, so a button whose only job is to
+                 reveal a drop zone is a click that buys nothing. The preview is drawn ONCE,
+                 by this block: the picker below it repeats no preview and its hint speaks to
+                 replacing rather than to an empty slot, both of which the built screen got
+                 wrong first and the browser caught. -->
+            <div class="mlabel" style="padding-top:26px">The artwork</div>
+            <div class="artrow" style="max-width:640px;margin-top:0">
+              <div class="artprev own"><span class="cp">On cards</span></div>
+              <div class="rt">
+                <div class="hint" style="max-width:52ch">412 KB, added 4 August. Members see it on
+                  every list, on the player and on their lock screen. Removing it puts the plain
+                  navy cover back; nothing else changes.</div>
+                <div style="margin-top:12px"><button class="btn outline">Remove the picture</button></div>
+              </div>
+            </div>
+            <div class="field" style="max-width:640px">
+              <div class="drop" style="padding:16px 14px">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <b>Drop a picture here, or browse</b>
+                <span class="sub">JPG, PNG or WebP &middot; up to 5 MB</span>
+              </div>
+              <div class="hint">Choosing a picture replaces the one above; the old one is retired
+                as soon as the new one is saved. A wide picture, 1280&#215;720 or larger, is
+                cropped square on a lock screen.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1297,7 +1384,14 @@
            prayer meeting). It appears in Watch like any other message, with an audio cover in
            place of a video player; the app has rendered that state since W1.3. Date preached
            decides where it sorts in the rails. The same hidden-Save rule applies: the frame
-           shows the moment after the upload passed, so Save is present here. -->
+           shows the moment after the upload passed, so Save is present here.
+
+           W3.1 slice 5: this is the flow the artwork field exists FOR. A synced message
+           arrives with YouTube's thumbnail; one created here arrives with nothing, so until
+           slice 5 every midweek word was a blank navy card in the rails and a blank lock
+           screen in the car. The field is still optional (the navy cover is a designed
+           fallback, not a broken state), but here the hint argues for it instead of against
+           it, which is the same field doing the honest thing in two different situations. -->
       <div class="win narrow">
         <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/new</span></div>
         <div class="app">
@@ -1337,9 +1431,114 @@
                 </div>
               </div>
             </div>
+            <div class="field" style="max-width:640px">
+              <span class="lab">The artwork &middot; optional</span>
+              <div class="artrow">
+                <div class="artprev own"><span class="cp">Chosen</span></div>
+                <div class="rt">
+                  <div class="hint" style="margin-top:2px">midweek-series.jpg &middot; 1600&#215;900,
+                    412 KB. Without one this message shows the plain navy cover in every list and
+                    on the lock screen, which is the one place an audio-only message looks
+                    unfinished.</div>
+                  <div style="margin-top:10px;display:flex;gap:8px">
+                    <button class="btn outline" style="padding:8px 14px;font-size:12.5px">Choose a different picture</button>
+                    <button class="btn ghost" style="padding:8px 12px;font-size:12.5px">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="actions">
               <button class="btn primary">Create the message</button>
               <button class="btn ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-ARTWORK</b> &middot; the picture's own four moments</p>
+      <!-- W3.1 slice 5. The artwork field is a second uploader on screens that already have
+           one, so it owes the same four moments the audio uploader owes, and they are drawn
+           here once rather than three times inside three forms.
+
+           Two of them are NOT copies of the audio's. "Nothing chosen" is a real state with a
+           real answer, and the answer differs by message: a synced message already has
+           YouTube's thumbnail, so the honest word is "nothing needed"; a message that was
+           never on YouTube has the navy cover, so the honest word is "this is what it looks
+           like". Both are drawn, because the field says the opposite thing in each and a
+           field that argues for an upload when none is needed is how a shelf fills with
+           pictures nobody asked for.
+
+           The refusal is the audio's refusal with the noun changed, and it means the same
+           thing: the server read the object's own first bytes, refused, and discarded it.
+           A .heic straight off an iPhone lands here, which is the likeliest real failure on
+           this screen and the reason the wording names a fix rather than a rule. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/attach</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>The artwork</h2>
+                <p class="scope">One field, four moments</p>
+              </div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">Nothing chosen &middot; a message that is on YouTube</span>
+              <div class="artrow">
+                <div class="artprev yt"><span class="cp">On cards now</span></div>
+                <div class="rt">
+                  <div class="drop" style="padding:16px 14px">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <b>Drop a picture here, or browse</b>
+                    <span class="sub">JPG, PNG or WebP &middot; up to 5 MB</span>
+                  </div>
+                  <div class="hint">This message already shows its YouTube thumbnail, so it needs
+                    nothing.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">Nothing chosen &middot; a message that was never on YouTube</span>
+              <div class="artrow">
+                <div class="artprev none"><span class="cp">On cards now</span></div>
+                <div class="rt">
+                  <div class="drop" style="padding:16px 14px">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <b>Drop a picture here, or browse</b>
+                    <span class="sub">JPG, PNG or WebP &middot; up to 5 MB</span>
+                  </div>
+                  <div class="hint">There is no picture for this one, so it shows the plain navy
+                    cover everywhere. A wide picture, 1280&#215;720 or larger, is cropped square
+                    on a lock screen.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">Sending it</span>
+              <div class="inp" style="display:block">
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>midweek-series.jpg</span><span style="color:var(--muted)">412 KB</span></div>
+                <div class="prog"><i style="width:74%"></i></div>
+              </div>
+              <div class="hint">A picture is small enough that this is usually gone before it is
+                read, which is why it has no warning about leaving the tab.</div>
+            </div>
+
+            <div class="field" style="max-width:640px">
+              <span class="lab">If the file is not a picture</span>
+              <div class="banner bad" style="margin-top:0">
+                <span class="bi">&#9888;</span>
+                <div>
+                  <h4>That file is not a JPG, PNG or WebP</h4>
+                  <p>The file's contents were checked, not its name. Nothing was saved and the
+                    upload was discarded. A photo straight off an iPhone is often HEIC: export
+                    or save it as JPG and try again.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

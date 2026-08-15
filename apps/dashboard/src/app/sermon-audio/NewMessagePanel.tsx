@@ -10,6 +10,7 @@ import { copy } from '@/copy/en';
 
 import { CONTROL, FIELD, HINT, LABEL } from '../people/fields';
 import { isNextRedirect } from './AttachPanel';
+import { ArtworkUploader, type ArtworkSeams } from './ArtworkUploader';
 import { AudioUploader, type UploaderSeams } from './AudioUploader';
 import {
   NOT_SAVED,
@@ -32,26 +33,45 @@ import {
 export function NewMessagePanel({
   create,
   mint,
+  mintArtwork,
   seams,
 }: {
   create: SaveAction;
   mint: MintAction;
-  seams?: UploaderSeams;
+  mintArtwork: MintAction;
+  seams?: UploaderSeams & ArtworkSeams;
 }) {
   const [state, submit] = useActionState(guarded(create), NOT_SAVED);
   const text = copy.sermonAudio.create;
   const attach = copy.sermonAudio.attach;
+  const picture = copy.sermonAudio.artwork;
+
+  const wrongKind =
+    state.status === 'failed' &&
+    (state.reason === 'not_audio' || state.reason === 'not_image');
 
   return (
     <>
       <PageHeader title={text.title} scope={text.scope} />
 
-      {state.status === 'failed' && state.reason === 'not_audio' ? (
-        <Notice tone="bad" live="assertive" title={attach.wrongKindTitle}>
-          {attach.wrongKindBody}
+      {wrongKind ? (
+        <Notice
+          tone="bad"
+          live="assertive"
+          title={
+            state.reason === 'not_image'
+              ? picture.wrongKindTitle
+              : attach.wrongKindTitle
+          }
+        >
+          {state.reason === 'not_image'
+            ? picture.wrongKindBody
+            : attach.wrongKindBody}
         </Notice>
       ) : null}
-      {state.status === 'failed' && state.reason !== 'not_audio' ? (
+      {state.status === 'failed' &&
+      state.reason !== 'not_audio' &&
+      state.reason !== 'not_image' ? (
         <div className="mt-4">
           <Alert>{PROBLEMS[state.reason]}</Alert>
         </div>
@@ -122,6 +142,19 @@ export function NewMessagePanel({
           />
         </div>
 
+        {/* The flow the artwork field exists for. This row arrives with nothing, so until
+            slice 5 every midweek word was a blank navy card in the rails and a blank lock
+            screen in the car. Still optional: that navy cover is a designed fallback, not
+            a broken state, so the hint argues for a picture rather than demanding one. */}
+        <div className={FIELD} style={{ maxWidth: '40rem' }}>
+          <span className={LABEL}>{picture.label}</span>
+          <ArtworkUploader
+            subject={{ url: null, kind: 'none' }}
+            mint={mintArtwork}
+            seams={seams}
+          />
+        </div>
+
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <Link
             href="/sermon-audio"
@@ -135,7 +168,10 @@ export function NewMessagePanel({
   );
 }
 
-const PROBLEMS: Record<Exclude<SaveProblem, 'not_audio'>, string> = {
+const PROBLEMS: Record<
+  Exclude<SaveProblem, 'not_audio' | 'not_image'>,
+  string
+> = {
   missing: copy.sermonAudio.attach.uploadFailed,
   gone: copy.sermonAudio.attach.goneBody,
   invalid: copy.sermonAudio.create.dateRequired,

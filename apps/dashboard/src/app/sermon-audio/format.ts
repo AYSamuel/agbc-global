@@ -34,3 +34,12 @@ export function wholeMinutes(durationSec: number): number {
 export function wholeMb(bytes: number): number {
   return Math.max(1, Math.round(bytes / 1048576));
 }
+
+/**
+ * Whole KB, the unit artwork actually lives in (W3.1 slice 5). A cover is ~400 KB, and
+ * `wholeMb` would print every one of them as "1 MB", which is a number that teaches the
+ * reader nothing about the file they just chose.
+ */
+export function wholeKb(bytes: number): number {
+  return Math.max(1, Math.round(bytes / 1024));
+}

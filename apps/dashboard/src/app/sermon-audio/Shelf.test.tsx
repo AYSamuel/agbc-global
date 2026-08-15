@@ -22,6 +22,8 @@ function row(overrides: Partial<ShelfRow> = {}): ShelfRow {
     series: null,
     youtubeId: 'yt-1',
     audioPath: null,
+    artworkPath: null,
+    thumbnailUrl: 'https://i.ytimg.com/vi/yt-1/hqdefault.jpg',
     durationSec: 2820,
     publishedAt: '2026-08-09T11:00:00Z',
     kind: 'video',
