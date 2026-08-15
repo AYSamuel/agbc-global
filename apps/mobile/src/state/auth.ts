@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { useNotificationAskStore } from '@/features/notifications/ask';
 import { useCelebratedStore } from '@/features/rhythm/celebrated';
+import { useNoteDraftStore } from '@/features/watch/notes';
 import { isPersonalQuery } from '@/lib/queryMeta';
 import { queryClient } from '@/lib/queryPersist';
 import { supabase } from '@/lib/supabase';
@@ -192,12 +193,18 @@ export const useAuthStore = create<AuthState>()(
  * to the install and survives on purpose, but the in-context ask is a promise
  * made to one member at one value moment, and the next member has been promised
  * nothing (`06`).
+ *
+ * AND ANY UNSENT NOTE DRAFTS (W3.1 slice 4): the most private words in this
+ * app, persisted on the device precisely so writing offline is never lost, and
+ * for exactly that reason they must not wait on a shared phone for whoever
+ * signs in next.
  */
 function forgetWhoeverThatWas(): void {
   queryClient.removeQueries({ predicate: isPersonalQuery });
   void useWriteQueueStore.getState().reset();
   useCelebratedStore.getState().reset();
   useNotificationAskStore.getState().reset();
+  useNoteDraftStore.getState().reset();
 }
 
 /**

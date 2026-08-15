@@ -36,10 +36,16 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 - Query title/speaker/series. Empty → recent searches / suggestions. No results → "No messages found" + clear.
 
 ### `SERMON-NOTES`
-- Member's private notes for a sermon (`sermon_notes`), autosaved. List in More → (via sermon) or profile.
+- Member's private notes for a sermon (`sermon_notes`), autosaved. Reached from the player's Notes action (gate for a guest).
+- **ONE document per member per message, not timestamped cards** (decided 2026-08-14, W3.1 slice 4). `02` gives this table one body per member per sermon and this document autosaves it, so cards were a shape the database does not have; the timestamps survive as TEXT the "Add a note at 26:41" button writes into the page, the way a hand writes the next heading in a paper notebook. `20260815120000` makes "one document" a `unique (profile_id, sermon_id)` constraint rather than a comment, which is also the upsert's conflict target: an autosaving editor on two devices converges on one row instead of splitting a member's notes in two.
+- **The Add line is ABSENT when nothing has played**, because there is no second to name: opened from a link or from PROFILE on a message nobody has started, "Add a note at 0:00" would be a lie about where you are. "Has played" means a position is stored for it on this device, which since 2026-08-15 means ANY position past zero. It used to mean 15 seconds, because the storage rule was sharing `MIN_RESUME_SEC` with the resume rule, and the two are different questions: a thought worth writing down at 0:08 is ordinary, while being dragged back to second eight is not. The resume side is untouched and still refuses anything under 15 seconds (verified on the device: six seconds of playback offers "Add a note at 0:06" and still reopens the message at 0:00).
+- **Opening notes pauses the message** (the player pauses on blur, W3.1 slice 3), which is what lets the Add line name one fixed second.
+- **A persisted local draft means writing offline is never lost**, and the autosave status says which state it is in (`Saved ✓` / `Saving...` / `Not saved yet` + "Kept on this phone. We will save it when you are back online."). The draft is cleared on sign-out with the rest of a member's personal state (`03`, `16`): these are the most private words in the app. On open, the NEWER of draft and server wins, the same rule resume uses.
 
 ### `MY-LIST`
-- Saved sermons (`saved_items`). Empty → "Save messages to watch later" + browse CTA.
+- Saved sermons (`saved_items`). Empty → "Save messages to watch later" + browse CTA. Reached from PROFILE → Saved messages (member only; a guest arriving by link meets the sign-in state).
+- **Save lives in the player's top bar** beside Share, and each MY-LIST row carries the same bookmark as its remove control: one glyph means "saved" everywhere. Card-level Save on the Watch rails is deliberately not built (W3.1 slice 4), like the card progress bar this document asks for and W1.3 left out.
+- **Save is a queued write** (`01` §8, kind `saved`, Glory's on/off shape), so a tap on the Underground lands when the signal comes back and a save-unsave-save collapses to one write.
 
 ## Media architecture
 - **Video:** YouTube via `react-native-youtube-iframe` + `react-native-webview` (pin the version; maintenance has slowed, community forks exist; keep "Open on YouTube" as the tested fallback path). v1 = **HQ channel only** (a config value, not a `sermons` column). Model supports `branches.youtube_channel_id` for future per-branch decentralization.
@@ -52,10 +58,11 @@ Let anyone catch a message they missed, watch or **listen**, on any branch's fee
 
 ## Data
 - Reads: `sermons`, `playback_positions`, `saved_items`, `sermon_notes`.
-- Writes: `playback_positions` (throttled), `saved_items`, `sermon_notes`, `attendance` (live watch).
+- Writes: `playback_positions` (throttled), `saved_items` (queued), `sermon_notes` (debounced autosave, not queued: content is not a one-tap wish, `01` §8), `attendance` (live watch).
+- **On the two personal tables, identity is not an input** (`20260815120000`): `profile_id` defaults to `auth.uid()` and the INSERT grant excludes the column, so the client never sends it and a forged one is refused at the grant layer before RLS is consulted. Their blanket privileges (#96) are replaced by column-scoped grants in the same migration; `saved_items` has no UPDATE for anyone, because a membership row has nothing to change.
 
 ## States / edge cases
-- **Guest:** watch/listen freely; Save/notes gate. **Resume works for guests too**, from the device-local position (decision 2026-07-20, superseding the earlier "guests always start at 0" rule); only the cross-device sync of that position is a member perk.
+- **Guest:** watch/listen freely; Save/notes gate, each with its own copy ("Sign in to save this message" / "Sign in to take notes") and its own gate-return: Save queues the save so the member lands back on the player with the bookmark filled, Notes opens the page. **Resume works for guests too**, from the device-local position (decision 2026-07-20, superseding the earlier "guests always start at 0" rule); only the cross-device sync of that position is a member perk.
 - **No network:** show cached list; player shows retry + "open on YouTube."
 - **Live not running:** live banner hidden; `/live` handled gracefully.
 - **Audio missing for a sermon:** audio-only disabled with tooltip.

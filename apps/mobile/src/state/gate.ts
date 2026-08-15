@@ -32,6 +32,13 @@ export type GateAction =
    */
   | { kind: 'my_posts' }
   /**
+   * Reaching MY-LIST (W3.1 slice 4). Navigation-shaped like `my_posts`, and
+   * reachable only by deep link: the PROFILE row that leads here exists only
+   * for a member, and the Save control gates before anything is listed. A list
+   * belongs to somebody, so a guest has nobody whose it could be.
+   */
+  | { kind: 'my_list' }
+  /**
    * Reaching RHYTHM (W2.8). Navigation-shaped like `my_posts`, and reachable
    * only by deep link: Home offers a guest the Join card, never a strip to tap.
    * A rhythm is by definition a fact about somebody, so a guest has nobody to be.

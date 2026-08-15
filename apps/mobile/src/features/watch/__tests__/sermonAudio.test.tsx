@@ -111,6 +111,14 @@ jest.mock('@/state/auth', () => ({
     selector(mockAuthState()),
 }));
 
+// The top bar's Save half (W3.1 slice 4) is watch.test.tsx's subject; this
+// suite only needs the screen to mount without a QueryClient behind it.
+jest.mock('@/features/watch/saved', () => ({
+  queueSave: jest.fn(),
+  useSavedQuery: () => ({ data: false }),
+  useSavedState: () => false,
+}));
+
 function sermon(overrides: Partial<SermonSummary> = {}): SermonSummary {
   return {
     id: 'aaa',

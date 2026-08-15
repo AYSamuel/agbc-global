@@ -42,7 +42,8 @@
     "cancelFailed": "We could not cancel that just now. Try again in a moment.",
     "errorLoad": "We could not load your profile just now. Check your connection and try again.",
     "activitySection": "Your activity",
-    "myPosts": "My posts"
+    "myPosts": "My posts",
+    "savedMessages": "Saved messages"
   },
   "branchChange": {
     "title": "Your home branch",

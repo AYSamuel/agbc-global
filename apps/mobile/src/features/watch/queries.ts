@@ -26,7 +26,9 @@ export interface SermonSummary {
   status: 'available' | 'unavailable';
 }
 
-const SERMON_FIELDS =
+// Exported for My List's embedded read (features/watch/saved.ts), so the two
+// cannot drift a column apart.
+export const SERMON_FIELDS =
   'id, title, speaker, youtube_id, audio_path, duration_sec, thumbnail_url, series, published_at, is_live, live_checked_at, kind, status';
 
 export const sermonsQueryOptions = {

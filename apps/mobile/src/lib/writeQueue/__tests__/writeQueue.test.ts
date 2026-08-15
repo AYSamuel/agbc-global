@@ -176,6 +176,7 @@ describe('parseQueue', () => {
       intercession: 'committed',
       attendance: 'branch-berlin',
       rsvp: 'going',
+      saved: 'on',
     };
 
     for (const [kind, state] of Object.entries(samples)) {

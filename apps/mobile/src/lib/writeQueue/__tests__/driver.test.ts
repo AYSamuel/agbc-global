@@ -31,6 +31,7 @@ function handlers(script: Record<string, ReplayOutcome>): WriteHandlers {
     intercession: handle,
     attendance: handle,
     rsvp: handle,
+    saved: handle,
   };
 }
 
@@ -100,6 +101,7 @@ test('a handler that throws is treated as transport, not as an answer', async ()
     intercession: boom,
     attendance: boom,
     rsvp: boom,
+    saved: boom,
   });
   await useWriteQueueStore.getState().drain();
 
@@ -125,6 +127,7 @@ test('a tap during the drain wins: the newer wish is what goes out', async () =>
     intercession: handle,
     attendance: handle,
     rsvp: handle,
+    saved: handle,
   });
 
   const draining = useWriteQueueStore.getState().drain();
@@ -156,6 +159,7 @@ test('drains do not overlap', async () => {
     intercession: handle,
     attendance: handle,
     rsvp: handle,
+    saved: handle,
   });
 
   await Promise.all([

@@ -89,6 +89,7 @@ Grace Portal used OneSignal; the new app uses Expo Push (APNs/FCM). Nothing to m
 - [ ] Cleanup rehearsed end to end on a restored prod dump (scratch project)
 - [ ] Backup taken; Grace Portal objects removed; stale auth users cleaned
 - [ ] `02` schema migrated; seeds loaded; RLS baseline reviewed
+- [ ] Before the app schema is applied, check `sermon_notes` for duplicate `(profile_id, sermon_id)` pairs. `20260815120000` DELETES duplicates (keeping the newest) so it can add the unique constraint behind them. That is safe today only because these tables reach prod for the first time AT this cutover and therefore hold nothing; if the order ever changes and real notes exist first, this migration deletes a member's words without asking (flagged with Ayo, 2026-08-15, W3.1 slice 4)
 - [x] Project region confirmed EU: `eu-central-1` (2026-07-13; project ref `fotfplvqsnmbzjjhqlwp`)
 - [ ] Baseline migration (incl. website tables) pulled + repaired; fence-guard test green
 - [ ] Shipping on Expo SDK 56+ (Play target API 36 from 2026-08-31)

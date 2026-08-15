@@ -236,6 +236,19 @@ describe('analytics consent gate', () => {
     expect(() => {
       analytics.track('map_opened');
     }).not.toThrow();
+
+    // The explosion is put away before the teardown, and this line is the whole
+    // fix for a flake that outlived several sessions (root-caused 2026-08-15).
+    // `afterEach` calls `shutdownAnalytics()`, whose `shutdown()` makes ONE last
+    // flush; against a fetch that only rejects, the SDK retries with backoff
+    // inside its own `raceWithTimeout`, so this single test's teardown burned
+    // ~9.5s of the 15s testTimeout on an idle machine. Under a full parallel
+    // run it went over, and the timeout was then reported against whichever
+    // test the clock caught, which is why the name never matched the cause.
+    // Restoring the working fake keeps the claim under test exactly as it was
+    // (the throw-free tap happened above, with the network genuinely broken)
+    // and lets the teardown flush land instead of retrying into a wall.
+    fakeNetwork(requests);
   });
 
   test('the answer survives a restart, so nobody is asked twice', async () => {

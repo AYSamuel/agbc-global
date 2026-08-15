@@ -42,7 +42,8 @@
     "cancelFailed": "Dat lukte even niet. Probeer het zo nog eens.",
     "errorLoad": "We konden je profiel even niet laden. Controleer je verbinding en probeer het opnieuw.",
     "activitySection": "Jouw activiteit",
-    "myPosts": "Mijn berichten"
+    "myPosts": "Mijn berichten",
+    "savedMessages": "Bewaarde boodschappen"
   },
   "branchChange": {
     "title": "Jouw gemeente",

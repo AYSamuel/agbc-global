@@ -117,15 +117,22 @@ select is(
       and service_date = public.attendance_service_date(now() - interval '10 days', 'Europe/London')),
   0, 'a claim older than 72 hours cannot backdate attendance');
 
+-- "Today" below is the BRANCH's day, not the session's: the trigger writes
+-- service_date in Europe/London, while bare current_date reads the session's
+-- UTC. The two disagree between 23:00 and 00:00 UTC every British summer night,
+-- which is an hour-long daily flake window (found 2026-08-15, running at 23:53
+-- UTC), the same class as the yesterday_tap note above.
 select is(
   (select count(*)::int from public.attendance
-    where profile_id = :'member' and service_date = current_date),
+    where profile_id = :'member'
+      and service_date = public.attendance_service_date(now(), 'Europe/London')),
   1, 'it falls back to the server''s clock instead');
 
 -- And the device's claim is kept even when it was not believed: it is evidence, not authority.
 select is(
   (select (client_taken_at < now() - interval '9 days') from public.attendance
-    where profile_id = :'member' and service_date = current_date),
+    where profile_id = :'member'
+      and service_date = public.attendance_service_date(now(), 'Europe/London')),
   true, 'the unbelieved claim is still recorded on the row');
 
 reset role;
@@ -259,7 +266,9 @@ select is(
 
 select is(
   (select count(*)::int from public.attendance
-    where profile_id = :'grace_member' and service_date = current_date),
+    where profile_id = :'grace_member'
+      -- The branch's day, not the session's UTC day: see the clamp section.
+      and service_date = public.attendance_service_date(now(), 'Europe/London')),
   1, 'one row per member per day, however many taps');
 
 reset role;

@@ -10,7 +10,9 @@ import type { PlaybackSpeed, PositionSample } from './audio';
 // process death. Members additionally sync `playback_positions` server-side
 // (W3.1), and `preferredPosition` decides between the two on open.
 
-/** Below this, the user has barely started: not worth saving or restoring. */
+/** Below this, the user has barely started: not worth RESTORING them to. It no
+ * longer decides what is stored (see `shouldSave`), because other things read
+ * the stored position for other reasons. */
 export const MIN_RESUME_SEC = 15;
 /** Within this of the end, treat it as finished and start over. */
 export const END_GRACE_SEC = 30;
@@ -93,7 +95,19 @@ export function resumeTarget(
   return entry.positionSec;
 }
 
-/** Whether a reported position is worth persisting. Pure, for tests. */
+/**
+ * Whether a reported position is worth persisting. Pure, for tests.
+ *
+ * Anything past the very start counts, which is NOT the same question as
+ * `resumeTarget`'s (amended 2026-08-15, Ayo's report). This used to share
+ * `MIN_RESUME_SEC` with it, and that conflated two rules: "you have barely
+ * started, do not drag me back here" is about RESUMING, while what gets stored
+ * also decides whether SERMON-NOTES can offer "Add a note at 0:08". A thought
+ * worth writing down in the first fifteen seconds is an ordinary thing; being
+ * resumed to second eight is not, and `resumeTarget` still refuses it on its
+ * own. Separating them changes no resume behaviour whatsoever: every early
+ * position stored here is one that function keeps ignoring.
+ */
 export function shouldSave(positionSec: number): boolean {
-  return Number.isFinite(positionSec) && positionSec >= MIN_RESUME_SEC;
+  return Number.isFinite(positionSec) && positionSec > 0;
 }

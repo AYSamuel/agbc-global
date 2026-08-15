@@ -58,6 +58,18 @@ jest.mock('@/features/watch/serverPosition', () => ({
   saveServerPosition: jest.fn(() => Promise.resolve(true)),
 }));
 
+// The Save half (W3.1 slice 4): the module's own behavior is proven in
+// saved.test.tsx; here only what the top bar does with it.
+const mockQueueSave = jest.fn<undefined, [string, boolean]>();
+const mockSavedState = jest.fn<boolean, []>(() => false);
+jest.mock('@/features/watch/saved', () => ({
+  queueSave: (sermonId: string, saved: boolean) => {
+    mockQueueSave(sermonId, saved);
+  },
+  useSavedQuery: () => ({ data: false }),
+  useSavedState: () => mockSavedState(),
+}));
+
 // SERMON reads the session to decide whether to sync the position server-side.
 const mockAuthState = jest.fn<{ status: string }, []>(() => ({
   status: 'guest',
@@ -497,6 +509,61 @@ describe('SERMON player', () => {
     });
     await fireEvent.press(screen.getByText('Sign in'));
     expect(mockPush).toHaveBeenCalledWith('/auth');
+  });
+
+  test('Save gates a guest with its own copy, and the gate remembers the message', async () => {
+    mockParams = { id: 'aaa' };
+    mockSermon.mockReturnValue({
+      data: sermon(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Sermon />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
+    expect(screen.getByText('Sign in to save this message')).toBeOnTheScreen();
+    expect(mockQueueSave).not.toHaveBeenCalled();
+    expect(mockTrack).toHaveBeenCalledWith('gate_shown', {
+      action_type: 'save_sermon',
+    });
+    await fireEvent.press(screen.getByText('Sign in'));
+    expect(mockPush).toHaveBeenCalledWith('/auth');
+  });
+
+  test("a member's Save queues the wish; a filled bookmark unsaves", async () => {
+    mockParams = { id: 'aaa' };
+    mockAuthState.mockReturnValue({ status: 'member' });
+    mockSermon.mockReturnValue({
+      data: sermon(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Sermon />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
+    expect(mockQueueSave).toHaveBeenCalledWith('aaa', true);
+
+    // The saved state renames the control (the frame's `.ib.on`, aria Saved).
+    mockSavedState.mockReturnValue(true);
+    await renderScreen(<Sermon />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Saved' }));
+    expect(mockQueueSave).toHaveBeenCalledWith('aaa', false);
+  });
+
+  test("a member's Notes goes straight to the page: the gate is for guests", async () => {
+    mockParams = { id: 'aaa' };
+    mockAuthState.mockReturnValue({ status: 'member' });
+    mockSermon.mockReturnValue({
+      data: sermon(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Sermon />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Notes' }));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/sermon/notes/[id]',
+      params: { id: 'aaa' },
+    });
+    expect(screen.queryByText('Sign in to take notes')).not.toBeOnTheScreen();
+    expect(mockTrack).not.toHaveBeenCalledWith('gate_shown', expect.anything());
   });
 
   test('the first playing transition fires sermon_played, and only the first (W2.10)', async () => {

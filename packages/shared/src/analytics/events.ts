@@ -39,6 +39,7 @@ export type AnalyticsGateAction =
   | 'notifications'
   | 'im_here'
   | 'my_posts'
+  | 'my_list'
   | 'rhythm'
   | 'report'
   | 'block'

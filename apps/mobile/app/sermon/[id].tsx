@@ -17,14 +17,18 @@ import YoutubePlayer, {
 import {
   fontFamily,
   icon,
+  palette,
   radius,
   spacing,
+  tonal,
   typeScale,
 } from '@agbc/shared/theme';
 
 import {
   AppHeader,
+  BookmarkIcon,
   Button,
+  CircleIconButton,
   EmptyState,
   GateSheet,
   HeadphonesIcon,
@@ -63,6 +67,11 @@ import {
   saveServerPosition,
   useServerPositionQuery,
 } from '@/features/watch/serverPosition';
+import {
+  queueSave,
+  useSavedQuery,
+  useSavedState,
+} from '@/features/watch/saved';
 import { useFormattingLocale } from '@/i18n';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
 import { track } from '@/lib/analytics';
@@ -178,11 +187,18 @@ export default function Sermon() {
   const query = useSermonQuery(id);
   const [playerError, setPlayerError] = useState(false);
   const [playerKey, setPlayerKey] = useState(0);
-  const [gateVisible, setGateVisible] = useState(false);
+  // Which gate is up: Save and Notes gate separately because each names its own
+  // action (docs/spec/03: "Sign in to save this message" vs "... to take notes").
+  const [gate, setGate] = useState<'save' | 'notes' | null>(null);
   const [audioRequested, setAudioRequested] = useState(false);
 
   const sermon = query.data ?? null;
   const isMember = useAuthStore((s) => s.status === 'member');
+  // The bookmark's state: the queued wish when there is one, the server's
+  // answer otherwise (features/watch/saved.ts). Guests never fetch: the
+  // bookmark is an invitation for them, not a fact.
+  const savedQuery = useSavedQuery(id, isMember);
+  const saved = useSavedState(id, savedQuery.data ?? false) && isMember;
   const localEntry = usePlaybackStore((s) => s.positions[id]);
   const speed = usePlaybackStore((s) => s.speed);
   const setSpeed = usePlaybackStore((s) => s.setSpeed);
@@ -264,24 +280,38 @@ export default function Sermon() {
         }}
         trailing={
           sermon ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('watch:share')}
-              onPress={() => {
-                share(sermon);
-              }}
-              style={({ pressed }) => ({
-                width: 40,
-                height: 40,
-                borderRadius: radius.full,
-                backgroundColor: colors.alt,
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <ShareIcon size={icon.lg} color={colors.text} />
-            </Pressable>
+            // The frame's `.ibs`: Save then Share, 8px apart. The bookmark is
+            // the same glyph MY-LIST's rows carry, filled when saved
+            // (`.ib.on`: gold on the 20% gold wash).
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <CircleIconButton
+                accessibilityLabel={saved ? t('watch:saved') : t('watch:save')}
+                backgroundColor={saved ? tonal.gold.bg : colors.alt}
+                icon={
+                  <BookmarkIcon
+                    size={icon.lg}
+                    color={saved ? palette.gold : colors.text}
+                    fill={saved ? palette.gold : 'none'}
+                  />
+                }
+                onPress={() => {
+                  if (!isMember) {
+                    track('gate_shown', { action_type: 'save_sermon' });
+                    setGate('save');
+                    return;
+                  }
+                  queueSave(id, !saved);
+                }}
+              />
+              <CircleIconButton
+                accessibilityLabel={t('watch:share')}
+                backgroundColor={colors.alt}
+                icon={<ShareIcon size={icon.lg} color={colors.text} />}
+                onPress={() => {
+                  share(sermon);
+                }}
+              />
+            </View>
           ) : undefined
         }
       />
@@ -512,11 +542,20 @@ export default function Sermon() {
                 <PlayerAction
                   label={t('watch:notes')}
                   glyph={(color) => <NotesIcon size={icon.md} color={color} />}
-                  // Notes are a member feature: open the gate (W2.2 wires
-                  // gate-return so the note composer opens after sign-in).
+                  // A member goes straight to the page; a guest meets the gate,
+                  // and the gate-return opens the same page after sign-in.
+                  // Navigating is also what pauses the message (the slice 3
+                  // blur rule), which is why SERMON-NOTES can name one second.
                   onPress={() => {
+                    if (isMember) {
+                      router.push({
+                        pathname: '/sermon/notes/[id]',
+                        params: { id },
+                      });
+                      return;
+                    }
                     track('gate_shown', { action_type: 'sermon_notes' });
-                    setGateVisible(true);
+                    setGate('notes');
                   }}
                 />
               </PlayerActions>
@@ -588,24 +627,48 @@ export default function Sermon() {
         )}
       </View>
 
+      {/* Two sheets rather than one with swapped copy, so the words never
+          flicker mid-dismissal: each stays mounted with its own text and only
+          `visible` moves. */}
       <GateSheet
-        visible={gateVisible}
+        visible={gate === 'notes'}
         title={t('watch:notesGateTitle')}
         body={t('watch:notesGateBody')}
         signInLabel={t('common:signIn')}
         dismissLabel={t('common:notNow')}
         dismissAnnouncement={t('watch:gateDismissed')}
         onSignIn={() => {
-          // Gate-return (W2.2): the notes executor itself lands at W3.1 slice 4.
+          // Gate-return (W2.2): the executor opens SERMON-NOTES after sign-in.
           useGateStore
             .getState()
             .beginGateSignIn({ kind: 'sermon_notes', sermonId: id });
-          setGateVisible(false);
+          setGate(null);
           router.push('/auth');
         }}
         onDismiss={() => {
           useGateStore.getState().dismissGate('sermon_notes');
-          setGateVisible(false);
+          setGate(null);
+        }}
+      />
+      <GateSheet
+        visible={gate === 'save'}
+        title={t('watch:saveGateTitle')}
+        body={t('watch:saveGateBody')}
+        signInLabel={t('common:signIn')}
+        dismissLabel={t('common:notNow')}
+        dismissAnnouncement={t('watch:gateDismissed')}
+        onSignIn={() => {
+          // Gate-return: the executor queues the save, so the member lands
+          // back on this screen with the bookmark already filled.
+          useGateStore
+            .getState()
+            .beginGateSignIn({ kind: 'save_sermon', sermonId: id });
+          setGate(null);
+          router.push('/auth');
+        }}
+        onDismiss={() => {
+          useGateStore.getState().dismissGate('save_sermon');
+          setGate(null);
         }}
       />
     </Screen>

@@ -42,7 +42,8 @@
     "cancelFailed": "Cela n'a pas fonctionné à l'instant. Réessayez dans un moment.",
     "errorLoad": "Nous n'avons pas pu charger votre profil. Vérifiez votre connexion et réessayez.",
     "activitySection": "Votre activité",
-    "myPosts": "Mes publications"
+    "myPosts": "Mes publications",
+    "savedMessages": "Messages enregistrés"
   },
   "branchChange": {
     "title": "Votre assemblée",

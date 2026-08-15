@@ -8,6 +8,7 @@ import {
   ActionPill,
   ActionSheet,
   AppHeader,
+  BookmarkIcon,
   Button,
   EditIcon,
   HomeIcon,
@@ -152,9 +153,9 @@ export default function ProfileScreen() {
           />
         </MenuCard>
 
-        {/* The frame's activity card (PROFILE · member): My posts, then Saved messages
-            and My rhythm as their own items land (W3.1, W2.8). MY-POSTS is the first,
-            and the consent step has been promising it by name since W2.3. */}
+        {/* The frame's activity card (PROFILE · member): My posts, Saved messages
+            (W3.1 slice 4), and My rhythm still owed its row (W2.8 built the screen;
+            the frame draws the flame row third). */}
         <MenuLabel label={t('settings:profile.activitySection')} />
         <MenuCard>
           <MenuRow
@@ -162,6 +163,13 @@ export default function ProfileScreen() {
             label={t('settings:profile.myPosts')}
             onPress={() => {
               router.push('/my-posts');
+            }}
+          />
+          <MenuRow
+            icon={BookmarkIcon}
+            label={t('settings:profile.savedMessages')}
+            onPress={() => {
+              router.push('/my-list');
             }}
           />
         </MenuCard>
