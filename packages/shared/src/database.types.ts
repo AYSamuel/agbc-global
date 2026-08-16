@@ -967,6 +967,59 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          broadcast_id: string | null
+          created_at: string
+          dedupe_key: string | null
+          deep_link: string
+          id: string
+          params: Json | null
+          profile_id: string
+          read_at: string | null
+          template_key: string | null
+          title: string | null
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          broadcast_id?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          deep_link: string
+          id?: string
+          params?: Json | null
+          profile_id: string
+          read_at?: string | null
+          template_key?: string | null
+          title?: string | null
+          type: string
+        }
+        Update: {
+          body?: string | null
+          broadcast_id?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          deep_link?: string
+          id?: string
+          params?: Json | null
+          profile_id?: string
+          read_at?: string | null
+          template_key?: string | null
+          title?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       playback_positions: {
         Row: {
           position_sec: number
@@ -1282,6 +1335,35 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_tickets: {
+        Row: {
+          device_id: string
+          processed_at: string | null
+          sent_at: string
+          ticket_id: string
+        }
+        Insert: {
+          device_id: string
+          processed_at?: string | null
+          sent_at?: string
+          ticket_id: string
+        }
+        Update: {
+          device_id?: string
+          processed_at?: string | null
+          sent_at?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tickets_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
             referencedColumns: ["id"]
           },
         ]
@@ -2013,6 +2095,10 @@ export type Database = {
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
       prune_job_alerts: { Args: never; Returns: number }
+      purge_old_notifications: {
+        Args: { batch_size?: number; older_than?: string }
+        Returns: number
+      }
       recompute_all_streaks: { Args: never; Returns: number }
       recompute_streak: { Args: { target: string }; Returns: undefined }
       record_attendance: {
