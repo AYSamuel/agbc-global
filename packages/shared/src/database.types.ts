@@ -1342,18 +1342,21 @@ export type Database = {
       push_tickets: {
         Row: {
           device_id: string
+          error: string | null
           processed_at: string | null
           sent_at: string
           ticket_id: string
         }
         Insert: {
           device_id: string
+          error?: string | null
           processed_at?: string | null
           sent_at?: string
           ticket_id: string
         }
         Update: {
           device_id?: string
+          error?: string | null
           processed_at?: string | null
           sent_at?: string
           ticket_id?: string
@@ -2068,6 +2071,7 @@ export type Database = {
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      mark_push_tickets_processed: { Args: { results: Json }; Returns: number }
       mint_course_handoff: {
         Args: { p_course_slug: string; p_profile: string }
         Returns: {
@@ -2098,6 +2102,14 @@ export type Database = {
       purge_old_notifications: {
         Args: { batch_size?: number; older_than?: string }
         Returns: number
+      }
+      push_error_rate: {
+        Args: { window_hours?: number }
+        Returns: {
+          error_ratio: number
+          errored: number
+          sent: number
+        }[]
       }
       recompute_all_streaks: { Args: never; Returns: number }
       recompute_streak: { Args: { target: string }; Returns: undefined }
