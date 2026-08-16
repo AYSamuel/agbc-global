@@ -21,6 +21,11 @@ credentials.json
 *.p12
 *.mobileprovision
 google-service-account*.json
+# Firebase hands the FCM V1 service-account key out under ITS name, not ours
+# (agbc-app-firebase-adminsdk-<hash>-<hash>.json), which the pattern above does
+# not match. Added W3.3 2026-08-16: this file is a live server credential, and
+# the repo has already had one secret-scanning alert (credentials.md 2026-07-25).
+*firebase-adminsdk*.json
 # Outputs
 coverage/
 .next/
