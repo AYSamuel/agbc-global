@@ -515,10 +515,11 @@ Per-recipient delivery tracking: powers resumable chunked fan-out, Expo receipt 
 Delivery truth for AUTOMATED pushes (service reminders, activity, transactional), which are otherwise fire-and-forget: every push send persists its ticket ids here; the receipts job sweeps ALL unprocessed tickets, not per-fan-out (`21` §5). Purged after 7 days.
 | field | type | notes |
 |-------|------|-------|
-| ticket_id | text PK | |
+| ticket_id | text PK | Expo's own id, so re-recording one is a no-op |
 | device_id | uuid FK | |
 | sent_at | timestamptz | |
-| processed_at | timestamptz null | |
+| processed_at | timestamptz null | NULL is the receipts sweep's work queue |
+| error | text null | **Added 2026-08-16 (W3.3 slice 3, `20260816140000`).** Expo's machine code from the RECEIPT (`DeviceNotRegistered`, `MessageTooBig`, `MessageRateExceeded`, `MismatchSenderId`, `InvalidCredentials`), null when the push landed. This column was missing and `21` §5's alert ("more than 10% of a day's automated tickets error") cannot be computed without it: a rate over a DAY outlives any single run's memory. Mirrors `broadcast_deliveries.error`, which `02` already specified for the fan-out side of the same question. Only `DeviceNotRegistered` prunes a device; the credentials errors mean OUR key is wrong and pruning on them would delete every registration during an outage we caused |
 
 ---
 
