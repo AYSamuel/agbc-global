@@ -363,3 +363,52 @@ select
 from public.profiles p
 where p.email = 'dev.marieke@example.test'
 on conflict (stripe_session_id) do nothing;
+
+-- Notifications (W3.3 slice 2): a log for `NC` to page through on the device
+-- before the screen exists to page it (slice 5). Deliberately mixed, because a
+-- feed of one shape proves nothing: read and unread, an automated template row
+-- and a pre-rendered broadcast row, a dedupe key and no dedupe key, and dates
+-- spread far enough to exercise the relative timestamps and the cursor.
+--
+-- Explicit ids so a re-seed is a no-op rather than a second copy. Tobi is the
+-- main dev member; Anke gets one so "own rows only" is visible on the device by
+-- signing in as either.
+insert into public.notifications
+  (id, profile_id, type, template_key, params, title, body, dedupe_key,
+   deep_link, read_at, created_at)
+select
+  v.id::uuid, p.id, v.type, v.template_key, v.params::jsonb, v.title, v.body,
+  v.dedupe_key, v.deep_link,
+  case when v.read_after is null then null else now() - v.read_after::interval end,
+  now() - v.age::interval
+from (values
+  -- Unread, newest: the wedge's reward loop.
+  ('60000000-0000-4000-8000-000000000001', 'dev.tobi@example.test', 'prayer',
+   'prayer.someone_prayed', '{"count":1}', null, null, null,
+   '/family/prayer', null, '2 hours'),
+  -- Batched Glory, the "N people said Glory" collapse (docs/spec/15).
+  ('60000000-0000-4000-8000-000000000002', 'dev.tobi@example.test', 'testimony_glory',
+   'testimony.glory_batch', '{"count":3}', null, null, null,
+   '/my-posts', '20 hours', '1 day'),
+  -- Transactional: always delivered, no pref key.
+  ('60000000-0000-4000-8000-000000000003', 'dev.tobi@example.test', 'moderation',
+   'moderation.approved', '{}', null, null, null,
+   '/my-posts', null, '2 days'),
+  -- A service reminder carrying the occurrence in its dedupe key.
+  ('60000000-0000-4000-8000-000000000004', 'dev.tobi@example.test', 'service_reminder',
+   'service.starts_soon', '{"branch":"AGBC Glasgow"}', null, null,
+   'service_reminder:glasgow:2026-08-09',
+   '/', '3 days', '4 days'),
+  -- A pre-rendered broadcast: title/body instead of a template key (W3.5 writes
+  -- these for real; this one shows NC rendering both shapes).
+  ('60000000-0000-4000-8000-000000000005', 'dev.tobi@example.test', 'ministry',
+   null, null, 'Global Grace Gathering', 'All branches, this Sunday.', null,
+   '/events', '5 days', '6 days'),
+  -- Another member's row, so "own rows only" is visible by switching accounts.
+  ('60000000-0000-4000-8000-000000000006', 'dev.anke@example.test', 'branch',
+   null, null, 'Berlin service moves to 11:00', 'From next Sunday.', null,
+   '/branches', null, '12 hours')
+) as v(id, email, type, template_key, params, title, body, dedupe_key,
+       deep_link, read_after, age)
+join public.profiles p on p.email = v.email
+on conflict (id) do nothing;

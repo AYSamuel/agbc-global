@@ -264,7 +264,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W3.6 · Phase 3 exit audit**
 - Refs: `18` Phase 3 exit.
-- Build: tier scoping verification (ministry-wide reaches all branches, branch stays in-branch, prefs suppress), audio-while-driving field test, notification E2E matrix (every tier → correct deep link), load-test note for the first big live on preview.
+- Build: tier scoping verification (ministry-wide reaches all branches, branch stays in-branch, prefs suppress), audio-while-driving field test, notification E2E matrix (every tier → correct deep link). (The "load-test note for the first big live on preview" was struck 2026-08-16: ADR 0021 removed the live layer it was sizing.)
 - Done: `18` Phase 3 exit criteria.
 
 ### Phase 4 · Store/Library + polish + submission + Dashboard Phase C
@@ -303,6 +303,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 **W4.7 · Hardening audit: states, a11y, performance, tablet**
 - Refs: `18` Phase 4, `05` (matrix), `04`.
 - Build: sweep every screen: four states, hit targets, contrast, dynamic type 200%, VoiceOver + TalkBack pass, tablet layouts (master-detail per `05`), landscape player/reader; performance pass (startup, list virtualization, image caching); fix-list burned down.
+- **One contrast finding is already measured and waiting for this item** (W3.3 slice 1, 2026-08-15): in DARK, surface separation is carried by hairlines at **~1.43:1** (`cardline` and `bandline` are both `#28323f` on a `#0e1420` page), under WCAG 1.4.11's 3:1 for a boundary that identifies a component. It is the whole dark theme rather than one component, so it was deliberately not fixed inside a feature slice. Decide here whether those boundaries need to identify anything (content mostly does that on its own) or whether the dark palette gets re-toned; either way it is one decision applied to every card, band and toast at once.
 - Done: the `21` §4 manual matrix executed and recorded on the real low-end Android + current iPhone.
 
 **W4.8 · Store submission** (with Ayo)

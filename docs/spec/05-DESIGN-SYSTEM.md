@@ -54,7 +54,7 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `sub` | `#aab4c6` |
 | `muted` | `#7c8698` |
 | `card` | `#18212f` |
-| `cardline` | `#28323f` (solid; borders carry separation in dark) |
+| `cardline` | `#28323f` (solid; borders carry separation in dark). **Measured 2026-08-15: that separation is ~1.43:1 against `bg`**, under WCAG 1.4.11's 3:1 for a boundary that identifies a component. Applies to every dark surface edge, not one component, so it is W4.7's decision (`25`), not a per-feature fix |
 | `raised` | `#28323f` (elevated chip on an alt track: card-on-alt is a 3-point difference in dark and the raised shadow is invisible there, so the active segment gets a genuinely lighter surface; fixed 2026-07-21) |
 | `mapSea` | `#0b111b` (Family map ocean, mockup `--mapsea`) |
 | `mapLand` | `rgba(255,255,255,0.07)` (Family map landmass, mockup `--mapland`) |
