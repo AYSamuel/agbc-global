@@ -64,6 +64,9 @@ export default function Splash() {
       store.markEntryDone();
       const pending = store.take();
       if (pending !== null && effectiveStatus === 'member') {
+        // The assertion is needed by the compiler and unnecessary to CI's lint (typed
+        // routes are generated and gitignored); see useNotifications.ts for the full note.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         router.push(pending as Parameters<typeof router.push>[0]);
       }
     }, SPLASH_MS);

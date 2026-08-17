@@ -95,9 +95,17 @@ export function useNotifications(): void {
         return;
       }
 
-      // The cast is to expo-router's own `Href`, not to `any`: typed routes cannot
-      // express a path resolved at runtime, and `deepLinkFromData` has already narrowed
-      // the value to one of the allowlisted routes.
+      // THE ASSERTION AND THE DISABLE ARE BOTH LOAD-BEARING, in opposite environments.
+      // expo-router's typed routes are GENERATED into `.expo/types`, which is gitignored,
+      // so `router.push` takes a narrow union of real route literals on a machine that has
+      // run the dev server and a broad type on a CI runner that has not. Without the
+      // assertion, local typecheck fails; with it, CI's lint calls it unnecessary. So the
+      // assertion stays for the compiler and the rule is silenced for the runner, where the
+      // directive is simply unused (this config does not report unused directives).
+      // Reproduce CI's view locally by moving `.expo/types` aside. Same family as the
+      // committed `env.d.ts` fix; `deepLinkFromData` has already narrowed the value to one
+      // of the allowlisted routes.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       router.push(route as Href);
     };
 
