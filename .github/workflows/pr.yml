@@ -127,25 +127,20 @@ jobs:
           else
             echo "no committed database.types.ts yet (arrives at W0.10); skipping"
           fi
-      # Fence-guard: no migration or seed may touch the website's objects in the
-      # shared prod project (docs/spec/19; list filled from the Track P2 audit, with
-      # course_registrations deliberately unfenced by ADR 0017). A hit on donations is
-      # a design error to stop on, never something to grep around.
-      - name: fence guard
-        run: |
-          FENCED=$(grep -v '^#' supabase/fenced-objects.txt | sed '/^\s*$/d' || true)
-          if [ -z "$FENCED" ]; then
-            echo "fenced-objects list is empty; nothing to check"
-            exit 0
-          fi
-          FAIL=0
-          while IFS= read -r name; do
-            if grep -rn --include='*.sql' -w "$name" supabase/migrations/ supabase/seeds/ 2>/dev/null; then
-              echo "::error::migration or seed references fenced object: $name"
-              FAIL=1
-            fi
-          done <<< "$FENCED"
-          exit $FAIL
+      # The fence-guard that stood here until 2026-08-17 is GONE, with its subject
+      # (ADR 0023). It greped migrations for `donations` and friends because those
+      # objects lived in a project we shared with the live website and could only
+      # damage. Production is now a project of our own, `donations` is created by our
+      # own history (20260817120000), and a rule that forbids naming it would forbid
+      # the migration that makes the website work.
+      #
+      # What replaced it is not weaker, it is the opposite: the risk was never the
+      # NAME, it was the SHAPE, since another repo's Stripe webhook inserts into two
+      # of these tables with no compile step between us. A grep cannot see a retyped
+      # or newly-NOT-NULL column. `supabase test db` above can, and does:
+      # supabase/tests/039 asserts the shape contract for BOTH shared tables, which
+      # is more than the fence ever covered (course_registrations was never on it).
+
       # Edge-function tests (W1.3+): pure logic + shared zod contracts, no network.
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:

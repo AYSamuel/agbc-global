@@ -24,7 +24,23 @@ The stores do not care that the framework changes (Flutter to React Native); the
 - If the Play app is enrolled in Play App Signing, only the upload key must match (it does); Google re-signs with the app signing key.
 - Store listings (name, icon, screenshots, description) are updated to the AGBC Global branding with the first release; install base and review history are retained.
 
-## Supabase: reuse plan (shared project!)
+## Supabase: reuse plan (shared project!) · HISTORICAL from 2026-08-17
+
+**THIS SECTION IS NO LONGER AN INSTRUCTION.** ADR 0023 (2026-08-17) reversed ADR 0001:
+production is a NEW Supabase project and the church website moves onto it. Everything below
+describes the reuse-and-clean-up plan that is no longer being executed. There is no cleanup,
+no rehearsal, no two-history reconciliation, and no fence. The authoritative document is
+`docs/spec/plans/track-p-fresh-prod-project.md`.
+
+It is kept rather than deleted because it is the record of what the old project holds and
+what was decided about it, and because two of its findings still bind: the region requirement
+(EU, `eu-central-1`) and the `course_registrations` ALTER that ran on the old project on
+2026-08-10, which is now simply part of that project's history.
+
+**The rest of `19` is untouched and still binding.** Store identity, signing, versionCode,
+listings, ratings and release copy are unaffected by where the database lives.
+
+---
 
 > **Steps 1 and 2 are DONE (2026-07-30).** Full evidence and the ordered cleanup plan:
 > `docs/runbooks/prod-audit-2026-07-30.md`; the fenced list is in the project `CLAUDE.md`.

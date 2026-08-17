@@ -117,15 +117,30 @@ Write it **better than the original**, since we own it now:
 
 ---
 
-## Phase 0 · Decide and prepare (nothing created yet)
+## Phase 0 · Decide and prepare (nothing created yet) · DONE 2026-08-17
 
-1. **ADR superseding 0001**, recording the reversal and why.
-2. **Confirm the region:** `eu-central-1`, EU, as `19` §7 requires.
+1. ~~**ADR superseding 0001**, recording the reversal and why.~~ **ADR 0023**; 0001 marked
+   superseded with a note on what the audit and ADR 0017 changed.
+2. ~~**Confirm the region:** `eu-central-1`, EU, as `19` §7 requires.~~ Confirmed and recorded
+   in ADR 0023 for the NEW project rather than inherited from the old one.
 3. **Take a final verified dump of the old project** per `restore-from-backup.md`. It becomes
    the archive of the test data and the fallback if the website move surprises us.
-4. **Write the `donations` migration** and its pgTAP, reviewed before anything is created.
-5. **Rotate `REVIEW_CODE`** for this window, and put the bypass's trigger and expiry
-   (2026-09-17) into `credentials.md` before it is switched on, not after.
+4. ~~**Write the `donations` migration** and its pgTAP, reviewed before anything is created.~~
+   `20260817120000_the_giving_ledger_moves_house.sql` + `supabase/tests/039`, which also picks
+   up the shape contract for `course_registrations`. The website's exact write path was driven
+   through PostgREST against the local stack, not only through pgTAP: 201 on insert, 409 with
+   `23505` on replay (the code `insertDonation` reads as "already recorded"), `42501` for
+   `anon` on both read and write.
+5. **Rotate `REVIEW_CODE`** for this window. The window itself, its trigger and its hard date
+   (2026-09-17) are now written into `credentials.md`, before it is switched on rather than
+   after; the rotation happens at Phase 2 when the secret is set.
+
+**Also landed here, because leaving them stale is how a superseded plan gets followed:** the
+fence dissolved (CI's grep guard and `supabase/fenced-objects.txt` deleted, `CLAUDE.md`'s
+section rewritten as the two-shared-tables contract), and `19` §Supabase, the audit runbook's
+ordered cleanup, `21` §2, `24` §1's traffic fence and `25`'s Track P section were all
+annotated as historical or corrected. `02` gained the `donations` entry and `20` gained the
+payment-records retention row it never had.
 
 ---
 
@@ -181,8 +196,30 @@ The whole move: **two env vars, two tables, no storage.**
    a row, the registration path writes a row. Twelve donations across the old project's entire
    lifetime says traffic is low enough that the switchover window is a non-issue.
 4. Leave the old project running and untouched.
+5. **Move the backup pipeline with the website**, in the same change, because from this moment
+   the live giving data is in the new project and the nightly dump is still pointed at the old
+   one. Found while executing Phase 0 (2026-08-17), not anticipated when this plan was
+   written, and it is two edits plus a trap:
+   - `backup.yml` **hardcodes the old ref** in `SUPABASE_S3_ENDPOINT` (line 43), and its
+     `SUPABASE_PROD_DB_URL` / `SUPABASE_PROD_S3_ACCESS_KEY` / `SUPABASE_PROD_S3_SECRET_KEY`
+     secrets all point at the old project. All four move together.
+   - **Its storage step will FAIL against the new project**, and loudly, for the wrong
+     reason: `test -n "$(find storage -type f -print -quit)"` asserts prod has at least one
+     storage object, which was true when it had `avatars` and 7 objects and is false for a
+     fresh project whose buckets are empty on purpose (no sermon audio, no uploads yet).
+     Left alone, the first night after the move reports a broken pipeline and pings
+     healthchecks FAILURE. Make the assert bucket-aware (buckets enumerated, zero objects
+     allowed) rather than deleting it: its job is catching a broken enumeration, and that job
+     still needs doing.
+   - **Its two TABLE greps are fine, and this was measured rather than assumed** (2026-08-17,
+     against the local stack): `supabase db dump --data-only --use-copy` emits
+     `COPY "public"."donations"` and `COPY "public"."course_registrations"` even when both
+     tables are EMPTY, so the guard that exists to catch a dump which silently lost the
+     website's tables keeps working from the new project's first night. Only the storage
+     assert above needs changing.
+   - The last dump taken from the OLD project is the archive, so take it before repointing.
 
-**Reversal:** put the two old env vars back and redeploy.
+**Reversal:** put the two old env vars back and redeploy (and the backup secrets with them).
 
 ---
 

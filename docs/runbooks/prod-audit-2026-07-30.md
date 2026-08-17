@@ -6,6 +6,24 @@
 
 This closes `19` steps 1 (audit) and 2 (fence). The fenced list lives in the project `CLAUDE.md`; this file is the evidence behind it and the ordered plan for step 4 onward.
 
+> ## THE ORDERED CLEANUP BELOW IS HISTORICAL (from 2026-08-17)
+>
+> **ADR 0023 reversed ADR 0001: production is a NEW Supabase project, so there is no cleanup
+> to execute.** Nothing in this project is being dropped, rewritten or repaired; it stays
+> running until the website is verified on the new project, and is then archived and deleted
+> whole. Read the numbered plan below as a description of what this project contains, never
+> as steps to take. The authoritative document is
+> `docs/spec/plans/track-p-fresh-prod-project.md`.
+>
+> **The audit itself is why the reversal could be argued at all.** It is what priced the
+> reuse plan (13 tables, 48 functions, 21 triggers, 42 policies, a view, 6 cron jobs, a
+> bucket, two migration histories, four measured ordering hazards, all on a live project),
+> and it remains the record of what is being deleted at the end. Two of its findings were
+> carried forward into the new schema rather than merely noted: `donations.user_id` now has
+> ON DELETE SET NULL (hazard 2 was that it did not), and `anon`/`authenticated` are granted
+> nothing at all on the new `donations` (hazard 3, issue #96), both asserted in
+> `supabase/tests/039`.
+
 ## What this project actually is
 
 `19` describes "a shared project where the website uses roughly 3 tables and everything else belongs to Grace Portal". The audit corrects that in three ways:
