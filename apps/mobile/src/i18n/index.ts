@@ -42,6 +42,7 @@ export const NAMESPACES = [
   'academy',
   'auth',
   'settings',
+  'notifications',
   'errors',
 ] as const;
 
@@ -58,6 +59,7 @@ const resources = {
     rhythm: require('./locales/en/rhythm.json') as object,
     academy: require('./locales/en/academy.json') as object,
     auth: require('./locales/en/auth.json') as object,
+    notifications: require('./locales/en/notifications.json') as object,
     errors: require('./locales/en/errors.json') as object,
   },
   de: {
@@ -72,6 +74,7 @@ const resources = {
     rhythm: require('./locales/de/rhythm.json') as object,
     academy: require('./locales/de/academy.json') as object,
     auth: require('./locales/de/auth.json') as object,
+    notifications: require('./locales/de/notifications.json') as object,
     errors: require('./locales/de/errors.json') as object,
   },
   nl: {
@@ -86,6 +89,7 @@ const resources = {
     rhythm: require('./locales/nl/rhythm.json') as object,
     academy: require('./locales/nl/academy.json') as object,
     auth: require('./locales/nl/auth.json') as object,
+    notifications: require('./locales/nl/notifications.json') as object,
     errors: require('./locales/nl/errors.json') as object,
   },
   fr: {
@@ -100,6 +104,7 @@ const resources = {
     rhythm: require('./locales/fr/rhythm.json') as object,
     academy: require('./locales/fr/academy.json') as object,
     auth: require('./locales/fr/auth.json') as object,
+    notifications: require('./locales/fr/notifications.json') as object,
     errors: require('./locales/fr/errors.json') as object,
   },
 };

@@ -1,0 +1,28 @@
+{
+  "channels": {
+    "ministry": {
+      "name": "Aankondigingen van de bediening",
+      "description": "Nieuws voor de hele familie, uit alle gemeenten"
+    },
+    "branch": {
+      "name": "Nieuws uit je gemeente",
+      "description": "Nieuws en wijzigingen uit je gemeente"
+    },
+    "serviceReminders": {
+      "name": "Herinneringen voor de dienst",
+      "description": "Een seintje voordat je dienst begint"
+    },
+    "prayer": {
+      "name": "Gebedsactiviteit",
+      "description": "Wanneer iemand met je bidt, en herinneringen om te bidden"
+    },
+    "testimony": {
+      "name": "Getuigenis-activiteit (Glorie)",
+      "description": "Wanneer mensen je getuigenis vieren"
+    },
+    "transactional": {
+      "name": "Bevestigingen",
+      "description": "Antwoorden op wat je doet, zoals een goedkeuring of een inschrijving"
+    }
+  }
+}

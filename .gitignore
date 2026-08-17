@@ -35,3 +35,10 @@ coverage/
 # Local tooling / MCP config (machine-specific)
 .mcp.json
 .figma-verify/
+
+# Any `eas`/`expo` command run from the REPO ROOT (rather than apps/mobile) finds no
+# Expo config, offers to "configure this project", and drops a stub `{"expo":{}}` here.
+# It then shadows apps/mobile/app.config.js for every later root-run command, which once
+# nearly wrote the EAS project id into a directory with no app in it (W3.3, 2026-08-16).
+# Deleted twice, recreated twice; ignored now so it can never be committed.
+/app.json

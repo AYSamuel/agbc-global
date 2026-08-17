@@ -1,0 +1,28 @@
+{
+  "channels": {
+    "ministry": {
+      "name": "Ankündigungen des Dienstes",
+      "description": "Neuigkeiten für die ganze Familie, über alle Gemeinden hinweg"
+    },
+    "branch": {
+      "name": "Neues aus deiner Gemeinde",
+      "description": "Neuigkeiten und Änderungen aus deiner Gemeinde"
+    },
+    "serviceReminders": {
+      "name": "Erinnerungen an den Gottesdienst",
+      "description": "Ein Hinweis, bevor dein Gottesdienst beginnt"
+    },
+    "prayer": {
+      "name": "Gebetsaktivität",
+      "description": "Wenn jemand mit dir betet, und Erinnerungen ans Beten"
+    },
+    "testimony": {
+      "name": "Zeugnis-Aktivität (Ehre)",
+      "description": "Wenn Menschen dein Zeugnis feiern"
+    },
+    "transactional": {
+      "name": "Bestätigungen",
+      "description": "Antworten auf das, was du tust, etwa eine Freigabe oder eine Anmeldung"
+    }
+  }
+}

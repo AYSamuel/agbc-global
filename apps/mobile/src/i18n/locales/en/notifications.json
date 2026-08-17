@@ -1,0 +1,28 @@
+{
+  "channels": {
+    "ministry": {
+      "name": "Ministry announcements",
+      "description": "Family-wide news across all branches"
+    },
+    "branch": {
+      "name": "Branch updates",
+      "description": "News and changes from your branch"
+    },
+    "serviceReminders": {
+      "name": "Service reminders",
+      "description": "A nudge before your service starts"
+    },
+    "prayer": {
+      "name": "Prayer activity",
+      "description": "When someone prays with you, and reminders to pray"
+    },
+    "testimony": {
+      "name": "Testimony (Glory) activity",
+      "description": "When people celebrate your testimony"
+    },
+    "transactional": {
+      "name": "Confirmations",
+      "description": "Answers to things you do, like a post approval or a registration"
+    }
+  }
+}

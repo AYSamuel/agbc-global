@@ -178,14 +178,8 @@ export const EVENT_SOURCE: Record<AnalyticsEventName, AnalyticsEventSource> = {
   sermon_resumed: { fires: 'app' },
   rsvp_set: { fires: 'app' },
   give_tapped: { fires: 'app' },
-  broadcast_received: {
-    fires: 'deferred',
-    owner: 'W3.3 · push infrastructure',
-  },
-  broadcast_opened: { fires: 'deferred', owner: 'W3.3 · push infrastructure' },
-  notification_opened: {
-    fires: 'deferred',
-    owner: 'W3.3 · push infrastructure',
-  },
+  broadcast_received: { fires: 'app' },
+  broadcast_opened: { fires: 'app' },
+  notification_opened: { fires: 'app' },
   reader_opened: { fires: 'deferred', owner: 'Phase 4 · library + reader' },
 };

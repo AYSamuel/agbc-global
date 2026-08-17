@@ -1,0 +1,28 @@
+{
+  "channels": {
+    "ministry": {
+      "name": "Annonces du ministère",
+      "description": "Nouvelles pour toute la famille, dans toutes les Églises locales"
+    },
+    "branch": {
+      "name": "Nouvelles de votre Église",
+      "description": "Nouvelles et changements de votre Église locale"
+    },
+    "serviceReminders": {
+      "name": "Rappels de culte",
+      "description": "Un rappel avant le début de votre culte"
+    },
+    "prayer": {
+      "name": "Activité de prière",
+      "description": "Quand quelqu’un prie avec vous, et les rappels de prière"
+    },
+    "testimony": {
+      "name": "Activité des témoignages (Gloire)",
+      "description": "Quand des personnes célèbrent votre témoignage"
+    },
+    "transactional": {
+      "name": "Confirmations",
+      "description": "Réponses à vos actions, comme une validation ou une inscription"
+    }
+  }
+}

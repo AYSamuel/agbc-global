@@ -33,8 +33,13 @@ export interface PushMessage {
    * Navigation only. The app treats this as untrusted and resolves `deepLink` against an
    * allowlist before routing (docs/spec/15, and `03`'s gate-return rule: a deep link never
    * carries or triggers a write).
+   *
+   * `type` is the notification's CATEGORY (`ministry`, `prayer`, ...), carried so the app
+   * can report `notification_opened` with it and tell a broadcast from an activity ping.
+   * It is a category name, never member data, so it is safe on a payload that crosses
+   * Expo, APNs/FCM and the OS.
    */
-  data: { deepLink: string; notificationId: string };
+  data: { deepLink: string; notificationId: string; type: string };
   /** One of the six Android channels; ignored by iOS (see pushChannels.ts). */
   channelId: string;
 }

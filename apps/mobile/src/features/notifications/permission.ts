@@ -1,37 +1,17 @@
 // The OS notification permission, behind one door.
 //
-// `expo-notifications` is a NATIVE module added at W2.8 slice 4, so any dev
-// client built before that build does not contain it and importing it at the top
-// of a file would crash the route rather than degrade it. Loaded through the
-// same guarded require `features/give/CopyRow` uses for the clipboard: the app
-// keeps working, the ask simply reports itself unavailable, and the next EAS
-// build makes it real.
+// The guarded require that makes this safe on an older dev client now lives in
+// `expoNotifications.ts`, shared with channel creation and token registration
+// (W3.3 slice 4); it was duplicated here first because this was the only caller.
 //
 // This file deliberately stops at the permission. Token registration, the six
-// Android channels and the preference toggles are W3.3's (`15`, `25` W3.3); what
-// W2.8 owns is the in-context MOMENT, because that moment is a check-in and
-// check-ins live here.
+// Android channels and the preference toggles are elsewhere; what it owns is the
+// in-context MOMENT, because that moment is a check-in and check-ins live here.
 
-interface PermissionAnswer {
-  status: string;
-  canAskAgain?: boolean;
-}
-
-interface NotificationsModule {
-  getPermissionsAsync: () => Promise<PermissionAnswer>;
-  requestPermissionsAsync: () => Promise<PermissionAnswer>;
-}
-
-function load(): NotificationsModule | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require('expo-notifications') as NotificationsModule;
-  } catch {
-    return null;
-  }
-}
-
-const Notifications = load();
+import {
+  notificationsModule,
+  type PermissionAnswer,
+} from './expoNotifications';
 
 /**
  * `unavailable` is the dev-client case above, and it is deliberately NOT the
@@ -49,12 +29,9 @@ function toState(answer: PermissionAnswer): PermissionState {
   return answer.canAskAgain === true ? 'undetermined' : 'denied';
 }
 
-export function notificationsAvailable(): boolean {
-  return Notifications !== null;
-}
-
 /** What the OS says today, without asking the member anything. */
 export async function permissionState(): Promise<PermissionState> {
+  const Notifications = notificationsModule();
   if (Notifications === null) return 'unavailable';
   try {
     return toState(await Notifications.getPermissionsAsync());
@@ -68,6 +45,7 @@ export async function permissionState(): Promise<PermissionState> {
  * why (`06`: the prompt is one-shot on iOS, never waste it).
  */
 export async function requestPermission(): Promise<PermissionState> {
+  const Notifications = notificationsModule();
   if (Notifications === null) return 'unavailable';
   try {
     return toState(await Notifications.requestPermissionsAsync());

@@ -37,6 +37,16 @@ const config = {
   ios: {
     bundleIdentifier: 'com.olayinkaademiluka.grace-portal',
     icon: './assets/expo.icon',
+    // Universal links (docs/spec/15). The other half is an
+    // apple-app-site-association file served by the church website at
+    // /.well-known/, as JSON with no redirect, carrying the team id and this
+    // bundle id. That file is a PR against Desktop/agbc; until it exists iOS
+    // silently declines to open these links and the agbcglobal:// scheme still
+    // works, which is why this can land first.
+    associatedDomains: [
+      'applinks:agbcglobal.com',
+      'applinks:www.agbcglobal.com',
+    ],
   },
   android: {
     package: 'com.oami.agbcapp',
@@ -56,6 +66,27 @@ const config = {
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
+    // Android App Links (docs/spec/15). `autoVerify` makes Android check
+    // /.well-known/assetlinks.json on the domain at install time and, if it
+    // matches, open these URLs in the app WITHOUT the disambiguation dialog.
+    //
+    // THE FINGERPRINT IN THAT FILE IS THE PLAY APP SIGNING KEY'S SHA-256, NOT
+    // THE UPLOAD KEY'S. Google re-signs the AAB, so the upload key's
+    // fingerprint verifies against nothing and fails silently: links simply
+    // keep opening in the browser with no error anywhere. The value is recorded
+    // in docs/spec/19. The file itself is served by the website, so it is a PR
+    // against Desktop/agbc.
+    intentFilters: [
+      {
+        action: 'VIEW',
+        autoVerify: true,
+        data: [
+          { scheme: 'https', host: 'agbcglobal.com', pathPrefix: '/app' },
+          { scheme: 'https', host: 'www.agbcglobal.com', pathPrefix: '/app' },
+        ],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ],
   },
   plugins: [
     'expo-router',
@@ -120,11 +151,28 @@ const config = {
         microphonePermission: false,
       },
     ],
-    // Push (docs/spec/15) is W3.3's item; only the NATIVE half rides this build so the
-    // dev clients need one rebuild instead of two (decided with Ayo 2026-08-14, the
-    // same trick W2.10 used with Sentry). Bare on purpose: icon, color and the six
-    // Android channels are W3.3's decisions, made when the sending side exists.
-    'expo-notifications',
+    [
+      // Push (docs/spec/15). W3.1 slice 2 shipped this plugin BARE so the native half
+      // rode that build, leaving "icon, color and the six Android channels" as W3.3's
+      // decisions. The channels are now created in JS (features/notifications/channels.ts,
+      // where they belong: their names are translated and their importance is a product
+      // decision), so what remains here is the tray appearance.
+      //
+      // `color` tints the small icon and the app name in the shade. Gold is the brand's
+      // accent (packages/shared palette.gold) and the one brand colour that holds on both
+      // a light and a dark shade; navy would disappear into a dark one.
+      //
+      // `icon` IS DELIBERATELY NOT SET YET, and that is a decision rather than an
+      // oversight. Android's small icon must be a solid-white silhouette with
+      // transparency, and the only candidate in the repo is the 432x432 ADAPTIVE
+      // monochrome layer, whose art is inset for the adaptive mask and would render as a
+      // small blob in the tray. Making a purpose-built 96x96 is a design task, not
+      // something to invent here, and until it exists Android falls back to the app icon,
+      // which rendered correctly on the device (2026-08-16 shade screenshots). Flagged
+      // for Ayo rather than guessed at.
+      'expo-notifications',
+      { color: '#ffcf4a' },
+    ],
     ...sentryPlugin,
   ],
   experiments: {
