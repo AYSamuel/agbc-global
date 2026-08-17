@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { useNotificationAskStore } from '@/features/notifications/ask';
+import { unregisterPushToken } from '@/features/notifications/token';
 import { useCelebratedStore } from '@/features/rhythm/celebrated';
 import { useNoteDraftStore } from '@/features/watch/notes';
 import { isPersonalQuery } from '@/lib/queryMeta';
@@ -145,8 +146,15 @@ export const useAuthStore = create<AuthState>()(
       signOut: async () => {
         userInitiatedSignOut = true;
         try {
+          // BEFORE signOut, and that order is load-bearing (W3.3 slice 4): the DELETE
+          // policy on `devices` is `profile_id = auth.uid()`, so once the session is gone
+          // the delete matches nothing and this phone keeps receiving the departing
+          // member's notifications until the receipts sweep or the 180-day prune happens
+          // to collect the row. It deletes THIS device by its token, never every device
+          // on the account (docs/spec/15, features/notifications/token.ts).
+          await unregisterPushToken();
           // Local scope suffices; personal caches are cleared by the event
-          // handler below. (Offline write queue: W2.4; devices rows: W3.3.)
+          // handler below. (Offline write queue: W2.4.)
           await supabase.auth.signOut();
         } finally {
           userInitiatedSignOut = false;

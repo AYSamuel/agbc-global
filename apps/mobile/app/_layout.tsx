@@ -9,6 +9,7 @@ import { AnalyticsAsk } from '@/features/analytics/AnalyticsAsk';
 import { prefetchHome } from '@/features/home/queries';
 import { prefetchBranches } from '@/features/onboarding/useBranches';
 import { NotificationAsk } from '@/features/notifications/NotificationAsk';
+import { useNotifications } from '@/features/notifications/useNotifications';
 import { MilestoneCelebration } from '@/features/rhythm/MilestoneCelebration';
 import { SignedOutToast } from '@/features/shell/SignedOutToast';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
@@ -24,6 +25,16 @@ import { ThemeProvider, useTheme } from '@/theme';
 // the crash worth having, and by the time an effect runs it has already happened. No-ops
 // without a DSN (see lib/sentry).
 initSentry();
+
+/**
+ * Push runtime (W3.3 slice 4): the six Android channels, this device's token, and routing
+ * for a tapped notification. Mounted INSIDE the providers because it needs the router and
+ * i18n, and rendered as nothing: it is behaviour, not UI.
+ */
+function PushRuntime() {
+  useNotifications();
+  return null;
+}
 
 function ThemedStack() {
   const { colors } = useTheme();
@@ -65,6 +76,7 @@ export default function RootLayout() {
       <ThemeProvider>
         <ToastProvider>
           <SignedOutToast />
+          <PushRuntime />
           {/* Both arrive over whatever screen the member is on, so they are
               mounted here rather than on one: a milestone can be awarded by a
               moderator approving a testimony while the app is closed, and the
