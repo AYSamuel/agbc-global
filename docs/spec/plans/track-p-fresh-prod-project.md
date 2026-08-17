@@ -154,7 +154,7 @@ Write it **better than the original**, since we own it now:
 ## Phase 2 · Edge functions, secrets, vault
 
 `supabase-deploy.yml` line 34 still reads *"`supabase functions deploy` joins here when the
-first edge function lands (W1.3)"*. Eleven functions later it never did, so **nothing deploys
+first edge function lands (W1.3)"*. Nine functions later it never did, so **nothing deploys
 functions anywhere**. Fixed here, not worked around.
 
 1. Add the deploy step to the workflow (prod job, manual dispatch).
