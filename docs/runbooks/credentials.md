@@ -9,12 +9,12 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Apple Developer (church) | iOS distribution | Church Account Holder (name TBC) | Apple Account | n/a (Ayo joining as Admin, invite pending) | Fee waiver, re-confirmed annually by Account Holder | Last shipped iOS build: 1.0.0 (19) |
 | Google Play Console | Android distribution | Ayo | Google account | TBC | $25 one-off, paid | Highest versionCode 19; App Signing SHA-256 recorded in `docs/spec/19` |
 | GitHub `AYSamuel/agbc-global` | Repo, CI | Ayo | GitHub + MFA | TBC (ADR 0012: personal account, second owners via collaborators) | Free | Identity for the OAuth sign-ins below; recovery codes in password manager |
-| Supabase org | Prod (shared with website) + dev | Ayo | TBC | Church officer TBC | Free (Pro is a pre-TestFlight gate) | Prod ref `fotfplvqsnmbzjjhqlwp`, eu-central-1. Auth settings that live in `supabase/config.toml` locally must be mirrored per hosted project (Track P runbook step): the custom access token hook, the email templates above, and **MFA > App Authenticator (TOTP) enrolment + verification ON** (free on every plan; the dashboard refuses any session below `aal2`, so leaving it off locks every leader out of moderation) |
+| Supabase org | Production (app + website) | Ayo | TBC | Church officer TBC | Free (Pro before public launch) | **Production is a NEW project of our own, created at Track P Phase 1 (ADR 0023). Ref / URL / anon key / service-role key go in the password manager and this row when it exists; NEVER in git and never opened in an editor** (see the FCM leak below: the vector was the editor, not git, and this project's service-role key is full database access). The OLD shared project `fotfplvqsnmbzjjhqlwp` (eu-central-1) still serves the live website until Phase 3, then is archived and deleted. No separate dev project was ever created and none is planned. Auth settings that live in `supabase/config.toml` locally must be mirrored per hosted project (Phase 1): the custom access token hook (**authorization is broken without it**), the four localized email templates, rate limits, and **MFA > App Authenticator (TOTP) enrolment + verification ON** (free on every plan; the dashboard refuses any session below `aal2`, so leaving it off locks every leader out of moderation) |
 | Google Cloud / Firebase `agbc-app` | FCM push credentials + app YouTube key | Ayo | Google account | TBC | Free (Spark) | Old Grace Portal project; Android app `com.oami.agbcapp` registered; FCM V1 key + YouTube key in password manager (2026-07-18). `google-services.json` is untracked (gitignored) and supplied to EAS via the `GOOGLE_SERVICES_JSON` file secret; local dev keeps its own copy. Android API key regeneration + restriction tracked below (2026-07-25 public-leak alert) |
 | Google Cloud `agbc-website` | Website's YouTube key ONLY | Ayo | Google account | TBC | Free | Never share key strings with the app (rotation + quota isolation) |
 | Meta Business portfolio | WhatsApp broadcasts (Phase 3) | Ayo (portfolio TBC, month 1) | Facebook profile | TBC | Free; per-conversation broadcast costs | Verification needs incorporation cert + utility bill |
 | Resend | Auth OTP email + transactional (via website account) | Ayo | TBC (website account) | TBC | Free tier (3k/month) | Becomes Supabase custom SMTP before first real sign-ins (dashboard SMTP config, per hosted env). The localized OTP template + subjects from `supabase/config.toml` are mirrored into each hosted project's Auth > Email Templates (Track P runbook step) |
-| Store-review bypass (`review-signin`) | Fixed review credentials for app-store review (docs/spec/03) | Ayo | n/a (function secrets) | TBC | Free | `REVIEW_BYPASS_ENABLED` / `REVIEW_EMAIL` / `REVIEW_CODE` via `supabase secrets set` per env (dev/preview on; prod off outside submission windows) + local `supabase/functions/.env`. Code: a fixed 6-digit numeric code, ROTATED per submission window (docs/spec/03, decided 2026-07-26; compensated by the flag, per-IP rate limits, and alerts). Values in the password manager; surfaced in store review notes at W4.8 |
+| Store-review bypass (`review-signin`) | Fixed review credentials for app-store review (docs/spec/03) | Ayo | n/a (function secrets) | TBC | Free | `REVIEW_BYPASS_ENABLED` / `REVIEW_EMAIL` / `REVIEW_CODE` via `supabase secrets set` per env + local `supabase/functions/.env`. Code: a fixed 6-digit numeric code, ROTATED per window (docs/spec/03, decided 2026-07-26; compensated by the flag, per-IP rate limits, and alerts). Values in the password manager; surfaced in store review notes at W4.8. **ON in production from Track P Phase 2, bounded and dated: see the window below** |
 | Payhip | Book sales, entitlement webhooks | Lead pastor | TBC | TBC | Payhip fees | API key handoff session planned (`24` row 13) |
 | Vercel | Website + dashboard hosting | Ayo | TBC | TBC | Free | agbcglobal.com |
 | Domain registrar / DNS | agbcglobal.com, SPF/DKIM/DMARC, AASA/assetlinks | Ayo | TBC | TBC | Domain renewal (date TBC) | Registrar lock + MFA per security standard |
@@ -25,6 +25,33 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | UptimeRobot | Uptime monitors | Ayo | GitHub OAuth | TBC | Free (50 monitors) | Created 2026-07-18 |
 | Backblaze B2 | Off-provider prod backups (Track P P1, ADR 0018) | Ayo | TBC | TBC | Free (first 10 GB; standing use < 0.1 GB) | EU Central (Amsterdam). Bucket `agbc-prod-backup` (private, lifecycle: hide 30d + delete 1d); application key `agbc-backup-ci` (read+write, scoped to this bucket only) in GitHub `production` env secrets + password manager. **The age decryption key for these backups lives in the password manager ONLY** (entry `AGBC prod backup age key`): accepted single point of failure, Ayo's explicit choice 2026-08-10 (offered a church-safe offline copy, declined). Losing vault access = every backup unreadable |
 | Twilio | ~~OTP delivery~~ | n/a | n/a | n/a | n/a | DROPPED with email OTP (ADR 0011); no account created |
+
+## The production review-bypass window (opened Track P Phase 2; ADR 0023 decision 6)
+
+**Written down BEFORE the bypass is switched on, not after.** `review-signin` mints a real
+session for one allowlisted address and a fixed 6-digit code. On production that is a
+standing way into the app that does not depend on anyone's mailbox, so it gets an expiry and
+an owner in writing, and both are part of the work rather than good intentions.
+
+**Why it is on at all:** without it nobody can sign in to production until Resend custom SMTP
+is wired, and that is a day of DNS work (SPF/DKIM/DMARC on the church domain, `24` row 12).
+Phase 1's verification and W3.3's outstanding notification-tap test both need a real signed-in
+account on production first.
+
+**Why the risk is bounded by the mechanism, not by care:** one allowlisted email, a code
+compared in constant time, 5 attempts per 10 minutes per IP, fails closed on weak config, and
+the account it mints **can only ever be a `member`** (`review-signin/index.ts`: the profiles
+insert guard pins the role). A fake member can submit content that publishes nothing without
+moderation, and can read only their own rows.
+
+| | |
+|---|---|
+| **Opened** | Track P Phase 2 (secrets set with the edge deploy) |
+| **Code** | **Freshly rotated for this window.** Not the dev/preview code, and not any code used before. Generated in the password manager, entered from there, never typed into a shell that keeps history and never pasted into a chat or an editor |
+| **Closes: trigger** | **The moment Resend custom SMTP is live on this project.** Email OTP then works and the bypass has no job. Turning it off is one `supabase secrets unset REVIEW_BYPASS_ENABLED` and a redeploy |
+| **Closes: hard date** | **2026-09-17**, reviewed no later than this regardless of SMTP. If it is still on that day, either it is turned off or the reason is written here with a new date |
+| **Alert** | An alert on **SUCCESSFUL** use, added in Phase 2. Today the function captures only on failure, so a successful bypass sign-in on production would tell nobody. `03` assumed this arrived with W2.10; it did not. It logs no address and no code (`20`) |
+| **Store review** | A submission window reuses this mechanism and rotates the code again (`03`, W4.8). The two are not the same window |
 
 ## In-app admin identities (ADR 0015, 2026-07-30)
 
@@ -102,14 +129,16 @@ builds whose stack traces are minified for ever. Nothing warns you.
 | `SENTRY_ORG` + `SENTRY_PROJECT` | EAS env `preview` + `production` | **Set** 2026-08-13 (`agbc-app` / `agbc-mobile`) |
 | `SENTRY_AUTH_TOKEN` | EAS env (`--visibility secret`) + password manager | **Set** 2026-08-13. Organization token `agbc-eas-sourcemaps`, entered at the CLI prompt so it never reached shell history; `env:list` shows it masked. With `SENTRY_ORG` + `SENTRY_PROJECT` also set, the Expo plugin now uploads sourcemaps on preview and production builds (development still skips) |
 | `NEXT_PUBLIC_SENTRY_DSN` (`agbc-dashboard`) + `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN` | Vercel env, per environment | **OWED, blocked:** the dashboard is not linked to a Vercel project from this machine. Do it with the first dashboard deploy |
-| `SENTRY_DSN` (`agbc-edge`) | `supabase secrets set`, per hosted project | **OWED, blocked:** no Supabase project is linked locally, and the only known remote is prod, which the traffic fence and the destructive-work gate both cover. Do it with the armed-per-project checklist above, at the `19` cutover |
+| `SENTRY_DSN` (`agbc-edge`) | `supabase secrets set`, per hosted project | **OWED, unblocked as of ADR 0023:** it was blocked because the only remote was the shared prod project. Set it at **Track P Phase 2**, on the new project, alongside the other function secrets and the first `supabase functions deploy` this repo has ever run |
 | `SENTRY_ENVIRONMENT` (optional, edge) | `supabase secrets set` | Not set; the helper defaults to 'production' |
 
 ## Open actions
 
 - [x] ~~Create `SENTRY_AUTH_TOKEN`~~ done 2026-08-13: organization token in EAS env (secret) + password manager. A second copy will be needed in **Vercel** for the dashboard's sourcemaps; if a GitHub Actions step ever uploads any, use `gh secret set --body` there and never a pipe, which appends a CRLF and corrupts the value silently
 - [ ] **At the first dashboard deploy:** add the `agbc-dashboard` DSN and the three sourcemap vars to Vercel env
-- [ ] **At the `19` cutover / first hosted edge deploy:** `supabase secrets set SENTRY_DSN=<agbc-edge DSN>` alongside the function secrets in the checklist above
+- [ ] **At Track P Phase 2 (first hosted edge deploy):** `supabase secrets set SENTRY_DSN=<agbc-edge DSN>` alongside the function secrets in the checklist above. Note that `supabase functions deploy` has never run from this repo at all: `supabase-deploy.yml` line 34 still says it "joins here when the first edge function lands", nine functions later. Phase 2 fixes the workflow rather than deploying by hand
+- [ ] **At Track P Phase 2, before the bypass is enabled:** rotate `REVIEW_CODE` for the production window and record the window above. Generate it in the password manager, never in a shell
+- [ ] **By 2026-09-17 at the latest:** close the production review-bypass window, or re-date it in writing
 - [ ] Rename the PostHog project from `Default project` to something meaningful (cosmetic; the token does not change)
 - [ ] Name and add second owners (church officer) on: Supabase org, password-manager vault, Apple (once Ayo's Admin invite lands)
 - [ ] **Name a second HUMAN in-app admin** (a trustee or officer), which is the only thing that provides separation of duties over Art. 9 data. The break-glass account above covers availability, not oversight. Before Founding Members (ADR 0015)

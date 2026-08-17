@@ -719,6 +719,72 @@ export type Database = {
           },
         ]
       }
+      donations: {
+        Row: {
+          amount: number
+          branch: string | null
+          created_at: string
+          currency: string
+          donor_address: string | null
+          donor_name: string | null
+          email: string
+          frequency: string
+          gift_aid_eligible: boolean | null
+          giving_type: string | null
+          id: string
+          payment_status: string
+          reference: string | null
+          source: string | null
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          branch?: string | null
+          created_at?: string
+          currency: string
+          donor_address?: string | null
+          donor_name?: string | null
+          email: string
+          frequency: string
+          gift_aid_eligible?: boolean | null
+          giving_type?: string | null
+          id?: string
+          payment_status?: string
+          reference?: string | null
+          source?: string | null
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          branch?: string | null
+          created_at?: string
+          currency?: string
+          donor_address?: string | null
+          donor_name?: string | null
+          email?: string
+          frequency?: string
+          gift_aid_eligible?: boolean | null
+          giving_type?: string | null
+          id?: string
+          payment_status?: string
+          reference?: string | null
+          source?: string | null
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           branch_id: string | null

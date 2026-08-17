@@ -73,7 +73,7 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 **W0.6 · CI/CD skeleton**
 - Refs: `21` §3, `23` §2.
-- Build: `pr.yml` path-filtered jobs (mobile: typecheck/lint/jest/expo-doctor; dashboard: typecheck/lint/vitest/build; supabase: start + full-history apply + pgTAP + types-drift + fence-guard grep); `supabase-deploy.yml` (merge to main → dev; prod = manual `workflow_dispatch` using `production` environment secrets); `nightly.yml` stub; Renovate config; secrets placed per the `21` §3 map (nothing secret in the repo).
+- Build: `pr.yml` path-filtered jobs (mobile: typecheck/lint/jest/expo-doctor; dashboard: typecheck/lint/vitest/build; supabase: start + full-history apply + pgTAP + types-drift; the fence-guard grep was removed with its subject on 2026-08-17, ADR 0023); `supabase-deploy.yml` (merge to main → dev; prod = manual `workflow_dispatch` using `production` environment secrets); `nightly.yml` stub; Renovate config; secrets placed per the `21` §3 map (nothing secret in the repo).
 - Done: CI green on the empty workspace; a deliberately failing pgTAP file fails CI, then is removed.
 
 **W0.7 · Design tokens, fonts, theming**
@@ -311,16 +311,14 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Build: store assets EN/DE/NL/FR + screenshot matrix (incl. iPad/tablet), privacy labels + data-safety form (web deletion link), age-rating answer sheet, review notes (fixed-code review email, prod bypass window on), release-note copy for Grace Portal installs; TestFlight + Play internal; staged-rollout plan with written halt criteria; submit.
 - Done: both stores in review; `18` launch checklist items all checked or explicitly waived by Ayo.
 
-### Track P · Production migration (parallel, gated; interleave after Phase 1)
+### Track P · Production (parallel, gated; interleave after Phase 1)
 
-Runs alongside Phases 2-3 so prod is ready before Founding Members / TestFlight need it. Order is `19`'s, and the gates are absolute:
+**Rewritten 2026-08-17 by ADR 0023: production is a NEW Supabase project and the church website moves onto it.** The authoritative document is `docs/spec/plans/track-p-fresh-prod-project.md`, phase by phase; this is the index.
 
-- **P1** Nightly off-provider `db dump` pipeline + one verified restore (HARD precondition before anything destructive; also covers the live website's data). Plus the Storage off-provider sync job.
-- **P2** Audit the shared project (label every object website/grace-portal/unknown, confirm against the website codebase; GRANTs and policies included); write the fenced list into project CLAUDE.md; fence-guard CI check gets the real list.
-- **P3** Rehearse on a scratch project restored from the dump: full Grace Portal drop + new schema apply end to end.
-- **P4** Execute cleanup on prod (each drop reviewed + explicitly confirmed by Ayo); clean stale auth users.
-- **P5** Baseline `supabase db pull` (includes website tables) + `migration repair`; recreate dev from the same history; prod seeding via the reviewed step.
-- **P6** Supabase Pro upgrade BEFORE the first prod-pointed TestFlight build (`24` traffic fence), with usage alerts at 80%.
+- **P1 · DONE (2026-08-10).** Nightly off-provider `db dump` pipeline + one verified restore, covering the live website's data too (ADR 0018, `docs/runbooks/restore-from-backup.md`). Unaffected by the reversal, except that it has to FOLLOW the website onto the new project at Phase 3.
+- ~~**P2-P6**~~ **superseded.** They described auditing, rehearsing and then executing a destructive cleanup of the shared project so it could become ours. There is no cleanup: our whole migration history applies to an empty project, which CI proves on every PR. P2's audit was done and stands as the record of what the old project holds (`docs/runbooks/prod-audit-2026-07-30.md`); it is also what priced the reuse plan and so caused the reversal.
+- The plan's phases, in order: **0** decide and prepare (creates nothing: the ADR, the `donations` migration and its contract test, a final archived dump, the rotated review code) · **1** create the project and apply · **2** edge functions, secrets, vault · **3** move the website (the ONLY step that touches agbcglobal.com) · **4** point the app at production and close W3.3 · **5** retire the old project.
+- **The traffic fence is lifted, deliberately** (ADR 0023): app builds point at production on Free, mitigated by uploading NO sermon audio to production storage, 80% usage alerts, and a written trigger to upgrade to Pro past 50% egress in any month. `24` §1's fence line is annotated accordingly.
 
 ---
 

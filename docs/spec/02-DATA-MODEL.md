@@ -445,6 +445,35 @@ Seed courses from `agbc/src/content/courses/*.json` + `academy/*.json` via `scri
 
 ---
 
+## Giving
+
+### `donations` *(landed 2026-08-17, ADR 0023; the app never reads it)*
+
+Written ONLY by the live church website's Stripe webhook (`Desktop/agbc`), which INSERTs with the service-role key and reads nothing back. It is in our schema because production became a project of our own and the website moved onto it, and `donations` was the one table the website had that our history never created. In-app giving still links out (ADR 0004), so no app or dashboard surface reads this table yet.
+
+| field | type | notes |
+|-------|------|-------|
+| id | uuid PK | |
+| created_at | timestamptz | |
+| donor_name | text null | |
+| email | text | the donor's, from the Checkout session |
+| amount | int | **Stripe minor units**, as with `fee_minor` / `price_minor` elsewhere |
+| currency | text | lowercase ISO ('gbp') |
+| frequency | text | `one_time` or `monthly` today; NOT a CHECK, see below |
+| branch | text null | branch DISPLAY NAME from the website's content collection. **Not an FK** to `branches`: the two repos keep separate lists |
+| stripe_session_id / stripe_invoice_id / stripe_payment_intent_id | text unique null | the idempotency trio. One-time gifts dedupe on the session, recurring charges on the invoice; the website reads `23505` off them and treats it as "already recorded". `stripe_payment_intent_id` is inert (nothing writes it) |
+| stripe_subscription_id | text null | **deliberately not unique**: one subscription emits one invoice a month |
+| payment_status | text, default `pending` | the website always writes `paid`; the default exists so a status-less row never reads as money received |
+| gift_aid_eligible / donor_address | bool null / text null | Gift Aid claim data. **Empty by design**: the current giving form does not collect it |
+| user_id | uuid null FK→`auth.users` **ON DELETE SET NULL** | written by nothing today. The null-on-delete is the fix for the old project's un-deletable auth users |
+| giving_type / reference / source | text null | designation ('General'), donor free text, and 'web' |
+
+**RLS: FORCE, with ZERO policies, and nothing granted to `anon` or `authenticated`.** The only writer holds BYPASSRLS and no client surface reads donor records, so there is no grant to widen: this is where issue #96's blanket privileges over donor PII die by construction rather than by remediation.
+
+**No value CHECK constraints on the website's columns, deliberately, and the same goes for `course_registrations`.** The writer is a different repository on its own release schedule, and the failure is one-sided: a refused INSERT is not a validation message anyone sees, it is a donor who has been charged with no record of the gift, because the webhook throws on anything but `23505` and Stripe retries into the same wall. Nullability, the PK, the FK and the three unique keys are the constraints; `amount >= 0` is the one arithmetic guard, and only because Stripe cannot produce anything it would refuse. The full argument is in `20260817120000`'s header, and the shape of BOTH shared tables is asserted in `supabase/tests/039`.
+
+---
+
 ## Store / Library
 
 ### `books` / `entitlements` / purchase pipeline
