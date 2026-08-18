@@ -1,6 +1,20 @@
 # Restore from backup
 
-For the moment something has gone badly wrong with the prod Supabase project (`fotfplvqsnmbzjjhqlwp`, eu-central-1). Read this top to bottom before typing anything; the fastest restore is the one you only run once. Written at Track P P1 (2026-08-10); drill evidence at the bottom.
+For the moment something has gone badly wrong with the prod Supabase project. Read this top to bottom before typing anything; the fastest restore is the one you only run once. Written at Track P P1 (2026-08-10); drill evidence at the bottom.
+
+> **Which project is production changed on 2026-08-17 (ADR 0023).** Production is now
+> **`agbc-production`, ref `mqvojrkotwwvwzsewybx`**, eu-central-1. Every `fotfplvqsnmbzjjhqlwp`
+> below refers to the OLD shared project, which is **paused, not deleted**: its data is intact
+> and restorable for up to a year from the dashboard, so if the thing that went wrong is
+> confined to the old website tables, **restoring that project may be faster than any procedure
+> in this file**. Note it needs a free active slot (the Free plan allows two active projects and
+> the other belongs to a different company), so pause `agbc-production` first.
+>
+> Its final archive is `nightly/agbc-prod-2026-08-17.tar.zst.age`, taken minutes before the
+> pause. A paused project cannot be dumped, so no later one exists or ever will.
+>
+> **Path B assumes prod is reachable for a read-only managed-schema dump.** Against the old
+> project that is no longer true while it is paused; restore it first, or use Path A.
 
 ## What exists
 
