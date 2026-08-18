@@ -21,7 +21,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(38);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 \set berlin '00000000-0000-4000-8000-000000000002'
@@ -135,6 +135,20 @@ select is(
     where has_function_privilege(r.who, 'jobs.invoke_edge_function(text)', 'EXECUTE')
        or has_schema_privilege(r.who, 'jobs', 'USAGE')),
   0, 'no client role reaches the jobs schema or its edge-function invoker');
+
+-- ADR 0024 (landed at Track P Phase 2): the invoker sends the vault's sb_secret_ key
+-- (`secret_key`) in the apikey header. The new keys are not JWTs and may never travel
+-- as Bearer, and the legacy alternative is unverifiable on production (the platform's
+-- stamped-at-provisioning env copy of the service-role key never refreshes and legacy
+-- keys can no longer be rotated; see migration 20260819100000). Asserted on prosrc so
+-- a well-meaning revert to the Bearer shape fails here rather than as a silent 401
+-- storm on production's cron jobs.
+select ok(
+  (select prosrc like '%''apikey''%'
+      and prosrc like '%secret_key%'
+      and prosrc not like '%Bearer%'
+     from pg_proc where oid = 'jobs.invoke_edge_function(text)'::regprocedure),
+  'invoke_edge_function sends the vault secret_key in the apikey header, never as a Bearer');
 
 select ok(
   (select relforcerowsecurity from pg_class where oid = 'public.job_leases'::regclass)

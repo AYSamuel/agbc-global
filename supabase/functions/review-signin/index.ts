@@ -18,6 +18,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+import { hasClientApiKey } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { clientKey, createRateLimiter } from '../_shared/rateLimit.ts';
 import { captureEdgeError, captureEdgeMessage } from '../_shared/sentry.ts';
@@ -50,6 +51,11 @@ Deno.serve(async (req) => {
   if (declaredLength > MAX_BODY_BYTES) {
     return Response.json({ ok: false, error: 'invalid' }, { status: 413 });
   }
+
+  // With verify_jwt off (ADR 0024) the apikey check is ours. Before the rate
+  // limiter on purpose: a keyless caller must not be able to burn an IP's
+  // budget, and a code-guesser holding the (public) key still hits the limiter.
+  if (!(await hasClientApiKey(req))) return invalid();
 
   if (!allowRequest(clientKey(req.headers.get('x-forwarded-for')))) {
     return Response.json(

@@ -109,8 +109,9 @@ reload the app.
 ## Scheduled jobs on the local stack (W2.7 slice 5)
 
 `pnpm db:reset` also runs `scripts/arm-local-jobs.mjs`, which writes `project_url`
-and `service_role_key` into the local vault. Without them the schedules exist and
-do nothing (by design, ADR 0016). Re-arm alone with `pnpm jobs:arm-local`.
+and `secret_key` (the local `sb_secret_` key; ADR 0024, since 2026-08-19) into the
+local vault. Without them the schedules exist and do nothing (by design, ADR 0016).
+Re-arm alone with `pnpm jobs:arm-local`.
 
 `project_url` is `http://kong:8000`, not `127.0.0.1:55321`: pg_net runs inside the
 postgres container, where the API gateway answers on that name.
