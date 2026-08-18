@@ -110,7 +110,9 @@ the overlap lasts days, and the old one is deleted at the end.
   reference the old ref when it is deleted.
 - **Region: `eu-central-1`, EU**, as `19` §7 and `20` require. Confirmed for the new project
   rather than inherited.
-- **Review-bypass is enabled on the new project**, bounded and dated: a freshly rotated
+- ~~**Review-bypass is enabled on the new project**~~ **AMENDED 2026-08-18, see the
+  amendment at the foot: the bypass is NOT enabled on production, because the premise below
+  turned out to be wrong.** The original text follows unchanged: a freshly rotated
   `REVIEW_CODE`, an expiry of 2026-09-17 or sooner (whenever Resend SMTP lands), and a new
   alert on SUCCESSFUL use, which does not exist today. Without it nobody can sign in to
   production until custom SMTP is wired, which would block verification behind a day of DNS
@@ -129,3 +131,44 @@ the overlap lasts days, and the old one is deleted at the end.
 | New project, and copy the old data across | Rejected: it is all test data (Ayo). The old project remains the archive regardless, and Phase 1 checks the claim against Stripe test-mode ids before anything is discarded |
 | New project, delete the old one immediately | Rejected: keeping it running is what makes the move reversible, and it costs nothing on Free |
 | New project (chosen) | **Chosen** |
+
+---
+
+## Amendment, 2026-08-18: decision 6 is reversed, the bypass stays OFF on production
+
+**Decision 6 rested on a factual claim that does not hold.** It said the bypass was needed
+because "nobody can sign in to production until custom SMTP is wired, which would block
+verification behind a day of DNS work". The day of DNS work was taken from `24` row 12,
+which budgets "~1 day once DNS access exists" for wiring Resend as Supabase custom SMTP with
+SPF and DKIM aligned.
+
+**That budget was written before the website was already sending production email from the
+same domain.** `Desktop/agbc` sends donation and course-registration receipts through Resend
+on `agbcglobal.com` today, which means SPF and DKIM are already in place for that sender.
+Wiring Supabase custom SMTP on top is then host, port, user and the API key as the password,
+entered once in the dashboard, not a day of DNS.
+
+Ayo raised this by asking, unprompted, whether Resend should be used anywhere in what we had
+built. It should: five places, four of them already shipped (`contact-form`,
+`moderation-alerts`, `verse-monitor`, `push-receipts`), and the fifth is auth itself.
+
+**So Phase 2 wires SMTP first and the production bypass is never switched on.** What that
+removes is not small: a standing credentialed way into production that no mailbox gates, a
+code to rotate, a dated window to remember, and the 2026-09-17 review that came with it.
+Real OTP is also what Phase 1's last unverified check actually needs, since "a sign-in
+reaches AUTH-3" wants a real sign-in.
+
+**The mechanism stays in the codebase**, and so does the work decision 6 asked for. The
+alert on SUCCESSFUL use was built in Phase 2 anyway (`captureEdgeMessage`,
+`REVIEW_BYPASS_ALERT`, and the test asserting it names the event and nobody in it), because
+the bypass is still enabled for app-store review at W4.8 and `03` had assumed since W2.10
+that this alerting existed when it did not. It lies dormant until then rather than being
+remembered later.
+
+**The fallback is intact.** If deliverability misbehaves on a domain that has never carried
+auth email, enabling the bypass is one secret and a redeploy, and everything decision 6 said
+about its bounded risk still applies.
+
+**Still owed regardless, and unchanged by this:** DMARC at enforcement on the domain, which
+`03` requires because auth now depends on deliverability. That is a launch item and does not
+block OTP from working.

@@ -8,16 +8,20 @@
 //
 // Flag per environment (docs/spec/03): REVIEW_BYPASS_ENABLED=true on
 // dev/preview; on prod it stays unset except from submission until approval
-// + 7 days. Every attempt is logged (no addresses, no codes); Sentry alerting
-// on production use lands with W2.10. The "excluded from moderation queues"
-// half is the W2.7 moderation policy, not this function.
+// + 7 days. Every attempt is logged (no addresses, no codes), and a SUCCESSFUL
+// one also raises a Sentry alert (Track P Phase 2). That half was attributed to
+// W2.10 here and in `03`, and W2.10 did not deliver it: until 2026-08-18 only
+// failures were captured, so the one outcome worth waking somebody for, a real
+// session minted on production without any mailbox in the way, told nobody.
+// The "excluded from moderation queues" half is the W2.7 moderation policy,
+// not this function.
 
 import { createClient } from '@supabase/supabase-js';
 
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { clientKey, createRateLimiter } from '../_shared/rateLimit.ts';
-import { captureEdgeError } from '../_shared/sentry.ts';
-import { isAllowedAttempt, parseReviewSignin } from './core.ts';
+import { captureEdgeError, captureEdgeMessage } from '../_shared/sentry.ts';
+import { isAllowedAttempt, parseReviewSignin, REVIEW_BYPASS_ALERT } from './core.ts';
 
 const MAX_BODY_BYTES = 8 * 1024;
 const ADMIN_TIMEOUT_MS = 10_000;
@@ -113,6 +117,10 @@ Deno.serve(async (req) => {
     }
 
     console.info('review-signin: session link issued');
+    // The bypass has now minted a REAL session. Awaited deliberately: the isolate can be
+    // frozen the moment the response is returned, and an unflushed alert is no alert.
+    // Sentry is a no-op wherever SENTRY_DSN is unset, so dev and local are unchanged.
+    await captureEdgeMessage('review-signin', REVIEW_BYPASS_ALERT);
     return Response.json({
       ok: true,
       token_hash: link.data.properties.hashed_token,

@@ -31,7 +31,7 @@ jobs:
           fi
           supabase link --project-ref "$DEV_PROJECT_REF"
           supabase db push
-      # supabase functions deploy joins here when the first edge function lands (W1.3).
+          supabase functions deploy
 
   # Prod applies ONLY via this manually dispatched job, using the `production`
   # environment's secrets (docs/spec/21 §3; the solo-dev approval gate per docs/spec/23 §4).
@@ -49,13 +49,26 @@ jobs:
       - name: track P gate
         if: vars.PROD_DEPLOYS_ENABLED != 'true'
         run: |
-          echo "::error::Prod deploys are disabled until Track P gates pass (P1 backup+restore, P2 audit; docs/spec/25). Set repo variable PROD_DEPLOYS_ENABLED=true only after Ayo signs off."
+          echo "::error::Prod deploys are disabled until Track P's gates pass: the off-provider backup pipeline plus a verified restore (docs/spec/plans/track-p-fresh-prod-project.md; ADR 0023 replaced the old P2-P6 cleanup this message used to name). Set repo variable PROD_DEPLOYS_ENABLED=true only after Ayo signs off."
           exit 1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
         with:
           version: 2.110.0
-      - name: deploy migrations to prod
+      - name: deploy migrations and functions to prod
         run: |
           supabase link --project-ref "$PROD_PROJECT_REF"
           supabase db push
+          # Nine functions, deployed together and from the repo, which until 2026-08-18 they
+          # never were: line 34 of this file promised `supabase functions deploy` would
+          # "join here when the first edge function lands (W1.3)" and it never did, so the
+          # functions existed only in git and in the local stack. Production had NONE of
+          # them, which would have meant no contact form, no moderation or verse alerts, no
+          # receipts sweep, no YouTube sync and no course handoff, all failing as silence
+          # rather than as errors.
+          #
+          # No slug arguments: deploy everything, so adding a function is a directory and a
+          # config.toml block rather than a third place to remember. Per-function settings
+          # (`enabled`, `verify_jwt`) come from config.toml, which is why the missing
+          # push-receipts block was fixed in the same change.
+          supabase functions deploy

@@ -197,13 +197,15 @@ the reversal path now, and it is worth knowing before you need it.
      warned that config push needs a reviewed diff; that warning is load-bearing rather than
      cautionary. Either do the remaining keys in the dashboard, or give `config.toml`
      per-environment handling first, deliberately.
-   - **Still owed: the four localized OTP templates, the rate limits, and TOTP.** TOTP is the
-     urgent one: the dashboard refuses every staff session below `aal2`, so with it off
-     nobody can moderate, including the admin who would turn it on.
+   - **TOTP needed nothing.** New projects ship with App Authenticator already `Enabled` and
+     max factors 10, matching `config.toml`, with SMS MFA disabled as we want. Checked on
+     2026-08-18 rather than assumed, which is the only reason this is not still an open item.
+   - **Still owed: the four localized OTP templates and the rate limits**, both of which move
+     into Phase 2 because they belong with the SMTP wiring rather than beside it.
 
 **Verify:** ~~apply green from empty~~ (56, green); ~~`branches` present~~ (4); a sign-in
-reaches AUTH-3, **which is blocked until Phase 2** puts the review-bypass secrets in place,
-since Resend SMTP is not wired yet.
+reaches AUTH-3, **which Phase 2 now closes with a REAL sign-in** rather than a bypass (ADR
+0023 amendment).
 
 ---
 
@@ -213,17 +215,38 @@ since Resend SMTP is not wired yet.
 first edge function lands (W1.3)"*. Nine functions later it never did, so **nothing deploys
 functions anywhere**. Fixed here, not worked around.
 
-1. Add the deploy step to the workflow (prod job, manual dispatch).
-2. Set the secrets this phase needs: `YOUTUBE_API_KEY` (Watch is empty without a sync), the
-   review-bypass trio **with a freshly rotated code**, `SENTRY_DSN` (the edge DSN
-   `credentials.md` has been holding for this cutover), and the alert/contact addresses.
-3. **Add the missing alert on successful review-bypass use.** `review-signin` currently
-   captures only on failure, so a successful bypass sign-in on production is invisible. One
-   `captureEdgeMessage`-style call plus a deno test asserting it fires, and asserting it still
-   logs no address and no code (docs/spec/20).
-4. **Arm the vault** (`project_url`, `service_role_key`) so the cron schedules that arrive
-   with our migrations stop no-opping (ADR 0016).
-5. Run the YouTube sync once so Watch is populated.
+**Reordered 2026-08-18 (ADR 0023 amendment): SMTP comes FIRST**, because whether it works
+decides whether the review bypass is needed at all, and because four of the nine functions
+send email and cannot be verified without it.
+
+1. **Wire Resend as Supabase custom SMTP** on `agbc-production`, plus the four localized OTP
+   templates and the rate limits carried over from Phase 1. The domain already sends
+   production email for the website, so SPF and DKIM are in place: this is credentials in the
+   dashboard, not DNS work.
+2. **Verify with a REAL sign-in reaching AUTH-3.** This closes Phase 1's last open check.
+   **The review bypass is NOT enabled on production** (ADR 0023 amendment); it stays available
+   as a one-secret fallback if deliverability misbehaves, and returns for store review at W4.8.
+3. ~~Add the deploy step to the workflow (prod job, manual dispatch).~~ Done, on **both** jobs,
+   with no slug arguments so adding a function never becomes a third place to remember. While
+   diffing the config blocks against the directories, `push-receipts` turned out to have **no
+   `[functions.push-receipts]` block at all**: it shipped with W3.3 slice 4 and was the one
+   function whose configuration was implicit. Added in the same change, because a default that
+   happens to match is not a decision.
+4. Set the secrets this phase needs: `YOUTUBE_API_KEY` (Watch is empty without a sync),
+   `RESEND_API_KEY` + `ALERTS_FROM_EMAIL` (four functions send email and go silent without
+   them), `DASHBOARD_URL`, the two healthchecks ping URLs, and `SENTRY_DSN` (the edge DSN
+   `credentials.md` has been holding for exactly this moment). **The review-bypass trio is no
+   longer on this list.**
+5. ~~**Add the missing alert on successful review-bypass use.**~~ Done, and kept despite the
+   bypass staying off, because it returns at W4.8 and `03` had assumed since W2.10 that this
+   existed. `captureEdgeMessage` in `_shared/sentry.ts`, `REVIEW_BYPASS_ALERT` in
+   `review-signin/core.ts`, and a test asserting the message names the event and nobody in it:
+   no `@`, no digits at all (a rotated code is just different digits, so a substring check
+   would pass while leaking the live one), and still findable by function.
+6. **Arm the vault** (`project_url`, `service_role_key`) so the cron schedules that arrive
+   with our migrations stop no-opping (ADR 0016). Ayo pastes the service-role key into the SQL
+   editor; it does not pass through the assistant.
+7. Run the YouTube sync once so Watch is populated.
 
 ---
 

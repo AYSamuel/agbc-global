@@ -14,7 +14,7 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Google Cloud `agbc-website` | Website's YouTube key ONLY | Ayo | Google account | TBC | Free | Never share key strings with the app (rotation + quota isolation) |
 | Meta Business portfolio | WhatsApp broadcasts (Phase 3) | Ayo (portfolio TBC, month 1) | Facebook profile | TBC | Free; per-conversation broadcast costs | Verification needs incorporation cert + utility bill |
 | Resend | Auth OTP email + transactional (via website account) | Ayo | TBC (website account) | TBC | Free tier (3k/month) | Becomes Supabase custom SMTP before first real sign-ins (dashboard SMTP config, per hosted env). The localized OTP template + subjects from `supabase/config.toml` are mirrored into each hosted project's Auth > Email Templates (Track P runbook step) |
-| Store-review bypass (`review-signin`) | Fixed review credentials for app-store review (docs/spec/03) | Ayo | n/a (function secrets) | TBC | Free | `REVIEW_BYPASS_ENABLED` / `REVIEW_EMAIL` / `REVIEW_CODE` via `supabase secrets set` per env + local `supabase/functions/.env`. Code: a fixed 6-digit numeric code, ROTATED per window (docs/spec/03, decided 2026-07-26; compensated by the flag, per-IP rate limits, and alerts). Values in the password manager; surfaced in store review notes at W4.8. **ON in production from Track P Phase 2, bounded and dated: see the window below** |
+| Store-review bypass (`review-signin`) | Fixed review credentials for app-store review (docs/spec/03) | Ayo | n/a (function secrets) | TBC | Free | `REVIEW_BYPASS_ENABLED` / `REVIEW_EMAIL` / `REVIEW_CODE` via `supabase secrets set` per env + local `supabase/functions/.env`. Code: a fixed 6-digit numeric code, ROTATED per window (docs/spec/03, decided 2026-07-26; compensated by the flag, per-IP rate limits, and alerts). Values in the password manager; surfaced in store review notes at W4.8. **NOT enabled on production** (ADR 0023 amendment: Phase 2 wires real SMTP instead, so there is no standing bypass). Next legitimate window is store review at W4.8; see the section below |
 | Payhip | Book sales, entitlement webhooks | Lead pastor | TBC | TBC | Payhip fees | API key handoff session planned (`24` row 13) |
 | Vercel | Website + dashboard hosting | Ayo | TBC | TBC | Free | agbcglobal.com |
 | Domain registrar / DNS | agbcglobal.com, SPF/DKIM/DMARC, AASA/assetlinks | Ayo | TBC | TBC | Domain renewal (date TBC) | Registrar lock + MFA per security standard |
@@ -26,32 +26,34 @@ Status: skeleton seeded at W0.2 (2026-07-18). Rows marked TBC get filled as acco
 | Backblaze B2 | Off-provider prod backups (Track P P1, ADR 0018) | Ayo | TBC | TBC | Free (first 10 GB; standing use < 0.1 GB) | EU Central (Amsterdam). Bucket `agbc-prod-backup` (private, lifecycle: hide 30d + delete 1d); application key `agbc-backup-ci` (read+write, scoped to this bucket only) in GitHub `production` env secrets + password manager. **The age decryption key for these backups lives in the password manager ONLY** (entry `AGBC prod backup age key`): accepted single point of failure, Ayo's explicit choice 2026-08-10 (offered a church-safe offline copy, declined). Losing vault access = every backup unreadable |
 | Twilio | ~~OTP delivery~~ | n/a | n/a | n/a | n/a | DROPPED with email OTP (ADR 0011); no account created |
 
-## The production review-bypass window (opened Track P Phase 2; ADR 0023 decision 6)
+## The review bypass is NOT enabled on production (ADR 0023 amendment, 2026-08-18)
 
-**Written down BEFORE the bypass is switched on, not after.** `review-signin` mints a real
-session for one allowlisted address and a fixed 6-digit code. On production that is a
-standing way into the app that does not depend on anyone's mailbox, so it gets an expiry and
-an owner in writing, and both are part of the work rather than good intentions.
+This section previously opened a dated production bypass window. **It was cancelled before it
+was ever switched on**, and the reason is worth keeping.
 
-**Why it is on at all:** without it nobody can sign in to production until Resend custom SMTP
-is wired, and that is a day of DNS work (SPF/DKIM/DMARC on the church domain, `24` row 12).
-Phase 1's verification and W3.3's outstanding notification-tap test both need a real signed-in
-account on production first.
+The bypass existed to solve "nobody can sign in to production until Resend custom SMTP is
+wired, and that is ~1 day of DNS work" (`24` row 12). That estimate predates the website
+already sending production email from `agbcglobal.com` through Resend, which means SPF and
+DKIM are in place for that sender. Supabase custom SMTP on top is host, port, user and the API
+key as a password, entered once. So Phase 2 wires SMTP and production gets **real email OTP**:
+no standing credentialed way in, no code to rotate, no dated window to remember, and Phase 1's
+last check ("a sign-in reaches AUTH-3") closed by an actual sign-in.
 
-**Why the risk is bounded by the mechanism, not by care:** one allowlisted email, a code
+**The fallback is intact and cheap.** If deliverability misbehaves on a domain that has never
+carried auth email, enabling the bypass is `REVIEW_BYPASS_ENABLED` plus the pair beside it and
+a redeploy. Everything that made its risk bounded still holds: one allowlisted email, a code
 compared in constant time, 5 attempts per 10 minutes per IP, fails closed on weak config, and
 the account it mints **can only ever be a `member`** (`review-signin/index.ts`: the profiles
-insert guard pins the role). A fake member can submit content that publishes nothing without
-moderation, and can read only their own rows.
+insert guard pins the role).
 
-| | |
-|---|---|
-| **Opened** | Track P Phase 2 (secrets set with the edge deploy) |
-| **Code** | **Freshly rotated for this window.** Not the dev/preview code, and not any code used before. Generated in the password manager, entered from there, never typed into a shell that keeps history and never pasted into a chat or an editor |
-| **Closes: trigger** | **The moment Resend custom SMTP is live on this project.** Email OTP then works and the bypass has no job. Turning it off is one `supabase secrets unset REVIEW_BYPASS_ENABLED` and a redeploy |
-| **Closes: hard date** | **2026-09-17**, reviewed no later than this regardless of SMTP. If it is still on that day, either it is turned off or the reason is written here with a new date |
-| **Alert** | An alert on **SUCCESSFUL** use, added in Phase 2. Today the function captures only on failure, so a successful bypass sign-in on production would tell nobody. `03` assumed this arrived with W2.10; it did not. It logs no address and no code (`20`) |
-| **Store review** | A submission window reuses this mechanism and rotates the code again (`03`, W4.8). The two are not the same window |
+**The alert on SUCCESSFUL use was built anyway**, in Phase 2: `captureEdgeMessage` plus
+`REVIEW_BYPASS_ALERT`, carrying no address and no digits at all, asserted by test. `03` had
+assumed since W2.10 that this existed, and it did not. Cheaper to build while in that code
+than to rediscover it at W4.8.
+
+**When it legitimately returns: app-store review (W4.8).** That window rotates the code
+afresh and closes at approval + 7 days. Write it up here **before** switching it on, which is
+what this section was for and remains for.
 
 ## In-app admin identities (ADR 0015, 2026-07-30)
 
@@ -137,8 +139,9 @@ builds whose stack traces are minified for ever. Nothing warns you.
 - [x] ~~Create `SENTRY_AUTH_TOKEN`~~ done 2026-08-13: organization token in EAS env (secret) + password manager. A second copy will be needed in **Vercel** for the dashboard's sourcemaps; if a GitHub Actions step ever uploads any, use `gh secret set --body` there and never a pipe, which appends a CRLF and corrupts the value silently
 - [ ] **At the first dashboard deploy:** add the `agbc-dashboard` DSN and the three sourcemap vars to Vercel env
 - [ ] **At Track P Phase 2 (first hosted edge deploy):** `supabase secrets set SENTRY_DSN=<agbc-edge DSN>` alongside the function secrets in the checklist above. Note that `supabase functions deploy` has never run from this repo at all: `supabase-deploy.yml` line 34 still says it "joins here when the first edge function lands", nine functions later. Phase 2 fixes the workflow rather than deploying by hand
-- [ ] **At Track P Phase 2, before the bypass is enabled:** rotate `REVIEW_CODE` for the production window and record the window above. Generate it in the password manager, never in a shell
-- [ ] **By 2026-09-17 at the latest:** close the production review-bypass window, or re-date it in writing
+- [x] ~~At Track P Phase 2, before the bypass is enabled: rotate `REVIEW_CODE` for the production window~~ **Cancelled 2026-08-18 (ADR 0023 amendment): there is no production bypass window.** Phase 2 wires real SMTP instead. The rotation returns at W4.8 for store review
+- [ ] **At Track P Phase 2:** wire Resend as Supabase custom SMTP on `agbc-production`, mirror the four localized OTP templates and the rate limits, then close Phase 1's last check with a real sign-in reaching AUTH-3
+- [ ] **Before launch, unchanged by the above:** DMARC at enforcement on `agbcglobal.com`. `03` makes domain email posture a launch item rather than polish, because auth now depends on deliverability. SPF and DKIM are already in place (the website sends through Resend today); enforcement is the remaining step
 - [ ] **By 2026-09-17, the same date:** rotate the Supabase access token `agbc-ci-deploy`, created 2026-08-18 with a 30-day expiry and held as the `SUPABASE_ACCESS_TOKEN` production secret. **Its scope is the whole Supabase ACCOUNT, not this project**, which includes the unrelated `monietally` org, so it is the widest-blast-radius secret in the inventory. Supabase offers no non-expiring option, and the failure is silent and late: `supabase link` starts refusing weeks after anything changed, and the prod deploy is the only thing that would notice. **Worse, this token is used RARELY**, so an expiry is not discovered by routine activity; it is discovered the next time something genuinely needs shipping to production. **Decision (Ayo, 2026-08-18): keep the short expiry and put a calendar reminder on 2026-09-17**, having been offered a 90-day Custom token that would have cleared the launch run-up. The reminder is the control here; this line is only a record of it. A longer token was declined because the scope is account-wide
 - [ ] Rename the PostHog project from `Default project` to something meaningful (cosmetic; the token does not change)
 - [ ] Name and add second owners (church officer) on: Supabase org, password-manager vault, Apple (once Ayo's Admin invite lands)

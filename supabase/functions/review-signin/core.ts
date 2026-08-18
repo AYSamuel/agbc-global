@@ -45,3 +45,20 @@ export async function isAllowedAttempt(
   }
   return timingSafeEqual(request.code, config.reviewCode);
 }
+
+/**
+ * The alert raised when the bypass actually MINTS A SESSION (index.ts).
+ *
+ * A constant rather than an inline string so its one hard requirement is testable: it names
+ * the event and nothing else. `03` asks for every use to be logged and `20` forbids
+ * addresses and codes in logs, and this is the exact call site where including the address
+ * would feel helpful. It is not: the address is allowlisted, so it tells a reader nothing
+ * they cannot get from the secrets, while putting a real person's email into an error
+ * tracker.
+ *
+ * Failures were already captured; successes were not, which was the wrong way round. A
+ * refused attempt is the control working. A successful one is somebody holding valid
+ * production credentials that no mailbox gated.
+ */
+export const REVIEW_BYPASS_ALERT =
+  'review-signin: store-review bypass minted a session';

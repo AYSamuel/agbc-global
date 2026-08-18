@@ -1,7 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 
 import { timingSafeEqual } from '../_shared/auth.ts';
-import { isAllowedAttempt, parseReviewSignin } from './core.ts';
+import { isAllowedAttempt, parseReviewSignin, REVIEW_BYPASS_ALERT } from './core.ts';
 
 const CODE = '428913'; // the 6-digit fixed shape (docs/spec/03)
 const CONFIG = {
@@ -92,4 +92,25 @@ Deno.test('timingSafeEqual: equal, unequal, and different-length inputs', async 
   assertEquals(await timingSafeEqual('abc', 'abc'), true);
   assertEquals(await timingSafeEqual('abc', 'abd'), false);
   assertEquals(await timingSafeEqual('abc', 'abcdef'), false);
+});
+
+// The success alert (Track P Phase 2). What needs asserting is not that Sentry is called,
+// which is unreachable here (this suite runs with no permissions and no DSN, `21` §4), but
+// the property that would be quietly lost if somebody made the message more helpful: it
+// says WHAT happened and never WHO. `20` keeps addresses and codes out of logs, and this is
+// the one call site where both are in scope and including them would feel like a favour.
+
+Deno.test('the bypass alert names the event and nobody in it', () => {
+  assertEquals(REVIEW_BYPASS_ALERT.length > 0, true);
+
+  // No address: the review email is allowlisted, so it identifies a real person while
+  // telling a reader nothing the secrets do not already say.
+  assertEquals(REVIEW_BYPASS_ALERT.includes('@'), false);
+
+  // No code, and no digits at all rather than "no CODE", because a rotated code is just a
+  // different six digits and a substring check would pass while leaking the live one.
+  assertEquals(/\d/.test(REVIEW_BYPASS_ALERT), false);
+
+  // It still has to be findable in Sentry by the function it came from.
+  assertEquals(REVIEW_BYPASS_ALERT.includes('review-signin'), true);
 });
