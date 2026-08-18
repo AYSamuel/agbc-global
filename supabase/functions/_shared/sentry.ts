@@ -86,3 +86,40 @@ export async function captureEdgeError(
     // never become one. The console.error beside every call site is still there.
   }
 }
+
+/**
+ * Report something that SUCCEEDED and still needs a human to see it.
+ *
+ * `captureEdgeError` covers the things that went wrong, and until now that was the only
+ * shape available, which left a gap: the store-review bypass minting a real session on
+ * production is not a failure, so nothing reported it. `03` asked for every use to be
+ * logged and W2.10 was assumed to have delivered the alerting half; it had not.
+ *
+ * Same posture as its sibling in every other respect: a no-op without a DSN, context per
+ * capture rather than on the global scope, awaited so the isolate cannot freeze before the
+ * event flushes, and incapable of throwing.
+ *
+ * **The message must carry no personal data.** It is an event that says a thing happened,
+ * never who did it: `20` keeps addresses and codes out of logs, and this call site is
+ * precisely where an address would be tempting.
+ *
+ * @param fn the function's slug, so Sentry groups by function rather than by message shape.
+ * @param level `warning` by default, because the caller is telling a human to look.
+ */
+export async function captureEdgeMessage(
+  fn: string,
+  message: string,
+  level: 'info' | 'warning' = 'warning',
+): Promise<void> {
+  if (!ready()) return;
+  try {
+    Sentry.withScope((scope) => {
+      scope.setTag('function', fn);
+      scope.setLevel(level);
+      Sentry.captureMessage(message);
+    });
+    await Sentry.flush(2_000);
+  } catch {
+    // As above: an alert that can throw would turn "somebody signed in" into a 500.
+  }
+}
