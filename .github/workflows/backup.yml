@@ -1,9 +1,15 @@
 name: Prod backup
 
 # Track P P1 (docs/spec/25 Track P · docs/spec/21 §7): nightly off-provider backup
-# of the SHARED prod project. It serves the LIVE church website today, so this
-# pipeline is the safety net for the website's donations and course_registrations
-# as much as for the app. This is the one sanctioned GitHub Actions cron (CI-budget
+# of the production project, which since 2026-08-17 is `agbc-production`, a project
+# of our own (ADR 0023). It is the safety net for the church website's donations and
+# course_registrations as much as for the app, because the website moves onto this
+# same project at the plan's Phase 3. The old shared project it replaced is PAUSED
+# and fully archived (`nightly/agbc-prod-2026-08-17.tar.zst.age`, taken immediately
+# before pausing); a paused project cannot be dumped, so that file is the whole of
+# it and nothing here reaches it any more.
+#
+# This is the one sanctioned GitHub Actions cron (CI-budget
 # rule, project CLAUDE.md): pg_cron cannot run pg_dump, so the platform scheduler
 # cannot do this job. Kept to the cheapest honest shape: no PR triggers, tight
 # timeout, no overlap, and a healthchecks.io dead-man ping so SILENCE alerts
@@ -39,8 +45,15 @@ jobs:
     env:
       # age recipient (PUBLIC key): in the repo by design, it can only encrypt.
       AGE_RECIPIENT: 'age1pda9wkgnf66z5yhhfcteuvf5hw67mwtada0mqg994fes6z8fhu9qakglmn'
-      # Supabase Storage S3 endpoint for the prod project (the ref is public).
-      SUPABASE_S3_ENDPOINT: 'https://fotfplvqsnmbzjjhqlwp.storage.supabase.co/storage/v1/s3'
+      # Supabase Storage S3 endpoint, derived from the SAME ref the deploy workflow
+      # uses rather than hardcoded a second time. It was hardcoded until 2026-08-17,
+      # which meant that moving production to a new project (ADR 0023) silently left
+      # this pointing at the old one: the dump would have succeeded against a project
+      # nobody was writing to any more, which is the worst kind of backup failure
+      # because it looks exactly like success. The ref is not secret (it is in every
+      # URL); it lives in secrets only because that is where the deploy job keeps it,
+      # so expect it masked in the logs.
+      SUPABASE_S3_ENDPOINT: 'https://${{ secrets.SUPABASE_PROD_PROJECT_REF }}.storage.supabase.co/storage/v1/s3'
       SUPABASE_S3_REGION: 'eu-central-1'
       # Off-provider destination (Backblaze B2, EU Central / Amsterdam).
       B2_ENDPOINT: 'https://s3.eu-central-003.backblazeb2.com'
@@ -89,10 +102,21 @@ jobs:
           for b in $buckets; do
             aws s3 sync "s3://$b" "storage/$b" --endpoint-url "$SUPABASE_S3_ENDPOINT" --no-progress
           done
-          # Prod has at least one bucket with objects (avatars, 7 objects at
-          # P1). An empty storage/ means enumeration broke, not that prod is
-          # empty; fail loudly and adjust deliberately if that ever changes.
-          test -n "$(find storage -type f -print -quit)"
+          # What must hold is that ENUMERATION worked, not that anything was found.
+          # Until 2026-08-17 this asserted at least one FILE existed, which was true
+          # of the old project (`avatars`, 7 objects) and is false of the new one:
+          # our migrations create `sermon-audio` and `sermon-artwork` empty, and
+          # production deliberately receives no sermon audio at all while it is on
+          # Free (ADR 0023). The old assert would therefore have failed on the first
+          # night after the move, for the one reason that is not a problem.
+          #
+          # A hard failure of `aws s3 ls` is already fatal under `set -e` (the
+          # assignment above inherits its status), so what is left to catch is the
+          # silent case: a call that succeeds and lists nothing. Zero buckets means
+          # the schema is not there, since every environment gets both from
+          # migrations.
+          test -n "$buckets"
+          echo "buckets: $(echo "$buckets" | wc -w), objects copied: $(find storage -type f | wc -l)"
 
       - name: Encrypt and upload
         env:
