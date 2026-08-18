@@ -465,40 +465,51 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
-# Watch background jobs (docs/spec/21 s5; W1.3). verify_jwt admits any project
-# JWT, so each handler additionally requires the service-role key itself.
+# verify_jwt is OFF on every function since ADR 0024 landed (Track P Phase 2,
+# 2026-08-19): the platform gate only understands the legacy JWT keys, and the
+# sb_secret_/sb_publishable_ keys the project now runs on are not JWTs. Caller
+# auth lives in code instead, which was always the real boundary here: the old
+# gate admitted any valid project JWT, the anon key included. Job functions
+# require a secret key via _shared/auth.ts; client-called functions check the
+# apikey header; identity-bound functions validate the user's token with
+# auth.getUser.
+
+# Watch background jobs (docs/spec/21 s5; W1.3). Cron/service-invoked only:
+# _shared/auth.ts requires a key from SUPABASE_SECRET_KEYS.
 [functions.youtube-sync]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
-# Contact form (docs/spec/04 CONTACT; W1.7). Client-called: verify_jwt admits
-# the anon key, which is exactly the audience (guests can write to the church).
+# Contact form (docs/spec/04 CONTACT; W1.7). Client-called: the in-code apikey
+# check admits the publishable/anon keys, which is exactly the audience (guests
+# can write to the church).
 [functions.contact-form]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # Store-review bypass (docs/spec/03 §Security; W2.1). Client-called from AUTH-2
-# with the anon key; the allowlisted email + fixed code are checked server-side
-# inside the function, and the per-environment flag lives in its secrets.
+# with the app's apikey; the allowlisted email + fixed code are checked
+# server-side inside the function, and the per-environment flag lives in its
+# secrets.
 [functions.review-signin]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # The freshness safeguard (docs/spec/17 §1, 21 §5; W2.7 slice 5). Both are cron-invoked
-# through jobs.invoke_edge_function, which sends the service-role key from the vault;
-# verify_jwt admits any project JWT, so each handler checks that key itself.
+# through jobs.invoke_edge_function, which sends the vault's secret key as apikey;
+# each handler checks it against SUPABASE_SECRET_KEYS itself.
 [functions.moderation-alerts]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 [functions.verse-monitor]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # The weekly streak safety net (docs/spec/21 §5; W2.8). Same cron-invoked shape.
 [functions.streak-recompute]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # The Expo push receipts sweep (docs/spec/02, `21` §5; W3.3 slice 4). Same cron-invoked
 # shape again. Declared here on 2026-08-18, at Track P Phase 2: it shipped with its slice
@@ -509,18 +520,20 @@ verify_jwt = true
 # this repo has ever run.
 [functions.push-receipts]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
-# by the member right after uploading, with THEIR access token: verify_jwt only
-# proves the token belongs to this project, so the function resolves the real
-# user and refuses any path outside that member's own folder.
+# by the member right after uploading, with THEIR access token: the function
+# validates it with auth.getUser, resolves the real user and refuses any path
+# outside that member's own folder. It never trusted the platform gate for
+# this, so losing it changes nothing.
 [functions.photo-guard]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # Register handoff token mint (ADR 0017 decision 7; W2.9 slice 2). Same
-# member-token shape; the (profile, course) binding comes from the JWT.
+# member-token shape; the (profile, course) binding comes from the JWT, which
+# the function itself validates with auth.getUser.
 [functions.course-handoff]
 enabled = true
-verify_jwt = true
+verify_jwt = false

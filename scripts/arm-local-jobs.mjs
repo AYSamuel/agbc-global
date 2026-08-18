@@ -27,14 +27,15 @@ try {
   process.exit(1);
 }
 
-// The legacy JWT, for the same reason sync-local-sermons.mjs prefers it: the local functions
-// gateway and the functions' own service-role check both expect it.
-const key =
-  statusEnv.match(/^SERVICE_ROLE_KEY="?([^"\r\n]+)"?$/m)?.[1] ??
-  statusEnv.match(/^SECRET_KEY="?([^"\r\n]+)"?$/m)?.[1];
+// The sb_secret_ key, because jobs.invoke_edge_function sends the vault value in the
+// apikey header and the handlers compare it against SUPABASE_SECRET_KEYS (ADR 0024,
+// migration 20260819100000). The legacy SERVICE_ROLE_KEY is deliberately NOT a
+// fallback here: vaulted under this name it would ride the apikey header, match
+// nothing, and turn every job into a 401 that looks armed.
+const key = statusEnv.match(/^SECRET_KEY="?([^"\r\n]+)"?$/m)?.[1];
 if (!key) {
   console.error(
-    'No service key in `supabase status -o env` output; cannot arm the jobs.',
+    'No SECRET_KEY in `supabase status -o env` output; cannot arm the jobs (update the Supabase CLI if it predates sb_secret_ keys).',
   );
   process.exit(1);
 }
@@ -54,12 +55,16 @@ begin
     perform vault.update_secret(existing, $v$${INTERNAL_API_URL}$v$);
   end if;
 
-  select id into existing from vault.secrets where name = 'service_role_key';
+  select id into existing from vault.secrets where name = 'secret_key';
   if existing is null then
-    perform vault.create_secret($v$${key}$v$, 'service_role_key', 'local stack');
+    perform vault.create_secret($v$${key}$v$, 'secret_key', 'local stack');
   else
     perform vault.update_secret(existing, $v$${key}$v$);
   end if;
+
+  -- The pre-ADR-0024 name; inert since 20260819100000, removed so nobody wonders
+  -- which of the two the invoker reads.
+  delete from vault.secrets where name = 'service_role_key';
 end
 $$;
 `;

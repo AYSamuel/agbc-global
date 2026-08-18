@@ -35,16 +35,21 @@ come out of Supabase Vault at call time.**
 ```
 cron.schedule('moderation-alerts', '7 * * * *',
   $$select jobs.invoke_edge_function('moderation-alerts')$$)
-      -> jobs.invoke_edge_function reads project_url + service_role_key from the vault
-      -> net.http_post(<project_url>/functions/v1/<slug>, Bearer <service_role_key>)
+      -> jobs.invoke_edge_function reads project_url + secret_key from the vault
+      -> net.http_post(<project_url>/functions/v1/<slug>, apikey: <secret_key>)
       -> the function does the work and pings its healthchecks.io dead-man check
 ```
+
+*(As written in 2026-08-06 the second secret was `service_role_key`, sent as
+`Authorization: Bearer`. ADR 0024 (landed 2026-08-19, migration `20260819100000`)
+moved the vault to the `sb_secret_` key under the name `secret_key`, sent as
+`apikey`; the mechanism above is otherwise unchanged.)*
 
 Four rules come with it, and they are the actual content of this decision:
 
 - **The schedule lives in a migration; the values live in the vault.** The same history
   applies to a laptop, to dev and to prod. Each environment holds two secrets,
-  `project_url` and `service_role_key`, which are a runbook step rather than a code
+  `project_url` and `secret_key` (ADR 0024), which are a runbook step rather than a code
   change. An environment with an empty vault raises a NOTICE and does nothing, so a
   fresh `supabase db reset` and every CI run are silent rather than failing.
 - **The database decides, the function delivers.** Who to tell and what about is a SQL

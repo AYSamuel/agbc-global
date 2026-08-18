@@ -1,6 +1,6 @@
 # 0024 · Legacy API keys through the cutover, new keys straight after
 
-Date: 2026-08-18 · Status: accepted · Decider: Ayo (preference stated as "use the new way, and legacy only if the new one cannot work")
+Date: 2026-08-18 · Status: accepted; **migration pulled forward and LANDED 2026-08-19** (see the amendment at the end) · Decider: Ayo (preference stated as "use the new way, and legacy only if the new one cannot work")
 
 ## Context
 
@@ -119,3 +119,36 @@ we own and must not get wrong, which is why it ships with tests rather than as a
 | Legacy forever | Rejected: deprecated end of 2026, so it is a forced migration on someone else's schedule |
 | Hybrid, new keys for app/website and legacy for functions | Rejected: two key systems in one project, and the service-role key is shared by both halves. Confusion with no benefit |
 | Legacy through the cutover, migrate straight after (chosen) | **Chosen** |
+
+## Amendment 2026-08-19: the migration landed at Phase 2, because legacy was broken on arrival
+
+"Cut over on legacy, prove it works, then migrate" assumed the legacy path COULD work on the
+new project. Phase 2 execution found it could not, and the discovery is worth its own record:
+
+- **The platform stamps `SUPABASE_SERVICE_ROLE_KEY` (and `SUPABASE_ANON_KEY`) into the
+  functions' env at provisioning and never refreshes them.** On `agbc-production` those
+  copies are a **different issuance** of the legacy JWTs than the dashboard, the management
+  API and the password manager all agree on. Proved by SHA-256 digest comparison across all
+  four surfaces (the CLI's `secrets list` digest is a plain sha256 of the value, verified
+  against a known value), not assumed. Redeploying the functions does not refresh them, and
+  the management API returns digests rather than values, so the env issuance is unrecoverable.
+- Both issuances still verify at the gateway (same immovable JWT secret), but
+  `_shared/auth.ts` compared bytes, so **every cron invocation returned 401 before the job
+  code ran**, with all four dead-man checks freshly created and waiting for first pings.
+- Supabase's current docs close the loop: legacy keys **"can no longer be rotated"**, and the
+  documented pattern for pg_net callers is exactly the design above.
+
+So the "one variable at a time" rationale inverted: keeping legacy was not a smaller change,
+it was a dead end. Ayo chose the pull-forward over patching the legacy comparison
+(2026-08-19, offered both).
+
+**What landed** (migration `20260819100000`, config.toml, `_shared/auth.ts` + `auth_test.ts`,
+`arm-local-jobs.mjs`): the design above, unchanged, plus the vault secret renamed
+`service_role_key` → `secret_key` so the name stops lying about its contents. The legacy
+Bearer path in `isServiceRoleRequest` is kept as a transition branch (local scripts still
+send it); it dies when the legacy keys are disabled.
+
+**What remains of this ADR's schedule:** handing the NEW keys to the website (Phase 3 gives
+Vercel the `sb_secret_` key) and the app (Phase 4 gives EAS the `sb_publishable_` key), and
+only after every consumer is off legacy, deactivating the legacy pair in the dashboard. The
+do-not-press warning in `credentials.md` narrows accordingly but does not lift.

@@ -13,6 +13,7 @@
 //
 // Logs never contain name, email, or message content (docs/spec/20).
 
+import { hasClientApiKey } from '../_shared/auth.ts';
 import { optionalEnv } from '../_shared/env.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import {
@@ -42,6 +43,12 @@ Deno.serve(async (req) => {
   const declaredLength = Number(req.headers.get('content-length') ?? '0');
   if (declaredLength > MAX_BODY_BYTES) {
     return Response.json({ ok: false, error: 'invalid' }, { status: 413 });
+  }
+
+  // With verify_jwt off (ADR 0024) the apikey check is ours: any publishable
+  // key, or the legacy anon key while the app still sends it.
+  if (!(await hasClientApiKey(req))) {
+    return Response.json({ ok: false, error: 'invalid' }, { status: 401 });
   }
 
   let raw: unknown;

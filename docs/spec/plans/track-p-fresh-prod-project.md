@@ -243,9 +243,13 @@ send email and cannot be verified without it.
    `review-signin/core.ts`, and a test asserting the message names the event and nobody in it:
    no `@`, no digits at all (a rotated code is just different digits, so a substring check
    would pass while leaking the live one), and still findable by function.
-6. **Arm the vault** (`project_url`, `service_role_key`) so the cron schedules that arrive
-   with our migrations stop no-opping (ADR 0016). Ayo pastes the service-role key into the SQL
-   editor; it does not pass through the assistant.
+6. **Arm the vault** (`project_url`, `secret_key`) so the cron schedules that arrive
+   with our migrations stop no-opping (ADR 0016). Ayo pastes the key into the SQL
+   editor; it does not pass through the assistant. **Amended 2026-08-19:** as written
+   (with `service_role_key`) this step could never verify, and the failure pulled ADR
+   0024's migration forward into this phase; the whole story is in that ADR's amendment
+   and migration `20260819100000`. The vault now holds the `sb_secret_` key under
+   `secret_key`, and the invoker sends it as `apikey`.
 7. Run the YouTube sync once so Watch is populated.
 
 ---
@@ -298,23 +302,31 @@ The whole move: **two env vars, two tables, no storage.**
 
 ---
 
-## Phase 4.5 · Migrate to the new API keys (ADR 0024)
+## Phase 4.5 · Migrate to the new API keys (ADR 0024) · LANDED EARLY, 2026-08-19
 
-**Scheduled here deliberately: the first moment it can be done safely, not the last.** Legacy
-`anon` / `service_role` keys are deprecated end of 2026, so this is a forced migration on
-someone else's clock if it drifts. It sits AFTER Phase 4 because production is mid-move until
-then, and changing the authorization mechanism of every edge function inside that window
-means a failure cannot be attributed to the move or to the keys.
+**The function/job half of this phase landed during Phase 2**, because the legacy path it
+was scheduled to replace turned out to be unverifiable on the new project: the platform's
+provisioning-time copy of `SUPABASE_SERVICE_ROLE_KEY` in the functions' env is a different
+issuance than every other surface shows, it never refreshes, and legacy keys can no longer
+be rotated to reconverge them, so every cron invocation 401'd before its job code ran. The
+"one variable at a time" sequencing rationale inverted with that discovery; ADR 0024's
+amendment carries the evidence and the decision.
 
-The full design is in ADR 0024 and is not repeated here. In short: the vault holds the
-`sb_secret_…` key, `jobs.invoke_edge_function` sends it as `apikey` rather than
-`Authorization: Bearer` (the restriction that makes this a slice rather than a setting),
-`verify_jwt = false` on the nine functions, and `_shared/auth.ts` compares against every key
-in the `SUPABASE_SECRET_KEYS` dictionary, which gains us overlapping rotation that the single
-service-role key never allowed.
+What landed: migration `20260819100000` (vault key `secret_key`, sent as `apikey`),
+`verify_jwt = false` on the nine functions, `_shared/auth.ts` comparing against every key in
+the `SUPABASE_SECRET_KEYS` dictionary (overlapping rotation), and an explicit apikey gate on
+the two anon-callable functions.
 
-**Do not press "Disable JWT-based API keys" before this lands.** It would break the app, the
-website, all nine functions and all four cron jobs simultaneously.
+What remains of this phase, on its original schedule:
+
+1. Phase 3 hands the website the `sb_secret_` key (not the legacy service_role).
+2. Phase 4 hands EAS the `sb_publishable_` key (not the legacy anon).
+3. Only after both, and after confirming nothing else sends legacy keys, deactivate the
+   legacy pair in the dashboard.
+
+**Until step 3, do not press "Disable JWT-based API keys".** The app and the website (and
+any function's INTERNAL client, which still reads the legacy env by design) authenticate
+with legacy keys until their phases swap them.
 
 ## Phase 5 · Retire the old project
 
