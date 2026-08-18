@@ -144,25 +144,66 @@ payment-records retention row it never had.
 
 ---
 
-## Phase 1 · Create the project and apply
+## Phase 1 · Create the project and apply · DONE 2026-08-18
 
-1. Create the project (EU, Free). Record ref, URL, anon key and service-role key in the
-   password manager and `credentials.md`. **Never in git**, and never opened in an editor
-   (see the `never-open-credential-files` lesson: the FCM key leaked exactly that way).
-2. Apply the 55 migrations plus the new `donations` one via the **manual prod deploy
-   workflow**, never from a laptop (`21` §3).
-3. **Verify the test-data claim before discarding anything:** in the old project, check that
-   every `donations.stripe_session_id` and `course_registrations.stripe_session_id` is a
-   test-mode id (`cs_test_…`). If all are, create the new tables empty and copy nothing. **If
-   any row looks real, stop and copy it deliberately with Ayo's confirmation.**
-4. Seed **`00-common.sql` only**; `10-dev-only.sql` never runs on production. Without
-   `branches`, nobody can finish sign-up: the picker is empty and onboarding cannot complete.
-   This is the step most easily forgotten, because the migrations succeed without it.
-5. Mirror the auth config (`supabase config push`, reviewing which keys are
-   per-environment): the custom access-token hook (**authorization is broken without it**),
-   the four localized OTP templates, rate limits, TOTP for the dashboard.
+**`agbc-production`, ref `mqvojrkotwwvwzsewybx`, eu-central-1, Free, Postgres 17.6.1.155.**
 
-**Verify:** apply green from empty; `branches` present; a sign-in reaches AUTH-3.
+One thing did not go to plan and changed the order. The Free tier allows **two ACTIVE
+projects per organization and the allowance spans every org where you are Owner or Admin**,
+and Ayo's second slot is `monietally`, a different company's project that cannot be touched.
+So a slot had to come from `agbc-app` itself. It was **PAUSED rather than deleted** (Ayo's
+first instinct was to delete it): paused frees the slot identically, keeps data and
+configuration restorable for a year, and costs nothing. Deletion still happens, at Phase 5,
+where this plan always had it.
+
+Two things were done first, because a paused project is exactly as unreadable as a deleted
+one: the **final dump** (`nightly/agbc-prod-2026-08-17.tar.zst.age`, 542,814 bytes) and the
+**test-data check**, which came back conclusive. All 16 rows are test-mode: 12 `cs_test_`
+session ids across both tables, zero `cs_live_`, and the 4 donations with no session id are
+not recurring gifts at all but one-per-category fixtures written on a single day
+(2026-06-17) with `source = 'app'`, i.e. the retired Grace Portal app rather than the
+website. So nothing was copied, and the "stop if any row looks real" branch never triggered.
+
+**Restoring `agbc-app` needs a free active slot**, so pause `agbc-production` first. That is
+the reversal path now, and it is worth knowing before you need it.
+
+1. ~~Create the project (EU, Free).~~ Done via the management API, which sets a database
+   password nobody ever sees; Ayo then set a known one through **Reset database password**.
+   The ref is public and lives in `credentials.md`; the password, service-role key and
+   access token are in the password manager only.
+2. ~~Apply the 55 migrations plus the new `donations` one via the **manual prod deploy
+   workflow**, never from a laptop (`21` §3).~~ **56 applied green** in 2m37s, after setting
+   the `production` environment secrets and flipping `PROD_DEPLOYS_ENABLED`, which had
+   blocked prod deploys since W0.6. Result: 40 tables, 93 functions, 90 policies, 4 cron
+   jobs, 3 buckets (`sermon-audio`, `sermon-artwork`, `testimony-photos`, all empty).
+3. ~~**Verify the test-data claim before discarding anything.**~~ Done before the pause; see
+   above. Conclusive, and it is why nothing was copied.
+4. ~~Seed **`00-common.sql` only**~~ **Done, and the trap was real**: immediately after the
+   migrations, `select count(*) from public.branches` returned **0**. Every migration had
+   succeeded and nobody could have finished sign-up, because the branch picker would have
+   been empty. Applied as data-only DML from the versioned file (it is idempotent, upserts on
+   stable ids); `10-dev-only.sql` never runs here. Verified: 4 branches (glasgow, berlin,
+   emmen, ogbomosho), 8 `branch_services`, `giving_config`, `app_config`, 8
+   `testimony_categories`.
+5. Mirror the auth config: the custom access-token hook (**authorization is broken without
+   it**), the four localized OTP templates, rate limits, TOTP for the dashboard.
+   - **The hook is DONE and enabled** (Postgres, schema `public`, function
+     `custom_access_token`). The migration's half was already in place:
+     `supabase_auth_admin` held EXECUTE before the hook was wired.
+   - **DO NOT run `supabase config push`, which this plan originally suggested.**
+     `supabase/config.toml` carries `site_url = "http://127.0.0.1:3000"` and
+     `additional_redirect_urls = ["https://127.0.0.1:3000"]`. Pushing them would point
+     production's auth at localhost and break every redirect and email link. `23` §1 already
+     warned that config push needs a reviewed diff; that warning is load-bearing rather than
+     cautionary. Either do the remaining keys in the dashboard, or give `config.toml`
+     per-environment handling first, deliberately.
+   - **Still owed: the four localized OTP templates, the rate limits, and TOTP.** TOTP is the
+     urgent one: the dashboard refuses every staff session below `aal2`, so with it off
+     nobody can moderate, including the admin who would turn it on.
+
+**Verify:** ~~apply green from empty~~ (56, green); ~~`branches` present~~ (4); a sign-in
+reaches AUTH-3, **which is blocked until Phase 2** puts the review-bypass secrets in place,
+since Resend SMTP is not wired yet.
 
 ---
 
@@ -233,6 +274,24 @@ The whole move: **two env vars, two tables, no storage.**
    is a real bug and this is finally an environment where it can be found.
 
 ---
+
+## Phase 4.5 · Migrate to the new API keys (ADR 0024)
+
+**Scheduled here deliberately: the first moment it can be done safely, not the last.** Legacy
+`anon` / `service_role` keys are deprecated end of 2026, so this is a forced migration on
+someone else's clock if it drifts. It sits AFTER Phase 4 because production is mid-move until
+then, and changing the authorization mechanism of every edge function inside that window
+means a failure cannot be attributed to the move or to the keys.
+
+The full design is in ADR 0024 and is not repeated here. In short: the vault holds the
+`sb_secret_…` key, `jobs.invoke_edge_function` sends it as `apikey` rather than
+`Authorization: Bearer` (the restriction that makes this a slice rather than a setting),
+`verify_jwt = false` on the nine functions, and `_shared/auth.ts` compares against every key
+in the `SUPABASE_SECRET_KEYS` dictionary, which gains us overlapping rotation that the single
+service-role key never allowed.
+
+**Do not press "Disable JWT-based API keys" before this lands.** It would break the app, the
+website, all nine functions and all four cron jobs simultaneously.
 
 ## Phase 5 · Retire the old project
 
