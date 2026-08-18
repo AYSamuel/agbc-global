@@ -260,12 +260,31 @@ otp_expiry = 600
 # renders `magic_link`; with signInWithOtp both must be the code email. The
 # hosted projects mirror template + subject in their dashboard auth config
 # (Track P runbook step).
+#
+# THE SUBJECT MUST STAY UNDER 255 CHARACTERS, and nothing tells you so until a
+# hosted save fails with "Failed to validate template: subject: Too big". The
+# limit is dashboard validation and is in NEITHER the email-templates doc nor
+# the localization guide; local `supabase start` does not enforce it, so an
+# over-long subject works perfectly here and is rejected on every hosted
+# project. It cost a half-saved production template on 2026-08-18 (subject
+# accepted, body silently not) before the cause was visible.
+#
+# That is why this is written the way it is, and both halves matter:
+#   * `{{ .Token }}` is emitted ONCE, before the branch, rather than repeated
+#     inside all four arms.
+#   * `.Data.language` is compared DIRECTLY, with no `$lang` variable and no
+#     `{{ if .Data }}{{ with … }}` nil-guard. That guard cost 66 characters of
+#     pure boilerplate, and Supabase's own localization guide omits it, because
+#     user_metadata arrives as a map: a missing key yields no value rather than
+#     an error.
+# Together those take the subject from 342 characters to 239. A FIFTH language
+# will not fit; at that point the Send Email Hook renders these in our own code.
 [auth.email.template.confirmation]
-subject = '{{ $lang := "en" }}{{ if .Data }}{{ with .Data.language }}{{ $lang = . }}{{ end }}{{ end }}{{ if eq $lang "de" }}{{ .Token }} ist dein AGBC-Anmeldecode{{ else if eq $lang "nl" }}{{ .Token }} is je AGBC-aanmeldcode{{ else if eq $lang "fr" }}{{ .Token }} est votre code de connexion AGBC{{ else }}{{ .Token }} is your AGBC sign-in code{{ end }}'
+subject = '{{ .Token }} {{ if eq .Data.language "de" }}ist dein AGBC-Anmeldecode{{ else if eq .Data.language "nl" }}is je AGBC-aanmeldcode{{ else if eq .Data.language "fr" }}est votre code de connexion AGBC{{ else }}is your AGBC sign-in code{{ end }}'
 content_path = "./supabase/templates/auth-otp.html"
 
 [auth.email.template.magic_link]
-subject = '{{ $lang := "en" }}{{ if .Data }}{{ with .Data.language }}{{ $lang = . }}{{ end }}{{ end }}{{ if eq $lang "de" }}{{ .Token }} ist dein AGBC-Anmeldecode{{ else if eq $lang "nl" }}{{ .Token }} is je AGBC-aanmeldcode{{ else if eq $lang "fr" }}{{ .Token }} est votre code de connexion AGBC{{ else }}{{ .Token }} is your AGBC sign-in code{{ end }}'
+subject = '{{ .Token }} {{ if eq .Data.language "de" }}ist dein AGBC-Anmeldecode{{ else if eq .Data.language "nl" }}is je AGBC-aanmeldcode{{ else if eq .Data.language "fr" }}est votre code de connexion AGBC{{ else }}is your AGBC sign-in code{{ end }}'
 content_path = "./supabase/templates/auth-otp.html"
 
 # Uncomment to customize email template

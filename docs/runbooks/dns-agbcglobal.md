@@ -26,14 +26,15 @@ and redirects, and a migration should change routing behaviour by zero.
 | `www` | CNAME | `96dd1a05caa4576c.vercel-dns-017.com` | | Vercel |
 | `send` | MX | `feedback-smtp.eu-west-1.amazonses.com` | 10 | **Resend** custom MAIL FROM. Deleted by accident and restored, see below |
 | `send` | TXT | `v=spf1 include:amazonses.com ~all` | | **Resend**, sending SPF |
-| `_dmarc` | TXT | `v=DMARC1; p=none;` | | monitoring only, no `rua` |
+| `_dmarc` | TXT | `v=DMARC1; p=none; rua=mailto:dmarc@agbcglobal.com; fo=1` | | Still monitoring, but **now collecting reports**; see below |
 | `resend._domainkey` | TXT | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXnNIOhLcha1C5QMW6sxWxNXD7B6BZnzZzzdHfklO1JXs/qETmqHkoiu3z6z5227xGRslqwvuSfIdsnxNuOCpcAjxY9LojVtszrv0jymwpkGz9tIwTGFVGwmNfl8mem6L4W0GDsLrJLH8ObQl60PW3lRFM/FasUN+thmMpI69FNwIDAQAB` | | **Resend**, DKIM. Byte-compared old vs new before cutover |
 | `tache` | A | `167.233.51.98` | | Known to Ayo, retained deliberately. **Cloudflare's scan did not find it**; it was carried across from the captured inventory |
 
-**Inbound mail is Cloudflare Email Routing**, not Namecheap forwarding. Both rules Active:
-`auth@` → `aysamuel007@gmail.com` · `hello@` → `oami.gospel@gmail.com`. Adding a new alias
-means adding a routing rule, and a **new destination address must click Cloudflare's
-verification email** before it can be used as a target.
+**Inbound mail is Cloudflare Email Routing**, not Namecheap forwarding. Status Enabled, three
+rules Active: `auth@` → `aysamuel007@gmail.com` · `hello@` → `oami.gospel@gmail.com` ·
+`dmarc@` → `aysamuel007@gmail.com`. Adding a new alias means adding a routing rule, and a
+**new destination address must click Cloudflare's verification email** before it can be used
+as a target.
 
 ## Pre-migration state, for reference
 
@@ -119,10 +120,16 @@ Namecheap, minus the records changed there today.
 
 ## Still owed on this domain (`03` makes email posture a launch item)
 
-- **DMARC is at `p=none` with no `rua=`**, so no aggregate reports are being collected
-  anywhere. Moving straight to `p=quarantine` without that data is how a church stops its own
-  mail being delivered. Add `rua=mailto:…` first, let reports accumulate a couple of weeks,
-  then tighten. That ordering is the task; "DMARC at enforcement" is the outcome.
+- **DMARC: reports now collect, enforcement is still owed.** `rua=mailto:dmarc@agbcglobal.com`
+  and `fo=1` were added on 2026-08-18, with a routing rule so the reports actually land
+  somewhere; the reporting address is on the same domain, so no external-destination
+  verification record is needed. The policy is deliberately still `p=none`: moving straight to
+  `p=quarantine` without report data is how a church stops its own mail being delivered.
+  **Let a couple of weeks accumulate, read them, then tighten.**
+  Two things to expect: aggregate reports are **raw gzipped XML**, unpleasant to read by
+  hand, so a free analyser is worth pointing `rua` at once there is anything to analyse; and
+  `fo=1` also requests failure reports, which is what makes a misconfiguration visible early
+  rather than as a silent delivery drop.
 - **Resend TLS is `Opportunistic`.** These emails carry sign-in codes. `Enforced` is the
   stronger posture; the trade is that mail to a server without TLS fails rather than
   downgrading.
