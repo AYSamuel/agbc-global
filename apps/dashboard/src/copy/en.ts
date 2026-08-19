@@ -657,6 +657,12 @@ export const copy = {
     fieldLink: 'Link (optional)',
     continue: 'Continue',
     saving: 'Saving...',
+    // Pending labels say what is happening rather than "Loading", because the reader is
+    // waiting to know whether a message went to the whole ministry.
+    approving: 'Sending...',
+    sendingBack: 'Sending back...',
+    stopping: 'Stopping...',
+    submitting: 'Sending for approval...',
     emptyFieldsTitle: 'It needs a title and a message',
     emptyFieldsBody:
       'Those two are what arrives on a phone, so a broadcast cannot go out without them.',

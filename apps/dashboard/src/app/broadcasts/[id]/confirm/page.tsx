@@ -2,9 +2,9 @@ import { redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
-import { Button } from '@/components/ui/Button';
 import { Notice } from '@/components/ui/Notice';
 import { Pill } from '@/components/ui/Pill';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { Stat } from '@/components/ui/Stat';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
@@ -121,7 +121,10 @@ export default async function ConfirmBroadcastPage({
       <div className="mt-4 flex gap-2.5 border-t border-cardline pt-3.5">
         <form action={submitAction}>
           <input type="hidden" name="id" value={broadcast.id} />
-          <Button type="submit">{copy.broadcasts.sendForApproval}</Button>
+          <SubmitButton
+            label={copy.broadcasts.sendForApproval}
+            pendingLabel={copy.broadcasts.submitting}
+          />
         </form>
       </div>
     </DashboardShell>

@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation';
 import { BroadcastCard } from '@/components/BroadcastCard';
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
-import { Button } from '@/components/ui/Button';
 import { Notice } from '@/components/ui/Notice';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
@@ -159,7 +159,10 @@ function ReviewActions({ id }: { id: string }) {
     <>
       <form action={approveAction}>
         <input type="hidden" name="id" value={id} />
-        <Button type="submit">{copy.broadcasts.approve}</Button>
+        <SubmitButton
+          label={copy.broadcasts.approve}
+          pendingLabel={copy.broadcasts.approving}
+        />
       </form>
       <form action={rejectAction} className="flex flex-1 items-center gap-2.5">
         <input type="hidden" name="id" value={id} />
@@ -173,9 +176,11 @@ function ReviewActions({ id }: { id: string }) {
           placeholder={copy.broadcasts.rejectPrompt}
           className="min-h-12 flex-1 rounded-input border border-cardline bg-card px-3.5 text-body text-text"
         />
-        <Button type="submit" variant="secondary">
-          {copy.broadcasts.sendBack}
-        </Button>
+        <SubmitButton
+          variant="secondary"
+          label={copy.broadcasts.sendBack}
+          pendingLabel={copy.broadcasts.sendingBack}
+        />
       </form>
     </>
   );
@@ -194,9 +199,11 @@ function HaltAction({ id }: { id: string }) {
       </Notice>
       <form action={haltAction} className="mt-3">
         <input type="hidden" name="id" value={id} />
-        <Button type="submit" variant="secondary">
-          {copy.broadcasts.stop}
-        </Button>
+        <SubmitButton
+          variant="secondary"
+          label={copy.broadcasts.stop}
+          pendingLabel={copy.broadcasts.stopping}
+        />
       </form>
     </div>
   );
