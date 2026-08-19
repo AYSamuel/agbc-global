@@ -50,10 +50,18 @@ const BUILT: Destination[] = [
   // "roles are handed out by an admin" with no route onward and their own queue
   // unreachable, while the badge beside the row counted the very requests it was hiding.
   { key: 'people', label: copy.nav.people, href: '/people', icon: '☺' },
+  // The first Phase B row to light up (W3.5, frames approved 2026-08-19). Linked for every
+  // staff caller, like verses and sermon audio above: a leader composes for their own
+  // branch, and the surface refuses nothing they can reach.
+  {
+    key: 'broadcasts',
+    label: copy.nav.broadcasts,
+    href: '/broadcasts',
+    icon: '✉',
+  },
 ];
 
 const LATER: Destination[] = [
-  { key: 'broadcasts', label: copy.nav.broadcasts, phase: 'B', icon: '✉' },
   { key: 'events', label: copy.nav.events, phase: 'B', icon: '☀' },
   { key: 'branches', label: copy.nav.branches, phase: 'B', icon: '▦' },
   { key: 'library', label: copy.nav.library, phase: 'C', icon: '□' },

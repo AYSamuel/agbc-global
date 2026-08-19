@@ -587,6 +587,117 @@ export const copy = {
     },
   },
 
+  broadcasts: {
+    title: 'Broadcasts',
+    scope: 'A message to a branch, or to everyone',
+    // The line a leader reads before they write anything (COMPOSE frame). Said at the top
+    // rather than at the end of the flow, because being told at the end that you cannot
+    // send what you just wrote is how a tool loses someone.
+    approvalNoticeTitle: 'An admin has to release this.',
+    approvalNoticeBody:
+      'Every broadcast is approved by an admin who is not its author, whatever its scope. You will not be able to send it yourself.',
+    tabs: { waiting: 'Waiting', drafts: 'Drafts', sent: 'Sent' },
+    waitingHeading: 'Waiting for an admin',
+    minesHeading: 'Yours',
+    sentHeading: 'Sent',
+    waitingOnYou: (count: number) =>
+      count === 1 ? '1 waiting on you' : `${String(count)} waiting on you`,
+    newBroadcast: 'New broadcast',
+    approve: 'Approve and send',
+    sendBack: 'Send back',
+    stop: 'Stop sending',
+    // The refusal an admin sees on their OWN broadcast, spelled out in place rather than
+    // hidden behind a greyed button. Naming who else can release it IS the answer when the
+    // ministry has two admins.
+    ownTitle: 'Another admin has to release this one',
+    ownBody: 'You wrote it, so you cannot approve it.',
+    ownBodyWithNames: (names: string) =>
+      `You wrote it, so you cannot approve it. ${names} can.`,
+    // Halting, stated before the click rather than in a dialog after it.
+    haltTitle: 'Stopping is final',
+    haltBody:
+      'Whatever has already left cannot be recalled, and a stopped broadcast is not resumed: you would duplicate it as a draft and start again, approval included.',
+    status: {
+      draft: 'Draft',
+      pending_approval: 'Awaiting approval',
+      rejected: 'Sent back',
+      sending: 'Sending now',
+      sent: 'Sent',
+      halted: 'Stopped',
+      failed: 'Could not be delivered',
+    },
+    scopeLabel: {
+      branch: (branch: string) => `Branch · ${branch}`,
+      ministry: 'Whole ministry',
+    },
+    people: (count: number) =>
+      count === 1 ? '1 person' : `${String(count)} people`,
+    approvedBy: (name: string) => `Approved by ${name}`,
+    rejectPrompt: 'Why are you sending it back?',
+    rejectHint: 'The author reads this, so write it to them.',
+    // The link allowlist refusal (COMPOSE frame). It names the way out, not only the rule.
+    linkNotAllowed: 'That link cannot be sent',
+    linkNotAllowedBody:
+      'A broadcast may link to a screen in the app or to agbcglobal.com, and nothing else. To share this one, send the broadcast without it and paste the address into the WhatsApp community yourself.',
+    linkMalformed: 'That does not look like a link',
+    linkMalformedBody:
+      'Check it for a stray space or a missing https://, then try again.',
+    whoItReaches: 'Who it reaches',
+    hintLeader: (branch: string) =>
+      `It goes to every member of ${branch} who has branch updates switched on.`,
+    hintAdmin:
+      'The whole ministry reaches every branch. Both are approved by another admin before anything is sent.',
+    fieldTitle: 'Title',
+    fieldBody: 'Message · English',
+    fieldBodyHint:
+      'German, Dutch and French are optional. Anyone whose app is set to a language you leave blank reads this one.',
+    fieldBodyDe: 'Message · German (optional)',
+    fieldBodyNl: 'Message · Dutch (optional)',
+    fieldBodyFr: 'Message · French (optional)',
+    fieldLink: 'Link (optional)',
+    continue: 'Continue',
+    saving: 'Saving...',
+    emptyFieldsTitle: 'It needs a title and a message',
+    emptyFieldsBody:
+      'Those two are what arrives on a phone, so a broadcast cannot go out without them.',
+    refusedBody:
+      'Your role may have changed since this screen loaded. Reload, and tell Ayo if it keeps happening.',
+    // The confirmation screen (CONFIRM frame): the last thing before hundreds of lock
+    // screens, so the numbers are split rather than totalled.
+    confirmTitle: 'Send for approval',
+    confirmScope: 'Check it the way they will read it',
+    statReached: 'People reached',
+    statPhone: 'On a phone now',
+    statInApp: 'In-app only',
+    asItArrives: 'As it will arrive',
+    whatsappTitle: 'Copy for WhatsApp',
+    whatsappBody:
+      'The same words as pasteable text, for the church WhatsApp community. Nothing is sent by copying, and the text carries no member details.',
+    whatsappAction: 'Copy',
+    whatsappCopied: 'Copied',
+    inAppOnlyNotice: (count: number) =>
+      count === 1
+        ? '1 person has no phone registered.'
+        : `${String(count)} people have no phone registered.`,
+    inAppOnlyBody:
+      'They will find this in the app notifications the next time they open it.',
+    sendForApproval: 'Send for approval',
+    keepEditing: 'Keep editing',
+    opensLabel: 'Opens',
+    opensInApp: 'the app',
+    emptyTitle: 'Nothing to send yet',
+    emptyBody:
+      'A broadcast reaches every member of a branch, or of the whole ministry, on their phone and in the app.',
+    outcome: {
+      approved: 'Approved. It is going out now.',
+      sentBack: 'Sent back to the author with your note.',
+      submitted: 'Sent for approval.',
+      stopped: 'Stopped. Nothing more will be delivered.',
+    },
+    refused: 'That is not yours to do.',
+    raced: 'Somebody got there first. Refresh to see where it stands now.',
+  },
+
   sermonAudio: {
     title: 'Sermon audio',
     scope: 'Every branch · one shelf',

@@ -45,6 +45,8 @@ const ADMIN_ONLY = new Set<DashboardAction>([
   'assign_role',
   'manage_verses',
   'manage_sermon_audio',
+  'compose_ministry_broadcast',
+  'approve_broadcast',
 ]);
 
 export type StaffRole = 'leader' | 'admin';
@@ -90,7 +92,36 @@ export type DashboardAction =
    * repeat the rule at the data layer (live-table admin at aal2); this layer is what
    * keeps the dashboard's refusal inside the shell and pointing somewhere useful.
    */
-  | 'manage_sermon_audio';
+  | 'manage_sermon_audio'
+  /**
+   * Write a broadcast for a branch (W3.5 slice 3).
+   *
+   * Branch-scoped, so a leader composes for their own branch and an admin for any. It does
+   * NOT authorize sending: nothing a composer can do puts a message on a phone, because
+   * every broadcast is released by an admin who is not its author (20260819180000). This
+   * action is the right to draft and to submit, and the database enforces the rest.
+   */
+  | 'compose_broadcast'
+  /**
+   * Write a broadcast for the WHOLE ministry.
+   *
+   * Its own action rather than a `scope === 'ministry'` line inside the composer, for the
+   * reason at the top of this file: the composer, the confirmation screen and the submit
+   * route would each have to remember, and one of them eventually would not. Admin-only
+   * per `17` §Roles, and deliberately not branch-scoped, because ministry scope has no
+   * branch to be scoped to.
+   */
+  | 'compose_ministry_broadcast'
+  /**
+   * Release a broadcast, or send it back (W3.5 slice 3).
+   *
+   * Admin-only here, and admin-AND-not-the-author in the database. The two are not
+   * redundant: this layer decides whether the approve control is even offered, and
+   * `approve_broadcast()` decides whether it works. The author test lives there because
+   * only the row knows who wrote it, and a CHECK repeats it so self-approval is impossible
+   * rather than merely refused (docs/spec/17 §2).
+   */
+  | 'approve_broadcast';
 
 export interface AuthorizationRequest {
   action: DashboardAction;

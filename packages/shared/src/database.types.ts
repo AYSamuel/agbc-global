@@ -2261,6 +2261,10 @@ export type Database = {
         Args: { broadcast: string }
         Returns: number
       }
+      broadcast_reach_with_device: {
+        Args: { broadcast: string }
+        Returns: number
+      }
       broadcast_recipient_count: {
         Args: { broadcast: string }
         Returns: number
@@ -2294,6 +2298,19 @@ export type Database = {
         Returns: boolean
       }
       count_broadcast_attempt: { Args: { broadcast: string }; Returns: number }
+      create_broadcast_draft: {
+        Args: {
+          body?: string
+          body_de?: string
+          body_fr?: string
+          body_nl?: string
+          branch_id?: string
+          link?: string
+          scope: Database["public"]["Enums"]["broadcast_scope"]
+          title?: string
+        }
+        Returns: string
+      }
       current_audit_request: { Args: never; Returns: string }
       custom_access_token: { Args: { event: Json }; Returns: Json }
       daily_verse_depth: {
@@ -2499,6 +2516,20 @@ export type Database = {
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
+      update_broadcast_draft: {
+        Args: {
+          body?: string
+          body_de?: string
+          body_fr?: string
+          body_nl?: string
+          branch_id?: string
+          broadcast: string
+          link?: string
+          scope?: Database["public"]["Enums"]["broadcast_scope"]
+          title?: string
+        }
+        Returns: string
+      }
       verse_alert_batch: {
         Args: { floor_days?: number }
         Returns: {
@@ -2510,6 +2541,29 @@ export type Database = {
           runs_out_on: string
           stale_from: string
           subject: string
+        }[]
+      }
+      visible_broadcasts: {
+        Args: never
+        Returns: {
+          approver: Json
+          author: Json
+          author_id: string
+          body: string
+          body_de: string
+          body_fr: string
+          body_nl: string
+          branch: Json
+          branch_id: string
+          id: string
+          link: string
+          recipient_count: number
+          review_note: string
+          scope: Database["public"]["Enums"]["broadcast_scope"]
+          sent_at: string
+          status: Database["public"]["Enums"]["broadcast_status"]
+          title: string
+          updated_at: string
         }[]
       }
     }
