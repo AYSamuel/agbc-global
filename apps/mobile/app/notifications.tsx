@@ -219,6 +219,14 @@ export default function NotificationsScreen() {
     // fall back to this screen, which the member is already on, so only a
     // resolvable link navigates.
     const route = resolveDeepLink(row.deepLink);
+    // THE ASSERTION AND THE DISABLE ARE BOTH LOAD-BEARING, in opposite
+    // environments, exactly as in useNotifications.ts: expo-router generates its
+    // typed routes into `.expo/types`, which is gitignored, so `router.push`
+    // takes a narrow union of real route literals on a machine that has run the
+    // dev server and a broad type on a CI runner that has not. Without the
+    // assertion local typecheck fails; with it, CI's lint calls it unnecessary.
+    // `resolveDeepLink` has already narrowed this to an allowlisted route.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     if (route !== FALLBACK_ROUTE) router.push(route as Href);
   };
 
