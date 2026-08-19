@@ -24,6 +24,7 @@ import {
   type NotificationResponse,
 } from './expoNotifications';
 import { deepLinkFromData, notificationIdFromData } from './deepLinks';
+import { markReadFromTap } from './nc';
 import { usePendingDeepLinkStore } from './pendingDeepLink';
 import { registerPushToken } from './token';
 
@@ -76,6 +77,10 @@ export function useNotifications(): void {
       if (id !== null) {
         if (handled.current.has(id)) return;
         handled.current.add(id);
+        // The centre's row greys the moment its push was opened (docs/spec/15
+        // "mark read on view/tap"). Fire-and-forget: a failed write never
+        // delays the navigation, and the next NC read heals it.
+        markReadFromTap(id);
       }
 
       track('notification_opened', { type });

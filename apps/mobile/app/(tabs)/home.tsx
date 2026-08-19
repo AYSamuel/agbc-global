@@ -50,6 +50,7 @@ import { useLocalDate } from '@/features/home/useLocalDate';
 import { VerseCard } from '@/features/home/VerseCard';
 import { resolveBranchList } from '@/features/onboarding/branchList';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
+import { useUnreadCount } from '@/features/notifications/nc';
 import { useCheckInAnnounceStore } from '@/features/rhythm/announce';
 import { useRhythmQuery } from '@/features/rhythm/queries';
 import { StreakStrip } from '@/features/rhythm/StreakStrip';
@@ -148,6 +149,11 @@ export default function Home() {
   const setBranch = useBranchStore((s) => s.setBranch);
   const isMember = useAuthStore((s) => s.status === 'member');
   const profile = useAuthStore((s) => s.profile);
+  const beginGateSignIn = useGateStore((s) => s.beginGateSignIn);
+  // The bell's dot (docs/spec/15): unread EXISTS, not how many; the count
+  // lives on MORE's row. One source: the same query MORE reads.
+  const unreadQuery = useUnreadCount(isMember);
+  const unreadCount = unreadQuery.data ?? 0;
   const [switcherOpen, setSwitcherOpen] = useState(false);
   // The gate carries the action that needs an account, so one sheet serves both
   // of Home's gated taps (Glory on the highlight, and "I'm here") with its own
@@ -340,31 +346,58 @@ export default function Home() {
             <ChevronDownIcon size={icon.md} color={colors.blue} />
           </Pressable>
         </View>
-        {/* Mockup .head .rt: bell + avatar. The bell's destination is NC, which
-            W3.3 builds; until then it is the guest's sign-in prompt and a member
-            simply does not carry a control with nowhere to go (docs/spec/04: no
-            dead ends). W3.3 gives it back, pointed at NC. */}
+        {/* Mockup .head .rt: bell + avatar. The member's bell opens NC and
+            carries the unread dot (docs/spec/15: a dot, not a count; the number
+            lives on MORE's row). The guest's bell is the sign-in prompt, and it
+            gates with the notifications kind so the finished sign-in lands on
+            the log they asked for (the gate-return promise). */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          {isMember ? null : (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('home:notifications')}
-              onPress={() => {
-                router.push('/auth');
-              }}
-              style={({ pressed }) => ({
-                width: 40,
-                height: 40,
-                borderRadius: radius.full,
-                backgroundColor: colors.alt,
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <BellIcon color={colors.text} />
-            </Pressable>
-          )}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              isMember && unreadCount > 0
+                ? t('home:notificationsUnread')
+                : t('home:notifications')
+            }
+            onPress={() => {
+              if (isMember) {
+                router.push('/notifications');
+                return;
+              }
+              track('gate_shown', { action_type: 'notifications' });
+              beginGateSignIn({ kind: 'notifications' });
+              router.push('/auth');
+            }}
+            style={({ pressed }) => ({
+              width: 40,
+              height: 40,
+              borderRadius: radius.full,
+              backgroundColor: colors.alt,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <BellIcon color={colors.text} />
+            {isMember && unreadCount > 0 ? (
+              // Mockup .bell .dot: 8px red, ringed by 2px of the disc's own
+              // colour so it reads as sitting ON the bell. CSS draws that ring
+              // OUTSIDE the 8px; RN draws borders inside, so the box is 12.
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: 7,
+                  width: 12,
+                  height: 12,
+                  borderRadius: radius.full,
+                  backgroundColor: palette.red,
+                  borderWidth: 2,
+                  borderColor: colors.alt,
+                }}
+              />
+            ) : null}
+          </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={

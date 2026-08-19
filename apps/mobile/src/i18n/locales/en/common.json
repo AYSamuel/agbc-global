@@ -41,13 +41,22 @@
     "signinTitle": "Post, pray, and track your rhythm",
     "signinBody": "Sign in to react, share testimonies, RSVP, and keep your streak.",
     "signin": "Sign in",
+    "openProfile": "Open your profile, {{name}}",
+    "rhythmWeeks_one": "{{count}}-week rhythm",
+    "rhythmWeeks_other": "{{count}}-week rhythm",
     "sections": {
+      "myLife": "My life",
       "grow": "Grow",
       "church": "Church",
       "read": "Read",
       "app": "App"
     },
     "rows": {
+      "profile": "Profile",
+      "rhythm": "My rhythm",
+      "myList": "My List",
+      "myPosts": "My posts",
+      "notifications": "Notifications",
       "academy": "Grace Academy",
       "devotional": "Daily devotional",
       "branches": "Branches",

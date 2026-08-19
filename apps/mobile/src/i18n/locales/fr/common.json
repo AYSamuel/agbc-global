@@ -41,13 +41,23 @@
     "signinTitle": "Publiez, priez et suivez votre rythme",
     "signinBody": "Connectez-vous pour réagir, partager des témoignages, répondre aux invitations et garder votre élan.",
     "signin": "Se connecter",
+    "openProfile": "Ouvrir votre profil, {{name}}",
+    "rhythmWeeks_one": "Rythme de {{count}} semaine",
+    "rhythmWeeks_many": "Rythme de {{count}} semaines",
+    "rhythmWeeks_other": "Rythme de {{count}} semaines",
     "sections": {
+      "myLife": "Ma vie",
       "grow": "Grandir",
       "church": "Église",
       "read": "Lire",
       "app": "Application"
     },
     "rows": {
+      "profile": "Profil",
+      "rhythm": "Mon rythme",
+      "myList": "Ma liste",
+      "myPosts": "Mes publications",
+      "notifications": "Notifications",
       "academy": "Grace Academy",
       "devotional": "Méditation quotidienne",
       "branches": "Églises",

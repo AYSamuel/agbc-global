@@ -24,5 +24,77 @@
       "name": "Confirmations",
       "description": "Answers to things you do, like a post approval or a registration"
     }
+  },
+  "title": "Notifications",
+  "markAllRead": "Mark all read",
+  "rowUnread": "{{title}}, unread",
+  "showOlder": "Show older",
+  "retentionFooter": "Older notifications are removed after 12 months.",
+  "emptyTitle": "You're all caught up",
+  "emptyBody": "New notifications will show up here.",
+  "guestTitle": "Your notifications live here",
+  "guestBody": "Sign in to see prayers, Glory and confirmations addressed to you.",
+  "generic": {
+    "title": "AGBC Global",
+    "body": "You have a new notification"
+  },
+  "prefsTitle": "Notifications",
+  "prefsSection": "Push notifications",
+  "branchBody": "News and changes from {{branch}}",
+  "osOffBody": "Push is turned off for AGBC on this device. Turn it on in Settings to get reminders.",
+  "osOffAction": "Open system settings",
+  "alwaysOn": "Confirmations for things you do (registrations, purchases, post approvals) are always sent.",
+  "templates": {
+    "prayer": {
+      "someone_prayed": {
+        "title": "Someone prayed with you",
+        "body": "Tap to see the prayer"
+      },
+      "reminder": {
+        "title": "You said you'd pray for a request",
+        "body": "Take a moment now"
+      }
+    },
+    "testimony": {
+      "glory_batch": {
+        "title_one": "{{count}} person said Glory",
+        "title_other": "{{count}} people said Glory",
+        "body": "On your testimony"
+      }
+    },
+    "moderation": {
+      "approved": {
+        "title": "Your post is live",
+        "body": "The family can see it now"
+      },
+      "changes_needed": {
+        "title": "Your post needs a small change",
+        "body": "Tap to see what to do next"
+      }
+    },
+    "service": {
+      "starts_soon": {
+        "title": "Service starts in 1 hour",
+        "body": "{{branch}}"
+      }
+    },
+    "rsvp": {
+      "reminder": {
+        "title": "{{event}} is coming up",
+        "body": "You said you're going"
+      }
+    },
+    "registration": {
+      "confirmed": {
+        "title": "Your registration is confirmed",
+        "body": "{{course}}"
+      }
+    },
+    "purchase": {
+      "added": {
+        "title": "Added to your Library",
+        "body": "{{title}} is ready to read"
+      }
+    }
   }
 }

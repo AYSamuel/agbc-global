@@ -77,6 +77,10 @@ jest.mock('@/features/rhythm/queries', () => ({
   }),
 }));
 
+jest.mock('@/features/notifications/nc', () => ({
+  useUnreadCount: () => ({ data: 0 }),
+}));
+
 // The "From the family" highlight reads the Family domain's latest-testimony
 // query; mock it (and keep prefetchHome's options import resolvable).
 jest.mock('@/features/family/queries', () => ({

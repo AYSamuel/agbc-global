@@ -58,6 +58,16 @@ export const tonal = {
     bg: 'rgba(31,138,91,0.14)',
     border: 'rgba(31,138,91,0.40)',
   },
+  /** NC's transactional icon disc (mockup `.nci.txn`), the frame's value verbatim. */
+  blue: {
+    bg: 'rgba(47,111,237,0.12)',
+    border: palette.blue,
+  },
+  /** NC's unread-row wash (mockup `.ncrow.unread`), the frame's value verbatim. */
+  blueFaint: {
+    bg: 'rgba(47,111,237,0.05)',
+    border: 'transparent',
+  },
   /** The answered-prayer card (mockup .answered). */
   greenCard: {
     bg: 'rgba(31,138,91,0.10)',

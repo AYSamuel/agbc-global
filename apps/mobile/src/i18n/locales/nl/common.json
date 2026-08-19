@@ -41,13 +41,22 @@
     "signinTitle": "Post, bid en volg je ritme",
     "signinBody": "Log in om te reageren, getuigenissen te delen, je aan te melden en je reeks bij te houden.",
     "signin": "Inloggen",
+    "openProfile": "Open je profiel, {{name}}",
+    "rhythmWeeks_one": "Ritme van {{count}} week",
+    "rhythmWeeks_other": "Ritme van {{count}} weken",
     "sections": {
+      "myLife": "Mijn leven",
       "grow": "Groeien",
       "church": "Kerk",
       "read": "Lezen",
       "app": "App"
     },
     "rows": {
+      "profile": "Profiel",
+      "rhythm": "Mijn ritme",
+      "myList": "Mijn lijst",
+      "myPosts": "Mijn berichten",
+      "notifications": "Meldingen",
       "academy": "Grace Academy",
       "devotional": "Dagelijkse overdenking",
       "branches": "Gemeenten",

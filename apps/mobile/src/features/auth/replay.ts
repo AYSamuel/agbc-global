@@ -152,8 +152,14 @@ function performReplay(action: GateAction): Promise<ReplayOutcome> {
       router.replace('/my-list');
       return Promise.resolve('done');
     }
-    // Executors land with their work items: resume (W3.1 remainder),
-    // notifications (W3.3).
+    case 'notifications': {
+      // Navigation-shaped like my_posts: the gated action WAS the screen
+      // (Home's guest bell), and `replace` leaves no finished sign-in in the
+      // back stack (W3.3 slice 5).
+      router.replace('/notifications');
+      return Promise.resolve('done');
+    }
+    // Executors land with their work items: resume (W3.1 remainder).
     default:
       return Promise.resolve('noop');
   }

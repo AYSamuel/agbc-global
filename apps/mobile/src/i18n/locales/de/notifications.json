@@ -24,5 +24,77 @@
       "name": "Bestätigungen",
       "description": "Antworten auf das, was du tust, etwa eine Freigabe oder eine Anmeldung"
     }
+  },
+  "title": "Benachrichtigungen",
+  "markAllRead": "Alle als gelesen markieren",
+  "rowUnread": "{{title}}, ungelesen",
+  "showOlder": "Ältere anzeigen",
+  "retentionFooter": "Ältere Benachrichtigungen werden nach 12 Monaten entfernt.",
+  "emptyTitle": "Du bist auf dem Laufenden",
+  "emptyBody": "Neue Benachrichtigungen erscheinen hier.",
+  "guestTitle": "Hier wohnen deine Benachrichtigungen",
+  "guestBody": "Melde dich an, um Gebete, Ehre und Bestätigungen zu sehen, die an dich gerichtet sind.",
+  "generic": {
+    "title": "AGBC Global",
+    "body": "Du hast eine neue Benachrichtigung"
+  },
+  "prefsTitle": "Benachrichtigungen",
+  "prefsSection": "Push-Benachrichtigungen",
+  "branchBody": "Neuigkeiten und Änderungen aus {{branch}}",
+  "osOffBody": "Push ist für AGBC auf diesem Gerät ausgeschaltet. Schalte es in den Einstellungen ein, um Erinnerungen zu bekommen.",
+  "osOffAction": "Systemeinstellungen öffnen",
+  "alwaysOn": "Bestätigungen für das, was du tust (Anmeldungen, Käufe, Freigaben), werden immer gesendet.",
+  "templates": {
+    "prayer": {
+      "someone_prayed": {
+        "title": "Jemand hat mit dir gebetet",
+        "body": "Tippe, um das Gebet zu sehen"
+      },
+      "reminder": {
+        "title": "Du wolltest für ein Anliegen beten",
+        "body": "Nimm dir jetzt einen Moment"
+      }
+    },
+    "testimony": {
+      "glory_batch": {
+        "title_one": "{{count}} Person hat Ehre gesagt",
+        "title_other": "{{count}} Personen haben Ehre gesagt",
+        "body": "Zu deinem Zeugnis"
+      }
+    },
+    "moderation": {
+      "approved": {
+        "title": "Dein Beitrag ist veröffentlicht",
+        "body": "Die Familie kann es jetzt sehen"
+      },
+      "changes_needed": {
+        "title": "Dein Beitrag braucht eine kleine Änderung",
+        "body": "Tippe, um zu sehen, was als Nächstes zu tun ist"
+      }
+    },
+    "service": {
+      "starts_soon": {
+        "title": "Der Gottesdienst beginnt in 1 Stunde",
+        "body": "{{branch}}"
+      }
+    },
+    "rsvp": {
+      "reminder": {
+        "title": "{{event}} steht bevor",
+        "body": "Du hast zugesagt"
+      }
+    },
+    "registration": {
+      "confirmed": {
+        "title": "Deine Anmeldung ist bestätigt",
+        "body": "{{course}}"
+      }
+    },
+    "purchase": {
+      "added": {
+        "title": "Zu deiner Bibliothek hinzugefügt",
+        "body": "{{title}} ist bereit zum Lesen"
+      }
+    }
   }
 }

@@ -24,5 +24,77 @@
       "name": "Bevestigingen",
       "description": "Antwoorden op wat je doet, zoals een goedkeuring of een inschrijving"
     }
+  },
+  "title": "Meldingen",
+  "markAllRead": "Alles als gelezen markeren",
+  "rowUnread": "{{title}}, ongelezen",
+  "showOlder": "Ouder tonen",
+  "retentionFooter": "Oudere meldingen worden na 12 maanden verwijderd.",
+  "emptyTitle": "Je bent helemaal bij",
+  "emptyBody": "Nieuwe meldingen verschijnen hier.",
+  "guestTitle": "Hier wonen je meldingen",
+  "guestBody": "Meld je aan om gebeden, Glorie en bevestigingen te zien die aan jou gericht zijn.",
+  "generic": {
+    "title": "AGBC Global",
+    "body": "Je hebt een nieuwe melding"
+  },
+  "prefsTitle": "Meldingen",
+  "prefsSection": "Pushmeldingen",
+  "branchBody": "Nieuws en wijzigingen uit {{branch}}",
+  "osOffBody": "Push staat uit voor AGBC op dit toestel. Zet het aan in Instellingen om herinneringen te krijgen.",
+  "osOffAction": "Systeeminstellingen openen",
+  "alwaysOn": "Bevestigingen voor wat je doet (inschrijvingen, aankopen, goedkeuringen) worden altijd verstuurd.",
+  "templates": {
+    "prayer": {
+      "someone_prayed": {
+        "title": "Iemand heeft met je gebeden",
+        "body": "Tik om het gebed te zien"
+      },
+      "reminder": {
+        "title": "Je wilde voor een verzoek bidden",
+        "body": "Neem er nu even de tijd voor"
+      }
+    },
+    "testimony": {
+      "glory_batch": {
+        "title_one": "{{count}} persoon zei Glorie",
+        "title_other": "{{count}} mensen zeiden Glorie",
+        "body": "Bij jouw getuigenis"
+      }
+    },
+    "moderation": {
+      "approved": {
+        "title": "Je bericht staat online",
+        "body": "De familie kan het nu zien"
+      },
+      "changes_needed": {
+        "title": "Je bericht heeft een kleine wijziging nodig",
+        "body": "Tik om te zien wat je nu kunt doen"
+      }
+    },
+    "service": {
+      "starts_soon": {
+        "title": "De dienst begint over 1 uur",
+        "body": "{{branch}}"
+      }
+    },
+    "rsvp": {
+      "reminder": {
+        "title": "{{event}} komt eraan",
+        "body": "Je hebt gezegd dat je komt"
+      }
+    },
+    "registration": {
+      "confirmed": {
+        "title": "Je inschrijving is bevestigd",
+        "body": "{{course}}"
+      }
+    },
+    "purchase": {
+      "added": {
+        "title": "Toegevoegd aan je bibliotheek",
+        "body": "{{title}} is klaar om te lezen"
+      }
+    }
   }
 }
