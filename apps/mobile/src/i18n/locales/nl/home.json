@@ -31,5 +31,6 @@
   "joinTitle": "Word deel van de familie",
   "joinBody": "Log in om te reageren, getuigenissen te delen, je aan te melden en je ritme bij te houden.",
   "greetingNamed": "{{greeting}}, {{name}}",
-  "openProfile": "Jouw profiel, {{name}}"
+  "openProfile": "Jouw profiel, {{name}}",
+  "notificationsUnread": "Meldingen, ongelezen"
 }

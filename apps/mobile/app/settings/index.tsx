@@ -9,6 +9,7 @@ import { fontFamily, spacing } from '@agbc/shared/theme';
 
 import {
   AppHeader,
+  BellIcon,
   BlockedIcon,
   Button,
   GlobeIcon,
@@ -145,6 +146,18 @@ export default function Settings() {
               router.push('/settings/language');
             }}
           />
+          {/* The frame's SETTINGS card pairs Language with Notifications
+              (NOTIF-PREFS). Member-only, like Blocked members: the prefs row
+              a guest would open does not exist yet. */}
+          {isMember ? (
+            <MenuRow
+              icon={BellIcon}
+              label={t('settings:notifications')}
+              onPress={() => {
+                router.push('/settings/notifications');
+              }}
+            />
+          ) : null}
         </MenuCard>
 
         <MenuLabel label={t('settings:privacyData')} />

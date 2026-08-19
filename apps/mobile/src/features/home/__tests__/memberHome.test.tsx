@@ -76,6 +76,13 @@ jest.mock('@/features/watch/queries', () => ({
   useSermonsQuery: () => ({ data: [], isError: false, refetch: jest.fn() }),
 }));
 
+const mockUnread = jest.fn<{ data: number | undefined }, []>(() => ({
+  data: 0,
+}));
+jest.mock('@/features/notifications/nc', () => ({
+  useUnreadCount: () => mockUnread(),
+}));
+
 jest.mock('@/features/family/queries', () => ({
   useLatestTestimonyQuery: () => ({ data: null, isError: false }),
   latestTestimonyQueryOptions: () => ({
@@ -339,5 +346,34 @@ describe('"I\'m here" (docs/spec/10)', () => {
     signIn(GLASGOW);
     await renderHome();
     expect(screen.queryByText(/Visiting/)).toBeNull();
+  });
+});
+
+describe('the bell (W3.3 slice 5)', () => {
+  test("a member's bell opens the notification centre", async () => {
+    signIn();
+    await renderHome();
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Notifications' }),
+    );
+    expect(mockPush).toHaveBeenCalledWith('/notifications');
+  });
+
+  test('unread announces itself: the dot, and the label that carries it', async () => {
+    signIn();
+    mockUnread.mockReturnValue({ data: 3 });
+    await renderHome();
+    expect(
+      screen.getByRole('button', { name: 'Notifications, unread' }),
+    ).toBeOnTheScreen();
+  });
+
+  test("a guest's bell gates, and the gate remembers the log they asked for", async () => {
+    await renderHome();
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Notifications' }),
+    );
+    expect(useGateStore.getState().pending).toEqual({ kind: 'notifications' });
+    expect(mockPush).toHaveBeenCalledWith('/auth');
   });
 });

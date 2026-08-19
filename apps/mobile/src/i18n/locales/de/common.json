@@ -41,13 +41,22 @@
     "signinTitle": "Posten, beten und deinen Rhythmus verfolgen",
     "signinBody": "Melde dich an, um zu reagieren, Zeugnisse zu teilen, zuzusagen und deine Serie zu halten.",
     "signin": "Anmelden",
+    "openProfile": "Öffne dein Profil, {{name}}",
+    "rhythmWeeks_one": "{{count}}-Wochen-Rhythmus",
+    "rhythmWeeks_other": "{{count}}-Wochen-Rhythmus",
     "sections": {
+      "myLife": "Mein Leben",
       "grow": "Wachsen",
       "church": "Gemeinde",
       "read": "Lesen",
       "app": "App"
     },
     "rows": {
+      "profile": "Profil",
+      "rhythm": "Mein Rhythmus",
+      "myList": "Meine Liste",
+      "myPosts": "Meine Beiträge",
+      "notifications": "Benachrichtigungen",
       "academy": "Grace Academy",
       "devotional": "Tägliche Andacht",
       "branches": "Gemeinden",

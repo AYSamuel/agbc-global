@@ -31,5 +31,6 @@
   "joinTitle": "Join the family",
   "joinBody": "Sign in to react, share testimonies, RSVP, and keep your rhythm.",
   "greetingNamed": "{{greeting}}, {{name}}",
-  "openProfile": "Your profile, {{name}}"
+  "openProfile": "Your profile, {{name}}",
+  "notificationsUnread": "Notifications, unread"
 }

@@ -31,5 +31,6 @@
   "joinTitle": "Werde Teil der Familie",
   "joinBody": "Melde dich an, um zu reagieren, Zeugnisse zu teilen, zuzusagen und deinen Rhythmus zu halten.",
   "greetingNamed": "{{greeting}}, {{name}}",
-  "openProfile": "Dein Profil, {{name}}"
+  "openProfile": "Dein Profil, {{name}}",
+  "notificationsUnread": "Benachrichtigungen, ungelesen"
 }

@@ -24,5 +24,77 @@
       "name": "Confirmations",
       "description": "Réponses à vos actions, comme une validation ou une inscription"
     }
+  },
+  "title": "Notifications",
+  "markAllRead": "Tout marquer comme lu",
+  "rowUnread": "{{title}}, non lue",
+  "showOlder": "Afficher les plus anciennes",
+  "retentionFooter": "Les notifications de plus de 12 mois sont supprimées.",
+  "emptyTitle": "Vous êtes à jour",
+  "emptyBody": "Les nouvelles notifications apparaîtront ici.",
+  "guestTitle": "Vos notifications vivent ici",
+  "guestBody": "Connectez-vous pour voir les prières, les Gloire et les confirmations qui vous sont adressées.",
+  "generic": {
+    "title": "AGBC Global",
+    "body": "Vous avez une nouvelle notification"
+  },
+  "prefsTitle": "Notifications",
+  "prefsSection": "Notifications push",
+  "branchBody": "Nouvelles et changements de {{branch}}",
+  "osOffBody": "Les notifications push sont désactivées pour AGBC sur cet appareil. Activez-les dans les réglages pour recevoir les rappels.",
+  "osOffAction": "Ouvrir les réglages du système",
+  "alwaysOn": "Les confirmations de vos actions (inscriptions, achats, validations) sont toujours envoyées.",
+  "templates": {
+    "prayer": {
+      "someone_prayed": {
+        "title": "Quelqu’un a prié avec vous",
+        "body": "Touchez pour voir la prière"
+      },
+      "reminder": {
+        "title": "Vous vouliez prier pour une demande",
+        "body": "Prenez un moment maintenant"
+      }
+    },
+    "testimony": {
+      "glory_batch": {
+        "title_one": "{{count}} personne a dit Gloire",
+        "title_other": "{{count}} personnes ont dit Gloire",
+        "body": "À propos de votre témoignage"
+      }
+    },
+    "moderation": {
+      "approved": {
+        "title": "Votre publication est en ligne",
+        "body": "La famille peut la voir maintenant"
+      },
+      "changes_needed": {
+        "title": "Votre publication demande une petite modification",
+        "body": "Touchez pour voir la suite"
+      }
+    },
+    "service": {
+      "starts_soon": {
+        "title": "Le culte commence dans 1 heure",
+        "body": "{{branch}}"
+      }
+    },
+    "rsvp": {
+      "reminder": {
+        "title": "{{event}} approche",
+        "body": "Vous avez dit que vous venez"
+      }
+    },
+    "registration": {
+      "confirmed": {
+        "title": "Votre inscription est confirmée",
+        "body": "{{course}}"
+      }
+    },
+    "purchase": {
+      "added": {
+        "title": "Ajouté à votre bibliothèque",
+        "body": "{{title}} est prêt à lire"
+      }
+    }
   }
 }
