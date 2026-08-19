@@ -522,6 +522,13 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
+# Service reminders (docs/spec/15, `21` §5; W3.4 slice 1). Cron-invoked every 15 minutes,
+# same shape as its siblings above. Declared with the function rather than after it, which
+# is the lesson push-receipts paid for.
+[functions.service-reminders]
+enabled = true
+verify_jwt = false
+
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
 # by the member right after uploading, with THEIR access token: the function
 # validates it with auth.getUser, resolves the real user and refuses any path

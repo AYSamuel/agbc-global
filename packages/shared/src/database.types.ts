@@ -2115,6 +2115,20 @@ export type Database = {
         Args: { approve: boolean; note?: string; request: string }
         Returns: undefined
       }
+      deliver_notifications: {
+        Args: { entries: Json }
+        Returns: {
+          deep_link: string
+          device_id: string
+          expo_push_token: string
+          language: string
+          notification_id: string
+          params: Json
+          profile_id: string
+          template_key: string
+          type: string
+        }[]
+      }
       email_belongs_to_caller: { Args: { target: string }; Returns: boolean }
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }
@@ -2220,6 +2234,17 @@ export type Database = {
       }
       rhythm_week: { Args: { service_date: string }; Returns: string }
       rhythm_week_rungs: { Args: { weeks: number }; Returns: number[] }
+      service_reminder_batch: {
+        Args: { at_time?: string; lead_minutes?: number; tick_minutes?: number }
+        Returns: {
+          branch_id: string
+          branch_name: string
+          dedupe_key: string
+          profile_id: string
+          service_date: string
+          start_time: string
+        }[]
+      }
       set_member_role: {
         Args: {
           new_branch?: string

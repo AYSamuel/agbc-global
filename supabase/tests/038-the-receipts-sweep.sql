@@ -48,6 +48,14 @@ select is(
 -- 2. Stamping is idempotent and scoped.
 -- ===========================================================================
 
+-- Clear the table first, inside this transaction and rolled back with it. `push_error_rate`
+-- is a rate over EVERY ticket in the window, so section 3's ratio depends on nothing else
+-- having sent today. That was true when this file was written, because nothing in the repo
+-- called the sender; W3.4 gave it callers, and the first live run of `service-reminders` on
+-- a laptop turned this file red with a real ticket of its own (2026-08-19). A test whose
+-- result depends on what the machine did this morning is not a test.
+delete from public.push_tickets;
+
 insert into public.push_tickets (ticket_id, device_id, sent_at) values
   ('tk-ok',   '98000000-0000-4000-8000-0000000000d1', now() - interval '20 minutes'),
   ('tk-dead', '98000000-0000-4000-8000-0000000000d2', now() - interval '20 minutes'),
