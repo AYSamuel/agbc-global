@@ -129,6 +129,15 @@ docker exec supabase_db_agbc-global psql -U postgres -d postgres -c "select jobs
 given its function list at `supabase start`, so a newly added function answers 404
 until `supabase stop && supabase start`.
 
+**And a wedged edge runtime needs the same treatment** (W3.4 slice 3, 2026-08-19).
+Editing a function's source repeatedly in quick succession can leave the runtime in a
+state where EVERY function, including ones that were working a minute earlier and were
+never touched, answers `{"message":"An invalid response was received from the upstream
+server"}` with nothing at all in `docker logs`. `docker restart
+supabase_edge_runtime_agbc-global` does NOT recover it; only `supabase stop && supabase
+start` does. Worth knowing because the symptom looks exactly like a crash in the function
+you just edited, and the first instinct is to go hunting in your own code.
+
 ### Watching the alert emails without a Resend key
 
 There is no Resend key locally, so the jobs answer `503 email not configured`. To

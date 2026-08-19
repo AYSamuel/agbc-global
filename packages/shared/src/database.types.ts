@@ -2051,6 +2051,7 @@ export type Database = {
       }
     }
     Functions: {
+      advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       assert_consent_covers_photo: {
         Args: { target_version: string }
         Returns: undefined
@@ -2115,6 +2116,20 @@ export type Database = {
         Args: { approve: boolean; note?: string; request: string }
         Returns: undefined
       }
+      deliver_notifications: {
+        Args: { entries: Json }
+        Returns: {
+          deep_link: string
+          device_id: string
+          expo_push_token: string
+          language: string
+          notification_id: string
+          params: Json
+          profile_id: string
+          template_key: string
+          type: string
+        }[]
+      }
       email_belongs_to_caller: { Args: { target: string }; Returns: boolean }
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }
@@ -2164,6 +2179,19 @@ export type Database = {
       }
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
+      prayer_reminder_batch: {
+        Args: { at_time?: string }
+        Returns: {
+          dedupe_key: string
+          intercession_id: string
+          prayer_id: string
+          profile_id: string
+        }[]
+      }
+      prayer_reminder_next: {
+        Args: { committed_at: string; sent_count: number }
+        Returns: string
+      }
       prune_job_alerts: { Args: never; Returns: number }
       purge_old_notifications: {
         Args: { batch_size?: number; older_than?: string }
@@ -2179,6 +2207,13 @@ export type Database = {
       }
       recompute_all_streaks: { Args: never; Returns: number }
       recompute_streak: { Args: { target: string }; Returns: undefined }
+      reconcile_content_counters: {
+        Args: never
+        Returns: {
+          corrected: number
+          metric: string
+        }[]
+      }
       record_attendance: {
         Args: { p_branch_id: string; p_client_taken_at?: string }
         Returns: {
@@ -2220,6 +2255,35 @@ export type Database = {
       }
       rhythm_week: { Args: { service_date: string }; Returns: string }
       rhythm_week_rungs: { Args: { weeks: number }; Returns: number[] }
+      rsvp_reminder_batch: {
+        Args: { at_time?: string; lead_hours?: number; tick_minutes?: number }
+        Returns: {
+          dedupe_key: string
+          event_id: string
+          event_title: string
+          profile_id: string
+          starts_at_local: string
+        }[]
+      }
+      run_retention_purges: {
+        Args: never
+        Returns: {
+          item: string
+          kept: number
+          removed: number
+        }[]
+      }
+      service_reminder_batch: {
+        Args: { at_time?: string; lead_minutes?: number; tick_minutes?: number }
+        Returns: {
+          branch_id: string
+          branch_name: string
+          dedupe_key: string
+          profile_id: string
+          service_date: string
+          start_time: string
+        }[]
+      }
       set_member_role: {
         Args: {
           new_branch?: string

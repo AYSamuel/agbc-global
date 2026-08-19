@@ -189,17 +189,28 @@ values
 on conflict (testimony_id, profile_id) do nothing;
 
 -- Two fulfilled ("I prayed") and two still committed, so both counts render.
+--
+-- The committed pair is ENROLLED in the reminder cadence (W3.4 slice 2), because a fresh
+-- reset otherwise leaves prayer-reminders with nothing to do for a day and the surface
+-- cannot be watched at all. One is backdated so its first nudge is already due and the very
+-- next tick sends it; the other sits on the ordinary day-1 schedule. Seeds reach the insert
+-- guard with no auth.uid(), so these values pass through rather than being overwritten.
+--
+-- To watch a nudge arrive on a DEVICE, point one at the account signed in on the phone:
+--   update public.prayer_intercessions set next_reminder_at = now()
+--    where profile_id = (select id from public.profiles where email = '<your address>');
 insert into public.prayer_intercessions
-  (prayer_id, profile_id, state, prayed_at)
+  (prayer_id, profile_id, state, prayed_at, committed_at, next_reminder_at, reminder_count)
 values
   ('60000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000a',
-   'prayed', now() - interval '3 days'),
+   'prayed', now() - interval '3 days', now() - interval '4 days', null, 0),
   ('60000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-00000000000c',
-   'prayed', now() - interval '4 days'),
+   'prayed', now() - interval '4 days', now() - interval '5 days', null, 0),
   ('60000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-00000000000a',
-   'committed', null),
+   'committed', null, now() - interval '1 day', now() - interval '5 minutes', 0),
   ('60000000-0000-4000-8000-000000000003', '50000000-0000-4000-8000-00000000000b',
-   'committed', null)
+   'committed', null, now(),
+   public.prayer_reminder_next(now(), 0), 0)
 on conflict (prayer_id, profile_id) do nothing;
 
 -- Events fixtures (W1.7): date-relative so a reset always leaves upcoming rows.

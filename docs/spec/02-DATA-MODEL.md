@@ -504,7 +504,7 @@ Localization model: automated notifications store a **template key + params**, r
 | params | jsonb null | template parameters (never special-category content; push payloads stay generic, body fetched in-app: `15`/`20`) |
 | title / body | text null | manual broadcasts only (pre-rendered per recipient language at fan-out) |
 | broadcast_id | uuid FK null | unique(profile_id, broadcast_id): fan-out re-runs never double-write |
-| dedupe_key | text null | partial unique `(profile_id, dedupe_key) where dedupe_key is not null`; automated jobs write deterministic keys so re-runs never double-send (`21` §5). **Rule: keys for time-bound sends embed the occurrence they announce** (`service_reminder:<branch_id>:<service_date>`, `rsvp_reminder:<event_id>:<starts_at_local>`), so a rescheduled event mints a new key and its reminder is NOT swallowed by the old one |
+| dedupe_key | text null | partial unique `(profile_id, dedupe_key) where dedupe_key is not null`; automated jobs write deterministic keys so re-runs never double-send (`21` §5). **Rule: keys for time-bound sends embed the occurrence they announce, INCLUDING its local start time** (`service_reminder:<branch_id>:<YYYY-MM-DD>T<HH24:MI>`, `rsvp_reminder:<event_id>:<starts_at_local>`), so a rescheduled event mints a new key and its reminder is NOT swallowed by the old one. **The service key carried only the date until 2026-08-19** (W3.4 slice 1), which could not keep that promise: two services on one date at one branch shared a key, so the evening one was never announced, and a service moved from 11:00 to 18:00 on the same date was swallowed by its own earlier reminder, which is the exact case the rule is about |
 | deep_link | text | expo-router path (see `15`) |
 | read_at | timestamptz null | |
 

@@ -358,8 +358,10 @@ select is(
 select is(
   (select next_reminder_at from public.prayer_intercessions
     where id = '84000000-0000-4000-8000-00000000000a'),
-  null::timestamptz,
-  'the reminder schedule is the server''s, so a self-set nudge is discarded');
+  (select public.prayer_reminder_next(committed_at, 0)
+     from public.prayer_intercessions
+    where id = '84000000-0000-4000-8000-00000000000a'),
+  'the reminder schedule is the server''s: the forged year-away nudge is discarded and the cadence''s own day 1 put in its place (W3.4 slice 2; this was NULL while no job existed to read it)');
 
 set local role authenticated;
 set local request.jwt.claims to

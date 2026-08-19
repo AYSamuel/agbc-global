@@ -12,7 +12,12 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
-import { buildVerseAlerts, type DepthRow, type LedgerEntry } from './core.ts';
+import {
+  buildVerseAlerts,
+  runCanary,
+  type DepthRow,
+  type LedgerEntry,
+} from './core.ts';
 
 const JOB = 'verse-monitor';
 const LEASE = '10 minutes';
@@ -52,6 +57,15 @@ async function run(
   supabase: SupabaseClient,
   healthcheckUrl: string | null,
 ): Promise<Response> {
+  // FIRST, before the queue is even read, so the canary reports on Resend rather than on
+  // whether the verse queue happened to be healthy this morning. It never throws and it
+  // pings its OWN check, so its outcome and this job's stay separate facts.
+  const canary = await runCanary(new Date(), {
+    send: sender(),
+    from: optionalEnv('ALERTS_FROM_EMAIL'),
+    ping: (ok) => pingDeadMan(optionalEnv('HEALTHCHECK_URL_RESEND_CANARY'), ok),
+  });
+
   const { data: batch, error: batchError } = await supabase.rpc(
     'verse_alert_batch',
     { floor_days: FLOOR_DAYS },
@@ -62,7 +76,7 @@ async function run(
   if (rows.length === 0) {
     // The healthy case, and the common one: every language is stocked past the floor.
     await pingDeadMan(healthcheckUrl, true);
-    return Response.json({ alerts: 0, recorded: 0 });
+    return Response.json({ alerts: 0, recorded: 0, canary });
   }
 
   const send = sender();
@@ -71,7 +85,10 @@ async function run(
       'verse-monitor: email is not configured; the queue is low and nobody was told',
     );
     await pingDeadMan(healthcheckUrl, false);
-    return Response.json({ error: 'email not configured' }, { status: 503 });
+    return Response.json(
+      { error: 'email not configured', canary },
+      { status: 503 },
+    );
   }
 
   const alerts = buildVerseAlerts(rows, {
@@ -109,6 +126,7 @@ async function run(
     languages: rows.length,
     recorded,
     failed,
+    canary,
   });
 }
 
