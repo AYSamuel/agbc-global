@@ -185,6 +185,11 @@ the reversal path now, and it is worth knowing before you need it.
    stable ids); `10-dev-only.sql` never runs here. Verified: 4 branches (glasgow, berlin,
    emmen, ogbomosho), 8 `branch_services`, `giving_config`, `app_config`, 8
    `testimony_categories`.
+   **Corrected at Phase 4 (2026-08-19): "00-common only" was itself the bug.**
+   `seeds/05-courses.sql` is production CONTENT (generated from the website's course
+   collections, idempotent), and skipping it left the Academy empty and the course
+   handoff unable to mint. Applied at Phase 4 the same way. The rule for the next
+   project: every `seeds/*.sql` EXCEPT `10-dev-only.sql` runs in production.
 5. Mirror the auth config: the custom access-token hook (**authorization is broken without
    it**), the four localized OTP templates, rate limits, TOTP for the dashboard.
    - **The hook is DONE and enabled** (Postgres, schema `public`, function
@@ -331,12 +336,74 @@ written:
 
 ---
 
-## Phase 4 · Point the app at production, and close W3.3
+## Phase 4 · Point the app at production, and close W3.3 · DONE 2026-08-19
 
-1. `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` into **EAS preview env** and the
-   local `.env`. **The key is the `sb_publishable_` key, not the legacy anon** (ADR 0024,
-   landed early; this step is what retires the app's last legacy-key dependency besides the
-   functions' internal clients).
+**All five items executed in one session (2026-08-19). What each found is recorded under
+its step; the two discoveries that outlived the session are the missed `05-courses.sql`
+seed (step 5) and the confirmation that slice 4's tap blocker was a dev-client artefact
+(step 3).**
+
+1. ~~EAS preview env.~~ **Done.** `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_KEY`
+   (the `sb_publishable_` key) set in the EAS preview environment only; the POSTHOG/SENTRY
+   vars from 2026-08-13 untouched; the local `.env` untouched on `127.0.0.1:55321` (the
+   step's original "and the local `.env`" wording was struck as a leftover, see the
+   correction in the step text below). The production EAS environment deliberately does
+   NOT carry the pair yet; that is W4.8's, with the store build.
+2. ~~`eas build`.~~ **Done.** Build `e1ee82fe` (during an EAS partial Android outage,
+   which only slowed the queue): existing `agbc-app-upload-keystore`, remote versionCode
+   20, installed over the dev client on the S22 Ultra (same applicationId, so **the
+   S22's dev client is gone until reinstalled from EAS** for the next local session).
+   Verified against production on launch: real branch service, 100 synced sermons,
+   correct empty states.
+3. ~~Test the notification tap.~~ **Done, and the caveat lifts: the gap WAS a dev-client
+   artefact.** Real push through Expo → FCM V1 → the device (receipt `ok`, so the
+   assigned FCM key is doing its job), then the tap navigated correctly from BOTH the
+   killed cold start (`getLastNotificationResponseAsync` → pending-deep-link store →
+   `/my-list`) and the backgrounded listener (`/rhythm`). Two test lessons paid for:
+   `adb shell am force-stop` puts the package in stopped state and **FCM will not
+   deliver to it at all** (use Home + `am kill`, which is the OS-style kill), and a
+   tapped notification stays in the shade rather than auto-dismissing (minor, W3.3
+   slice 5's to look at). Slice 5 itself (NC, NOTIF-PREFS, MORE "My life", Home bell)
+   remains W3.3's open remainder, and until it lands the deep-link FALLBACK route
+   `/notifications` renders expo-router's Unmatched Route.
+4. ~~Onboard the first production admin, un-pause `prod-moderation-alerts`.~~ **Done,
+   both admins.** Break-glass first (`oami.gospel@gmail.com`, display name Oami Gospel,
+   Glasgow), then the daily (`aysamuel007@gmail.com`, Ayo Samuel, Lighthouse Berlin);
+   both promotions landed as `role=admin` with a `privileged_actions` `role_changed` row
+   whose `actor_id` is NULL. TOTP was enrolled the same night for BOTH accounts by
+   running the dashboard locally against production (`next build` + `next start` with
+   only the public URL + publishable key; `createAdminClient` is never called, so no
+   secret was needed): the decision credentials.md's checklist asked for, recorded
+   there. The healthchecks un-pause turned out to be nothing to click: **a ping to a
+   paused check resumes it**, so the job's own hourly failure pings had already
+   un-paused `prod-moderation-alerts`, and the first tick after the admins existed
+   pinged success and flipped it green.
+5. ~~Flip `COURSE_HANDOFF_ENABLED`.~~ **Done, and proven end to end.** Vercel env var
+   `COURSE_HANDOFF_ENABLED=true` (Production scope only, matching the Supabase vars) +
+   redeploy (Ready). Then the proof found **a Phase 1 seed gap: `05-courses.sql` was
+   never applied to production** (Phase 1 said "seed `00-common.sql` only" and nobody
+   noticed the courses file standing beside it), so the Academy was empty and no token
+   could mint. Applied as idempotent DML the same way 00-common was: 3 courses, 2
+   regional fees. After that: Register tap in the app minted a token and opened
+   `https://www.agbcglobal.com/courses/grace-reset?token=...#register`, the website
+   resolved it and PREFILLED the member's name and email, sandbox checkout completed,
+   and the webhook landed the row **linked: `payment_status=paid`,
+   `link_method=handoff`, `source=app`, `profile_id` = the member's**. Phase 3's old
+   unlinked test registration was deleted to unblock the test (its email had been
+   matched to the admin account); its evidence stays in Phase 3's notes. One quirk
+   worth a future look: because unlinked rows are admin-visible (ADR 0017), an ADMIN's
+   Academy screen claims other people's unlinked registrations as their own; harmless
+   for members, misleading for admins.
+
+Original checklist, for reference (step 1 as corrected at execution):
+
+1. `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` into **EAS preview env ONLY**.
+   **The key is the `sb_publishable_` key, not the legacy anon** (ADR 0024, landed early;
+   this step is what retires the app's last legacy-key dependency besides the functions'
+   internal clients). This step originally also said "and the local `.env`"; that was a
+   leftover that contradicted the daily-loop rule and was struck at execution (2026-08-19):
+   the local `.env` stays on `127.0.0.1:55321`, and the preview build is the ONLY thing
+   that points at production.
 2. `eas build --platform android --profile preview`.
 3. Install and **test the notification tap**, the one W3.3 Done criterion still open. If it
    works, the gap was a dev-client artefact and slice 4's caveat lifts. If it does not, there
@@ -367,14 +434,18 @@ the two anon-callable functions.
 
 What remains of this phase, on its original schedule:
 
-1. Phase 3 hands the website the `sb_secret_` key (not the legacy service_role).
-2. Phase 4 hands EAS the `sb_publishable_` key (not the legacy anon).
-3. Only after both, and after confirming nothing else sends legacy keys, deactivate the
-   legacy pair in the dashboard.
+1. ~~Phase 3 hands the website the `sb_secret_` key (not the legacy service_role).~~ Done
+   2026-08-19 (Phase 3).
+2. ~~Phase 4 hands EAS the `sb_publishable_` key (not the legacy anon).~~ Done 2026-08-19
+   (Phase 4): the preview build authenticates with it, verified on the device.
+3. Only after confirming nothing else sends legacy keys, deactivate the legacy pair in
+   the dashboard. **Still blocked, and not only by habit: every function's INTERNAL
+   client reads the platform-provisioned legacy env by design** (ADR 0024), so
+   disabling the legacy pair still breaks the nine functions' own database access. This
+   step waits until those clients are moved onto `sb_secret_` deliberately, its own
+   change, not a checkbox here.
 
-**Until step 3, do not press "Disable JWT-based API keys".** The app and the website (and
-any function's INTERNAL client, which still reads the legacy env by design) authenticate
-with legacy keys until their phases swap them.
+**Until step 3, do not press "Disable JWT-based API keys".**
 
 ## Phase 5 · Retire the old project
 
