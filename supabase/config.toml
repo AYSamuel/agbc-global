@@ -549,6 +549,13 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
+# The broadcast fan-out (docs/spec/15, `17` §2; W3.5 slice 2). Cron-invoked every minute,
+# the shortest tick in the project: a leader who has just been approved is watching for the
+# message to land.
+[functions.broadcast-fanout]
+enabled = true
+verify_jwt = false
+
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
 # by the member right after uploading, with THEIR access token: the function
 # validates it with auth.getUser, resolves the real user and refuses any path

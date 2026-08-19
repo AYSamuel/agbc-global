@@ -394,6 +394,7 @@ export type Database = {
       broadcasts: {
         Row: {
           approved_by: string | null
+          attempts: number
           author_id: string
           body: string
           body_de: string | null
@@ -414,6 +415,7 @@ export type Database = {
         }
         Insert: {
           approved_by?: string | null
+          attempts?: number
           author_id: string
           body: string
           body_de?: string | null
@@ -434,6 +436,7 @@ export type Database = {
         }
         Update: {
           approved_by?: string | null
+          attempts?: number
           author_id?: string
           body?: string
           body_de?: string | null
@@ -2241,6 +2244,23 @@ export type Database = {
         Args: { milestone_kind: string; target: string }
         Returns: undefined
       }
+      broadcast_next_push_chunk: {
+        Args: { broadcast: string; chunk_size?: number }
+        Returns: {
+          body: string
+          deep_link: string
+          delivery_id: string
+          device_id: string
+          expo_push_token: string
+          notification_id: string
+          title: string
+          type: string
+        }[]
+      }
+      broadcast_prepare_deliveries: {
+        Args: { broadcast: string }
+        Returns: number
+      }
       broadcast_recipient_count: {
         Args: { broadcast: string }
         Returns: number
@@ -2250,6 +2270,13 @@ export type Database = {
         Returns: {
           language: string
           profile_id: string
+        }[]
+      }
+      broadcasts_in_flight: {
+        Args: never
+        Returns: {
+          attempts: number
+          id: string
         }[]
       }
       caller_branch_live: { Args: never; Returns: string }
@@ -2266,6 +2293,7 @@ export type Database = {
         Args: { job_name: string; lease?: string }
         Returns: boolean
       }
+      count_broadcast_attempt: { Args: { broadcast: string }; Returns: number }
       current_audit_request: { Args: never; Returns: string }
       custom_access_token: { Args: { event: Json }; Returns: Json }
       daily_verse_depth: {
@@ -2300,6 +2328,10 @@ export type Database = {
         Args: { starts_at_local: string; tz: string }
         Returns: string
       }
+      finish_broadcast: {
+        Args: { broadcast: string; max_attempts?: number }
+        Returns: Database["public"]["Enums"]["broadcast_status"]
+      }
       halt_broadcast: { Args: { broadcast: string }; Returns: undefined }
       import_daily_verses: {
         Args: { batch: Json; dry_run?: boolean; replace_existing?: boolean }
@@ -2318,6 +2350,7 @@ export type Database = {
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      mark_broadcast_deliveries: { Args: { results: Json }; Returns: number }
       mark_push_tickets_processed: { Args: { results: Json }; Returns: number }
       mint_course_handoff: {
         Args: { p_course_slug: string; p_profile: string }
