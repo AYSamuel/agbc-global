@@ -22,10 +22,12 @@ import { ensureNotificationChannels } from './channels';
 import {
   notificationsModule,
   type NotificationResponse,
+  type ReceivedNotification,
 } from './expoNotifications';
 import { deepLinkFromData, notificationIdFromData } from './deepLinks';
 import { markReadFromTap } from './nc';
 import { usePendingDeepLinkStore } from './pendingDeepLink';
+import { foregroundBehaviour } from './foreground';
 import { registerPushToken } from './token';
 
 /** Broadcast categories, for the two broadcast-specific analytics events. */
@@ -46,6 +48,27 @@ export function useNotifications(): void {
   // some platforms, the listener. Remembering what has been handled keeps one tap from
   // navigating twice.
   const handled = useRef(new Set<string>());
+
+  // (0) Foreground behaviour, set BEFORE anything can arrive.
+  //
+  // Without a handler, expo-notifications shows nothing while the app is open, which is
+  // how a delivered push became an invisible one (found on device 2026-08-20). The
+  // decision is per category and lives in `foreground.ts`; this only wires it.
+  //
+  // Set once, outside the effects that depend on language or auth: a handler that is
+  // re-registered on every render is a handler that can be missing between renders. The
+  // callback must answer within three seconds or the notification is DISCARDED, so it is
+  // a pure lookup with nothing async in it.
+  useEffect(() => {
+    const Notifications = notificationsModule();
+    if (!Notifications) return;
+    Notifications.setNotificationHandler({
+      handleNotification: (notification: ReceivedNotification) =>
+        Promise.resolve(
+          foregroundBehaviour(typeFromData(notification.request.content.data)),
+        ),
+    });
+  }, []);
 
   // (1) Channels. Re-run on language change too: setNotificationChannelAsync updates a
   // channel's NAME and DESCRIPTION in place, so a member who switches to Deutsch sees
