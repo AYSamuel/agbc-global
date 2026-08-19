@@ -330,6 +330,152 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_deliveries: {
+        Row: {
+          broadcast_id: string
+          channel: Database["public"]["Enums"]["delivery_channel"]
+          created_at: string
+          device_id: string | null
+          error: string | null
+          id: string
+          profile_id: string
+          status: Database["public"]["Enums"]["delivery_status"]
+          ticket_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          broadcast_id: string
+          channel: Database["public"]["Enums"]["delivery_channel"]
+          created_at?: string
+          device_id?: string | null
+          error?: string | null
+          id?: string
+          profile_id: string
+          status?: Database["public"]["Enums"]["delivery_status"]
+          ticket_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          broadcast_id?: string
+          channel?: Database["public"]["Enums"]["delivery_channel"]
+          created_at?: string
+          device_id?: string | null
+          error?: string | null
+          id?: string
+          profile_id?: string
+          status?: Database["public"]["Enums"]["delivery_status"]
+          ticket_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_deliveries_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_deliveries_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_deliveries_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcasts: {
+        Row: {
+          approved_by: string | null
+          author_id: string
+          body: string
+          body_de: string | null
+          body_fr: string | null
+          body_nl: string | null
+          branch_id: string | null
+          channels: string[]
+          created_at: string
+          id: string
+          link: string | null
+          recipient_count: number | null
+          review_note: string | null
+          scope: Database["public"]["Enums"]["broadcast_scope"]
+          sent_at: string | null
+          status: Database["public"]["Enums"]["broadcast_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          author_id: string
+          body: string
+          body_de?: string | null
+          body_fr?: string | null
+          body_nl?: string | null
+          branch_id?: string | null
+          channels?: string[]
+          created_at?: string
+          id?: string
+          link?: string | null
+          recipient_count?: number | null
+          review_note?: string | null
+          scope: Database["public"]["Enums"]["broadcast_scope"]
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["broadcast_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          author_id?: string
+          body?: string
+          body_de?: string | null
+          body_fr?: string | null
+          body_nl?: string | null
+          branch_id?: string | null
+          channels?: string[]
+          created_at?: string
+          id?: string
+          link?: string | null
+          recipient_count?: number | null
+          review_note?: string | null
+          scope?: Database["public"]["Enums"]["broadcast_scope"]
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["broadcast_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcasts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcasts_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_versions: {
         Row: {
           active: boolean
@@ -1077,6 +1223,13 @@ export type Database = {
           type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "notifications_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notifications_profile_id_fkey"
             columns: ["profile_id"]
@@ -2052,6 +2205,7 @@ export type Database = {
     }
     Functions: {
       advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
+      approve_broadcast: { Args: { broadcast: string }; Returns: undefined }
       assert_consent_covers_photo: {
         Args: { target_version: string }
         Returns: undefined
@@ -2086,6 +2240,17 @@ export type Database = {
       award_milestone: {
         Args: { milestone_kind: string; target: string }
         Returns: undefined
+      }
+      broadcast_recipient_count: {
+        Args: { broadcast: string }
+        Returns: number
+      }
+      broadcast_recipients: {
+        Args: { broadcast: string }
+        Returns: {
+          language: string
+          profile_id: string
+        }[]
       }
       caller_branch_live: { Args: never; Returns: string }
       caller_is_admin_live: { Args: never; Returns: boolean }
@@ -2135,6 +2300,7 @@ export type Database = {
         Args: { starts_at_local: string; tz: string }
         Returns: string
       }
+      halt_broadcast: { Args: { broadcast: string }; Returns: undefined }
       import_daily_verses: {
         Args: { batch: Json; dry_run?: boolean; replace_existing?: boolean }
         Returns: Json
@@ -2240,6 +2406,10 @@ export type Database = {
           profile_id: string
         }[]
       }
+      reject_broadcast: {
+        Args: { broadcast: string; note: string }
+        Returns: undefined
+      }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
       rhythm_gathering_rungs: { Args: { total: number }; Returns: number[] }
       rhythm_state: {
@@ -2292,6 +2462,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_broadcast: { Args: { broadcast: string }; Returns: undefined }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
@@ -2313,6 +2484,15 @@ export type Database = {
       attendance_source: "here_button" | "live_watch"
       branch_request_status: "pending" | "approved" | "rejected" | "cancelled"
       branch_status: "active" | "archived"
+      broadcast_scope: "branch" | "ministry"
+      broadcast_status:
+        | "draft"
+        | "pending_approval"
+        | "rejected"
+        | "sending"
+        | "sent"
+        | "halted"
+        | "failed"
       content_status: "pending" | "approved" | "rejected" | "removed"
       course_registration_link_method:
         | "handoff"
@@ -2321,6 +2501,8 @@ export type Database = {
         | "leader"
       course_registration_source: "app" | "website" | "import"
       course_registration_status: "pending" | "confirmed" | "cancelled"
+      delivery_channel: "push" | "in_app"
+      delivery_status: "pending" | "sent" | "failed"
       device_platform: "ios" | "android"
       event_status: "scheduled" | "cancelled"
       intercession_state: "committed" | "prayed"
@@ -2468,6 +2650,16 @@ export const Constants = {
       attendance_source: ["here_button", "live_watch"],
       branch_request_status: ["pending", "approved", "rejected", "cancelled"],
       branch_status: ["active", "archived"],
+      broadcast_scope: ["branch", "ministry"],
+      broadcast_status: [
+        "draft",
+        "pending_approval",
+        "rejected",
+        "sending",
+        "sent",
+        "halted",
+        "failed",
+      ],
       content_status: ["pending", "approved", "rejected", "removed"],
       course_registration_link_method: [
         "handoff",
@@ -2477,6 +2669,8 @@ export const Constants = {
       ],
       course_registration_source: ["app", "website", "import"],
       course_registration_status: ["pending", "confirmed", "cancelled"],
+      delivery_channel: ["push", "in_app"],
+      delivery_status: ["pending", "sent", "failed"],
       device_platform: ["ios", "android"],
       event_status: ["scheduled", "cancelled"],
       intercession_state: ["committed", "prayed"],

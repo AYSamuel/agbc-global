@@ -111,6 +111,14 @@ select lives_ok(
             'prayer.someone_prayed', '/family/prayer/2')$$,
   'a null dedupe_key never collides: the partial index ignores it');
 
+-- A REAL broadcast row since W3.5 slice 1 (20260819180000) gave broadcast_id its foreign
+-- key. This fixture used to be a fabricated uuid, which was fine only for as long as there
+-- was no table to point at; the FK turning that into a failure is the FK working.
+insert into public.broadcasts (id, author_id, scope, title, body)
+values ('97000000-0000-4000-8000-0000000000f1',
+        '97000000-0000-4000-8000-00000000000a', 'ministry',
+        'Global gathering', 'Sunday, all branches');
+
 insert into public.notifications
   (profile_id, type, title, body, broadcast_id, deep_link, created_at)
 values
