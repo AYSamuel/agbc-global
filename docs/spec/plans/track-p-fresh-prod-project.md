@@ -209,7 +209,29 @@ reaches AUTH-3, **which Phase 2 now closes with a REAL sign-in** rather than a b
 
 ---
 
-## Phase 2 · Edge functions, secrets, vault
+## Phase 2 · Edge functions, secrets, vault · DONE 2026-08-19
+
+**Everything below is done.** The record of HOW, including the discovery that pulled ADR
+0024's migration into this phase (the platform's stale, unrecoverable, unrotatable env copy
+of the legacy service-role key), lives in that ADR's amendment and migration
+`20260819100000`. Execution notes beyond the ADR:
+
+- All nine function secrets set in one `--env-file` push (digest-verified); four
+  healthchecks.io checks created (`prod-moderation-alerts` 1h, `prod-verse-monitor` 1d,
+  `prod-streak-recompute` 1w, `prod-push-receipts` 15m). The brief's "two checks" dated from
+  W2.7; four jobs are scheduled now and each pings on every run, no-ops included.
+- Vault armed with `project_url` + `secret_key` (the `sb_secret_` default key). Verified
+  live: manual `verse-monitor` invoke returned 200, then three UNPROMPTED cron ticks
+  (00:07 moderation-alerts, 00:18 and 00:33 push-receipts) all 200.
+- The hosted-auth audit (management API, field by field against `config.toml`) found and
+  fixed three drifts: `mailer_otp_exp` 3600→600, `smtp_max_frequency` 60→30 (the app's
+  resend button counts down 30s), `site_url` localhost→`https://agbcglobal.com`. All
+  recorded in `credentials.md`'s hosted-settings table.
+- YouTube sync ran once through the job path: 100 sermons upserted, `audio_path` null on
+  all (the no-sermon-audio rule holding).
+- `prod-moderation-alerts` is PAUSED in healthchecks.io: with zero admin profiles the job
+  pings failure by design ("nothing can escalate"). Un-pausing is a Phase 4 item, after
+  the first production admin onboards.
 
 `supabase-deploy.yml` line 34 still reads *"`supabase functions deploy` joins here when the
 first edge function lands (W1.3)"*. Nine functions later it never did, so **nothing deploys
@@ -254,9 +276,27 @@ send email and cannot be verified without it.
 
 ---
 
-## Phase 3 · Move the website
+## Phase 3 · Move the website · DONE 2026-08-19
 
-The whole move: **two env vars, two tables, no storage.**
+The whole move: **two env vars, two tables, no storage.** It executed even smaller than
+written:
+
+1. ~~Regenerate `database.types.ts`~~ **Nothing to regenerate**: generated types from the
+   new project and field-set-diffed them against the website's hand-authored file. Both
+   tables (Row/Insert/Update), all three enums and `redeem_course_handoff` are IDENTICAL,
+   so the website needed zero code change. The contract test (`039`) earning its keep.
+2. Vercel updated: `PUBLIC_SUPABASE_URL` → the new ref; `SUPABASE_SERVICE_ROLE_KEY` →
+   **a dedicated `sb_secret_` key named `website`** (per this plan's amended Phase 4.5 step
+   1; minted via the management API so the value stayed out of the assistant transcript;
+   supabase-js 2.108 takes it natively). The env var NAME stays: it is what the code reads.
+3. Redeployed and verified against the live site: giving page renders; a test donation
+   wrote a `paid` row (`cs_test_`, `source='web'`); a test registration wrote a `paid` +
+   `pending` UNLINKED row (`source='website'`, `profile_id` null, exactly ADR 0017's
+   admin-only state); both thank-you emails arrived.
+4. The old project stays paused and untouched (Phase 5's).
+5. The backup pipeline had already moved (2026-08-18: `backup.yml`'s ref-derived endpoint
+   + bucket-aware assert were in place, all four secrets re-pointed, manual run green).
+   The plan's warning stands recorded; nothing was left pointing at the old project.
 
 1. In `Desktop/agbc`: regenerate `src/lib/server/database.types.ts` against the new project.
 2. Update Vercel: `PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
@@ -294,11 +334,19 @@ The whole move: **two env vars, two tables, no storage.**
 ## Phase 4 · Point the app at production, and close W3.3
 
 1. `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` into **EAS preview env** and the
-   local `.env`.
+   local `.env`. **The key is the `sb_publishable_` key, not the legacy anon** (ADR 0024,
+   landed early; this step is what retires the app's last legacy-key dependency besides the
+   functions' internal clients).
 2. `eas build --platform android --profile preview`.
 3. Install and **test the notification tap**, the one W3.3 Done criterion still open. If it
    works, the gap was a dev-client artefact and slice 4's caveat lifts. If it does not, there
    is a real bug and this is finally an environment where it can be found.
+4. **Onboard the first production admin** (the break-glass checklist in `credentials.md`
+   starts with mobile onboarding), then **un-pause `prod-moderation-alerts`** on
+   healthchecks.io: it is paused because with zero admins the job pings failure by design.
+5. **Flip `COURSE_HANDOFF_ENABLED`** on the website (Vercel env + redeploy): the flag from
+   agbc-website #42, parked since 2026-08-10, waiting for an app that can mint tokens
+   against production. Decided 2026-08-19 to flip here rather than at Phase 3.
 
 ---
 
