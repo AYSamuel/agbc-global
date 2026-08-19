@@ -2207,6 +2207,13 @@ export type Database = {
       }
       recompute_all_streaks: { Args: never; Returns: number }
       recompute_streak: { Args: { target: string }; Returns: undefined }
+      reconcile_content_counters: {
+        Args: never
+        Returns: {
+          corrected: number
+          metric: string
+        }[]
+      }
       record_attendance: {
         Args: { p_branch_id: string; p_client_taken_at?: string }
         Returns: {
@@ -2256,6 +2263,14 @@ export type Database = {
           event_title: string
           profile_id: string
           starts_at_local: string
+        }[]
+      }
+      run_retention_purges: {
+        Args: never
+        Returns: {
+          item: string
+          kept: number
+          removed: number
         }[]
       }
       service_reminder_batch: {

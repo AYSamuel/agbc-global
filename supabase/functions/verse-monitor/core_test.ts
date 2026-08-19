@@ -1,6 +1,13 @@
 import { assert, assertEquals, assertStringIncludes } from 'jsr:@std/assert@1';
 
-import { buildVerseAlerts, type DepthRow } from './core.ts';
+import type { OutgoingEmail } from '../_shared/email.ts';
+import {
+  buildCanaryEmail,
+  buildVerseAlerts,
+  isCanaryDay,
+  runCanary,
+  type DepthRow,
+} from './core.ts';
 
 const OPTIONS = {
   from: 'AGBC <alerts@agbcglobal.com>',
@@ -123,4 +130,119 @@ Deno.test('the link goes to the import screen, however the URL was written', () 
 Deno.test('an unknown language code is printed rather than swallowed', () => {
   const [alert] = buildVerseAlerts([depth({ language: 'yo' })], OPTIONS);
   assertStringIncludes(alert.email.text, 'yo runs out on');
+});
+
+Deno.test('the canary is due on Mondays and no other day', () => {
+  // 2026-08-17 is a Monday; the six days around it are not.
+  assertEquals(isCanaryDay(new Date('2026-08-17T07:20:00Z')), true);
+  assertEquals(isCanaryDay(new Date('2026-08-16T07:20:00Z')), false);
+  assertEquals(isCanaryDay(new Date('2026-08-18T07:20:00Z')), false);
+  assertEquals(isCanaryDay(new Date('2026-08-23T07:20:00Z')), false);
+});
+
+Deno.test('the canary is UTC, not the runner’s local midnight', () => {
+  // A Sunday evening in Berlin is already Monday in UTC, and the schedule is UTC.
+  assertEquals(isCanaryDay(new Date('2026-08-17T00:30:00Z')), true);
+  assertEquals(isCanaryDay(new Date('2026-08-17T23:30:00Z')), true);
+});
+
+Deno.test('the canary is from us, to us, and says nothing else', () => {
+  const email = buildCanaryEmail('alerts@agbcglobal.com', new Date('2026-08-17T07:20:00Z'));
+
+  assertEquals(email.from, 'alerts@agbcglobal.com');
+  assertEquals(email.to, 'alerts@agbcglobal.com');
+  assertEquals(email.subject, 'AGBC email canary');
+  // The date is in the body so a stale one in an inbox is obvious.
+  assertEquals(email.text.includes('2026-08-17'), true);
+  // And it explains what its own absence would mean, for whoever finds it in a filter.
+  assertEquals(email.text.includes('sign-in codes'), true);
+});
+
+const MONDAY = new Date('2026-08-17T07:20:00Z');
+const TUESDAY = new Date('2026-08-18T07:20:00Z');
+
+/** Records what the canary did, so all four branches can be driven from a test. */
+function spy() {
+  const pings: boolean[] = [];
+  const sent: OutgoingEmail[] = [];
+  return {
+    pings,
+    sent,
+    ping: (ok: boolean) => {
+      pings.push(ok);
+      return Promise.resolve();
+    },
+    send: (email: OutgoingEmail) => {
+      sent.push(email);
+      return Promise.resolve();
+    },
+  };
+}
+
+Deno.test('on any other day the canary does nothing at all, not even a ping', async () => {
+  const s = spy();
+  const outcome = await runCanary(TUESDAY, {
+    send: s.send,
+    from: 'alerts@agbcglobal.com',
+    ping: s.ping,
+  });
+
+  assertEquals(outcome, 'not due');
+  assertEquals(s.sent.length, 0);
+  // No ping either way: the check's period is weekly, so silence on a Tuesday is expected
+  // and a success ping would reset its clock.
+  assertEquals(s.pings, []);
+});
+
+Deno.test('on Monday it sends itself the canary and pings success', async () => {
+  const s = spy();
+  const outcome = await runCanary(MONDAY, {
+    send: s.send,
+    from: 'alerts@agbcglobal.com',
+    ping: s.ping,
+  });
+
+  assertEquals(outcome, 'sent');
+  assertEquals(s.sent.length, 1);
+  assertEquals(s.sent[0].to, 'alerts@agbcglobal.com');
+  assertEquals(s.pings, [true]);
+});
+
+Deno.test('an unconfigured environment is a FAILED run, not a quiet one', async () => {
+  // ADR 0016 read at its word: a job that finds email unconfigured has not succeeded.
+  const s = spy();
+  const outcome = await runCanary(MONDAY, {
+    send: null,
+    from: 'alerts@agbcglobal.com',
+    ping: s.ping,
+  });
+
+  assertEquals(outcome, 'unconfigured');
+  assertEquals(s.pings, [false]);
+});
+
+Deno.test('a missing from address is the same failure', async () => {
+  const s = spy();
+  const outcome = await runCanary(MONDAY, {
+    send: s.send,
+    from: null,
+    ping: s.ping,
+  });
+
+  assertEquals(outcome, 'unconfigured');
+  assertEquals(s.sent.length, 0);
+  assertEquals(s.pings, [false]);
+});
+
+Deno.test('a send that throws pings failure and never escapes the canary', async () => {
+  // The verse queue still has to be checked afterwards, so this must not rethrow.
+  const s = spy();
+  const outcome = await runCanary(MONDAY, {
+    send: () => Promise.reject(new Error('resend is down')),
+    from: 'alerts@agbcglobal.com',
+    ping: s.ping,
+  });
+
+  assertEquals(outcome, 'failed');
+  assertEquals(s.pings, [false]);
 });
