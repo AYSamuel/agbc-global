@@ -529,6 +529,16 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
+# The two hourly reminders (docs/spec/11, `09` §Prayer commitment; W3.4 slice 2). Same
+# cron-invoked shape.
+[functions.rsvp-reminders]
+enabled = true
+verify_jwt = false
+
+[functions.prayer-reminders]
+enabled = true
+verify_jwt = false
+
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
 # by the member right after uploading, with THEIR access token: the function
 # validates it with auth.getUser, resolves the real user and refuses any path

@@ -2051,6 +2051,7 @@ export type Database = {
       }
     }
     Functions: {
+      advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       assert_consent_covers_photo: {
         Args: { target_version: string }
         Returns: undefined
@@ -2178,6 +2179,19 @@ export type Database = {
       }
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
+      prayer_reminder_batch: {
+        Args: { at_time?: string }
+        Returns: {
+          dedupe_key: string
+          intercession_id: string
+          prayer_id: string
+          profile_id: string
+        }[]
+      }
+      prayer_reminder_next: {
+        Args: { committed_at: string; sent_count: number }
+        Returns: string
+      }
       prune_job_alerts: { Args: never; Returns: number }
       purge_old_notifications: {
         Args: { batch_size?: number; older_than?: string }
@@ -2234,6 +2248,16 @@ export type Database = {
       }
       rhythm_week: { Args: { service_date: string }; Returns: string }
       rhythm_week_rungs: { Args: { weeks: number }; Returns: number[] }
+      rsvp_reminder_batch: {
+        Args: { at_time?: string; lead_hours?: number; tick_minutes?: number }
+        Returns: {
+          dedupe_key: string
+          event_id: string
+          event_title: string
+          profile_id: string
+          starts_at_local: string
+        }[]
+      }
       service_reminder_batch: {
         Args: { at_time?: string; lead_minutes?: number; tick_minutes?: number }
         Returns: {
