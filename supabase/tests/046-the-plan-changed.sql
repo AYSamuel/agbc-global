@@ -23,7 +23,7 @@
 -- its own. Every count below is scoped to this file's own fixtures.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(52);
+select plan(55);
 
 -- ===========================================================================
 -- 0. Fixtures.
@@ -520,6 +520,54 @@ select is(
 
 reset role;
 reset request.jwt.claims;
+
+-- ===========================================================================
+-- 10d. An act with a blast radius carries a name (20260820160000).
+-- ===========================================================================
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"97000000-0000-4000-8000-00000000000f","role":"authenticated"}';
+
+-- The Berlin event, not the ministry-wide one: an UPDATE a leader is not entitled to make
+-- is FILTERED by RLS rather than refused, so it affects zero rows and raises nothing. A
+-- fixture aimed at the wrong event tests the silence instead of the guard (2026-08-20).
+--
+-- The forgery first: a leader naming somebody else as the one who called it off.
+update public.events
+set status = 'cancelled',
+    status_changed_by = '97000000-0000-4000-8000-00000000000a',
+    status_changed_at = '2020-01-01'
+where id = '97000000-0000-4000-8000-0000000000e1';
+
+reset role;
+reset request.jwt.claims;
+
+select is(
+  (select status_changed_by from public.events
+   where id = '97000000-0000-4000-8000-0000000000e1'),
+  '97000000-0000-4000-8000-00000000000f'::uuid,
+  'the guard writes who actually did it, not who the writer named');
+
+select isnt(
+  (select status_changed_at from public.events
+   where id = '97000000-0000-4000-8000-0000000000e1'),
+  '2020-01-01'::timestamptz,
+  'and when it actually happened');
+
+-- An ordinary edit is not an act with a blast radius and leaves the name alone.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"97000000-0000-4000-8000-00000000000f","role":"authenticated"}';
+update public.events set title = 'Night of Worship, renamed'
+where id = '97000000-0000-4000-8000-0000000000e1';
+reset role;
+reset request.jwt.claims;
+
+select is(
+  (select count(*)::int from public.events
+   where id = '97000000-0000-4000-8000-0000000000e1'
+     and status_changed_by = '97000000-0000-4000-8000-00000000000f'),
+  1,
+  'a later edit by anybody does not rewrite who cancelled it');
 
 -- ===========================================================================
 -- 11. Nobody but the job may ask these questions.

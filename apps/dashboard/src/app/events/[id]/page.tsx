@@ -11,6 +11,7 @@ import { authorize } from '@/server/authorize';
 import { loadAudience, loadEvent } from '@/server/events';
 
 import { saveEventAction, setStatusAction } from '../actions';
+import { changedOn } from '../format';
 import { EventForm } from '../EventForm';
 
 export const dynamic = 'force-dynamic';
@@ -82,7 +83,17 @@ export default async function EventPage({
 
       {event.status === 'cancelled' && (
         <div className="pt-4">
-          <Notice tone="bad" title={copy.events.cancelledPill}>
+          <Notice
+            tone="bad"
+            title={
+              event.statusChangedAt
+                ? copy.events.cancelledBy(
+                    event.statusChangedBy ?? copy.events.aMinistryAdmin,
+                    changedOn(event.statusChangedAt),
+                  )
+                : copy.events.cancelledPill
+            }
+          >
             {copy.events.reinstateNote}
           </Notice>
           <form action={setStatusAction} className="mt-3">

@@ -943,6 +943,12 @@ export const copy = {
       'Post the next gathering here and everyone at your branch hears about it. Members see the same list in the app.',
     ministryWide: 'All branches',
     cancelledPill: 'Cancelled',
+    // Who called it off, because cancelling reaches everyone holding an RSVP and an act
+    // with that reach should have a name against it (W3.5 slice 4 follow-up).
+    cancelledBy: (who: string, when: string) => `Cancelled by ${who} · ${when}`,
+    // The fallback when the actor is real but not a name this caller may read: `profiles`
+    // is RLS-scoped, so an admin from another branch is an admin rather than a stranger.
+    aMinistryAdmin: 'a ministry admin',
     rsvpOff: 'No RSVP',
     readOnly: 'A ministry admin runs this one',
     // The form.

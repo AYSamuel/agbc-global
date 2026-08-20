@@ -228,6 +228,8 @@ describe('setEventStatus', () => {
       location: 'Wellington Church',
       status: 'scheduled',
       rsvpEnabled: true,
+      statusChangedBy: null,
+      statusChangedAt: null,
       editable: true,
       ...overrides,
     };

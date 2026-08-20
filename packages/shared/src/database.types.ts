@@ -338,6 +338,7 @@ export type Database = {
           device_id: string | null
           error: string | null
           id: string
+          processed_at: string | null
           profile_id: string
           status: Database["public"]["Enums"]["delivery_status"]
           ticket_id: string | null
@@ -350,6 +351,7 @@ export type Database = {
           device_id?: string | null
           error?: string | null
           id?: string
+          processed_at?: string | null
           profile_id: string
           status?: Database["public"]["Enums"]["delivery_status"]
           ticket_id?: string | null
@@ -362,6 +364,7 @@ export type Database = {
           device_id?: string | null
           error?: string | null
           id?: string
+          processed_at?: string | null
           profile_id?: string
           status?: Database["public"]["Enums"]["delivery_status"]
           ticket_id?: string | null
@@ -951,6 +954,8 @@ export type Database = {
           source: string
           starts_at_local: string
           status: Database["public"]["Enums"]["event_status"]
+          status_changed_at: string | null
+          status_changed_by: string | null
           timezone: string
           title: string
           updated_at: string
@@ -971,6 +976,8 @@ export type Database = {
           source?: string
           starts_at_local: string
           status?: Database["public"]["Enums"]["event_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           timezone: string
           title: string
           updated_at?: string
@@ -991,6 +998,8 @@ export type Database = {
           source?: string
           starts_at_local?: string
           status?: Database["public"]["Enums"]["event_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           timezone?: string
           title?: string
           updated_at?: string
@@ -1001,6 +1010,13 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_status_changed_by_fkey"
+            columns: ["status_changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2429,6 +2445,7 @@ export type Database = {
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
       mark_broadcast_deliveries: { Args: { results: Json }; Returns: number }
+      mark_broadcast_receipts: { Args: { results: Json }; Returns: number }
       mark_event_announced: {
         Args: {
           announced_location: string
@@ -2586,6 +2603,15 @@ export type Database = {
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
+      unprocessed_push_tickets: {
+        Args: { batch?: number }
+        Returns: {
+          device_id: string
+          sent_at: string
+          source: string
+          ticket_id: string
+        }[]
+      }
       update_broadcast_draft: {
         Args: {
           body?: string

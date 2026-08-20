@@ -37,6 +37,9 @@ export interface EventRow {
   location: string;
   status: EventStatus;
   rsvpEnabled: boolean;
+  /** Who cancelled it or put it back on, and when. Null before either has happened. */
+  statusChangedBy: string | null;
+  statusChangedAt: string | null;
   /** True when this caller may edit it: a leader's own branch, or anything for an admin. */
   editable: boolean;
 }
@@ -52,11 +55,13 @@ interface EventRecord {
   location: string;
   status: EventStatus;
   rsvp_enabled: boolean;
+  status_changed_at: string | null;
   branch: { name: string } | null;
+  changedBy: { display_name: string } | null;
 }
 
 const COLUMNS =
-  'id, branch_id, title, description, starts_at_local, ends_at_local, timezone, location, status, rsvp_enabled, branch:branches(name)';
+  'id, branch_id, title, description, starts_at_local, ends_at_local, timezone, location, status, rsvp_enabled, status_changed_at, branch:branches(name), changedBy:profiles!events_status_changed_by_fkey(display_name)';
 
 function toRow(record: EventRecord, caller: Caller): EventRow {
   return {
@@ -71,6 +76,12 @@ function toRow(record: EventRecord, caller: Caller): EventRow {
     location: record.location,
     status: record.status,
     rsvpEnabled: record.rsvp_enabled,
+    // Null when nobody has cancelled it, when a trusted caller did (a seed, a job), or when
+    // the name is one this caller may not read: `profiles` is RLS-scoped, so an admin from
+    // another branch can be the actor without being disclosable. The screen says "a
+    // ministry admin" rather than pretending nobody did it.
+    statusChangedBy: record.changedBy?.display_name ?? null,
+    statusChangedAt: record.status_changed_at,
     editable: canEdit(record.branch_id, caller),
   };
 }

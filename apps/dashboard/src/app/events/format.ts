@@ -35,3 +35,24 @@ export function eventWhen(startsAtLocal: string): string {
     timeZone: 'UTC',
   }).format(carrier);
 }
+
+/**
+ * An INSTANT, in the reader's own zone: "Thu 20 Aug, 10:05".
+ *
+ * Deliberately not `eventWhen`, and the difference is the whole reason both exist. An
+ * event's start is a wall clock in the branch's zone and is never converted; a status stamp
+ * is a moment that actually happened, so it reads correctly for whoever is looking at it.
+ * Passing one to the other is a category error that prints a plausible wrong time, which is
+ * the worst kind.
+ *
+ * `en-GB` like every other date in this dashboard (`verses/format.ts` records why).
+ */
+export function changedOn(isoTimestamp: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(isoTimestamp));
+}
