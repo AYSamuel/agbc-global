@@ -29,7 +29,9 @@ function receipt(
 
 Deno.test('a delivered receipt is processed and touches no device', () => {
   const plan = planSweep(tickets, [receipt('t-ok', 'ok')]);
-  assertEquals(plan.processed, [{ ticketId: 't-ok', error: null }]);
+  assertEquals(plan.processed, [
+    { ticketId: 't-ok', error: null, source: 'ticket' },
+  ]);
   assertEquals(plan.deadDevices, []);
   assertEquals(plan.errored, 0);
 });
@@ -51,7 +53,11 @@ Deno.test('MessageTooBig is our bug and never costs a member their registration'
   const plan = planSweep(tickets, [receipt('t-big', 'error', 'MessageTooBig')]);
   assertEquals(plan.deadDevices, []);
   assertEquals(plan.errored, 1);
-  assertEquals(plan.processed[0], { ticketId: 't-big', error: 'MessageTooBig' });
+  assertEquals(plan.processed[0], {
+    ticketId: 't-big',
+    error: 'MessageTooBig',
+    source: 'ticket',
+  });
 });
 
 Deno.test('a credentials failure is counted apart and prunes nothing', () => {
@@ -96,6 +102,50 @@ Deno.test('the alarm needs both a real rate and a real sample', () => {
     false,
   );
   assertEquals(shouldAlarm({ sent: 100, errored: 11, ratio: 0.11 }), true);
+});
+
+Deno.test('an answer goes back to the ledger its ticket came from', () => {
+  // The sweep reads both ledgers in one pass (20260820140000), and the two are stamped by
+  // different functions. A source carried on the ticket is what keeps a broadcast receipt
+  // from being written against `push_tickets`, where it would match nothing and be asked
+  // about again for ever.
+  const plan = planSweep(
+    [
+      { ticket_id: 't-auto', device_id: 'd-1', source: 'ticket' },
+      { ticket_id: 't-cast', device_id: 'd-2', source: 'broadcast' },
+    ],
+    [
+      { ticketId: 't-auto', status: 'ok' },
+      { ticketId: 't-cast', status: 'error', error: 'DeviceNotRegistered' },
+    ],
+  );
+
+  assertEquals(plan.processed, [
+    { ticketId: 't-auto', error: null, source: 'ticket' },
+    { ticketId: 't-cast', error: 'DeviceNotRegistered', source: 'broadcast' },
+  ]);
+});
+
+Deno.test('a dead token is pruned whichever ledger paid for the push', () => {
+  // The bug this closes: a member whose only pushes were broadcasts kept their
+  // registration for ever, because nothing ever read their receipts.
+  const plan = planSweep(
+    [{ ticket_id: 't-cast', device_id: 'd-2', source: 'broadcast' }],
+    [{ ticketId: 't-cast', status: 'error', error: 'DeviceNotRegistered' }],
+  );
+
+  assertEquals(plan.deadDevices, ['d-2']);
+});
+
+Deno.test('a ticket with no source is treated as the automated ledger', () => {
+  // Rows written before the second ledger existed carry no source, and the older meaning
+  // is the safe one: `push_tickets` is where every ticket lived until W3.5.
+  const plan = planSweep(
+    [{ ticket_id: 't-old', device_id: 'd-1' }],
+    [{ ticketId: 't-old', status: 'ok' }],
+  );
+
+  assertEquals(plan.processed[0].source, 'ticket');
 });
 
 Deno.test('the alert carries numbers and names both likely causes, and no PII', () => {
