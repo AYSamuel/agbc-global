@@ -78,6 +78,28 @@
         "body": "{{branch}}"
       }
     },
+    "event": {
+      "posted": {
+        "title": "Neu: {{event}}",
+        "body": "{{when}} in deiner Gemeinde"
+      },
+      "posted_ministry": {
+        "title": "Die ganze Familie: {{event}}",
+        "body": "{{when}}, alle Gemeinden gemeinsam"
+      },
+      "moved": {
+        "title": "{{event}} wurde verlegt",
+        "body": "Jetzt {{when}}"
+      },
+      "cancelled": {
+        "title": "{{event}} fällt aus",
+        "body": "Tippe, um zu sehen, was sonst ansteht"
+      },
+      "reinstated": {
+        "title": "{{event}} findet doch statt",
+        "body": "{{when}}, wie zuvor"
+      }
+    },
     "rsvp": {
       "reminder": {
         "title": "{{event}} steht bevor",

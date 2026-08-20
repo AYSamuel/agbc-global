@@ -40,6 +40,7 @@ import {
   resolveDeepLink,
 } from '@/features/notifications/deepLinks';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
+import { useFormattingLocale } from '@/i18n';
 import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
@@ -94,8 +95,9 @@ function NotificationRowView({
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const locale = useFormattingLocale();
   const time = useRelativeAgeLabel(row.createdAt);
-  const rendered = renderNotification(t, row);
+  const rendered = renderNotification(t, row, locale);
   const tint = tintForType(row.type);
   const unread = row.readAt === null;
 

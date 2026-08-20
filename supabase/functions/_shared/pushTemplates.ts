@@ -181,6 +181,82 @@ const TEMPLATES: Record<string, Template> = {
       fr: '{course}',
     },
   },
+  // The four event notices (W3.5 slice 4, docs/spec/11). `{event}` is the church's own
+  // published title and `{when}` its start, formatted per recipient language by
+  // `formatWhen` below: neither is member data, and both are the whole point of the
+  // notification, so `15`'s payload rule is satisfied by carrying them rather than by
+  // hiding them behind "tap to see" (decided with Ayo 2026-08-20).
+  'event.posted': {
+    title: {
+      en: 'New: {event}',
+      de: 'Neu: {event}',
+      nl: 'Nieuw: {event}',
+      fr: 'Nouveau : {event}',
+    },
+    body: {
+      en: '{when} at your branch',
+      de: '{when} in deiner Gemeinde',
+      nl: '{when} bij jouw locatie',
+      fr: '{when} dans votre branche',
+    },
+  },
+  'event.posted_ministry': {
+    title: {
+      en: 'The whole family: {event}',
+      de: 'Die ganze Familie: {event}',
+      nl: 'De hele familie: {event}',
+      fr: 'Toute la famille : {event}',
+    },
+    body: {
+      en: '{when}, every branch together',
+      de: '{when}, alle Gemeinden gemeinsam',
+      nl: '{when}, alle locaties samen',
+      fr: '{when}, toutes les branches ensemble',
+    },
+  },
+  'event.moved': {
+    title: {
+      en: '{event} has moved',
+      de: '{event} wurde verlegt',
+      nl: '{event} is verplaatst',
+      fr: '{event} a été déplacé',
+    },
+    body: {
+      en: 'Now {when}',
+      de: 'Jetzt {when}',
+      nl: 'Nu {when}',
+      fr: 'Maintenant {when}',
+    },
+  },
+  'event.cancelled': {
+    // Never "we cancelled on you": the member gets the fact and a way onward, in one line.
+    title: {
+      en: '{event} is cancelled',
+      de: '{event} fällt aus',
+      nl: '{event} gaat niet door',
+      fr: '{event} est annulé',
+    },
+    body: {
+      en: 'Tap to see what else is on',
+      de: 'Tippe, um zu sehen, was sonst ansteht',
+      nl: 'Tik om te zien wat er nog meer is',
+      fr: 'Touchez pour voir ce qui est prévu',
+    },
+  },
+  'event.reinstated': {
+    title: {
+      en: '{event} is back on',
+      de: '{event} findet doch statt',
+      nl: '{event} gaat toch door',
+      fr: '{event} est maintenu',
+    },
+    body: {
+      en: '{when}, as before',
+      de: '{when}, wie zuvor',
+      nl: '{when}, zoals eerder',
+      fr: '{when}, comme prévu',
+    },
+  },
   'purchase.added': {
     title: {
       en: 'Added to your Library',
@@ -204,6 +280,68 @@ const GENERIC: Record<Language, Rendered> = {
   nl: { title: 'AGBC Global', body: 'Je hebt een nieuwe melding' },
   fr: { title: 'AGBC Global', body: 'Vous avez une nouvelle notification' },
 };
+
+/**
+ * Params holding a wall-clock start, formatted per recipient language before interpolation.
+ *
+ * ONE convention rather than a per-template declaration: a param named `when` is an event's
+ * `starts_at_local`, and every renderer that meets it (here, and the app's notification
+ * centre) turns it into words in the reader's own language. The alternative, formatting at
+ * entry-build time, would freeze one language for every recipient of a send, which is
+ * exactly what `15`'s localization rule exists to prevent.
+ */
+const WALL_CLOCK_PARAMS = new Set(['when']);
+
+/**
+ * '2026-09-05T19:00:00' -> 'Sat, 5 Sept, 7:00 pm', in the reader's language.
+ *
+ * THE ZONE IS NOT CONVERTED, deliberately. `02` stores an event as wall clock plus an IANA
+ * zone because that is what survives a change in the zone's law, and `11` shows every event
+ * in ITS OWN zone with a label. So the parts are carried into a UTC instant and formatted as
+ * UTC: no arithmetic, no offset, and the same string the app's own event screens print
+ * (`apps/mobile/src/features/events/format.ts` uses the identical carrier trick).
+ *
+ * An unparseable value returns '' rather than throwing: `interpolate` then drops the
+ * placeholder and the sentence still reads, which is this module's rule for everything.
+ *
+ * THE LANGUAGE IS ALL WE HAVE, and the app has more. `profiles.language` is a language, so
+ * an English reader here gets `en` conventions where the app would give their device's own
+ * region (`i18n/index.ts`'s formattingLocale, decided 2026-08-08). A push may therefore say
+ * "7:00 pm" where the same row reads "19:00" in the centre on a UK phone. Accepted rather
+ * than overlooked: the server cannot know a device's region, and the alternative is storing
+ * one on every profile to make two clocks agree.
+ */
+export function formatWhen(value: string, language: Language): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(value);
+  if (!match) return '';
+  const [, year, month, day, hour, minute] = match;
+  const carrier = new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute)),
+  );
+  try {
+    return new Intl.DateTimeFormat(language, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'UTC',
+    }).format(carrier);
+  } catch {
+    return '';
+  }
+}
+
+function localizeParams(params: TemplateParams, language: Language): TemplateParams {
+  let localized: TemplateParams | null = null;
+  for (const key of WALL_CLOCK_PARAMS) {
+    const value = params[key];
+    if (typeof value !== 'string') continue;
+    localized ??= { ...params };
+    localized[key] = formatWhen(value, language);
+  }
+  return localized ?? params;
+}
 
 function selectForm(form: Form, language: Language, params: TemplateParams): string {
   if (typeof form === 'string') return form;
@@ -247,13 +385,14 @@ export function renderTemplate(
     return GENERIC[lang];
   }
 
+  const values = localizeParams(params, lang);
   const title = interpolate(
-    selectForm(template.title[lang] ?? template.title[FALLBACK], lang, params),
-    params,
+    selectForm(template.title[lang] ?? template.title[FALLBACK], lang, values),
+    values,
   );
   const body = interpolate(
-    selectForm(template.body[lang] ?? template.body[FALLBACK], lang, params),
-    params,
+    selectForm(template.body[lang] ?? template.body[FALLBACK], lang, values),
+    values,
   );
 
   // An empty title would render as the app name alone on Android and as nothing on iOS.

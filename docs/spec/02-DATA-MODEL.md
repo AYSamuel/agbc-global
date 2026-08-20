@@ -414,9 +414,11 @@ Free for everyone (unlike devotionals). Translation: **WEB (World English Bible)
 | ends_at_local | timestamp null | |
 | location | text | |
 | image_url | text null | |
-| status | enum | `scheduled` \| `cancelled`: published events with RSVPs are cancelled, never hard-deleted; cancellation and time/venue changes auto-notify non-cancelled RSVPs (`11`/`17`) |
+| status | enum | `scheduled` \| `cancelled`: published events with RSVPs are cancelled, never hard-deleted; cancellation and time/venue changes auto-notify non-cancelled RSVPs (`11`/`17`, built W3.5 slice 4 as the `event-notices` job) |
 | rsvp_enabled | bool | |
 | source | text | `manual` v1 (`sanity` reserved for a post-v1 sync, see `11`) |
+| announced_status / announced_starts_at_local / announced_location | enum / timestamp / text, all null | **The plan as last announced** (W3.5 slice 4). Server-written only: the update guard restores them whenever `auth.uid()` is set, because a leader who could edit them could silence the cancellation of their own event. All three NULL means nobody has been told this event exists, which is what makes the posting notice due. "What they were told is not what is true" IS the `event-notices` job's work list, and it is why cancelling and reinstating inside the settle window announces nothing: the plan came back to itself |
+| notice_revision | integer, default 1 | Bumped by the update guard on a plan change (status, start, zone, location) and used for NOTHING except keeping a dedupe key unique: 18:00 -> 19:00 -> 18:00 -> 19:00 would otherwise reuse a key and the fourth notice would be swallowed. It never decides whether to send |
 
 ### `rsvps`
 | field | type | notes |
@@ -499,12 +501,12 @@ Localization model: automated notifications store a **template key + params**, r
 |-------|------|-------|
 | id | uuid PK | |
 | profile_id | uuid FK | recipient |
-| type | text | pref-gated: `prayer`, `testimony_glory`, `event`, `ministry`, `branch`, `service_reminder`; transactional (always-on channel, `15`): `moderation`, `rsvp_reminder`, `registration`, `purchase` |
+| type | text | pref-gated: `prayer`, `testimony_glory`, `event`, `ministry`, `branch`, `service_reminder`; transactional (always-on channel, `15`): `moderation`, `rsvp_reminder`, `registration`, `purchase`, `event_change`. **`event` is a NEW event posted and `event_change` is a change to one somebody RSVP'd to** (W3.5 slice 4): the first is news and gates on `branch_updates` (or `ministry_announcements`, when the event is ministry-wide and the type is `ministry`), the second answers an action the member took and gates on nothing, because a member who turned branch news off would otherwise turn up at a locked door |
 | template_key | text null | automated notifications (e.g. `prayer.someone_prayed`) |
 | params | jsonb null | template parameters (never special-category content; push payloads stay generic, body fetched in-app: `15`/`20`) |
 | title / body | text null | manual broadcasts only (pre-rendered per recipient language at fan-out) |
 | broadcast_id | uuid FK null | unique(profile_id, broadcast_id): fan-out re-runs never double-write |
-| dedupe_key | text null | partial unique `(profile_id, dedupe_key) where dedupe_key is not null`; automated jobs write deterministic keys so re-runs never double-send (`21` §5). **Rule: keys for time-bound sends embed the occurrence they announce, INCLUDING its local start time** (`service_reminder:<branch_id>:<YYYY-MM-DD>T<HH24:MI>`, `rsvp_reminder:<event_id>:<starts_at_local>`), so a rescheduled event mints a new key and its reminder is NOT swallowed by the old one. **The service key carried only the date until 2026-08-19** (W3.4 slice 1), which could not keep that promise: two services on one date at one branch shared a key, so the evening one was never announced, and a service moved from 11:00 to 18:00 on the same date was swallowed by its own earlier reminder, which is the exact case the rule is about |
+| dedupe_key | text null | partial unique `(profile_id, dedupe_key) where dedupe_key is not null`; automated jobs write deterministic keys so re-runs never double-send (`21` §5). **Rule: keys for time-bound sends embed the occurrence they announce, INCLUDING its local start time** (`service_reminder:<branch_id>:<YYYY-MM-DD>T<HH24:MI>`, `rsvp_reminder:<event_id>:<starts_at_local>`), so a rescheduled event mints a new key and its reminder is NOT swallowed by the old one. **The event notices (W3.5 slice 4) carry the occurrence AND a revision** (`event_moved:<event_id>:<YYYY-MM-DD>T<HH24:MI>:r<n>`), because the occurrence alone cannot separate two announcements of the same start: an event moved to 19:00, back to 18:00 and to 19:00 again reuses its key on the third move, and the members who were told 18:00 would never hear otherwise. **The service key carried only the date until 2026-08-19** (W3.4 slice 1), which could not keep that promise: two services on one date at one branch shared a key, so the evening one was never announced, and a service moved from 11:00 to 18:00 on the same date was swallowed by its own earlier reminder, which is the exact case the rule is about |
 | deep_link | text | expo-router path (see `15`) |
 | read_at | timestamptz null | |
 

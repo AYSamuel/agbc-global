@@ -556,6 +556,13 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
+# Event notices (docs/spec/11, `17` §3; W3.5 slice 4). Cron-invoked every minute, like the
+# fan-out beside it and for the same reason: a cancellation is time-critical news, and the
+# two-minute settle window has already spent the patience budget on purpose.
+[functions.event-notices]
+enabled = true
+verify_jwt = false
+
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
 # by the member right after uploading, with THEIR access token: the function
 # validates it with auth.getUser, resolves the real user and refuses any path

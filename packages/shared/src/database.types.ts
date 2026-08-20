@@ -936,6 +936,9 @@ export type Database = {
       }
       events: {
         Row: {
+          announced_location: string | null
+          announced_starts_at_local: string | null
+          announced_status: Database["public"]["Enums"]["event_status"] | null
           branch_id: string | null
           created_at: string
           description: string
@@ -943,6 +946,7 @@ export type Database = {
           id: string
           image_url: string | null
           location: string
+          notice_revision: number
           rsvp_enabled: boolean
           source: string
           starts_at_local: string
@@ -952,6 +956,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          announced_location?: string | null
+          announced_starts_at_local?: string | null
+          announced_status?: Database["public"]["Enums"]["event_status"] | null
           branch_id?: string | null
           created_at?: string
           description?: string
@@ -959,6 +966,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string
+          notice_revision?: number
           rsvp_enabled?: boolean
           source?: string
           starts_at_local: string
@@ -968,6 +976,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          announced_location?: string | null
+          announced_starts_at_local?: string | null
+          announced_status?: Database["public"]["Enums"]["event_status"] | null
           branch_id?: string | null
           created_at?: string
           description?: string
@@ -975,6 +986,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string
+          notice_revision?: number
           rsvp_enabled?: boolean
           source?: string
           starts_at_local?: string
@@ -2340,7 +2352,56 @@ export type Database = {
           type: string
         }[]
       }
+      due_event_notices: {
+        Args: { at_time?: string; settle?: string }
+        Returns: {
+          branch_id: string
+          dedupe_key: string
+          event_id: string
+          kind: string
+          location: string
+          starts_at_local: string
+          status: Database["public"]["Enums"]["event_status"]
+          timezone: string
+          title: string
+        }[]
+      }
       email_belongs_to_caller: { Args: { target: string }; Returns: boolean }
+      event_notice_key: {
+        Args: {
+          event_id: string
+          kind: string
+          notice_revision: number
+          starts_at_local: string
+        }
+        Returns: string
+      }
+      event_notice_kind: {
+        Args: {
+          announced_location: string
+          announced_starts_at_local: string
+          announced_status: Database["public"]["Enums"]["event_status"]
+          current_location: string
+          current_starts_at_local: string
+          current_status: Database["public"]["Enums"]["event_status"]
+        }
+        Returns: string
+      }
+      event_notice_recipients: {
+        Args: { chunk_size?: number; event: string }
+        Returns: {
+          profile_id: string
+        }[]
+      }
+      event_posting_audience: { Args: { branch?: string }; Returns: number }
+      event_rsvp_audience: {
+        Args: { event: string }
+        Returns: {
+          going: number
+          interested: number
+          reachable: number
+        }[]
+      }
       event_start_instant: {
         Args: { starts_at_local: string; tz: string }
         Returns: string
@@ -2368,6 +2429,15 @@ export type Database = {
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
       mark_broadcast_deliveries: { Args: { results: Json }; Returns: number }
+      mark_event_announced: {
+        Args: {
+          announced_location: string
+          announced_starts_at_local: string
+          announced_status: Database["public"]["Enums"]["event_status"]
+          event: string
+        }
+        Returns: undefined
+      }
       mark_push_tickets_processed: { Args: { results: Json }; Returns: number }
       mint_course_handoff: {
         Args: { p_course_slug: string; p_profile: string }

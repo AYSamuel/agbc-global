@@ -38,8 +38,14 @@ const INTERRUPTS = new Set(['service_reminder']);
 /**
  * News from the church. They were not looking for it, so a banner is right; a sound is not,
  * because they are already holding the phone.
+ *
+ * `event_change` is here rather than with the quiet transactional confirmations, and it is
+ * the one exception to the rule below (W3.5 slice 4). It IS an answer to something the member
+ * did, which is why it is always-on and gates on no preference; but unlike a registration
+ * confirmed or a post approved, the screen they are looking at is not the one showing it, and
+ * an event they are about to leave for being cancelled is news whatever else is open.
  */
-const ANNOUNCEMENTS = new Set(['ministry', 'branch', 'event']);
+const ANNOUNCEMENTS = new Set(['ministry', 'branch', 'event', 'event_change']);
 
 /**
  * Decide what an arriving notification does while the app is open.

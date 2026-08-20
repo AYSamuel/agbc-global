@@ -43,6 +43,19 @@ describe('foregroundBehaviour', () => {
     }
   });
 
+  it('banners an event notice, though it is a confirmation of sorts', () => {
+    // The one exception to the rule below, and the reason it is worth a test of its own
+    // (W3.5 slice 4): `event_change` DOES answer something the member did, but the screen
+    // they are on is not the one showing it, and an event they are about to leave for
+    // being cancelled is news whatever else is open.
+    expect(foregroundBehaviour('event_change')).toEqual({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: true,
+    });
+  });
+
   it('keeps confirmations out of the way too', () => {
     // Each answers something the member just did, and the screen usually reflects it.
     for (const type of [
@@ -71,6 +84,7 @@ describe('foregroundBehaviour', () => {
       'rsvp_reminder',
       'registration',
       'purchase',
+      'event_change',
       'something_a_later_migration_adds',
     ];
     for (const type of types) {

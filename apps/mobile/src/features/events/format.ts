@@ -136,6 +136,28 @@ export function formatEventDay(startsAtLocal: string, locale: string): string {
 }
 
 /**
+ * 'Sat, 5 Sept, 7:00 pm': the whole start in one line, in the EVENT's own zone.
+ *
+ * The notification centre's line, and the exact counterpart of
+ * `supabase/functions/_shared/pushTemplates.formatWhen`, which renders the same param at
+ * send time (docs/spec/15's localization rule: a notification stores a key and its params
+ * and is put into words per reader, twice, once on each side). The two must agree, so they
+ * carry the same option bag and both use the carrier trick above rather than converting.
+ */
+export function formatEventWhen(startsAtLocal: string, locale: string): string {
+  const wall = parseWallClock(startsAtLocal);
+  if (wall === null) return '';
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(carrier(wall));
+}
+
+/**
  * The event's start as a real instant, for the viewer-local line on
  * ministry-wide events. Two passes: read the zone's offset at a UTC guess,
  * adjust, and re-read so a DST boundary between guess and truth is absorbed.

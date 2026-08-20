@@ -12,6 +12,8 @@
 
 import type { TFunction } from 'i18next';
 
+import { formatEventWhen } from '../events/format';
+
 export interface RenderedNotification {
   title: string;
   body: string;
@@ -36,6 +38,7 @@ export function renderNotification(
     title: string | null;
     body: string | null;
   },
+  locale: string,
 ): RenderedNotification {
   // Pre-rendered broadcast rows: the words already happened at fan-out.
   if (row.templateKey === null) {
@@ -46,11 +49,31 @@ export function renderNotification(
   }
 
   const base = `notifications:templates.${row.templateKey}`;
-  const params = row.params ?? {};
+  const params = localizeParams(row.params ?? {}, locale);
   const title = t(`${base}.title`, { ...params, defaultValue: '' });
   const body = t(`${base}.body`, { ...params, defaultValue: '' });
   if (title === '') return generic(t);
   return { title, body };
+}
+
+/**
+ * Params holding a wall clock become words here, not at send time.
+ *
+ * The server writes `when` as the event's raw `starts_at_local` (W3.5 slice 4), because a
+ * date formatted when the ROW was written would be frozen in one language for every reader
+ * of it. So both renderers format it themselves, from the same value, with the same option
+ * bag: `_shared/pushTemplates.formatWhen` for the push, this for the centre.
+ *
+ * The convention is the param NAME, exactly as on the server. A key that wants a second
+ * date adds its name to both sides on purpose rather than by accident.
+ */
+function localizeParams(
+  params: Record<string, string | number>,
+  locale: string,
+): Record<string, string | number> {
+  const when = params.when;
+  if (typeof when !== 'string') return params;
+  return { ...params, when: formatEventWhen(when, locale) };
 }
 
 function generic(t: TFunction): RenderedNotification {
@@ -79,6 +102,10 @@ export function tintForType(type: string): NotificationTint {
     case 'rsvp_reminder':
     case 'registration':
     case 'purchase':
+    // An event notice answers an RSVP the member made, which is what the blue disc means
+    // here; the postings (`event`, `ministry`) stay on the plain disc below with the rest
+    // of the church's news.
+    case 'event_change':
       return 'txn';
     default:
       // service_reminder, ministry, branch, event, and anything a later
