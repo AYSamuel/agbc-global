@@ -32,12 +32,27 @@ select is(
   '0.0.0/0.0.0',
   'minimum_supported_version is seeded per platform, and both are parseable versions');
 
-select is((select count(*) from public.profiles)::int, 0,
-  'anon sees no profiles');
-select is((select count(*) from public.devices)::int, 0,
-  'anon sees no devices');
-select is((select count(*) from public.notification_prefs)::int, 0,
-  'anon sees no notification prefs');
+-- These three asserted a COUNT OF ZERO until 20260820200000, and the property they name is
+-- unchanged: a guest sees no profiles, no devices and nobody's preferences. What changed is
+-- WHICH LAYER says so. anon used to hold the ambient `all` grant on all three, so the answer
+-- came from RLS filtering every row away; anon now holds no privilege on them at all, so the
+-- answer comes from the grant and arrives as 42501 before any policy is consulted.
+--
+-- Asserting the refusal rather than the empty result is the stronger test, and deliberately
+-- so: an empty count passes just as well when a policy has been widened and the table simply
+-- happens to be empty, which is exactly how a seeded-but-unpopulated table hides a hole.
+select throws_ok(
+  $$select count(*) from public.profiles$$,
+  '42501', null,
+  'anon cannot read profiles at all: refused by the grant, before RLS is asked');
+select throws_ok(
+  $$select count(*) from public.devices$$,
+  '42501', null,
+  'nor devices');
+select throws_ok(
+  $$select count(*) from public.notification_prefs$$,
+  '42501', null,
+  'nor anybody''s notification preferences');
 
 select throws_ok(
   $$insert into public.branches (slug, name, city, country, timezone, lat, lng)
