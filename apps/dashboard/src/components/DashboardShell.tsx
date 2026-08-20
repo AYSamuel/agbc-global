@@ -59,10 +59,13 @@ const BUILT: Destination[] = [
     href: '/broadcasts',
     icon: '✉',
   },
+  // W3.5 slice 4, frames approved 2026-08-20. Linked for every staff caller: a leader runs
+  // their own branch's diary and sees the ministry-wide events their members are invited to,
+  // which is exactly what the app shows those members.
+  { key: 'events', label: copy.nav.events, href: '/events', icon: '☀' },
 ];
 
 const LATER: Destination[] = [
-  { key: 'events', label: copy.nav.events, phase: 'B', icon: '☀' },
   { key: 'branches', label: copy.nav.branches, phase: 'B', icon: '▦' },
   { key: 'library', label: copy.nav.library, phase: 'C', icon: '□' },
   { key: 'insights', label: copy.nav.insights, phase: 'C', icon: '▭' },

@@ -19,8 +19,12 @@ import type { ReactNode, Ref } from 'react';
  *  - `good` greens the icon into a check: the thing worked and the banner says what is
  *    now true. First needed by the sermon-audio "uploaded and read" moment (W3.1 frames,
  *    approved 2026-08-14); until then no banner in this product ever carried good news.
+ *  - `tell` blues the icon into an envelope: this save will REACH somebody. The frame's
+ *    `.banner.tell` (W3.5 slice 4, approved 2026-08-20), and blue for the reason every
+ *    other blue in this file is blue: it classifies rather than warns. Red is kept for the
+ *    cancellation, which is the one that cannot be taken back off a lock screen.
  */
-export type NoticeTone = 'plain' | 'bad' | 'off' | 'good';
+export type NoticeTone = 'plain' | 'bad' | 'off' | 'good' | 'tell';
 
 export interface NoticeProps {
   tone?: NoticeTone;
@@ -52,6 +56,7 @@ const TONES: Record<
   // button, which is what it looked like on the refusal screen (seen 2026-08-01).
   off: { border: 'border-cardline', icon: 'text-muted', glyph: 'ℹ' },
   good: { border: 'border-cardline', icon: 'text-success', glyph: '✓' },
+  tell: { border: 'border-cardline', icon: 'text-blue', glyph: '✉' },
 };
 
 export function Notice({

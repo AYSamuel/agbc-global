@@ -922,6 +922,132 @@ export const copy = {
     },
   },
 
+  /**
+   * Events (docs/spec/17 §3, `11`; frames NEW EVENT / EDIT / CANCEL).
+   *
+   * Every sentence here is really about the audience, because that is what makes this form
+   * different from every other one in the dashboard: an ordinary save reaches phones. The
+   * counts are the SAME ones the notice reaches (`event_rsvp_audience`), so the copy can
+   * promise a number without hedging.
+   */
+  events: {
+    title: 'Events',
+    scope: 'What is on, and who has been told',
+    newEvent: 'New event',
+    open: 'Open',
+    backToEvents: 'Back to events',
+    upcomingHeading: 'Coming up',
+    pastHeading: 'Already happened',
+    emptyTitle: 'Nothing in the diary yet',
+    emptyBody:
+      'Post the next gathering here and everyone at your branch hears about it. Members see the same list in the app.',
+    ministryWide: 'All branches',
+    cancelledPill: 'Cancelled',
+    rsvpOff: 'No RSVP',
+    readOnly: 'A ministry admin runs this one',
+    // The form.
+    createTitle: 'New event',
+    createScope: (branch: string) =>
+      `${branch} · times are this branch's own clock`,
+    ministryScopeNote: 'Ministry-wide · shown to every branch',
+    fields: {
+      scope: 'Who it is for',
+      scopeBranch: 'My branch',
+      scopeMinistry: 'The whole family',
+      scopeHint:
+        'Ministry-wide events are admins only. They show under “All branches” in the app and reach every branch.',
+      scopeLocked:
+        'Who an event is for is fixed once it is posted. Post a new one if it needs to move.',
+      title: 'Title',
+      starts: 'Starts',
+      startsHint: (branch: string) =>
+        `${branch}'s own clock, which is what members read in the app.`,
+      ends: 'Ends (optional)',
+      location: 'Place',
+      description: 'About it',
+      rsvp: 'RSVP',
+      rsvpOn: 'Members can say they are going',
+      rsvpHint:
+        'Turn this off for something nobody needs to book, like a notice. You can still change it later.',
+      picture: 'Picture (optional) · next slice',
+      pictureHint:
+        'Events show the branded cover for now. Uploading a picture arrives with its own storage in the next slice.',
+    },
+    // What a save will do, said before it happens.
+    postingTellsTitle: (count: number) =>
+      `Posting this tells ${String(count)} ${count === 1 ? 'person' : 'people'}.`,
+    postingTellsBody:
+      'Everyone at your branch who has branch updates switched on gets a notification a couple of minutes after you save. Nothing goes out while you are still editing.',
+    postingMinistryBody:
+      'Every branch hears about this one: everyone with ministry announcements switched on gets a notification a couple of minutes after you save.',
+    changeTellsTitle: (count: number) =>
+      `This change tells ${String(count)} ${count === 1 ? 'person' : 'people'}`,
+    // Nobody has said they are coming yet, so there is nothing to warn about. Said out loud
+    // because "this change tells 0 people" reads as a broken counter rather than as calm.
+    changeTellsNobodyTitle: 'Nobody has said they are coming yet',
+    changeTellsNobodyBody:
+      'So a change to the time or the place tells nobody. Once members RSVP, moving it lets them know, about two minutes after you save.',
+    changeTellsBody: (when: string) =>
+      `Change the time or the place and everyone still holding an RSVP is told, about two minutes after you save, so there is time to change your mind. Right now it says ${when}. Editing the description tells nobody.`,
+    goingAndInterested: (going: number, interested: number) =>
+      `${String(going)} going, ${String(interested)} interested`,
+    save: 'Save changes',
+    saving: 'Saving',
+    post: 'Post this event',
+    posting: 'Posting',
+    discard: 'Discard',
+    cancelForm: 'Cancel',
+    // Cancelling.
+    cancelEvent: 'Cancel this event',
+    cancelTitle: (title: string) => `Cancel ${title}?`,
+    cancelStats: {
+      going: 'Said they are going',
+      interested: 'Interested',
+      reachable: 'Will be told',
+    },
+    cancelTellsNobodyTitle: 'Nobody has said they are coming',
+    cancelTellsNobodyBody:
+      'So cancelling tells nobody. It still shows in the app as cancelled, which is what anyone arriving from an old link will see.',
+    cancelWarningTitle: 'Everyone holding an RSVP hears about this',
+    cancelWarningBody: (count: number) =>
+      `All ${String(count)} get “this event is cancelled”, including anyone who has branch updates switched off: they booked, so this one is not theirs to miss. It goes out about two minutes after you confirm, so putting it back on straight away sends nothing at all.`,
+    cancelKeepsTitle: 'The event is not deleted',
+    cancelKeepsBody:
+      'It stays in the app wearing a “Cancelled by the organiser” banner, so an old link still lands somewhere true instead of on a missing page. You can put it back on while its start is still in the future.',
+    cancelConfirm: 'Yes, cancel it',
+    cancelling: 'Cancelling',
+    cancelKeep: 'Keep it on',
+    reinstate: 'Put it back on',
+    reinstating: 'Putting it back on',
+    reinstateNote:
+      'This event is cancelled. Putting it back on tells everyone still holding an RSVP, and only works while its start is in the future.',
+    problems: {
+      title_required: 'Give the event a title before posting it.',
+      starts_required: 'An event needs a start time.',
+      location_required: 'Say where it is, even if that is “online”.',
+      ends_before_start: 'The end time is before the start time.',
+      scope_locked:
+        'Who an event is for cannot change after it is posted. Post a new one instead.',
+      refused:
+        'That is not yours to change. Your role may have changed since this page loaded.',
+      failed: 'Something went wrong and nothing was changed. Try again.',
+    },
+    outcome: {
+      posted: 'Posted. Your branch hears about it in a couple of minutes.',
+      postedMinistry:
+        'Posted. Every branch hears about it in a couple of minutes.',
+      saved: 'Saved.',
+      savedAndTold:
+        'Saved. Everyone holding an RSVP is told in a couple of minutes.',
+      cancelled:
+        'Cancelled. Everyone holding an RSVP is told in a couple of minutes.',
+      reinstated:
+        'Back on. Everyone holding an RSVP is told in a couple of minutes.',
+      alreadyStarted:
+        'That event has already started, so it stays cancelled. Post a new one if it is happening again.',
+    },
+  },
+
   refused: {
     notAdminTitle: 'Roles are handed out by a ministry admin',
     notAdminBody:
