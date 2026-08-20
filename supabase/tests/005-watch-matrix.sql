@@ -60,8 +60,14 @@ select is(
   (select count(*) from public.sermons
     where status = 'available' and youtube_id like 'tap-watch-%')::int,
   2, 'anon reads the available sermons (the rails read path)');
-select is((select count(*) from public.playback_positions)::int, 0,
-  'anon sees no resume positions');
+-- A count of zero until 20260820200000, and now a refusal: anon holds no privilege on this
+-- table at all, so the grant answers before RLS is consulted. Same property, one layer
+-- earlier. `sermon_notes` and `saved_items` below still answer zero rows, because they keep
+-- anon's SELECT deliberately (a guest's query returns empty rather than erroring).
+select throws_ok(
+  $$select count(*) from public.playback_positions$$,
+  '42501', null,
+  'anon cannot read resume positions at all: refused by the grant, before RLS is asked');
 select is((select count(*) from public.sermon_notes)::int, 0,
   'anon sees no sermon notes');
 select is((select count(*) from public.saved_items)::int, 0,
