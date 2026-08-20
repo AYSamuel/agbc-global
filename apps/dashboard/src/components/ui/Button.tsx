@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -20,6 +20,12 @@ const variants: Record<Variant, string> = {
   secondary:
     'border border-cardline bg-card text-text font-semibold hover:bg-alt',
   ghost: 'text-blue font-semibold underline-offset-4 hover:underline',
+  // The mockup's `.btn.danger`: outlined rather than filled, because a destructive control
+  // should be findable without being the thing the eye lands on first. Added for the event
+  // cancellation (W3.5 slice 4); the same treatment was already inlined by three surfaces
+  // that render a `<summary>` or a link rather than a button and so cannot use it.
+  danger:
+    'border border-danger bg-transparent text-danger font-bold hover:bg-danger/10',
 };
 
 export function Button({

@@ -41,10 +41,24 @@ export const MFA_FRESHNESS_MS = 24 * 60 * 60 * 1000;
  * action is one entry here and cannot be half-added: the refusal, the caller it carries
  * and the reason code all follow from membership.
  */
+/**
+ * The actions whose target belongs to a branch, so a leader may only reach their own.
+ *
+ * A set for the same reason `ADMIN_ONLY` is one: adding the next branch-scoped action is one
+ * entry, and it cannot be half-added.
+ */
+const BRANCH_SCOPED = new Set<DashboardAction>([
+  'moderate_content',
+  'manage_events',
+]);
+
 const ADMIN_ONLY = new Set<DashboardAction>([
   'assign_role',
   'manage_verses',
   'manage_sermon_audio',
+  'compose_ministry_broadcast',
+  'approve_broadcast',
+  'manage_ministry_events',
 ]);
 
 export type StaffRole = 'leader' | 'admin';
@@ -90,7 +104,57 @@ export type DashboardAction =
    * repeat the rule at the data layer (live-table admin at aal2); this layer is what
    * keeps the dashboard's refusal inside the shell and pointing somewhere useful.
    */
-  | 'manage_sermon_audio';
+  | 'manage_sermon_audio'
+  /**
+   * Write a broadcast for a branch (W3.5 slice 3).
+   *
+   * Branch-scoped, so a leader composes for their own branch and an admin for any. It does
+   * NOT authorize sending: nothing a composer can do puts a message on a phone, because
+   * every broadcast is released by an admin who is not its author (20260819180000). This
+   * action is the right to draft and to submit, and the database enforces the rest.
+   */
+  | 'compose_broadcast'
+  /**
+   * Write a broadcast for the WHOLE ministry.
+   *
+   * Its own action rather than a `scope === 'ministry'` line inside the composer, for the
+   * reason at the top of this file: the composer, the confirmation screen and the submit
+   * route would each have to remember, and one of them eventually would not. Admin-only
+   * per `17` §Roles, and deliberately not branch-scoped, because ministry scope has no
+   * branch to be scoped to.
+   */
+  | 'compose_ministry_broadcast'
+  /**
+   * Release a broadcast, or send it back (W3.5 slice 3).
+   *
+   * Admin-only here, and admin-AND-not-the-author in the database. The two are not
+   * redundant: this layer decides whether the approve control is even offered, and
+   * `approve_broadcast()` decides whether it works. The author test lives there because
+   * only the row knows who wrote it, and a CHECK repeats it so self-approval is impossible
+   * rather than merely refused (docs/spec/17 §2).
+   */
+  | 'approve_broadcast'
+  /**
+   * Post an event, move it, cancel it or put it back on (W3.5 slice 4).
+   *
+   * Branch-scoped, so a leader runs their own branch's diary and an admin runs any. It is
+   * the only action in this list where an ordinary save reaches people's phones without a
+   * second person seeing it, and that was decided rather than inherited: a cancellation is
+   * a fact, not a message, and the failure mode of waiting for an approver is a room full
+   * of people who were not told (`11`, decided with Ayo 2026-08-20). What stands in for
+   * four eyes is a two-minute settle window in the notice job, not an authority check here.
+   */
+  | 'manage_events'
+  /**
+   * The same, for an event that belongs to the whole family.
+   *
+   * Its own action rather than a `branchId === null` line inside the events routes, for the
+   * reason at the top of this file: the form, the save and the cancel route would each have
+   * to remember, and one of them eventually would not. Admin-only per `17` §Roles, and
+   * deliberately not branch-scoped, because ministry scope has no branch to be scoped to.
+   * `can_moderate_branch(null)` says the same thing at the data layer.
+   */
+  | 'manage_ministry_events';
 
 export interface AuthorizationRequest {
   action: DashboardAction;
@@ -140,6 +204,8 @@ export async function authorize(
 ): Promise<Verdict> {
   const now = options.now ?? Date.now();
 
+  // `moderate_content` alone is required to name its branch: it always has a row in front
+  // of it. See BRANCH_SCOPED for why `manage_events` is not.
   if (request.action === 'moderate_content' && !request.branchId) {
     // Fail closed and loudly: a branch-scoped action with no branch is a bug in the
     // calling route, not an unauthorized caller, and it must never read as "allowed".
@@ -185,9 +251,17 @@ export async function authorize(
     branchName: profile.branches.name,
   };
 
+  // Branch scoping, for every action that has a branch-shaped target.
+  //
+  // `moderate_content` REQUIRES its branchId (the throw above): there is always a row being
+  // acted on. `manage_events` does not, and the difference is real rather than laziness:
+  // creating an event has no target row, and its branch is not the caller's to choose (the
+  // insert takes `caller.branchId`, and a ministry-wide one is a different action entirely).
+  // So the rule here is "if a target branch was named, a leader must own it".
   if (
-    request.action === 'moderate_content' &&
     caller.role === 'leader' &&
+    request.branchId !== undefined &&
+    BRANCH_SCOPED.has(request.action) &&
     request.branchId !== caller.branchId
   ) {
     return { ok: false, reason: 'wrong_branch', caller };

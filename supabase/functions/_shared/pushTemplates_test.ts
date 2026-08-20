@@ -1,6 +1,7 @@
 import { assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
 
 import {
+  formatWhen,
   renderTemplate,
   SUPPORTED_LANGUAGES,
   TEMPLATE_CATALOGUE,
@@ -99,13 +100,19 @@ Deno.test('the routed types are exactly the database CHECK values', () => {
   // not here would send with no channel and Android would drop it silently.
   const fromMigration = [
     'prayer', 'testimony_glory', 'event', 'ministry', 'branch', 'service_reminder',
-    'moderation', 'rsvp_reminder', 'registration', 'purchase',
+    'moderation', 'rsvp_reminder', 'registration', 'purchase', 'event_change',
   ].sort();
   assertEquals(Object.keys(ROUTING).sort(), fromMigration);
 });
 
 Deno.test('transactional notifications cannot be switched off', () => {
-  for (const type of ['moderation', 'rsvp_reminder', 'registration', 'purchase']) {
+  for (const type of [
+    'moderation',
+    'rsvp_reminder',
+    'registration',
+    'purchase',
+    'event_change',
+  ]) {
     assertEquals(routeFor(type).pref, null);
     assertEquals(allowedByPrefs(type, { ministry_announcements: false }), true);
   }
@@ -123,4 +130,46 @@ Deno.test('an absent prefs row means the column defaults, which are all true', (
   assertEquals(allowedByPrefs('ministry', null), true);
   assertEquals(allowedByPrefs('prayer', undefined), true);
   assertEquals(allowedByPrefs('ministry', {}), true);
+});
+
+Deno.test('an event start is rendered in the reader own language, not ours', () => {
+  // The param is a wall clock and the words around it are chosen per recipient (docs/spec/15
+  // localization rule). Formatting it when the ENTRY is built would freeze one language for
+  // everyone on the send, which is exactly the bug this convention exists to prevent.
+  const en = renderTemplate(
+    'event.moved',
+    { event: 'Night of Worship', when: '2026-09-05T19:00:00' },
+    'en',
+  );
+  const de = renderTemplate(
+    'event.moved',
+    { event: 'Night of Worship', when: '2026-09-05T19:00:00' },
+    'de',
+  );
+  assertEquals(en.title, 'Night of Worship has moved');
+  assertEquals(de.title, 'Night of Worship wurde verlegt');
+  assertNotEquals(en.body, de.body);
+  // The date itself, not the raw timestamp.
+  assertEquals(en.body.includes('2026-09-05T19:00:00'), false);
+  assertEquals(de.body.startsWith('Jetzt '), true);
+});
+
+Deno.test('the zone is never converted: a wall clock prints the hour it says', () => {
+  // docs/spec/02 stores an event as wall clock + zone precisely so it survives a change in
+  // the zone law; printing it in the READER local time would move church times around.
+  const nine = formatWhen('2026-09-05T09:00:00', 'en');
+  assertEquals(nine.includes('9:00'), true);
+  const evening = formatWhen('2026-09-05T19:00:00', 'de');
+  assertEquals(evening.includes('19:00'), true);
+});
+
+Deno.test('an unusable start leaves the sentence readable', () => {
+  assertEquals(formatWhen('not a timestamp', 'en'), '');
+  const rendered = renderTemplate(
+    'event.cancelled',
+    { event: 'Night of Worship', when: 'not a timestamp' },
+    'en',
+  );
+  assertEquals(rendered.title, 'Night of Worship is cancelled');
+  assertEquals(rendered.body, 'Tap to see what else is on');
 });

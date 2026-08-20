@@ -78,6 +78,28 @@
         "body": "{{branch}}"
       }
     },
+    "event": {
+      "posted": {
+        "title": "Nouveau : {{event}}",
+        "body": "{{when}} dans votre branche"
+      },
+      "posted_ministry": {
+        "title": "Toute la famille : {{event}}",
+        "body": "{{when}}, toutes les branches ensemble"
+      },
+      "moved": {
+        "title": "{{event}} a été déplacé",
+        "body": "Maintenant {{when}}"
+      },
+      "cancelled": {
+        "title": "{{event}} est annulé",
+        "body": "Touchez pour voir ce qui est prévu"
+      },
+      "reinstated": {
+        "title": "{{event}} est maintenu",
+        "body": "{{when}}, comme prévu"
+      }
+    },
     "rsvp": {
       "reminder": {
         "title": "{{event}} approche",

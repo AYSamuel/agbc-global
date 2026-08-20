@@ -259,6 +259,21 @@ on conflict (id) do update set
   status = excluded.status,
   rsvp_enabled = excluded.rsvp_enabled;
 
+-- These have been "known about" all along: the seed is history, not news (W3.5 slice 4).
+-- Without this line every reset would post six events to every seeded member two minutes
+-- later, which is the same mistake W3.4 refused to make when it declined to backfill prayer
+-- commitments. To watch the notices fire locally, change an event's time in the dashboard
+-- (or here) and wait for the settle window.
+update public.events
+set announced_status = status,
+    announced_starts_at_local = starts_at_local,
+    announced_location = location
+where id in (
+  '83000000-0000-4000-8000-000000000001', '83000000-0000-4000-8000-000000000002',
+  '83000000-0000-4000-8000-000000000003', '83000000-0000-4000-8000-000000000004',
+  '83000000-0000-4000-8000-000000000005', '83000000-0000-4000-8000-000000000006'
+);
+
 -- --- rhythm (W2.8) --------------------------------------------------------------------------
 --
 -- Attendance history, so RHYTHM and Home's streak strip have something true to draw on device

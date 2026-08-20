@@ -6,14 +6,29 @@
 
 import { isCredentialsFailure, isDeadToken, type PushReceipt } from '../_shared/push.ts';
 
+/** Which ledger a ticket lives in: `push_tickets` or `broadcast_deliveries`. */
+export type TicketSource = 'ticket' | 'broadcast';
+
 export interface TicketRow {
   ticket_id: string;
   device_id: string;
+  /**
+   * The answer is written to a different table per source, so it travels WITH the ticket
+   * rather than being inferred later. Absent means the automated ledger, which is what the
+   * pre-broadcast rows and any older caller mean.
+   */
+  source?: TicketSource;
+}
+
+export interface ReceiptOutcome {
+  ticketId: string;
+  error: string | null;
+  source: TicketSource;
 }
 
 export interface SweepPlan {
   /** Ticket ids to stamp `processed_at`: only those Expo actually answered. */
-  processed: Array<{ ticketId: string; error: string | null }>;
+  processed: ReceiptOutcome[];
   /** Device ids to delete, deduped. A device may hold several failed tickets. */
   deadDevices: string[];
   /** Receipts that came back as errors, for the run's own log line. */
@@ -40,6 +55,9 @@ export function planSweep(
   receipts: readonly PushReceipt[],
 ): SweepPlan {
   const deviceByTicket = new Map(tickets.map((t) => [t.ticket_id, t.device_id]));
+  const sourceByTicket = new Map<string, TicketSource>(
+    tickets.map((t) => [t.ticket_id, t.source ?? 'ticket']),
+  );
   const plan: SweepPlan = {
     processed: [],
     deadDevices: [],
@@ -54,15 +72,24 @@ export function planSweep(
     const deviceId = deviceByTicket.get(receipt.ticketId);
     if (deviceId === undefined) continue;
 
+    const source = sourceByTicket.get(receipt.ticketId) ?? 'ticket';
+
     if (receipt.status === 'ok') {
-      plan.processed.push({ ticketId: receipt.ticketId, error: null });
+      plan.processed.push({ ticketId: receipt.ticketId, error: null, source });
       continue;
     }
 
     plan.errored += 1;
-    plan.processed.push({ ticketId: receipt.ticketId, error: receipt.error ?? 'Unknown' });
+    plan.processed.push({
+      ticketId: receipt.ticketId,
+      error: receipt.error ?? 'Unknown',
+      source,
+    });
 
     if (isDeadToken(receipt.error)) {
+      // Source-blind on purpose: a device that uninstalled the app is gone whether we
+      // learned it from a reminder or from a broadcast, and before 20260820140000 a member
+      // whose only pushes were broadcasts kept their registration for ever.
       dead.add(deviceId);
     } else if (isCredentialsFailure(receipt.error)) {
       // Never delete a device for this: the token is fine, our sending credentials are

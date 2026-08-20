@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { useFormStatus } from 'react-dom';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
 import { MAX_ARTWORK_BYTES } from '@/server/sermonArtwork';
@@ -189,7 +189,7 @@ export function ArtworkUploader({
         <input type="hidden" name="artworkPath" value={state.path} />
         <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
           {submitLabel === undefined ? null : (
-            <SavePicture
+            <SubmitButton
               label={submitLabel}
               pendingLabel={submittingLabel ?? submitLabel}
             />
@@ -306,23 +306,6 @@ export function ArtworkUploader({
         </div>
       </div>
     </div>
-  );
-}
-
-/** Its own component so `useFormStatus()` can see the form it belongs to. */
-function SavePicture({
-  label,
-  pendingLabel,
-}: {
-  label: string;
-  pendingLabel: string;
-}) {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? pendingLabel : label}
-    </Button>
   );
 }
 

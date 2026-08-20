@@ -47,6 +47,15 @@ Keep members aware of what's happening, at **their branch** and **ministry-wide*
 ## Notifications
 - Branch event posted → branch members (if `branch_updates` on). **Global event → all members** (if `ministry_announcements` on). Reminder before an RSVP'd event. Deep-link → `EVENT-DETAIL`.
 
+**Built W3.5 slice 4** (`event-notices`, `21` §5), and four things about it were decided with Ayo on 2026-08-20 rather than being implied here:
+
+1. **Both halves ship together.** The posting above and the change notices below are one job: the event row remembers the plan it announced, and the difference between that and the live row says which of the four notices is owed (posted, cancelled, moved, back on).
+2. **Only time or venue moves the RSVP list.** "Changing time or venue" is taken literally: a description fixed, a picture swapped, an end time corrected or a title tidied reaches nobody. Quiet edits stay quiet, which is what keeps the loud ones worth reading.
+3. **The push carries the new time**, rendered in each recipient's own language at send time ("Now Sat, 5 Sept, 7:00 pm") rather than "tap to see". A title and a start are things the church published itself, so `15`'s payload rule holds.
+4. **Cancelling needs no second pair of eyes, and waits two minutes instead.** Broadcasts need an approver because a broadcast is a message; a cancellation is a fact, and holding a room full of people uninformed while an admin is found is the worse failure. Nothing is announced until the row has been still for two minutes, so a mis-tap can be undone before anybody hears: cancel and reinstate inside that window and the plan has come back to itself, so nothing is sent at all. (A ministry-wide event is admin-only to touch in the first place, so this only ever concerns a leader and their own branch.)
+
+A past event is never announced, whatever changed on it: telling somebody that an event they already missed has moved is noise.
+
 ## Acceptance criteria
 - [ ] Events correctly separate branch vs ministry-wide, and both are reachable.
 - [ ] RSVP gates for guests and records once per member per event.

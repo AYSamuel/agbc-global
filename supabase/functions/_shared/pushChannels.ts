@@ -69,6 +69,11 @@ export const ROUTING: Record<string, Routing> = {
   // Always-on: these answer something the member did (docs/spec/15).
   moderation: { channel: CHANNELS.transactional, pref: null },
   rsvp_reminder: { channel: CHANNELS.transactional, pref: null },
+  // The plan an RSVP was made against changed: cancelled, moved, or back on (W3.5 slice 4).
+  // Transactional rather than `event`, and the distinction is the whole reason it is its own
+  // type: `event` is gated on `branch_updates`, and a member who turned branch news off
+  // would turn up at a locked door. Nobody RSVPs and then opts out of hearing it is off.
+  event_change: { channel: CHANNELS.transactional, pref: null },
   registration: { channel: CHANNELS.transactional, pref: null },
   purchase: { channel: CHANNELS.transactional, pref: null },
 };

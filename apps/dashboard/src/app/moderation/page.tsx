@@ -5,6 +5,7 @@ import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
 import { QueueItem } from '@/components/QueueItem';
 import { Stat } from '@/components/ui/Stat';
+import { Guide } from '@/components/ui/Guide';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
@@ -106,18 +107,9 @@ export default async function ModerationPage({
         </ul>
       </nav>
 
-      <div className="mt-4 flex items-start gap-3 rounded-card border border-[rgba(185,134,0,0.34)] bg-[rgba(255,207,74,0.14)] px-4 py-3">
-        <span
-          aria-hidden="true"
-          className="mt-px text-gold-deep dark:text-accent"
-        >
-          ⚠
-        </span>
-        <p className="text-body leading-relaxed text-text">
-          <b className="font-extrabold">{copy.queue.safeguardingTitle}</b>{' '}
-          {copy.queue.safeguarding}
-        </p>
-      </div>
+      <Guide title={copy.queue.safeguardingTitle}>
+        {copy.queue.safeguarding}
+      </Guide>
 
       {queue.items.length === 0 ? (
         <div className="flex flex-col items-center px-8 py-16 text-center">

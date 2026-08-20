@@ -10,6 +10,11 @@
 //
 // Receipts are cleared by Expo after ~24 hours, so this job is also a deadline: tickets it
 // never gets to are unanswerable, and the 7-day retention purge (W3.4) removes them.
+//
+// IT SWEEPS BOTH LEDGERS (20260820140000). `21` §5 always said so; only `push_tickets` was
+// ever built, because `broadcast_deliveries` did not exist when this was written. Until
+// then a member whose only pushes were broadcasts never had a dead token pruned, and the
+// error-rate alarm could not see the largest sends this project makes.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
@@ -73,12 +78,13 @@ async function run(
   supabase: SupabaseClient,
   healthcheckUrl: string | null,
 ): Promise<Response> {
-  const { data: ticketRows, error: ticketsError } = await supabase
-    .from('push_tickets')
-    .select('ticket_id, device_id')
-    .is('processed_at', null)
-    .order('sent_at', { ascending: true })
-    .limit(BATCH);
+  // ONE read across both ledgers (20260820140000). Two client reads would each take their
+  // own thousand, which is more than Expo accepts in a request and would let one table
+  // starve while the other drained.
+  const { data: ticketRows, error: ticketsError } = await supabase.rpc(
+    'unprocessed_push_tickets',
+    { batch: BATCH },
+  );
   if (ticketsError) throw new Error(`tickets read failed: ${ticketsError.message}`);
 
   const tickets = (ticketRows ?? []) as TicketRow[];
@@ -106,13 +112,27 @@ async function run(
     pruned = count ?? 0;
   }
 
+  // Each answer goes back to the ledger it came from. Split here rather than in the plan,
+  // so `planSweep` stays a pure decision and this stays the only place that knows about
+  // tables.
   let processed = 0;
-  if (plan.processed.length > 0) {
+  const automated = plan.processed.filter((row) => row.source === 'ticket');
+  const broadcast = plan.processed.filter((row) => row.source === 'broadcast');
+
+  if (automated.length > 0) {
     const { data, error } = await supabase.rpc('mark_push_tickets_processed', {
-      results: plan.processed,
+      results: automated,
     });
     if (error) throw new Error(`mark processed failed: ${error.message}`);
-    processed = (data as number | null) ?? 0;
+    processed += (data as number | null) ?? 0;
+  }
+
+  if (broadcast.length > 0) {
+    const { data, error } = await supabase.rpc('mark_broadcast_receipts', {
+      results: broadcast,
+    });
+    if (error) throw new Error(`mark broadcast receipts failed: ${error.message}`);
+    processed += (data as number | null) ?? 0;
   }
 
   if (plan.credentialsFailures > 0) {
@@ -130,6 +150,8 @@ async function run(
     tickets: tickets.length,
     answered: receipts.length,
     processed,
+    automated: automated.length,
+    broadcast: broadcast.length,
     pruned,
     errored: plan.errored,
     credentialsFailures: plan.credentialsFailures,

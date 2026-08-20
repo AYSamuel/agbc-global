@@ -78,6 +78,28 @@
         "body": "{{branch}}"
       }
     },
+    "event": {
+      "posted": {
+        "title": "Nieuw: {{event}}",
+        "body": "{{when}} bij jouw locatie"
+      },
+      "posted_ministry": {
+        "title": "De hele familie: {{event}}",
+        "body": "{{when}}, alle locaties samen"
+      },
+      "moved": {
+        "title": "{{event}} is verplaatst",
+        "body": "Nu {{when}}"
+      },
+      "cancelled": {
+        "title": "{{event}} gaat niet door",
+        "body": "Tik om te zien wat er nog meer is"
+      },
+      "reinstated": {
+        "title": "{{event}} gaat toch door",
+        "body": "{{when}}, zoals eerder"
+      }
+    },
     "rsvp": {
       "reminder": {
         "title": "{{event}} komt eraan",

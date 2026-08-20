@@ -78,6 +78,28 @@
         "body": "{{branch}}"
       }
     },
+    "event": {
+      "posted": {
+        "title": "New: {{event}}",
+        "body": "{{when}} at your branch"
+      },
+      "posted_ministry": {
+        "title": "The whole family: {{event}}",
+        "body": "{{when}}, every branch together"
+      },
+      "moved": {
+        "title": "{{event}} has moved",
+        "body": "Now {{when}}"
+      },
+      "cancelled": {
+        "title": "{{event}} is cancelled",
+        "body": "Tap to see what else is on"
+      },
+      "reinstated": {
+        "title": "{{event}} is back on",
+        "body": "{{when}}, as before"
+      }
+    },
     "rsvp": {
       "reminder": {
         "title": "{{event}} is coming up",

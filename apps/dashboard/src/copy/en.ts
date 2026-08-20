@@ -587,6 +587,123 @@ export const copy = {
     },
   },
 
+  broadcasts: {
+    title: 'Broadcasts',
+    scope: 'A message to a branch, or to everyone',
+    // The line a leader reads before they write anything (COMPOSE frame). Said at the top
+    // rather than at the end of the flow, because being told at the end that you cannot
+    // send what you just wrote is how a tool loses someone.
+    approvalNoticeTitle: 'An admin has to release this.',
+    approvalNoticeBody:
+      'Every broadcast is approved by an admin who is not its author, whatever its scope. You will not be able to send it yourself.',
+    tabs: { waiting: 'Waiting', drafts: 'Drafts', sent: 'Sent' },
+    waitingHeading: 'Waiting for an admin',
+    minesHeading: 'Yours',
+    sentHeading: 'Sent',
+    waitingOnYou: (count: number) =>
+      count === 1 ? '1 waiting on you' : `${String(count)} waiting on you`,
+    newBroadcast: 'New broadcast',
+    approve: 'Approve and send',
+    sendBack: 'Send back',
+    stop: 'Stop sending',
+    // The refusal an admin sees on their OWN broadcast, spelled out in place rather than
+    // hidden behind a greyed button. Naming who else can release it IS the answer when the
+    // ministry has two admins.
+    ownTitle: 'Another admin has to release this one',
+    ownBody: 'You wrote it, so you cannot approve it.',
+    ownBodyWithNames: (names: string) =>
+      `You wrote it, so you cannot approve it. ${names} can.`,
+    // Halting, stated before the click rather than in a dialog after it.
+    haltTitle: 'Stopping is final',
+    haltBody:
+      'Whatever has already left cannot be recalled, and a stopped broadcast is not resumed: you would duplicate it as a draft and start again, approval included.',
+    status: {
+      draft: 'Draft',
+      pending_approval: 'Awaiting approval',
+      rejected: 'Sent back',
+      sending: 'Sending now',
+      sent: 'Sent',
+      halted: 'Stopped',
+      failed: 'Could not be delivered',
+    },
+    scopeLabel: {
+      branch: (branch: string) => `Branch · ${branch}`,
+      ministry: 'Whole ministry',
+    },
+    people: (count: number) =>
+      count === 1 ? '1 person' : `${String(count)} people`,
+    approvedBy: (name: string) => `Approved by ${name}`,
+    rejectPrompt: 'Why are you sending it back?',
+    rejectHint: 'The author reads this, so write it to them.',
+    // The link allowlist refusal (COMPOSE frame). It names the way out, not only the rule.
+    linkNotAllowed: 'That link cannot be sent',
+    linkNotAllowedBody:
+      'A broadcast may link to a screen in the app or to agbcglobal.com, and nothing else. To share this one, send the broadcast without it and paste the address into the WhatsApp community yourself.',
+    linkMalformed: 'That does not look like a link',
+    linkMalformedBody:
+      'Check it for a stray space or a missing https://, then try again.',
+    whoItReaches: 'Who it reaches',
+    hintLeader: (branch: string) =>
+      `It goes to every member of ${branch} who has branch updates switched on.`,
+    hintAdmin:
+      'The whole ministry reaches every branch. Both are approved by another admin before anything is sent.',
+    fieldTitle: 'Title',
+    fieldBody: 'Message · English',
+    fieldBodyHint:
+      'German, Dutch and French are optional. Anyone whose app is set to a language you leave blank reads this one.',
+    fieldBodyDe: 'Message · German (optional)',
+    fieldBodyNl: 'Message · Dutch (optional)',
+    fieldBodyFr: 'Message · French (optional)',
+    fieldLink: 'Link (optional)',
+    continue: 'Continue',
+    saving: 'Saving...',
+    // Pending labels say what is happening rather than "Loading", because the reader is
+    // waiting to know whether a message went to the whole ministry.
+    approving: 'Sending...',
+    sendingBack: 'Sending back...',
+    stopping: 'Stopping...',
+    submitting: 'Sending for approval...',
+    emptyFieldsTitle: 'It needs a title and a message',
+    emptyFieldsBody:
+      'Those two are what arrives on a phone, so a broadcast cannot go out without them.',
+    refusedBody:
+      'Your role may have changed since this screen loaded. Reload, and tell Ayo if it keeps happening.',
+    // The confirmation screen (CONFIRM frame): the last thing before hundreds of lock
+    // screens, so the numbers are split rather than totalled.
+    confirmTitle: 'Send for approval',
+    confirmScope: 'Check it the way they will read it',
+    statReached: 'People reached',
+    statPhone: 'On a phone now',
+    statInApp: 'In-app only',
+    asItArrives: 'As it will arrive',
+    whatsappTitle: 'Copy for WhatsApp',
+    whatsappBody:
+      'The same words as pasteable text, for the church WhatsApp community. Nothing is sent by copying, and the text carries no member details.',
+    whatsappAction: 'Copy',
+    whatsappCopied: 'Copied',
+    inAppOnlyNotice: (count: number) =>
+      count === 1
+        ? '1 person has no phone registered.'
+        : `${String(count)} people have no phone registered.`,
+    inAppOnlyBody:
+      'They will find this in the app notifications the next time they open it.',
+    sendForApproval: 'Send for approval',
+    keepEditing: 'Keep editing',
+    opensLabel: 'Opens',
+    opensInApp: 'the app',
+    emptyTitle: 'Nothing to send yet',
+    emptyBody:
+      'A broadcast reaches every member of a branch, or of the whole ministry, on their phone and in the app.',
+    outcome: {
+      approved: 'Approved. It is going out now.',
+      sentBack: 'Sent back to the author with your note.',
+      submitted: 'Sent for approval.',
+      stopped: 'Stopped. Nothing more will be delivered.',
+    },
+    refused: 'That is not yours to do.',
+    raced: 'Somebody got there first. Refresh to see where it stands now.',
+  },
+
   sermonAudio: {
     title: 'Sermon audio',
     scope: 'Every branch · one shelf',
@@ -802,6 +919,138 @@ export const copy = {
       refused:
         'That is not yours to change. Your role may have changed since this page loaded.',
       failed: 'Something went wrong and nothing was changed. Try again.',
+    },
+  },
+
+  /**
+   * Events (docs/spec/17 §3, `11`; frames NEW EVENT / EDIT / CANCEL).
+   *
+   * Every sentence here is really about the audience, because that is what makes this form
+   * different from every other one in the dashboard: an ordinary save reaches phones. The
+   * counts are the SAME ones the notice reaches (`event_rsvp_audience`), so the copy can
+   * promise a number without hedging.
+   */
+  events: {
+    title: 'Events',
+    scope: 'What is on, and who has been told',
+    newEvent: 'New event',
+    open: 'Open',
+    backToEvents: 'Back to events',
+    upcomingHeading: 'Coming up',
+    pastHeading: 'Already happened',
+    emptyTitle: 'Nothing in the diary yet',
+    emptyBody:
+      'Post the next gathering here and everyone at your branch hears about it. Members see the same list in the app.',
+    ministryWide: 'All branches',
+    cancelledPill: 'Cancelled',
+    // Who called it off, because cancelling reaches everyone holding an RSVP and an act
+    // with that reach should have a name against it (W3.5 slice 4 follow-up).
+    cancelledBy: (who: string, when: string) => `Cancelled by ${who} · ${when}`,
+    // The fallback when the actor is real but not a name this caller may read: `profiles`
+    // is RLS-scoped, so an admin from another branch is an admin rather than a stranger.
+    aMinistryAdmin: 'a ministry admin',
+    rsvpOff: 'No RSVP',
+    readOnly: 'A ministry admin runs this one',
+    // The form.
+    createTitle: 'New event',
+    createScope: (branch: string) =>
+      `${branch} · times are this branch's own clock`,
+    ministryScopeNote: 'Ministry-wide · shown to every branch',
+    fields: {
+      scope: 'Who it is for',
+      scopeBranch: 'My branch',
+      scopeMinistry: 'The whole family',
+      scopeHint:
+        'Ministry-wide events are admins only. They show under “All branches” in the app and reach every branch.',
+      scopeLocked:
+        'Who an event is for is fixed once it is posted. Post a new one if it needs to move.',
+      title: 'Title',
+      starts: 'Starts',
+      startsHint: (branch: string) =>
+        `${branch}'s own clock, which is what members read in the app.`,
+      ends: 'Ends (optional)',
+      location: 'Place',
+      description: 'About it',
+      rsvp: 'RSVP',
+      rsvpOn: 'Members can say they are going',
+      rsvpHint:
+        'Turn this off for something nobody needs to book, like a notice. You can still change it later.',
+      picture: 'Picture (optional) · next slice',
+      pictureHint:
+        'Events show the branded cover for now. Uploading a picture arrives with its own storage in the next slice.',
+    },
+    // What a save will do, said before it happens.
+    postingTellsTitle: (count: number) =>
+      `Posting this tells ${String(count)} ${count === 1 ? 'person' : 'people'}.`,
+    postingTellsBody:
+      'Everyone at your branch who has branch updates switched on gets a notification a couple of minutes after you save. Nothing goes out while you are still editing.',
+    postingMinistryBody:
+      'Every branch hears about this one: everyone with ministry announcements switched on gets a notification a couple of minutes after you save.',
+    changeTellsTitle: (count: number) =>
+      `This change tells ${String(count)} ${count === 1 ? 'person' : 'people'}`,
+    // Nobody has said they are coming yet, so there is nothing to warn about. Said out loud
+    // because "this change tells 0 people" reads as a broken counter rather than as calm.
+    changeTellsNobodyTitle: 'Nobody has said they are coming yet',
+    changeTellsNobodyBody:
+      'So a change to the time or the place tells nobody. Once members RSVP, moving it lets them know, about two minutes after you save.',
+    changeTellsBody: (when: string) =>
+      `Change the time or the place and everyone still holding an RSVP is told, about two minutes after you save, so there is time to change your mind. Right now it says ${when}. Editing the description tells nobody.`,
+    goingAndInterested: (going: number, interested: number) =>
+      `${String(going)} going, ${String(interested)} interested`,
+    save: 'Save changes',
+    saving: 'Saving',
+    post: 'Post this event',
+    posting: 'Posting',
+    discard: 'Discard',
+    cancelForm: 'Cancel',
+    // Cancelling.
+    cancelEvent: 'Cancel this event',
+    cancelTitle: (title: string) => `Cancel ${title}?`,
+    cancelStats: {
+      going: 'Said they are going',
+      interested: 'Interested',
+      reachable: 'Will be told',
+    },
+    cancelTellsNobodyTitle: 'Nobody has said they are coming',
+    cancelTellsNobodyBody:
+      'So cancelling tells nobody. It still shows in the app as cancelled, which is what anyone arriving from an old link will see.',
+    cancelWarningTitle: 'Everyone holding an RSVP hears about this',
+    cancelWarningBody: (count: number) =>
+      `All ${String(count)} get “this event is cancelled”, including anyone who has branch updates switched off: they booked, so this one is not theirs to miss. It goes out about two minutes after you confirm, so putting it back on straight away sends nothing at all.`,
+    cancelKeepsTitle: 'The event is not deleted',
+    cancelKeepsBody:
+      'It stays in the app wearing a “Cancelled by the organiser” banner, so an old link still lands somewhere true instead of on a missing page. You can put it back on while its start is still in the future.',
+    cancelConfirm: 'Yes, cancel it',
+    cancelling: 'Cancelling',
+    cancelKeep: 'Keep it on',
+    reinstate: 'Put it back on',
+    reinstating: 'Putting it back on',
+    reinstateNote:
+      'This event is cancelled. Putting it back on tells everyone still holding an RSVP, and only works while its start is in the future.',
+    problems: {
+      title_required: 'Give the event a title before posting it.',
+      starts_required: 'An event needs a start time.',
+      location_required: 'Say where it is, even if that is “online”.',
+      ends_before_start: 'The end time is before the start time.',
+      scope_locked:
+        'Who an event is for cannot change after it is posted. Post a new one instead.',
+      refused:
+        'That is not yours to change. Your role may have changed since this page loaded.',
+      failed: 'Something went wrong and nothing was changed. Try again.',
+    },
+    outcome: {
+      posted: 'Posted. Your branch hears about it in a couple of minutes.',
+      postedMinistry:
+        'Posted. Every branch hears about it in a couple of minutes.',
+      saved: 'Saved.',
+      savedAndTold:
+        'Saved. Everyone holding an RSVP is told in a couple of minutes.',
+      cancelled:
+        'Cancelled. Everyone holding an RSVP is told in a couple of minutes.',
+      reinstated:
+        'Back on. Everyone holding an RSVP is told in a couple of minutes.',
+      alreadyStarted:
+        'That event has already started, so it stays cancelled. Post a new one if it is happening again.',
     },
   },
 
