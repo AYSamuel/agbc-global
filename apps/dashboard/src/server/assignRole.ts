@@ -79,10 +79,14 @@ export async function findMemberByEmail(
 ): Promise<LookupResult> {
   const email = rawEmail.trim().toLowerCase();
 
+  // The embed names its foreign key, and has to: `branches.archived_by` references
+  // `profiles` (W3.5 slice 5a), so there are now TWO relationships between these tables and
+  // a bare `branches(name)` is ambiguous to PostgREST (PGRST201). Same disambiguation
+  // `events.status_changed_by` forced on the events module a day earlier.
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, display_name, role, branch_id, created_at, deleted_at, onboarded_at, branches(name)',
+      'id, email, display_name, role, branch_id, created_at, deleted_at, onboarded_at, branches!profiles_branch_id_fkey(name)',
     )
     .eq('email', email)
     .maybeSingle<{

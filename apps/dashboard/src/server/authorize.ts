@@ -347,10 +347,16 @@ async function loadSession(supabase: Client): Promise<ResolvedSession> {
 
   // Read through the CALLER's own client, so RLS ("members read their own profile")
   // is still the thing granting this read. Explicit columns, never select *.
+  //
+  // The embed names its foreign key, and has to: `branches.archived_by` references
+  // `profiles` (W3.5 slice 5a), so there are now TWO relationships between these tables and
+  // a bare `branches(name)` is ambiguous to PostgREST (PGRST201). It fails as a null
+  // profile, which this function reads as `no_profile`, which would sign every leader out
+  // of the dashboard: the second FK is a breaking change to every embed, not a new column.
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'id, email, display_name, role, branch_id, deleted_at, branches(name)',
+      'id, email, display_name, role, branch_id, deleted_at, branches!profiles_branch_id_fkey(name)',
     )
     .eq('id', data.user.id)
     .maybeSingle<ProfileRow>();

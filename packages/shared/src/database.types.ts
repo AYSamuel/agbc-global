@@ -258,6 +258,8 @@ export type Database = {
       branches: {
         Row: {
           address: Json
+          archived_at: string | null
+          archived_by: string | null
           city: string
           country: string
           created_at: string
@@ -282,6 +284,8 @@ export type Database = {
         }
         Insert: {
           address?: Json
+          archived_at?: string | null
+          archived_by?: string | null
           city: string
           country: string
           created_at?: string
@@ -306,6 +310,8 @@ export type Database = {
         }
         Update: {
           address?: Json
+          archived_at?: string | null
+          archived_by?: string | null
           city?: string
           country?: string
           created_at?: string
@@ -328,7 +334,15 @@ export type Database = {
           welcome?: string
           youtube_channel_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "branches_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       broadcast_deliveries: {
         Row: {
@@ -2237,6 +2251,7 @@ export type Database = {
     Functions: {
       advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       approve_broadcast: { Args: { broadcast: string }; Returns: undefined }
+      archive_branch: { Args: { branch: string }; Returns: undefined }
       assert_consent_covers_photo: {
         Args: { target_version: string }
         Returns: undefined
@@ -2543,11 +2558,16 @@ export type Database = {
           profile_id: string
         }[]
       }
+      rehome_from_archived_branch: {
+        Args: { destination: string }
+        Returns: undefined
+      }
       reject_broadcast: {
         Args: { broadcast: string; note: string }
         Returns: undefined
       }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
+      restore_branch: { Args: { branch: string }; Returns: undefined }
       rhythm_gathering_rungs: { Args: { total: number }; Returns: number[] }
       rhythm_state: {
         Args: { p_branch_id?: string }
