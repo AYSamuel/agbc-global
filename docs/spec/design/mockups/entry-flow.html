@@ -1953,6 +1953,113 @@
   <div class="gallery t-dark" id="w33Dark"></div>
   <script>(function(){var l=document.getElementById('w33Light'),d=document.getElementById('w33Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
+  <h2 class="ghead" id="w35c">&#127968; W3.5 slice 5c &middot; A branch has closed &middot; light</h2>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>launch</b> &#8594; <b>Home</b> &#8594; <b>the prompt</b> (once per launch, dismissible) &#8594; <b>confirm</b> &#8594; <b>Home, settled</b> &nbsp;|&nbsp; dismissed instead, the <b>card</b> stays on Home until they choose.</p>
+  <p class="alwayson" style="padding:0 20px 10px">This is the ONE branch change that needs nobody's approval and ignores the 90-day settle (<code>02</code>, ADR 0015): there is no branch left to stay in and no leader to ask, so it is a server-owned assignment rather than a request. It is also the one that must not GATE the app: browsing has never needed a branch, and <code>02</code> already assumes a member can go un-homed for a while, since it withholds only the branch TIER of notifications meanwhile.</p>
+  <div class="gallery t-light" id="w35cLight">
+
+      <div class="device">
+        <p class="name"><b>RE-HOME</b> &middot; the prompt &middot; once per launch, and it can be put off</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="authwrap">
+            <div class="authicon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+            <h1>AGBC Emmen has closed</h1>
+            <p class="lead">The branch has stopped meeting. Choose where you call home now, and your services, reminders and branch news follow you there.</p>
+            <div class="pickrow"><span class="l">Until you choose</span><span class="v">No branch news</span></div>
+            <span class="goldeye" style="display:block;margin:16px 0 10px">Where do you gather now?</span>
+            <div class="list" style="padding:0">
+              <div class="sel on"><span class="tile">G</span><span class="grow"><span class="t">AGBC Glasgow <span class="hq">HQ</span></span><span class="s">Glasgow, Scotland</span></span><span class="ck"></span></div>
+              <div class="sel"><span class="tile">B</span><span class="grow"><span class="t">AGBC Lighthouse Berlin</span><span class="s">Berlin, Germany</span></span><span class="ck"></span></div>
+              <div class="sel"><span class="tile">M</span><span class="grow"><span class="t">Miracle Centre</span><span class="s">Ogbomosho, Nigeria</span></span><span class="ck"></span></div>
+            </div>
+            <div class="spacer"></div>
+            <div style="padding:0 4px"><button class="btn gold">Make this my home branch</button>
+              <button class="btn ghost" style="margin-top:8px">Not now</button></div>
+            <div class="authnote">Nobody has to approve this one. If you want to move again later, that goes the usual way: a leader at the branch you are joining confirms it.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="device">
+        <p class="name"><b>RE-HOME</b> &middot; confirm &middot; it takes effect at once, which the sheet says out loud</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="authwrap">
+              <div class="authicon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+              <h1>AGBC Emmen has closed</h1>
+              <p class="lead">The branch has stopped meeting. Choose where you call home now.</p>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet">
+            <div class="grab"></div>
+            <div class="gi">&#127968;</div>
+            <h3>Make Glasgow home?</h3>
+            <p>This one takes effect straight away, with nobody to confirm it: there is no branch left to ask. Your services, reminders and branch news switch to AGBC Glasgow from now on, and everything you have posted stays where it is.</p>
+            <button class="btn gold">Yes, this is home</button>
+            <button class="btn ghost" style="margin-top:8px">Pick a different one</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; the card that stays &middot; no Dismiss, and the screen goes quiet: the card and the verse, nothing else</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Emmen <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="linkbanner gold" style="margin:8px 18px 12px">
+              <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+              <span class="lt"><b>AGBC Emmen has closed.</b> Choose where you call home now; until you do, branch news and service reminders stop reaching you.</span>
+              <button class="dismiss">Choose</button>
+            </div>
+            <!-- EVERYTHING ELSE IS GONE TOO, and this frame is literal rather than the
+                 usual banner-frame shorthand. Home IS the branch's front page: with no
+                 branch there is no front page, only the ask and a verse that belongs to the
+                 whole family rather than to any branch. No hero (the card already names the
+                 branch, says it has closed and offers the way out, so a hero repeating it is
+                 noise), no rhythm strip (it counts gatherings at a branch that has none), no
+                 family and no latest message. It does not gate the app: every other tab is
+                 untouched, and one tap on Choose gives the screen back. -->
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="device">
+        <p class="name"><b>RE-HOME</b> &middot; largest text &middot; longest branch name (wraps, never truncates)</p>
+        <div class="phone" style="font-size:130%">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="authwrap">
+            <div class="authicon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+            <h1>AGBC Emmen has closed</h1>
+            <p class="lead">The branch has stopped meeting. Choose where you call home now.</p>
+            <span class="goldeye" style="display:block;margin:16px 0 10px">Where do you gather now?</span>
+            <div class="list" style="padding:0">
+              <div class="sel on"><span class="tile">L</span><span class="grow"><span class="t">AGBC Lighthouse Berlin</span><span class="s">Berlin, Germany</span></span><span class="ck"></span></div>
+            </div>
+            <div class="spacer"></div>
+            <div style="padding:0 4px"><button class="btn gold">Make this my home branch</button></div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+
+  <h2 class="ghead">&#127769; W3.5 slice 5c &middot; A branch has closed &middot; dark</h2>
+  <div class="gallery t-dark" id="w35cDark"></div>
+  <script>(function(){var l=document.getElementById('w35cLight'),d=document.getElementById('w35cDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
+
 
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>
   <p class="flow">FLOW &nbsp;·&nbsp; <b>Splash</b> &#8594; <b>Welcome</b> &#8594; <b>Pick branch</b> &#8594; <b>Language</b> &#8594; <b>Home (guest)</b></p>

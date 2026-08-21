@@ -78,6 +78,28 @@
     "refusedEmail": "{{branch}} schreiben",
     "refusedClose": "Schließen"
   },
+  "rehome": {
+    "title": "{{branch}} ist geschlossen",
+    "lead": "Dieser Zweig trifft sich nicht mehr. Wähle, wo du jetzt zu Hause bist, dann folgen dir Gottesdienste, Erinnerungen und Neuigkeiten dorthin.",
+    "untilYouChoose": "Bis du wählst",
+    "noBranchNews": "Keine Neuigkeiten",
+    "whereNow": "Wo kommst du jetzt zusammen?",
+    "choose": "Das ist mein Zweig",
+    "notNow": "Jetzt nicht",
+    "pickOne": "Wähle zuerst einen Zweig.",
+    "note": "Diese Änderung muss niemand bestätigen. Wenn du später noch einmal wechseln möchtest, läuft das wie gewohnt: eine Leitung des neuen Zweigs bestätigt es.",
+    "confirmTitle": "{{branch}} als Zuhause?",
+    "confirmBody": "Das gilt sofort, ohne Bestätigung: es gibt keinen Zweig mehr, den man fragen könnte. Gottesdienste, Erinnerungen und Neuigkeiten kommen ab jetzt von {{branch}}, und alles, was du geteilt hast, bleibt genau dort.",
+    "confirmYes": "Ja, hier bin ich zu Hause",
+    "confirmPickAnother": "Einen anderen wählen",
+    "dismissed": "Geschlossen",
+    "settled": "{{branch}} ist jetzt dein Zweig.",
+    "failed": "Das hat nicht geklappt. Prüfe deine Verbindung und versuche es erneut.",
+    "noteLead": "{{branch}} ist geschlossen.",
+    "noteBody": "Wähle, wo du jetzt zu Hause bist. Bis dahin erreichen dich keine Neuigkeiten und keine Gottesdiensterinnerungen.",
+    "noteAction": "Wählen",
+    "noteActionLabel": "Einen neuen Zweig wählen"
+  },
   "communitySection": "Gemeinschaft",
   "blocked": {
     "title": "Blockierte Mitglieder",

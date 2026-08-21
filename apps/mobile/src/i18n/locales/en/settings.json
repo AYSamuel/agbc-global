@@ -78,6 +78,28 @@
     "refusedEmail": "Email {{branch}}",
     "refusedClose": "Close"
   },
+  "rehome": {
+    "title": "{{branch}} has closed",
+    "lead": "The branch has stopped meeting. Choose where you call home now, and your services, reminders and branch news follow you there.",
+    "untilYouChoose": "Until you choose",
+    "noBranchNews": "No branch news",
+    "whereNow": "Where do you gather now?",
+    "choose": "Make this my home branch",
+    "notNow": "Not now",
+    "pickOne": "Pick a branch first.",
+    "note": "Nobody has to approve this one. If you want to move again later, that goes the usual way: a leader at the branch you are joining confirms it.",
+    "confirmTitle": "Make {{branch}} home?",
+    "confirmBody": "This one takes effect straight away, with nobody to confirm it: there is no branch left to ask. Your services, reminders and branch news switch to {{branch}} from now on, and everything you have posted stays where it is.",
+    "confirmYes": "Yes, this is home",
+    "confirmPickAnother": "Pick a different one",
+    "dismissed": "Closed",
+    "settled": "{{branch}} is your home branch now.",
+    "failed": "That did not go through. Check your connection and try again.",
+    "noteLead": "{{branch}} has closed.",
+    "noteBody": "Choose where you call home now; until you do, branch news and service reminders stop reaching you.",
+    "noteAction": "Choose",
+    "noteActionLabel": "Choose a new home branch"
+  },
   "communitySection": "Community",
   "blocked": {
     "title": "Blocked members",

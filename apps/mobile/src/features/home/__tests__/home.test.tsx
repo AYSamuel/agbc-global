@@ -104,6 +104,15 @@ jest.mock('@/features/branch-change/queries', () => ({
   }),
 }));
 
+// W3.5 slice 5c: Home asks two closure questions, and they are not the same one. The member's
+// own branch drives the prompt and the card (their tests live in `features/rehome`); the
+// BROWSED branch decides whether there is a service to show at all, which is this file's.
+const mockBrowsedClosed = jest.fn<{ closed: boolean }, []>();
+jest.mock('@/features/rehome/queries', () => ({
+  useBranchHasClosed: () => ({ closed: false, branch: null }),
+  useBranchClosed: () => mockBrowsedClosed(),
+}));
+
 function renderHome() {
   return render(
     <ThemeScope name="light">
@@ -116,6 +125,8 @@ function renderHome() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Open unless a test says otherwise, which is every test but one.
+  mockBrowsedClosed.mockReturnValue({ closed: false });
   useBranchStore.setState({
     branch: {
       id: '00000000-0000-4000-8000-000000000001',
@@ -194,6 +205,36 @@ describe('HOME composition (docs/spec/07)', () => {
   test('the next-service card shows the computed service', async () => {
     await renderHome();
     expect(screen.getByText(/Sunday Service/)).toBeOnTheScreen();
+  });
+
+  // The device found this one, and the shape of the bug is why it asserts ABSENCE.
+  // `archive_branch()` leaves `branch_services` alone and the services query has no status
+  // filter, so a closed branch went on drawing "THIS SUNDAY · 11:00 AM" and a "Plan a visit"
+  // that dead-ended, one card below a banner saying the branch had closed.
+  //
+  // The frame's answer is the whole screen rather than the hero alone: Home IS the branch's
+  // front page, so with no branch there is only the ask and the verse. Every line below is
+  // something a later change could put back without noticing, which is the point of pinning
+  // them together.
+  test('a branch that has closed leaves only the card and the verse', async () => {
+    mockBrowsedClosed.mockReturnValue({ closed: true });
+    await renderHome();
+
+    // The verse stays: it belongs to the whole family, not to any branch.
+    expect(
+      screen.getByText('“Yahweh is my shepherd: I shall lack nothing.”'),
+    ).toBeTruthy();
+
+    // The service card, in all three of its shapes.
+    expect(screen.queryByText(/Sunday Service/)).toBeNull();
+    expect(screen.queryByText('Service times coming soon')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Plan a visit' })).toBeNull();
+    // And everything else the screen would normally carry.
+    expect(screen.queryByText('From the family')).toBeNull();
+    expect(screen.queryByText('Latest message')).toBeNull();
+
+    // Not a gate: the way out is still on screen, and every tab is untouched.
+    expect(screen.getByLabelText(/Current branch/)).toBeTruthy();
   });
 
   test('zero branch_services rows falls back, never a broken card', async () => {

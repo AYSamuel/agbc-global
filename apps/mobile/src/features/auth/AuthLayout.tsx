@@ -38,8 +38,16 @@ export interface AuthLayoutProps extends PropsWithChildren {
    * `showMailIcon`, which stays because every auth call site reads better for it.
    */
   icon?: ReactNode;
-  backLabel: string;
-  onBack: () => void;
+  /**
+   * The back circle, drawn only when there is somewhere to go back TO.
+   *
+   * Optional since W3.5 slice 5c: the re-home prompt borrows this layout and is presented
+   * on launch with nothing behind it, so a back control would be a button that either does
+   * nothing or drops the member somewhere they did not come from. Its way out is its own
+   * "Not now", at the bottom with the other choice.
+   */
+  backLabel?: string;
+  onBack?: () => void;
 }
 
 export function AuthLayout({
@@ -67,24 +75,34 @@ export function AuthLayout({
             paddingBottom: spacing.x2l + 2,
           }}
         >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={backLabel}
-            onPress={onBack}
-            hitSlop={4}
-            style={({ pressed }) => ({
-              width: 40,
-              height: 40,
-              borderRadius: radius.full,
-              backgroundColor: colors.alt,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 12,
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <ChevronLeftIcon size={iconSize.xl} color={colors.text} strokeWidth={2} />
-          </Pressable>
+          {onBack ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={backLabel}
+              onPress={onBack}
+              hitSlop={4}
+              style={({ pressed }) => ({
+                width: 40,
+                height: 40,
+                borderRadius: radius.full,
+                backgroundColor: colors.alt,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 12,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <ChevronLeftIcon
+                size={iconSize.xl}
+                color={colors.text}
+                strokeWidth={2}
+              />
+            </Pressable>
+          ) : (
+            // The tile's own top margin is measured from the back circle in the frame, so
+            // without one the gold icon would sit hard against the safe area.
+            <View style={{ height: 12 }} />
+          )}
           {icon !== undefined || showMailIcon ? (
             <View
               accessibilityElementsHidden
@@ -101,7 +119,11 @@ export function AuthLayout({
               }}
             >
               {icon ?? (
-                <MailIcon size={iconSize.x2l} color={palette.navy} strokeWidth={1.8} />
+                <MailIcon
+                  size={iconSize.x2l}
+                  color={palette.navy}
+                  strokeWidth={1.8}
+                />
               )}
             </View>
           ) : null}
