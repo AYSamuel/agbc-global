@@ -165,6 +165,9 @@
   .banner h4{margin:0 0 3px;font-size:14px;font-weight:800;font-family:var(--disp)}
   .banner p{margin:0;font-size:13px;color:var(--sub);line-height:1.5}
   .banner .act{margin-left:auto;align-self:center}
+  /* The label in a banner action is short by design and must not stack: "Open People" on
+     two lines reads as a mistake next to a one-line refusal. */
+  .banner .act .btn{white-space:nowrap}
 
   /* Form controls (W2.7 People, the dashboard's first form). Named to match the app
      mockup's .field/.lab/.inp so the two files read as one system. */
@@ -209,6 +212,24 @@
   .artrow{display:flex;gap:14px;align-items:flex-start;margin-top:8px}
   .artrow .rt{min-width:0;flex:1}
   .artrow .rt .hint{margin-top:0}
+
+  /* W3.5 slice 5b · Branches. Three additions, and only three, because the branch form is
+     an ordinary form built from .field/.lab/.inp and the archive confirm is the events
+     cancel screen with different consequences.
+
+     .frow puts two short fields on one line (city + country, lat + lng, weekday + time):
+     they are read as a pair and stacking them makes a seventeen-field form twice as long
+     as it needs to be. .lrow is one repeatable person or service row, sitting on the same
+     card grammar as .item at a smaller weight. .inp.lock is a value the form SHOWS and
+     does not let anybody type: the slug is insert-only in the schema (20260820180000) and
+     HQ decides where members are asked to move when a branch closes, so both are facts
+     about the row rather than fields on it. */
+  .frow{display:flex;gap:14px;max-width:520px;margin-top:16px}
+  .frow .field{flex:1;margin-top:0;max-width:none}
+  .lrow{display:flex;gap:10px;align-items:center;margin-top:8px;max-width:520px}
+  .lrow .inp{flex:1;min-width:0}
+  .lrow .rm{flex:none;color:var(--muted);background:none;border:none;font-size:16px;cursor:pointer;padding:6px 8px}
+  .inp.lock{background:var(--alt);color:var(--muted);font-weight:700}
 </style>
 
 <div class="stage t-light">
@@ -2601,6 +2622,601 @@
   <p class="ghead">W3.5 &middot; EVENTS &middot; dark</p>
   <div class="gallery t-dark" id="w35eDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
   <script>(function(){var l=document.getElementById('w35eLight'),d=document.getElementById('w35eDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
+
+  <p class="ghead">W3.5 slice 5b &middot; BRANCHES &middot; admin only, and the one act that closes a place</p>
+  <p class="gnote"><span>Six frames, and the list gets none (the W2.7 rule): four rows with a
+    name, a city and a status is a conventional table and not a decision. Four things here
+    are. The shape of a seventeen-field form, twice over, because ADD and EDIT are not the
+    same screen with a different button: adding has no draft and reaches every member and
+    guest the moment it saves, while editing carries the two acts a branch can be subjected
+    to. Closing one, which is the largest single act in this dashboard and the only one that
+    asks a member to choose something. And moving HQ, which moves a gold badge every member
+    can see. Behavioural truth stays <b>17</b> §5 and <b>02</b> §branches; the refusals shown
+    here are the ones <code>archive_branch()</code> already makes
+    (<b>20260820180000</b>).</span></p>
+  <div class="gallery" id="w35brLight">
+
+    <div class="device">
+      <p class="name"><b>ADD BRANCH</b> &middot; there is no draft &middot; saving puts it in front of everybody</p>
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches/new</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <div class="sect">Phase A</div>
+            <a class="" href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a class="" href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a class="" href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a class="" href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Phase B</div>
+            <a class="" href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a class="" href="#"><span class="ic">&#9788;</span>Events</a>
+            <a class="on" href="#"><span class="ic">&#9750;</span>Branches</a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Add a branch</h2>
+                <p class="scope">The fifth place AGBC meets</p>
+              </div>
+              <button class="btn ghost">Back to branches</button>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>There is no draft. Saving puts this in front of everybody.</b> It joins the
+                list new members choose from, the switcher on Home and the family map, for
+                members and guests alike, the moment you press the button and without an app
+                release. Nothing is sent to anybody&rsquo;s phone: a new branch is an
+                invitation to find, not an announcement.</p>
+            </div>
+
+            <div class="mlabel">The branch</div>
+            <div class="field">
+              <span class="lab">Name</span>
+              <div class="inp ph">AGBC Rotterdam</div>
+            </div>
+            <div class="field">
+              <span class="lab">Short id</span>
+              <div class="inp ph">rotterdam</div>
+              <div class="hint">Lowercase, no spaces. Chosen once and never changed, so it is
+                worth a second&rsquo;s thought: it is how this branch is named in every row
+                that will ever point at it.</div>
+            </div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">City</span>
+                <div class="inp ph">Rotterdam</div>
+              </div>
+              <div class="field">
+                <span class="lab">Country</span>
+                <div class="inp ph">Netherlands</div>
+              </div>
+            </div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">Languages</span>
+                <div class="inp ph">Nederlands / English</div>
+              </div>
+              <div class="field">
+                <span class="lab">Time zone</span>
+                <div class="inp ph">Europe/Amsterdam</div>
+              </div>
+            </div>
+
+            <div class="mlabel">Where it meets</div>
+            <div class="field">
+              <span class="lab">Address</span>
+              <div class="inp ph">Street and number</div>
+            </div>
+            <div class="field">
+              <span class="lab">Address line 2 (optional)</span>
+              <div class="inp ph">Unit, building or floor</div>
+            </div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">Latitude</span>
+                <div class="inp ph">51.9244</div>
+              </div>
+              <div class="field">
+                <span class="lab">Longitude</span>
+                <div class="inp ph">4.4777</div>
+              </div>
+            </div>
+            <div class="hint">Both are needed: a branch with no coordinates has no pin, and the
+              family map is the screen this whole app is named after.</div>
+
+            <div class="mlabel">When it meets</div>
+            <div class="lrow">
+              <div class="inp ph" style="max-width:112px">Sunday</div>
+              <div class="inp ph" style="max-width:104px">11:00</div>
+              <div class="inp ph" style="max-width:112px">Sunday</div>
+              <div class="inp ph">What to call it</div>
+              <button class="rm">&#10005;</button>
+            </div>
+            <div class="lrow">
+              <button class="btn outline">Add a service</button>
+            </div>
+            <div class="field">
+              <span class="lab">How the times read in the app</span>
+              <div class="inp ph">Sundays 11:00, doors from 10:30</div>
+              <div class="hint">The rows above are the schedule the reminders read. This is the
+                sentence members see on the church page, in your words.</div>
+            </div>
+
+            <div class="mlabel">Who leads it</div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">Lead name</span>
+                <div class="inp ph">Pastor</div>
+              </div>
+              <div class="field">
+                <span class="lab">Lead role</span>
+                <div class="inp ph">Branch Pastor</div>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">A line about them</span>
+              <div class="inp area ph">A sentence members read under their name</div>
+            </div>
+            <div class="field">
+              <span class="lab">Other leaders</span>
+            </div>
+            <div class="lrow">
+              <button class="btn outline">Add a leader</button>
+            </div>
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>Naming somebody here gives them nothing.</b> These are the names on the
+                church page. Letting a person moderate this branch is a separate act in
+                <b>People</b>, by email address, and a new branch starts with no leader at
+                all: until one is given the role, its queue belongs to the admins.</p>
+            </div>
+
+            <div class="mlabel">On the app</div>
+            <div class="field">
+              <span class="lab">YouTube channel (optional)</span>
+              <div class="inp ph">Leave empty to use the main AGBC channel</div>
+            </div>
+            <div class="field">
+              <span class="lab">Contact email</span>
+              <div class="inp ph">rotterdam@agbcglobal.com</div>
+            </div>
+            <div class="field">
+              <span class="lab">Welcome</span>
+              <div class="inp area ph">What this branch wants a stranger to read first</div>
+            </div>
+            <div class="field">
+              <span class="lab">Order in the list</span>
+              <div class="inp">5</div>
+              <div class="hint">Where it sits among the others. Defaults to last.</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary">Add this branch</button>
+              <button class="btn ghost">Discard</button>
+            </div>
+            <div class="hint">Headquarters and closing are decided from a branch&rsquo;s own
+              page, not here: neither is a thing to settle about a place on the day it opens.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>EDIT BRANCH</b> &middot; the form &middot; two of these fields are facts, not fields</p>
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches/emmen</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <div class="sect">Phase A</div>
+            <a class="" href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a class="" href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a class="" href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a class="" href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Phase B</div>
+            <a class="" href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a class="" href="#"><span class="ic">&#9788;</span>Events</a>
+            <a class="on" href="#"><span class="ic">&#9750;</span>Branches</a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>AGBC Emmen</h2>
+                <p class="scope">34 members &middot; open since March 2019</p>
+              </div>
+              <button class="btn ghost">Back to branches</button>
+            </div>
+
+            <div class="mlabel">The branch</div>
+            <div class="field">
+              <span class="lab">Name</span>
+              <div class="inp">AGBC Emmen</div>
+            </div>
+            <div class="field">
+              <span class="lab">Short id</span>
+              <div class="inp lock">emmen</div>
+              <div class="hint">Set when the branch is added and never after. Renaming a
+                branch is an edit; re-slugging one is a different branch wearing its rows.</div>
+            </div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">City</span>
+                <div class="inp">Emmen</div>
+              </div>
+              <div class="field">
+                <span class="lab">Country</span>
+                <div class="inp">Netherlands</div>
+              </div>
+            </div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">Languages</span>
+                <div class="inp">Nederlands / English</div>
+              </div>
+              <div class="field">
+                <span class="lab">Time zone</span>
+                <div class="inp">Europe/Amsterdam</div>
+              </div>
+            </div>
+            <div class="hint">The zone is not a display setting. It decides which DAY an
+              &ldquo;I&rsquo;m here&rdquo; tap counts as, and what time a reminder goes out.</div>
+
+            <div class="mlabel">Where it meets</div>
+            <div class="field">
+              <span class="lab">Address</span>
+              <div class="inp">Meerstraat 12</div>
+            </div>
+            <div class="field">
+              <span class="lab">Address line 2 (optional)</span>
+              <div class="inp ph">Unit, building or floor</div>
+            </div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">Latitude</span>
+                <div class="inp">52.7792</div>
+              </div>
+              <div class="field">
+                <span class="lab">Longitude</span>
+                <div class="inp">6.9069</div>
+              </div>
+            </div>
+            <div class="hint">This is the pin on the family map, which is the screen the whole
+              app is named after. Get it wrong and the branch appears in the North Sea.</div>
+
+            <div class="mlabel">When it meets</div>
+            <div class="lrow">
+              <div class="inp" style="max-width:112px">Sunday</div>
+              <div class="inp" style="max-width:104px">11:00</div>
+              <div class="inp" style="max-width:112px">Sunday</div>
+              <div class="inp">Sunday Worship</div>
+              <button class="rm">&#10005;</button>
+            </div>
+            <div class="lrow">
+              <div class="inp" style="max-width:112px">Wednesday</div>
+              <div class="inp" style="max-width:104px">19:00</div>
+              <div class="inp" style="max-width:112px">Midweek</div>
+              <div class="inp">Midweek Prayer</div>
+              <button class="rm">&#10005;</button>
+            </div>
+            <div class="lrow">
+              <button class="btn outline">Add a service</button>
+            </div>
+            <div class="hint">Day, time, KIND and a name. These rows are what the reminders
+              read: an hour before each one, everybody at this branch who has service reminders
+              on hears about it. The kind is not decoration: a row left unnamed is drawn in the
+              app from its kind (&ldquo;Sunday service&rdquo;, &ldquo;Midweek&rdquo;), so it is
+              the label a member sees when nobody typed one. Removing a row stops those
+              reminders, and changes nothing that has already gone out.</div>
+            <div class="field">
+              <span class="lab">How the times read in the app</span>
+              <div class="inp">Sundays 11:00, doors from 10:30</div>
+              <div class="hint">The sentence members actually read on the church page, in your
+                words. Kept separate from the rows above on purpose: the rows are a schedule
+                and this is a welcome. If you change one, look at the other.</div>
+            </div>
+
+            <div class="mlabel">Who leads it</div>
+            <div class="frow">
+              <div class="field">
+                <span class="lab">Lead name</span>
+                <div class="inp">Pastor Henk de Vries</div>
+              </div>
+              <div class="field">
+                <span class="lab">Lead role</span>
+                <div class="inp">Branch Pastor</div>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">A line about them</span>
+              <div class="inp area">Serving Emmen since the church began meeting in the
+                Meerstraat hall, alongside his wife Anneke.</div>
+            </div>
+            <div class="field">
+              <span class="lab">Other leaders</span>
+            </div>
+            <div class="lrow">
+              <div class="inp">Anneke de Vries</div>
+              <div class="inp">Womens Ministry</div>
+              <button class="rm">&#10005;</button>
+            </div>
+            <div class="lrow">
+              <div class="inp">Samuel Okafor</div>
+              <div class="inp">Youth</div>
+              <button class="rm">&#10005;</button>
+            </div>
+            <div class="lrow">
+              <button class="btn outline">Add a leader</button>
+            </div>
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>These names are the church page, not the dashboard.</b> They are what
+                members read under &ldquo;who leads here&rdquo;. Giving somebody the power to
+                moderate this branch is a different act, in <b>People</b>, and it is the one
+                that decides what they can see.</p>
+            </div>
+
+            <div class="mlabel">On the app</div>
+            <div class="field">
+              <span class="lab">YouTube channel (optional)</span>
+              <div class="inp ph">Leave empty to use the main AGBC channel</div>
+            </div>
+            <div class="field">
+              <span class="lab">Contact email</span>
+              <div class="inp">emmen@agbcglobal.com</div>
+            </div>
+            <div class="field">
+              <span class="lab">Welcome</span>
+              <div class="inp area">Whoever you are, wherever you have come from, there is a
+                seat here for you.</div>
+            </div>
+            <div class="field">
+              <span class="lab">Order in the list</span>
+              <div class="inp">3</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary">Save changes</button>
+              <button class="btn ghost">Discard</button>
+            </div>
+
+            <div class="banner off">
+              <span class="bi">&#9873;</span>
+              <div>
+                <h4>Glasgow is the headquarters</h4>
+                <p>HQ wears the gold badge members see in the branch list, is offered first
+                  when somebody&rsquo;s branch closes, sets the clock for events belonging to
+                  the whole family, and is the one branch that cannot itself be closed.</p>
+              </div>
+              <span class="act"><button class="btn outline">Move HQ here</button></span>
+            </div>
+
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>Close this branch</h4>
+                <p>For a branch that has stopped meeting. It is never deleted: its
+                  testimonies, prayers and attendance stay exactly where they are.</p>
+              </div>
+              <span class="act"><button class="btn danger">Close AGBC Emmen</button></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>CLOSE</b> &middot; blocked &middot; the leaders come first, and the reason is not tidiness</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches/emmen/close</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Close AGBC Emmen?</h2>
+                <p class="scope">Not yet: two people still lead it</p>
+              </div>
+            </div>
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>Move or step down its leaders first</h4>
+                <p><b>Henk de Vries</b> and <b>Samuel Okafor</b> lead this branch. Give them
+                  another branch, or make them members again, and this page will let you
+                  carry on.</p>
+              </div>
+              <span class="act"><button class="btn outline">Open People</button></span>
+            </div>
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>This is not tidying up.</b> What a leader can moderate is decided by which
+                branch they belong to, so a leader still pointing at a closed branch has
+                authority over a place that no longer exists. Emptying the branch first is
+                also what hands its unreviewed posts to the admins: the queue goes to a
+                branch&rsquo;s own leaders, or to every admin when it has none.</p>
+            </div>
+            <div class="actions">
+              <button class="btn ghost">Back to the branch</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>CLOSE</b> &middot; the confirm &middot; three numbers, and a name typed out</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches/emmen/close</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Close AGBC Emmen?</h2>
+                <p class="scope">Open since March 2019 &middot; no leaders left</p>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="ps"><div class="n">34</div><div class="l">Members to re-home</div></div>
+              <div class="ps"><div class="n">2</div><div class="l">Gatherings cancelled</div></div>
+              <div class="ps"><div class="n">1</div><div class="l">Broadcast stopped</div></div>
+            </div>
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>34 members are asked to choose a new home</h4>
+                <p>Next time each of them opens the app they are asked where they belong now,
+                  with Glasgow offered first. Nobody is moved for them, and nobody is locked
+                  out while they think about it. Until they choose, branch news and service
+                  reminders stop reaching them; the whole family&rsquo;s announcements still do.</p>
+              </div>
+            </div>
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>Its next two gatherings are cancelled, and 46 people are told</h4>
+                <p>Everyone still holding an RSVP gets &ldquo;this is cancelled&rdquo; in their
+                  own language, about two minutes after you confirm. Gatherings already held
+                  are left exactly as they are.</p>
+              </div>
+            </div>
+            <div class="banner off">
+              <span class="bi">&#9788;</span>
+              <div>
+                <h4>Nothing is deleted</h4>
+                <p>Every testimony, prayer and attendance record stays, and stays readable
+                  under <b>Everywhere</b>: this branch has been part of the family and the
+                  family map still knows it. The branch disappears from the places people
+                  JOIN it from, and you can open it again.</p>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">Type the branch name to confirm</span>
+              <div class="inp ph">AGBC Emmen</div>
+            </div>
+            <div class="field">
+              <span class="lab">Code from your authenticator</span>
+              <div class="inp code">407 912</div>
+              <div class="hint">Asked for again because this one closes a place. Nobody else
+                has to approve it, so the second factor is the pause.</div>
+            </div>
+            <div class="actions">
+              <button class="btn danger">Close this branch</button>
+              <button class="btn ghost">Keep it open</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>MOVE HQ</b> &middot; the confirm &middot; a badge every member can see</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches/emmen/hq</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Make AGBC Emmen the headquarters?</h2>
+                <p class="scope">Glasgow has held it since the first branch</p>
+              </div>
+            </div>
+            <div class="banner tell">
+              <span class="bi">&#9873;</span>
+              <div>
+                <h4>The gold HQ badge moves, and members see it move</h4>
+                <p>It sits beside the branch name everywhere somebody chooses one: the list
+                  new members pick from, and the switcher on Home. Nobody is told, and nobody
+                  moves branch; the badge is simply on Emmen the next time they look.</p>
+              </div>
+            </div>
+            <div class="banner tell">
+              <span class="bi">&#9788;</span>
+              <div>
+                <h4>Two defaults move with it</h4>
+                <p>A member whose branch closes is offered Emmen first, and an event that
+                  belongs to the whole family takes Emmen&rsquo;s clock
+                  (<b>Europe/Amsterdam</b>) unless it is given one. Events already posted keep
+                  the zone they were posted with.</p>
+              </div>
+            </div>
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>And Glasgow becomes closeable</h4>
+                <p>HQ is the one branch this dashboard refuses to close, because it is where
+                  everyone else is sent. Hand that to Emmen and Glasgow loses the protection.</p>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">Code from your authenticator</span>
+              <div class="inp code">407 912</div>
+              <div class="hint">The same pause the closing screen asks for, and for the same
+                reason: an ordinary edit here rides your sign-in, and the two acts that reach
+                every member ask again.</div>
+            </div>
+            <div class="actions">
+              <button class="btn primary">Move HQ to Emmen</button>
+              <button class="btn ghost">Leave it with Glasgow</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>RE-OPEN</b> &middot; the confirm &middot; honest about what does not come back</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches/emmen/open</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Open AGBC Emmen again?</h2>
+                <p class="scope">Closed on 20 August 2026 by Pastor AY Samuel</p>
+              </div>
+            </div>
+            <div class="banner off">
+              <span class="bi">&#9788;</span>
+              <div>
+                <h4>It becomes a place again</h4>
+                <p>Emmen comes back to the branch list, the switcher and the map, people can
+                  join it, and it can hold events and send broadcasts. Its own leaders are not
+                  restored: give somebody the role in <b>People</b> when there is somebody to
+                  give it to.</p>
+              </div>
+            </div>
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>This is not an undo</h4>
+                <p>The two cancelled gatherings stay cancelled, because people were already
+                  told and announcing them again would be a second message about the same
+                  day. The 11 members who have already chosen a new home stay where they
+                  went: that was their choice to make, not ours to reverse.</p>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">Code from your authenticator</span>
+              <div class="inp code">407 912</div>
+            </div>
+            <div class="actions">
+              <button class="btn primary">Open it again</button>
+              <button class="btn ghost">Leave it closed</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="ghead">W3.5 slice 5b &middot; BRANCHES &middot; dark</p>
+  <div class="gallery t-dark" id="w35brDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
+  <script>(function(){var l=document.getElementById('w35brLight'),d=document.getElementById('w35brDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
 </div>
 
