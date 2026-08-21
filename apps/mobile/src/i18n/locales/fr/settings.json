@@ -78,6 +78,28 @@
     "refusedEmail": "Écrire à {{branch}}",
     "refusedClose": "Fermer"
   },
+  "rehome": {
+    "title": "{{branch}} a fermé",
+    "lead": "Cette antenne ne se réunit plus. Choisis où tu es chez toi maintenant : les cultes, les rappels et les nouvelles te suivront là-bas.",
+    "untilYouChoose": "Jusqu'à ton choix",
+    "noBranchNews": "Aucune nouvelle",
+    "whereNow": "Où te rassembles-tu maintenant ?",
+    "choose": "C'est mon antenne",
+    "notNow": "Pas maintenant",
+    "pickOne": "Choisis d'abord une antenne.",
+    "note": "Personne n'a à approuver celui-ci. Si tu veux changer plus tard, cela se fait comme d'habitude : un responsable de l'antenne que tu rejoins le confirme.",
+    "confirmTitle": "{{branch}} comme chez toi ?",
+    "confirmBody": "Cela prend effet tout de suite, sans confirmation : il ne reste aucune antenne à qui demander. Les cultes, les rappels et les nouvelles viendront de {{branch}} désormais, et tout ce que tu as publié reste exactement où il est.",
+    "confirmYes": "Oui, c'est chez moi",
+    "confirmPickAnother": "En choisir une autre",
+    "dismissed": "Fermé",
+    "settled": "{{branch}} est maintenant ton antenne.",
+    "failed": "Cela n'a pas fonctionné. Vérifie ta connexion et réessaie.",
+    "noteLead": "{{branch}} a fermé.",
+    "noteBody": "Choisis où tu es chez toi maintenant. D'ici là, les nouvelles et les rappels de culte ne te parviennent plus.",
+    "noteAction": "Choisir",
+    "noteActionLabel": "Choisir une nouvelle antenne"
+  },
   "communitySection": "Communauté",
   "blocked": {
     "title": "Membres bloqués",

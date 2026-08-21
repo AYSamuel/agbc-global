@@ -27,7 +27,7 @@
 -- fixtures, and the branch being closed is one this file creates rather than a seeded one.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(52);
+select plan(55);
 
 -- ===========================================================================
 -- 0. Fixtures.
@@ -50,7 +50,7 @@ select plan(52);
 \set waiting_cast '98000000-0000-4000-8000-0000000000c2'
 \set family_cast  '98000000-0000-4000-8000-0000000000c3'
 \set later_cast   '98000000-0000-4000-8000-0000000000c4'
-\set waiting_post '98000000-0000-4000-8000-0000000000d1'
+\set waiting_post '98000000-0000-4000-8000-00000000000d'
 
 -- A branch of this file's own, so nothing here disturbs a seeded one and every count can be
 -- scoped to it.
@@ -537,6 +537,43 @@ select ok(
 select ok(
   not has_table_privilege('authenticated', 'public.branches', 'delete'),
   'and nobody may delete a branch: they are archived, and the absence is the enforcement');
+
+-- ===========================================================================
+-- 9. A closed branch takes no attendance (20260821140000).
+-- ===========================================================================
+-- `02`'s "branch_services deactivated" turned out to describe ONE caller: the reminder job
+-- joins on status. Nothing else asked, so the app went on offering a check-in at a branch
+-- that had stopped meeting. The screen is fixed where it is drawn; this is the half that has
+-- to hold when the client is stale, deep-linked, or replaying a check-in it queued while
+-- offline BEFORE the closure.
+
+reset role;
+reset request.jwt.claims;
+
+select is(
+  (select status::text from public.branches where id = :'closing'),
+  'archived',
+  'the branch is closed by the time this section runs (guarding the assertions below)');
+
+set local role authenticated;
+set local request.jwt.claims to
+  '{"sub":"98000000-0000-4000-8000-00000000000d","role":"authenticated","user_role":"member"}';
+
+select throws_ok(
+  format($$insert into public.attendance (branch_id) values (%L)$$, :'closing'),
+  '23514',
+  null,
+  'a member cannot check in at a branch that has closed');
+
+reset role;
+reset request.jwt.claims;
+
+-- The trusted path is deliberately NOT refused: it states history rather than claiming to be
+-- somewhere, and a closure today must not make last month's attendance unwritable.
+select lives_ok(
+  format($$insert into public.attendance (profile_id, branch_id, service_date)
+           values (%L, %L, current_date - 30)$$, :'cooldown_member', :'closing'),
+  'but a trusted writer may still record a gathering that already happened there');
 
 select * from finish();
 rollback;

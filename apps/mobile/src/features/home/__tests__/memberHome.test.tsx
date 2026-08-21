@@ -95,6 +95,14 @@ jest.mock('@/features/onboarding/useBranches', () => ({
   useBranchesQuery: () => ({ data: undefined, isError: true }),
 }));
 
+// W3.5 slice 5c: Home asks whether the member's own branch has closed under them. Mocked to
+// "no" here, like every other data hook in this file; the prompt and the card have their own
+// tests in `features/rehome`.
+jest.mock('@/features/rehome/queries', () => ({
+  useBranchHasClosed: () => ({ closed: false, branch: null }),
+  useBranchClosed: () => ({ closed: false, branch: null }),
+}));
+
 jest.mock('@/features/branch-change/queries', () => ({
   useMyBranchRequests: () => ({
     data: { pending: null, lastApproved: null, lastRejected: null },

@@ -8,15 +8,22 @@ set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
 
 -- Counted by SLUG, not as a raw total. The dashboard's test helpers create throwaway
--- branches (apps/dashboard/src/test/callers.ts createTestBranch), and an interrupted run
--- can leave one behind; a raw count then fails here for a reason that has nothing to do
--- with anon's read access, which is what this file is about.
+-- branches (apps/dashboard/src/test/callers.ts createTestBranch), and one is ALWAYS left
+-- behind rather than only after an interrupted run: a branch is archived and never deleted
+-- (W3.5 slice 5a), so nothing can tidy it away. A raw count then fails here for a reason
+-- that has nothing to do with anon's read access, which is what this file is about.
 select is(
   (select count(*) from public.branches
     where slug in ('glasgow', 'berlin', 'emmen', 'ogbomosho'))::int,
   4, 'anon reads the four seeded branches');
-select is((select count(*) from public.branch_services)::int, 8,
-  'anon reads the seeded service schedule');
+-- Scoped the same way, and for the same reason: those throwaway branches bring services of
+-- their own. This assertion counted raw until W3.5 slice 5c, when the branch module's own
+-- tests started leaving one behind on every run.
+select is(
+  (select count(*) from public.branch_services s
+     join public.branches b on b.id = s.branch_id
+    where b.slug in ('glasgow', 'berlin', 'emmen', 'ogbomosho'))::int,
+  8, 'anon reads the seeded service schedule');
 select is((select count(*) from public.app_config)::int, 1,
   'anon reads app_config (pre-auth forced-update gate)');
 select is((select count(*) from public.giving_config)::int, 1,

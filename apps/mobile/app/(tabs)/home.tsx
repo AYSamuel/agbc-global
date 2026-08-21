@@ -51,6 +51,9 @@ import { VerseCard } from '@/features/home/VerseCard';
 import { resolveBranchList } from '@/features/onboarding/branchList';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
 import { useUnreadCount } from '@/features/notifications/nc';
+import { ClosedBranchNote } from '@/features/rehome/ClosedBranchNote';
+import { useRehomePromptStore } from '@/features/rehome/prompted';
+import { useBranchClosed, useBranchHasClosed } from '@/features/rehome/queries';
 import { useCheckInAnnounceStore } from '@/features/rhythm/announce';
 import { useRhythmQuery } from '@/features/rhythm/queries';
 import { StreakStrip } from '@/features/rhythm/StreakStrip';
@@ -197,6 +200,62 @@ export default function Home() {
   const dismissed = useBranchOutcomeStore((s) => s.dismissed);
   const acknowledge = useBranchOutcomeStore((s) => s.acknowledge);
   const dismissNote = useBranchOutcomeStore((s) => s.dismiss);
+
+  // The branch has closed under them (W3.5 slice 5c). Two surfaces, one condition: the
+  // prompt interrupts once per launch and can be put off, and this card cannot, because
+  // once it has been put off nothing else in the app is going to ask.
+  const homeBranchClosed = useBranchHasClosed();
+  // The HERO asks a different question from the card: not "did my branch close" but "has the
+  // branch I am LOOKING at closed". Usually one row and one answer, but a guest can be
+  // browsing a branch that closes too, and they get no card to explain it.
+  const browsedClosed = useBranchClosed(branch?.id ?? null);
+  const prompted = useRehomePromptStore((s) => s.prompted);
+  const markPrompted = useRehomePromptStore((s) => s.markPrompted);
+
+  useEffect(() => {
+    if (!homeBranchClosed.closed || prompted) return;
+    markPrompted();
+    router.push('/rehome');
+  }, [homeBranchClosed.closed, prompted, markPrompted, router]);
+
+  // A GUEST BROWSING A BRANCH THAT CLOSED IS MOVED TO HQ, and a member browsing somebody
+  // else's is too. The card is what explains a missing hero, and the card belongs to the
+  // one member whose home this was; for anybody else there would be no hero, no card and
+  // no reason. They have nothing invested in this branch either: it is a browsing choice,
+  // it has already left the switcher, and BRANCH-INFO already refuses it outright.
+  //
+  // Never for the member whose home it is: their chip has to keep naming the branch the
+  // card is asking them about.
+  useEffect(() => {
+    if (!browsedClosed.closed || homeBranchClosed.closed) return;
+    // `resolveBranchList` never hands back an empty list: it falls back to the bundled
+    // snapshot, which is why `branches[0]` needs no guard here.
+    const hq = branches.find((one) => one.is_hq) ?? branches[0];
+    if (hq.id === branch?.id) return;
+    setBranch({
+      id: hq.id,
+      slug: hq.slug,
+      name: hq.name,
+      timezone: hq.timezone,
+    });
+  }, [
+    browsedClosed.closed,
+    homeBranchClosed.closed,
+    branches,
+    branch?.id,
+    setBranch,
+  ]);
+
+  // HOME GOES QUIET WHILE THE BRANCH IS CLOSED (frame approved 2026-08-21): the card and
+  // the verse, and nothing else. Home IS the branch's front page, so with no branch there is
+  // no front page, only the ask and a verse that belongs to the whole family rather than to
+  // any branch. It is not a gate: Watch, Family, Give and More are untouched, and one tap on
+  // Choose gives the screen back.
+  //
+  // Deliberately narrower than it looks. `02`'s open-request banner draws the same shape in
+  // the mockup and does NOT strip Home, because a member with a request pending still has a
+  // branch meeting on Sunday. This state is the one where there is nothing left to show.
+  const closedQuiet = browsedClosed.closed;
 
   const openRequest = branchRequests.data?.pending ?? null;
   const dismissedNote =
@@ -441,6 +500,15 @@ export default function Home() {
         </View>
       </View>
 
+      {homeBranchClosed.closed ? (
+        <ClosedBranchNote
+          branchName={homeBranchClosed.branch?.name ?? ''}
+          onChoose={() => {
+            router.push('/rehome');
+          }}
+        />
+      ) : null}
+
       {openRequest && !dismissedNote ? (
         <PendingBranchNote
           shortName={shortBranchName(askedBranchName)}
@@ -452,7 +520,14 @@ export default function Home() {
       ) : null}
 
       <View style={{ paddingHorizontal: spacing.lg, gap: spacing.lg }}>
-        {servicesQuery.data === undefined && !servicesQuery.isError ? (
+        {/* What used to be here, and why the deletion is the fix: `archive_branch()`
+            leaves `branch_services` alone (there is no flag to clear, which is
+            also why re-opening restores the diary) and the services query carries
+            no status filter, so a closed branch went on drawing "THIS SUNDAY ·
+            11:00 AM" with a "Plan a visit" that dead-ended on BRANCH-INFO's own
+            refusal, and on a Sunday a check-in that the server now refuses too. */}
+        {closedQuiet ? null : servicesQuery.data === undefined &&
+          !servicesQuery.isError ? (
           <Skeleton height={190} />
         ) : (
           <NextServiceCard
@@ -496,7 +571,7 @@ export default function Home() {
             (docs/spec/04), which reads the same cached `rhythm_state` row this
             panel is drawn from, so opening it costs nothing and can say nothing
             different. */}
-        {isMember ? (
+        {closedQuiet ? null : isMember ? (
           rhythm === null && !rhythmQuery.isError ? (
             <Skeleton height={92} />
           ) : rhythm !== null ? (
@@ -522,67 +597,70 @@ export default function Home() {
             bottom tab, testimonies live two levels deep under Family, so Home
             surfaces the harder-to-reach thing (docs/spec/07, ordering
             rationale). */}
-        <View>
-          <SectionHeader
-            label={t('home:fromTheFamily')}
-            actionLabel={t('watch:seeAll')}
-            onAction={() => {
-              // Land on the Testimonies sub-tab specifically (the section is
-              // testimonies); `k` forces it even if Family was left elsewhere.
-              router.push({
-                pathname: '/family',
-                params: { tab: 'testimonies', k: String(Date.now()) },
-              });
-            }}
-          />
-          {testimonyHighlight.data === undefined &&
-          !testimonyHighlight.isError ? (
-            <Skeleton height={150} />
-          ) : testimonyHighlight.data ? (
-            <TestimonyCard
-              testimony={testimonyHighlight.data}
-              branchName={
-                branchNames[testimonyHighlight.data.branch_id] ?? null
-              }
-              branchColor={branchColorFor(testimonyHighlight.data.branch_id)}
-              onPress={() => {
+        {closedQuiet ? null : (
+          <View>
+            <SectionHeader
+              label={t('home:fromTheFamily')}
+              actionLabel={t('watch:seeAll')}
+              onAction={() => {
+                // Land on the Testimonies sub-tab specifically (the section is
+                // testimonies); `k` forces it even if Family was left elsewhere.
                 router.push({
-                  pathname: '/testimony/[id]',
-                  params: { id: testimonyHighlight.data?.id ?? '' },
+                  pathname: '/family',
+                  params: { tab: 'testimonies', k: String(Date.now()) },
                 });
               }}
-              onGloryGate={() => {
-                const id = testimonyHighlight.data?.id;
-                if (id) openGate({ kind: 'glory', testimonyId: id });
-              }}
-              // Sharing is outbound, not a gated contribution (matches the Family
-              // feed): open the OS sheet rather than the gate.
-              onShare={() => {
-                const item = testimonyHighlight.data;
-                if (!item) return;
-                void shareText(
-                  testimonyShareText(
-                    item.body,
-                    joinMeta([
-                      item.author_name,
-                      branchNames[item.branch_id] ?? null,
-                    ]),
-                    t('appName'),
-                  ),
-                );
-              }}
             />
-          ) : (
-            <Card>
-              <EmptyState
-                title={t('home:familySoonTitle')}
-                body={t('home:familySoonBody')}
+            {testimonyHighlight.data === undefined &&
+            !testimonyHighlight.isError ? (
+              <Skeleton height={150} />
+            ) : testimonyHighlight.data ? (
+              <TestimonyCard
+                testimony={testimonyHighlight.data}
+                branchName={
+                  branchNames[testimonyHighlight.data.branch_id] ?? null
+                }
+                branchColor={branchColorFor(testimonyHighlight.data.branch_id)}
+                onPress={() => {
+                  router.push({
+                    pathname: '/testimony/[id]',
+                    params: { id: testimonyHighlight.data?.id ?? '' },
+                  });
+                }}
+                onGloryGate={() => {
+                  const id = testimonyHighlight.data?.id;
+                  if (id) openGate({ kind: 'glory', testimonyId: id });
+                }}
+                // Sharing is outbound, not a gated contribution (matches the Family
+                // feed): open the OS sheet rather than the gate.
+                onShare={() => {
+                  const item = testimonyHighlight.data;
+                  if (!item) return;
+                  void shareText(
+                    testimonyShareText(
+                      item.body,
+                      joinMeta([
+                        item.author_name,
+                        branchNames[item.branch_id] ?? null,
+                      ]),
+                      t('appName'),
+                    ),
+                  );
+                }}
               />
-            </Card>
-          )}
-        </View>
+            ) : (
+              <Card>
+                <EmptyState
+                  title={t('home:familySoonTitle')}
+                  body={t('home:familySoonBody')}
+                />
+              </Card>
+            )}
+          </View>
+        )}
 
-        {sermonsQuery.data === undefined && !sermonsQuery.isError ? (
+        {closedQuiet ? null : sermonsQuery.data === undefined &&
+          !sermonsQuery.isError ? (
           <View>
             <SectionHeader
               label={t('home:latestMessage')}

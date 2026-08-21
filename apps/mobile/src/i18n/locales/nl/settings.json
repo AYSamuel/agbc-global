@@ -78,6 +78,28 @@
     "refusedEmail": "Mail {{branch}}",
     "refusedClose": "Sluiten"
   },
+  "rehome": {
+    "title": "{{branch}} is gesloten",
+    "lead": "Deze tak komt niet meer samen. Kies waar je nu thuis bent, dan volgen diensten, herinneringen en nieuws je daarheen.",
+    "untilYouChoose": "Tot je kiest",
+    "noBranchNews": "Geen nieuws",
+    "whereNow": "Waar kom je nu samen?",
+    "choose": "Dit is mijn tak",
+    "notNow": "Niet nu",
+    "pickOne": "Kies eerst een tak.",
+    "note": "Niemand hoeft dit goed te keuren. Wil je later opnieuw verhuizen, dan gaat dat zoals gewoonlijk: een leider van de nieuwe tak bevestigt het.",
+    "confirmTitle": "{{branch}} als thuis?",
+    "confirmBody": "Dit gaat meteen in, zonder bevestiging: er is geen tak meer om het aan te vragen. Diensten, herinneringen en nieuws komen vanaf nu van {{branch}}, en alles wat je hebt gedeeld blijft waar het is.",
+    "confirmYes": "Ja, hier ben ik thuis",
+    "confirmPickAnother": "Een andere kiezen",
+    "dismissed": "Gesloten",
+    "settled": "{{branch}} is nu jouw tak.",
+    "failed": "Dat is niet gelukt. Controleer je verbinding en probeer het opnieuw.",
+    "noteLead": "{{branch}} is gesloten.",
+    "noteBody": "Kies waar je nu thuis bent. Tot die tijd bereiken nieuws en dienstherinneringen je niet.",
+    "noteAction": "Kiezen",
+    "noteActionLabel": "Een nieuwe tak kiezen"
+  },
   "communitySection": "Gemeenschap",
   "blocked": {
     "title": "Geblokkeerde leden",
