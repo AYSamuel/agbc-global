@@ -3,6 +3,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@agbc/shared/database';
 
 import type { Caller } from './authorize';
+// Lifted here when the branch module became its second caller (W3.5 slice 5b); the rule it
+// encodes about WHICH acts ask for a fresh code lives in that file's header.
+import { verifyStepUp } from './stepUp';
 
 /**
  * Finding a person, and giving them a role (W2.7 people slice, ADR 0015, docs/spec/17).
@@ -210,32 +213,6 @@ export async function assignRole(
 
   if (!error) return { ok: true };
   return { ok: false, reason: mapRpcError(error.message) };
-}
-
-async function verifyStepUp(
-  supabase: Client,
-  code: string,
-): Promise<AssignFailure | null> {
-  const { data: factors, error: listError } =
-    await supabase.auth.mfa.listFactors();
-  if (listError) return 'failed';
-
-  // listFactors() already returns only VERIFIED factors under `totp`, so filtering on
-  // status here is dead code the linter is right to reject. `.at(0)` rather than `[0]`
-  // because without noUncheckedIndexedAccess an index reads as always-defined, and an
-  // admin with no factor enrolled is a real case: authorize() would have sent them to
-  // /mfa, but this module must not assume that ran.
-  const totp = factors.totp.at(0);
-  if (!totp) return 'no_factor';
-
-  const { error } = await supabase.auth.mfa.challengeAndVerify({
-    factorId: totp.id,
-    code,
-  });
-  // Any failure here is reported as a bad code rather than passed through. The auth server
-  // distinguishes an expired challenge from a wrong digit; the person retyping it does not
-  // care, and the difference is a small oracle about their factor.
-  return error ? 'bad_code' : null;
 }
 
 /**

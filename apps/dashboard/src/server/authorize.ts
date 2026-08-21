@@ -59,6 +59,7 @@ const ADMIN_ONLY = new Set<DashboardAction>([
   'compose_ministry_broadcast',
   'approve_broadcast',
   'manage_ministry_events',
+  'manage_branches',
 ]);
 
 export type StaffRole = 'leader' | 'admin';
@@ -154,7 +155,22 @@ export type DashboardAction =
    * deliberately not branch-scoped, because ministry scope has no branch to be scoped to.
    * `can_moderate_branch(null)` says the same thing at the data layer.
    */
-  | 'manage_ministry_events';
+  | 'manage_ministry_events'
+  /**
+   * Add a branch, edit one, close one, re-open one, move the headquarters (W3.5 slice 5b).
+   *
+   * Admin-only per `17` §5, and deliberately NOT branch-scoped: a leader gets no version of
+   * this at all, not even for their own branch. That is not tidiness. `can_moderate_branch()`
+   * reads `profiles.branch_id`, so a leader who could edit their own branch row would be
+   * editing the subject of their own authority check, which is the hole `20260729200000`
+   * closed from the other side (ADR 0015).
+   *
+   * It covers the whole module rather than splitting close and move-HQ into their own
+   * actions, because the thing that makes those two different is not WHO may do them, it is
+   * that they ask for a fresh authenticator code at the moment of the act (`stepUp.ts`).
+   * Authority and freshness are separate questions and are answered in separate places.
+   */
+  | 'manage_branches';
 
 export interface AuthorizationRequest {
   action: DashboardAction;

@@ -63,10 +63,17 @@ const BUILT: Destination[] = [
   // their own branch's diary and sees the ministry-wide events their members are invited to,
   // which is exactly what the app shows those members.
   { key: 'events', label: copy.nav.events, href: '/events', icon: '☀' },
+  // W3.5 slice 5b, frames approved 2026-08-21, and the last Phase B row to light up.
+  //
+  // Linked for every staff caller like the four rows above, and the refusal behind it is
+  // the strictest in the rail: branch management is admin-only, and a leader gets no
+  // version of it even for their own branch. That is `17` §5, and the reason is ADR 0015's:
+  // `can_moderate_branch()` reads `profiles.branch_id`, so a leader editing their own
+  // branch row would be editing the subject of their own authority check.
+  { key: 'branches', label: copy.nav.branches, href: '/branches', icon: '▦' },
 ];
 
 const LATER: Destination[] = [
-  { key: 'branches', label: copy.nav.branches, phase: 'B', icon: '▦' },
   { key: 'library', label: copy.nav.library, phase: 'C', icon: '□' },
   { key: 'insights', label: copy.nav.insights, phase: 'C', icon: '▭' },
 ];
