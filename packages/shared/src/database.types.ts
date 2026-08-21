@@ -2611,6 +2611,7 @@ export type Database = {
           start_time: string
         }[]
       }
+      set_headquarters: { Args: { branch: string }; Returns: undefined }
       set_member_role: {
         Args: {
           new_branch?: string

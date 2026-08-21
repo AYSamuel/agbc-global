@@ -1054,6 +1054,269 @@ export const copy = {
     },
   },
 
+  // W3.5 slice 5b. Two acts here reach every member and neither can be undone by a leader,
+  // so the copy carries more weight than usual: every consequence a screen states is one the
+  // reader is deciding against, and each number below comes from the same definition the act
+  // itself uses (`server/branches.ts`), never from a count this layer made up.
+  branches: {
+    title: 'Branches',
+    scope: 'Where AGBC meets, and who runs each one',
+    newBranch: 'Add a branch',
+    open: 'Open',
+    backToBranches: 'Back to branches',
+    openHeading: 'Open',
+    closedHeading: 'Closed',
+    hqPill: 'HQ',
+    closedPill: 'Closed',
+    members: (count: number) =>
+      `${String(count)} ${count === 1 ? 'member' : 'members'}`,
+    emptyTitle: 'No branches yet',
+    emptyBody:
+      'Add the first one and it appears in the app straight away, for members and guests alike.',
+
+    // The create form. Its guide is the whole point of the screen: there is no draft state
+    // for a branch, so the first save is the moment every member and guest can see it.
+    createTitle: 'Add a branch',
+    createScope: (nth: string) => `The ${nth} place AGBC meets`,
+    createGuideTitle:
+      'There is no draft. Saving puts this in front of everybody.',
+    createGuideBody:
+      'It joins the list new members choose from, the switcher on Home and the family map, for members and guests alike, the moment you press the button and without an app release. Nothing is sent to anybody’s phone: a new branch is an invitation to find, not an announcement.',
+    createSubmit: 'Add this branch',
+    createPending: 'Adding…',
+    createFooter:
+      'Headquarters and closing are decided from a branch’s own page, not here: neither is a thing to settle about a place on the day it opens.',
+
+    // The edit form.
+    // No "open since": `branches` has no opened-at, and `created_at` is when the ROW was
+    // written, which for the four seeded branches is the day this repo was set up rather
+    // than the day the church started meeting there. A subtitle is not worth a column, and
+    // an invented date is worse than none.
+    editScope: (members: number, zone: string) =>
+      `${String(members)} ${members === 1 ? 'member' : 'members'} · ${zone}`,
+    editScopeClosed: (members: number, when: string) =>
+      `${String(members)} ${members === 1 ? 'member' : 'members'} · closed ${when}`,
+    save: 'Save changes',
+    savePending: 'Saving…',
+    discard: 'Discard',
+
+    // Sections, in the order the frame puts them.
+    sectionBranch: 'The branch',
+    sectionWhere: 'Where it meets',
+    sectionWhen: 'When it meets',
+    sectionWho: 'Who leads it',
+    sectionApp: 'On the app',
+
+    nameLabel: 'Name',
+    namePlaceholder: 'AGBC Rotterdam',
+    slugLabel: 'Short id',
+    slugPlaceholder: 'rotterdam',
+    slugHintNew:
+      'Lowercase, no spaces. Chosen once and never changed, so it is worth a second’s thought: it is how this branch is named in every row that will ever point at it.',
+    slugHintExisting:
+      'Set when the branch was added and never after. Renaming a branch is an edit; re-slugging one is a different branch wearing its rows.',
+    cityLabel: 'City',
+    countryLabel: 'Country',
+    languagesLabel: 'Languages',
+    languagesPlaceholder: 'Nederlands / English',
+    timezoneLabel: 'Time zone',
+    timezonePlaceholder: 'Europe/Amsterdam',
+    timezoneHint:
+      'Not a display setting. It decides which DAY an “I’m here” tap counts as, and what time a reminder goes out.',
+    addressLabel: 'Address',
+    addressPlaceholder: 'Street and number',
+    address2Label: 'Address line 2 (optional)',
+    address2Placeholder: 'Unit, building or floor',
+    latLabel: 'Latitude',
+    lngLabel: 'Longitude',
+    coordinatesHint:
+      'Both are needed: a branch with no coordinates has no pin, and the family map is the screen this whole app is named after.',
+
+    // The days and the three service kinds live here rather than in the component, on the
+    // dashboard's own rule: no component holds a literal string, even though this app is
+    // deliberately not translated. `weekdays` is indexed by `branch_services.weekday`, where
+    // 0 is Sunday, so its ORDER is part of the contract and not a display choice.
+    weekdays: [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ],
+    serviceKinds: {
+      sunday: 'Sunday',
+      midweek: 'Midweek',
+      classes: 'Classes',
+    },
+    weekdayLabel: 'Day',
+    startTimeLabel: 'Starts',
+    serviceKindLabel: 'Kind',
+    serviceLabelLabel: 'What to call it',
+    addService: 'Add a service',
+    removeService: (label: string) => `Remove ${label || 'this service'}`,
+    servicesHint:
+      'These rows are what the reminders read: an hour before each one, everybody at this branch who has service reminders on hears about it. Removing a row stops those, and changes nothing that has already gone out.',
+    serviceTimesLabel: 'How the times read in the app',
+    serviceTimesPlaceholder: 'Sundays 11:00, doors from 10:30',
+    serviceTimesHint:
+      'The sentence members actually read on the church page, in your words. Kept separate from the rows above on purpose: the rows are a schedule and this is a welcome. If you change one, look at the other.',
+
+    leadNameLabel: 'Lead name',
+    leadNamePlaceholder: 'Pastor',
+    leadRoleLabel: 'Lead role',
+    leadRolePlaceholder: 'Branch Pastor',
+    leadBioLabel: 'A line about them',
+    leadBioPlaceholder: 'A sentence members read under their name',
+    leadersLabel: 'Other leaders',
+    leaderNameLabel: 'Name',
+    leaderRoleLabel: 'What they do',
+    addLeader: 'Add a leader',
+    removeLeader: (name: string) => `Remove ${name || 'this leader'}`,
+    leadersGuideTitle: 'Naming somebody here gives them nothing.',
+    leadersGuideBody:
+      'These are the names on the church page, under “who leads here”. Letting a person moderate this branch is a separate act in People, by email address, and it is the one that decides what they can see.',
+
+    youtubeLabel: 'YouTube channel (optional)',
+    youtubePlaceholder: 'Leave empty to use the main AGBC channel',
+    emailLabel: 'Contact email',
+    welcomeLabel: 'Welcome',
+    welcomePlaceholder: 'What this branch wants a stranger to read first',
+    orderLabel: 'Order in the list',
+    orderHint: 'Where it sits among the others. Defaults to last.',
+
+    // The two banners at the foot of the edit form.
+    hqBannerTitle: (branch: string) => `${branch} is the headquarters`,
+    hqBannerBody:
+      'HQ wears the gold badge members see in the branch list, is offered first when somebody’s branch closes, sets the clock for events belonging to the whole family, and is the one branch that cannot itself be closed.',
+    hqBannerAction: 'Move HQ here',
+    hqBannerThisOne:
+      'This branch is the headquarters, so it cannot be closed and cannot be handed the badge it already holds.',
+    closeBannerTitle: 'Close this branch',
+    closeBannerBody:
+      'For a branch that has stopped meeting. It is never deleted: its testimonies, prayers and attendance stay exactly where they are.',
+    closeBannerAction: (branch: string) => `Close ${branch}`,
+    reopenBannerTitle: (who: string, when: string) =>
+      `Closed by ${who} · ${when}`,
+    reopenBannerBody:
+      'It is hidden from the branch list, the switcher and the map, its reminders have stopped and nothing new can go on its diary.',
+    reopenBannerAction: 'Open it again',
+    aMinistryAdmin: 'a ministry admin',
+
+    // CLOSE, blocked.
+    closeTitle: (branch: string) => `Close ${branch}?`,
+    closeBlockedScope: (count: number) =>
+      `Not yet: ${count === 1 ? 'one person' : `${String(count)} people`} still ${count === 1 ? 'leads' : 'lead'} it`,
+    closeBlockedTitle: 'Move or step down its leaders first',
+    closeBlockedBody: (names: string) =>
+      `${names} ${names.includes(' and ') ? 'lead' : 'leads'} this branch. Give them another branch, or make them members again, and this page will let you carry on.`,
+    closeBlockedAction: 'Open People',
+    closeBlockedGuideTitle: 'This is not tidying up.',
+    closeBlockedGuideBody:
+      'What a leader can moderate is decided by which branch they belong to, so a leader still pointing at a closed branch has authority over a place that no longer exists. Emptying the branch first is also what hands its unreviewed posts to the admins: the queue goes to a branch’s own leaders, or to every admin when it has none.',
+    backToBranch: 'Back to the branch',
+
+    // CLOSE, the confirm.
+    closeScope: (city: string) => `${city} · no leaders left`,
+    statMembers: 'Members to re-home',
+    statGatherings: 'Gatherings cancelled',
+    statBroadcasts: 'Broadcast stopped',
+    statBroadcastsPlural: 'Broadcasts stopped',
+    closeMembersTitle: (count: number) =>
+      `${String(count)} ${count === 1 ? 'member is' : 'members are'} asked to choose a new home`,
+    closeMembersBody: (hq: string) =>
+      `Next time each of them opens the app they are asked where they belong now, with ${hq} offered first. Nobody is moved for them, and nobody is locked out while they think about it. Until they choose, branch news and service reminders stop reaching them; the whole family’s announcements still do.`,
+    closeMembersNone:
+      'Nobody calls this branch home, so nobody is asked to move.',
+    closeEventsTitle: (events: number, people: number) =>
+      `Its next ${events === 1 ? 'gathering is' : `${String(events)} gatherings are`} cancelled, and ${String(people)} ${people === 1 ? 'person is' : 'people are'} told`,
+    closeEventsBody:
+      'Everyone still holding an RSVP gets “this is cancelled” in their own language, about two minutes after you confirm. Gatherings already held are left exactly as they are.',
+    closeEventsNone: 'Nothing is in its diary, so nobody is told anything.',
+    closeKeptTitle: 'Nothing is deleted',
+    closeKeptBody:
+      'Every testimony, prayer and attendance record stays, and stays readable under Everywhere: this branch has been part of the family and the family map still knows it. The branch disappears from the places people JOIN it from, and you can open it again.',
+    typeToConfirmLabel: 'Type the branch name to confirm',
+    typeToConfirmHint: (branch: string) => `Type ${branch} exactly.`,
+    codeLabel: 'Code from your authenticator',
+    closeCodeHint:
+      'Asked for again because this one closes a place. Nobody else has to approve it, so the second factor is the pause.',
+    closeSubmit: 'Close this branch',
+    closePending: 'Closing…',
+    closeCancel: 'Keep it open',
+
+    // RE-OPEN.
+    reopenTitle: (branch: string) => `Open ${branch} again?`,
+    reopenScope: (who: string, when: string) => `Closed on ${when} by ${who}`,
+    reopenBackTitle: 'It becomes a place again',
+    reopenBackBody:
+      'It comes back to the branch list, the switcher and the map, people can join it, and it can hold events and send broadcasts. Its own leaders are not restored: give somebody the role in People when there is somebody to give it to.',
+    reopenNotUndoTitle: 'This is not an undo',
+    reopenNotUndoBody:
+      'Any cancelled gatherings stay cancelled, because people were already told and announcing them again would be a second message about the same day. Members who have already chosen a new home stay where they went: that was their choice to make, not ours to reverse.',
+    reopenSubmit: 'Open it again',
+    reopenPending: 'Opening…',
+    reopenCancel: 'Leave it closed',
+
+    // MOVE HQ.
+    hqTitle: (branch: string) => `Make ${branch} the headquarters?`,
+    hqScope: (current: string) =>
+      `${current} has held it since the first branch`,
+    hqBadgeTitle: 'The gold HQ badge moves, and members see it move',
+    hqBadgeBody:
+      'It sits beside the branch name everywhere somebody chooses one: the list new members pick from, and the switcher on Home. Nobody is told, and nobody moves branch; the badge is simply on this one the next time they look.',
+    hqDefaultsTitle: 'Two defaults move with it',
+    hqDefaultsBody: (zone: string) =>
+      `A member whose branch closes is offered this one first, and an event that belongs to the whole family takes its clock (${zone}) unless it is given one. Events already posted keep the zone they were posted with.`,
+    hqLosesTitle: (current: string) => `And ${current} becomes closeable`,
+    hqLosesBody:
+      'HQ is the one branch this dashboard refuses to close, because it is where everyone else is sent. Hand that over and the branch holding it now loses the protection.',
+    hqCodeHint:
+      'The same pause the closing screen asks for, and for the same reason: an ordinary edit here rides your sign-in, and the two acts that reach every member ask again.',
+    hqSubmit: (branch: string) => `Move HQ to ${branch}`,
+    hqPending: 'Moving…',
+    hqCancel: (current: string) => `Leave it with ${current}`,
+
+    problems: {
+      nameRequired: 'Give the branch a name.',
+      slugRequired: 'Give the branch a short id.',
+      slugShape:
+        'A short id is lowercase letters, numbers and single hyphens, and cannot be changed once the branch exists.',
+      slugTaken: 'A branch already uses that short id. Pick another.',
+      cityRequired: 'Say which city it meets in.',
+      countryRequired: 'Say which country it is in.',
+      timezoneRequired: 'Give the branch a time zone.',
+      timezoneUnknown:
+        'That is not a time zone this system knows. Use an IANA id like Europe/Amsterdam or Africa/Lagos.',
+      coordinatesRequired:
+        'Give both coordinates, as numbers: latitude between -90 and 90, longitude between -180 and 180.',
+      serviceIncomplete: 'Every service row needs a start time.',
+      nameMismatch: 'That is not the branch name. Type it exactly to confirm.',
+      badCode:
+        'That code did not work. Open your authenticator and try the next one.',
+      noFactor:
+        'Your account has no authenticator set up, so this cannot be confirmed.',
+      hasLeaders:
+        'Somebody still leads this branch. Move or step them down first.',
+      isHq: 'That branch is the headquarters, which is where members are sent when a branch closes, so it cannot be closed.',
+      lastBranch: 'That is the last open branch, so it cannot be closed.',
+      already: 'That has already been done.',
+      notFound: 'That branch no longer exists.',
+      refused: 'That is not yours to do.',
+      failed: 'That did not go through. Try again.',
+    },
+
+    outcome: {
+      added: 'Added. It is in the app now, for members and guests alike.',
+      saved: 'Saved.',
+      closed:
+        'Closed. Its members are asked to choose a new home next time they open the app.',
+      reopened: 'Open again, and back in front of members.',
+      hqMoved: 'The headquarters has moved.',
+    },
+  },
+
   refused: {
     notAdminTitle: 'Roles are handed out by a ministry admin',
     notAdminBody:
