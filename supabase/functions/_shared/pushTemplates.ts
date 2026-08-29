@@ -138,6 +138,31 @@ const TEMPLATES: Record<string, Template> = {
       fr: 'Touchez pour voir la suite',
     },
   },
+  // A REMOVAL IS NOT A REJECTION, and this key exists because reusing the one above would
+  // have been a real bug (W3.6 slice 2). `MyPostCard.tsx` states the product rule in a
+  // comment: "rejected is a conversation the author can answer (edit and resubmit),
+  // removed is not". "Your post needs a small change" would send a member whose post was
+  // taken down after review to go and edit it, which is the one thing that must not happen.
+  //
+  // The words are the ones the destination already uses (`family:myPosts.removedBody`, in
+  // all four languages since W2.6), for the reason that matters most here: the private
+  // `moderation_note` can be safeguarding-sensitive and is invisible to the author by
+  // column privilege (20260803140000), so what is offered instead is a PERSON. A leader can
+  // use judgement face to face about what is safe to say; a push payload cannot.
+  'moderation.removed': {
+    title: {
+      en: 'Your post was taken down',
+      de: 'Dein Beitrag wurde entfernt',
+      nl: 'Je bericht is verwijderd',
+      fr: 'Votre publication a été retirée',
+    },
+    body: {
+      en: 'Your branch leader can talk it through with you',
+      de: 'Deine Gemeindeleitung kann mit dir darüber sprechen',
+      nl: 'Je gemeenteleider kan het met je bespreken',
+      fr: 'Le responsable de votre branche peut en parler avec vous',
+    },
+  },
   'service.starts_soon': {
     title: {
       en: 'Service starts in 1 hour',

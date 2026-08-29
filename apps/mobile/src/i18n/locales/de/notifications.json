@@ -70,6 +70,10 @@
       "changes_needed": {
         "title": "Dein Beitrag braucht eine kleine Änderung",
         "body": "Tippe, um zu sehen, was als Nächstes zu tun ist"
+      },
+      "removed": {
+        "title": "Dein Beitrag wurde entfernt",
+        "body": "Deine Gemeindeleitung kann mit dir darüber sprechen"
       }
     },
     "service": {

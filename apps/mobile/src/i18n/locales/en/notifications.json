@@ -70,6 +70,10 @@
       "changes_needed": {
         "title": "Your post needs a small change",
         "body": "Tap to see what to do next"
+      },
+      "removed": {
+        "title": "Your post was taken down",
+        "body": "Your branch leader can talk it through with you"
       }
     },
     "service": {
