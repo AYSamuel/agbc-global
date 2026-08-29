@@ -1,4 +1,4 @@
-import { assertEquals } from 'jsr:@std/assert@1';
+import { assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
 
 import { allowedByPrefs, routeFor } from '../_shared/pushChannels.ts';
 import { renderTemplate } from '../_shared/pushTemplates.ts';
@@ -66,7 +66,12 @@ Deno.test('each moderation outcome gets its OWN words, and a removal never says 
   // The point of `moderation.removed` existing at all. `MyPostCard.tsx`: "rejected is a
   // conversation the author can answer (edit and resubmit), removed is not", so a removal
   // must never be handed the words that invite an edit.
-  assertEquals(TEMPLATES.removed === TEMPLATES.rejected, false);
+  //
+  // Widened to `string` deliberately: `TEMPLATES` is `as const`, so comparing the two
+  // literal types directly is a TS2367 compile error rather than a runtime assertion. The
+  // type system already proves they differ TODAY; this keeps the claim readable and still
+  // fails if a later edit points both names at one key.
+  assertNotEquals<string>(TEMPLATES.removed, TEMPLATES.rejected);
   const removed = renderTemplate(TEMPLATES.removed, {}, 'en');
   assertEquals(removed.title.toLowerCase().includes('change'), false);
 });
