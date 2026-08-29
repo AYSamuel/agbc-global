@@ -26,8 +26,8 @@ import {
   removeAudioAction,
   setArtworkAction,
 } from '../actions';
-import { ArtworkPreview, type ArtworkSubject } from '../ArtworkPreview';
-import { ArtworkUploader } from '../ArtworkUploader';
+import { ImagePreview, type ImageSubject } from '@/components/ImagePreview';
+import { ImageField } from '@/components/ImageField';
 import { AttachPanel } from '../AttachPanel';
 import {
   preachedOn,
@@ -82,7 +82,7 @@ export default async function SermonAudioItemPage({
   // What members see on this message's card RIGHT NOW: our own picture, else the thumbnail
   // the sync got from YouTube, else the branded cover. The same precedence the app applies,
   // decided in one place on each side.
-  const artwork: ArtworkSubject = sermon.artworkPath
+  const artwork: ImageSubject = sermon.artworkPath
     ? { url: artworkUrl(supabase, sermon.artworkPath), kind: 'own' }
     : sermon.thumbnailUrl
       ? { url: sermon.thumbnailUrl, kind: 'youtube' }
@@ -137,7 +137,7 @@ function Manage({
 }: {
   sermon: ShelfRow;
   facts: { sizeBytes: number | null; shelvedAt: string | null };
-  artwork: ArtworkSubject;
+  artwork: ImageSubject;
   artworkFacts: ArtworkFacts | null;
   outcome?: string;
 }) {
@@ -221,7 +221,7 @@ function Manage({
       </h3>
       {artwork.kind === 'own' && artworkFacts ? (
         <div className="flex max-w-[40rem] flex-wrap items-start gap-3.5">
-          <ArtworkPreview
+          <ImagePreview
             url={artwork.url}
             caption={picture.onCards}
             alt={picture.previewOwn}
@@ -254,8 +254,10 @@ function Manage({
           object goes up, the row moves its reference, the old one retires. */}
       <form action={setArtworkAction} className="mt-4">
         <input type="hidden" name="sermonId" value={sermon.id} />
-        <ArtworkUploader
+        <ImageField
           subject={artwork}
+          words={copy.sermonAudio.artwork}
+          fieldName="artworkPath"
           mint={mintArtworkUploadAction}
           // The block above already shows what is on the cards, with its size and date.
           showSubject={artwork.kind !== 'own'}

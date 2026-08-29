@@ -10,6 +10,10 @@ import {
   type EventStatus,
 } from '@/server/events';
 import { authorize } from '@/server/authorize';
+import { mintEventImageUpload } from '@/server/eventImages';
+import { IMAGE_EXTENSIONS } from '@/server/imageShelf';
+
+import type { MintResult } from '@/app/sermon-audio/state';
 
 import { type EventFormState, type EventValues } from './state';
 
@@ -45,6 +49,43 @@ type Outcome =
 function text(form: FormData, key: string): string {
   const value = form.get(key);
   return typeof value === 'string' ? value : '';
+}
+
+/**
+ * A one-shot door for one picture upload (W3.5 slice 4b).
+ *
+ * The NAME is minted here, server-side and after authorize(), never in the browser: these
+ * URLs are public and permanent, so a filename a human chose would be a permanent public
+ * string, and on an event picture that is exactly where a member's name would end up.
+ *
+ * `manage_events` rather than `manage_ministry_events`: a leader posting for their own
+ * branch is the caller this slice exists for, and which EVENT the picture may land on is
+ * decided later by the events row policy, not here.
+ */
+export async function mintEventImageAction(
+  extension: string,
+): Promise<MintResult> {
+  const known = IMAGE_EXTENSIONS.find((ext) => ext === extension);
+  if (!known) return { ok: false, reason: 'failed' };
+
+  const supabase = await createServerComponentClient();
+  const verdict = await authorize(supabase, { action: 'manage_events' });
+  if (!verdict.ok) return { ok: false, reason: 'refused' };
+
+  return await mintEventImageUpload(supabase, known);
+}
+
+/**
+ * What the form is saying about the picture, in the three states a form can say it.
+ *
+ * Separate from `text()` because the distinction it draws is between a field that is absent
+ * and a field that is empty, and `text()` deliberately flattens both to ''.
+ */
+function pictureFrom(form: FormData): { imagePath?: string | null } {
+  if (form.get('removeImage') !== null) return { imagePath: null };
+  const value = form.get('imagePath');
+  if (typeof value !== 'string' || value === '') return {};
+  return { imagePath: value };
 }
 
 export async function saveEventAction(
@@ -84,6 +125,11 @@ export async function saveEventAction(
       endsAtLocal: values.endsAtLocal,
       location: values.location,
       rsvpEnabled: values.rsvpEnabled,
+      // THREE STATES, and collapsing any two of them loses a real case. A path means a
+      // picture was just uploaded; the empty string means Remove was ticked; and the field
+      // absent entirely means the form is not speaking about the picture, which is every
+      // ordinary edit and must leave it exactly where it was.
+      ...pictureFrom(formData),
     },
     existing ?? undefined,
   );

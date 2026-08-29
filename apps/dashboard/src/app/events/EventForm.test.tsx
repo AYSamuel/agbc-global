@@ -19,6 +19,7 @@ const noop = () => Promise.resolve({ status: 'idle' as const });
 function defaults(overrides: Partial<EventDefaults> = {}): EventDefaults {
   return {
     scope: 'branch',
+    picture: { url: null, kind: 'none' },
     title: '',
     description: '',
     startsAtLocal: '',
@@ -145,8 +146,10 @@ describe('EventForm', () => {
     );
   });
 
-  it('says the picture is not built yet rather than leaving a gap', () => {
-    // Drawn in the frame, built in slice 4b. An absence reads as a bug; a sentence does not.
+  it('offers the picture field, and says what an event without one shows', () => {
+    // W3.5 slice 4b. The hint is the half worth asserting: without a picture an event shows
+    // the branded cover, which `11` names as its own state rather than a gap, and a field
+    // that implied otherwise would nag every leader into uploading something.
     render(
       <EventForm
         save={noop}
@@ -156,7 +159,27 @@ describe('EventForm', () => {
       />,
     );
 
-    expect(screen.getByText(/branded cover for now/)).toBeVisible();
+    expect(screen.getByText('Drop a picture, or choose a file')).toBeVisible();
+    expect(
+      screen.getByText(/branded cover at the top of its page/),
+    ).toBeVisible();
+    // Nothing to remove yet, and the house rule is hidden rather than disabled.
+    expect(screen.queryByLabelText('Remove the picture')).toBeNull();
+  });
+
+  it('offers Remove only when there is a picture to remove', () => {
+    render(
+      <EventForm
+        save={noop}
+        branchName="AGBC Glasgow"
+        canPostMinistry={false}
+        defaults={defaults({
+          picture: { url: 'https://example.test/p.jpg', kind: 'own' },
+        })}
+      />,
+    );
+
+    expect(screen.getByLabelText('Remove the picture')).toBeVisible();
   });
 
   it('has no accessibility violations', async () => {

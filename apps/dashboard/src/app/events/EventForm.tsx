@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/Button';
 import { Guide } from '@/components/ui/Guide';
 import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
+import { ImageField } from '@/components/ImageField';
+import type { ImageSubject } from '@/components/ImagePreview';
+import { mintEventImageAction } from './actions';
 
 import { eventWhen } from './format';
 import { NOTHING_SAVED, type EventFormState } from './state';
@@ -39,6 +42,8 @@ export interface EventDefaults {
   endsAtLocal: string;
   location: string;
   rsvpEnabled: boolean;
+  /** What members see at the top of this event today: its own picture, or the cover. */
+  picture: ImageSubject;
 }
 
 export function EventForm({
@@ -193,6 +198,42 @@ export function EventForm({
         value={value.description}
       />
 
+      {/* The picture (frame: NEW EVENT · Picture; built in W3.5 slice 4b). The field is
+          the same one the message shelf uses, with this feature's own words: the mechanism
+          is shared, the sentences are not, because an event's picture stands behind a
+          gradient at the top of its own page rather than competing with a YouTube
+          thumbnail on a lock screen.
+
+          Nothing here is load-bearing for safety. The extension allowlist and the size cap
+          are cheap early refusals; the storage policy admits the upload; and `saveEvent`
+          reads the object's OWN first bytes before the row points at it. */}
+      <div className="mt-4">
+        <span className="block text-caption font-extrabold tracking-widest text-muted uppercase">
+          {copy.events.fields.picture}
+        </span>
+        <ImageField
+          subject={defaults.picture}
+          words={copy.events.picture}
+          fieldName="imagePath"
+          mint={mintEventImageAction}
+        />
+        {/* Only offered when there is something to take off, per the house rule that a
+            primary action with nothing to act on is hidden rather than disabled. It is a
+            checkbox rather than its own button because the picture is saved WITH the
+            event: a second Save would be a second writer of one row. */}
+        {defaults.picture.url === null ? null : (
+          <label className="mt-2.5 flex items-center gap-2 text-body text-text">
+            <input type="checkbox" name="removeImage" />
+            {copy.events.picture.remove}
+          </label>
+        )}
+        {defaults.picture.url === null ? null : (
+          <p className="mt-1.5 text-small text-muted">
+            {copy.events.picture.removeHint}
+          </p>
+        )}
+      </div>
+
       <div className="mt-4">
         <span className="block text-caption font-extrabold tracking-widest text-muted uppercase">
           {copy.events.fields.rsvp}
@@ -207,19 +248,6 @@ export function EventForm({
         </label>
         <p className="mt-1.5 text-small text-muted">
           {copy.events.fields.rsvpHint}
-        </p>
-      </div>
-
-      {/* Drawn in the frame, built in slice 4b: the picture needs a bucket of its own and a
-          path in the row rather than a URL (decided with Ayo 2026-08-20). Said out loud
-          rather than left as an absence, so nobody goes looking for a control that is not
-          there yet. */}
-      <div className="mt-4">
-        <span className="block text-caption font-extrabold tracking-widest text-muted uppercase">
-          {copy.events.fields.picture}
-        </span>
-        <p className="mt-1.5 text-small text-muted">
-          {copy.events.fields.pictureHint}
         </p>
       </div>
 

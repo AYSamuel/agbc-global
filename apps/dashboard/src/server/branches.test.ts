@@ -190,10 +190,17 @@ describe('adding a branch', () => {
       created.services.map((row) => `${String(row.weekday)}@${row.startTime}`),
     ).toEqual(['0@11:00', '3@19:00']);
 
-    // THE ROUND TRIP.
+    // THE ROUND TRIP, asserted as a set difference rather than a length. Test FILES run in
+    // parallel and several of them create and tear down branches, so `before.length + 1`
+    // was a race: another file's afterAll deleting its own branch between these two reads
+    // made this fail for a reason that has nothing to do with adding one (seen 2026-08-22,
+    // once `eventImages.test.ts` became a third file doing it). Naming what appeared is
+    // also the stronger claim.
     const after = await asTheAppSeesIt();
-    expect(after.length).toBe(before.length + 1);
-    expect(after.map((row) => row.id)).toContain(created.id);
+    const appeared = after.filter(
+      (row) => !before.some((earlier) => earlier.id === row.id),
+    );
+    expect(appeared.map((row) => row.id)).toEqual([created.id]);
   });
 
   test('a leader cannot add one, however the form is posted', async () => {

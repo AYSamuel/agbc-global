@@ -36,6 +36,7 @@ import {
 } from '@/features/events/format';
 import { useFormattingLocale } from '@/i18n';
 import { addEventToCalendar } from '@/features/events/calendar';
+import { eventImageUrl } from '@/features/events/image';
 import { useEventDetailQuery } from '@/features/events/queries';
 import { RsvpControls } from '@/features/events/RsvpControls';
 import { queueRsvp, useRsvpAnswer, useRsvpQuery } from '@/features/events/rsvp';
@@ -78,6 +79,9 @@ export default function EventDetailScreen() {
 
   const event = query.data;
   const loading = query.data === undefined && !query.isError;
+  // Built from the path, not stored as a URL (W3.5 slice 4b). Null is the branded cover,
+  // which `11` names as its own state rather than a gap.
+  const heroUrl = eventImageUrl(event?.image_path ?? null);
 
   const back = () => {
     router.back();
@@ -196,9 +200,9 @@ export default function EventDetailScreen() {
           }}
         >
           <GradientFill direction="diagonal" from="#3a2c5e" to={palette.ink} />
-          {event.image_url ? (
+          {heroUrl ? (
             <Image
-              source={{ uri: event.image_url }}
+              source={{ uri: heroUrl }}
               style={{ position: 'absolute', width: '100%', height: '100%' }}
               contentFit="cover"
               transition={150}

@@ -13,12 +13,12 @@ Keep members aware of what's happening, at **their branch** and **ministry-wide*
 
 ### `EVENTS`
 - Filter/scope: **My branch** + **Ministry-wide** (global). Optional upcoming/past toggle.
-- List: date block (day/month), title, time, location, **branch tag or "All branches"** badge, image.
+- List: date block (day/month), title, time, location, **branch tag or "All branches"** badge. **No image on the row** (corrected W3.5 slice 4b): the approved `EVENTS · list` frame draws a compact date-block row, and the mockup wins on look and feel. The picture appears on EVENT-DETAIL, which is where it is chosen for.
 - Empty → "No events scheduled yet" + "Check back soon" (never blank).
 - Tap → `EVENT-DETAIL`.
 
 ### `EVENT-DETAIL`
-- Hero image, title, full date/time (branch timezone), location (+ map/directions link), description.
+- Hero image, title, full date/time (branch timezone), location (+ map/directions link), description. The hero is built from `events.image_path` in the public-read `event-images` bucket (W3.5 slice 4b), never a stored URL.
 - **RSVP** (gate): Going / Interested / Cancel → `rsvps` (unique per event+profile). Confirmation toast.
 - **Add to calendar** (device calendar via `expo-calendar`).
 - **Share** (OS/WhatsApp).

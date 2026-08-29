@@ -3,6 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@agbc/shared/database';
 
 import { authorize, type Caller } from './authorize';
+import {
+  eventImageRefusal,
+  retireEventImage,
+  verifyEventImage,
+} from './eventImages';
 
 /**
  * Events (docs/spec/17 §3, `11`, `02` §events; frames in this PR).
@@ -37,6 +42,8 @@ export interface EventRow {
   location: string;
   status: EventStatus;
   rsvpEnabled: boolean;
+  /** Object PATH in the public-read `event-images` bucket, never a URL (W3.5 slice 4b). */
+  imagePath: string | null;
   /** Who cancelled it or put it back on, and when. Null before either has happened. */
   statusChangedBy: string | null;
   statusChangedAt: string | null;
@@ -55,19 +62,21 @@ interface EventRecord {
   location: string;
   status: EventStatus;
   rsvp_enabled: boolean;
+  image_path: string | null;
   status_changed_at: string | null;
   branch: { name: string } | null;
   changedBy: { display_name: string } | null;
 }
 
 const COLUMNS =
-  'id, branch_id, title, description, starts_at_local, ends_at_local, timezone, location, status, rsvp_enabled, status_changed_at, branch:branches(name), changedBy:profiles!events_status_changed_by_fkey(display_name)';
+  'id, branch_id, title, description, starts_at_local, ends_at_local, timezone, location, status, rsvp_enabled, image_path, status_changed_at, branch:branches(name), changedBy:profiles!events_status_changed_by_fkey(display_name)';
 
 function toRow(record: EventRecord, caller: Caller): EventRow {
   return {
     id: record.id,
     branchId: record.branch_id,
     branchName: record.branch?.name ?? null,
+    imagePath: record.image_path,
     title: record.title,
     description: record.description,
     startsAtLocal: record.starts_at_local,
@@ -229,6 +238,15 @@ export interface EventInput {
   endsAtLocal?: string;
   location: string;
   rsvpEnabled: boolean;
+  /**
+   * The picture, as a PATH the browser has already uploaded, or null for none.
+   *
+   * `undefined` is deliberately different from `null` and both are reachable: undefined
+   * means the caller is not speaking about the picture at all (leave it alone), null means
+   * take it off. A form that always sends the field collapses the two, and the event would
+   * lose its picture every time somebody fixed a typo.
+   */
+  imagePath?: string | null;
 }
 
 export type SaveResult =
@@ -240,7 +258,9 @@ export type SaveRefusal =
   | 'starts_required'
   | 'location_required'
   | 'ends_before_start'
-  | 'scope_locked';
+  | 'scope_locked'
+  | 'image_not_found'
+  | 'image_not_an_image';
 
 /**
  * Create or update an event.
@@ -290,6 +310,23 @@ export async function saveEvent(
   });
   if (!verdict.ok) return { ok: false, reason: 'refused' };
 
+  // THE PICTURE IS CHECKED BEFORE THE ROW POINTS AT IT, and that order is forced rather
+  // than chosen: the guard trigger refuses a dangling reference outright (`23514`), so a
+  // path that was never uploaded would fail the whole save with a constraint message
+  // instead of a sentence. Checking here turns it into one. Skipped when the caller is not
+  // speaking about the picture, and when they are taking it off.
+  if (typeof input.imagePath === 'string') {
+    const verified = await verifyEventImage(supabase, input.imagePath);
+    if (verified !== 'image') {
+      const refusal = eventImageRefusal(verified);
+      return {
+        ok: false,
+        reason:
+          refusal === 'not_image' ? 'image_not_an_image' : 'image_not_found',
+      };
+    }
+  }
+
   const payload = {
     title,
     description: input.description.trim(),
@@ -297,6 +334,7 @@ export async function saveEvent(
     ends_at_local: endsAtLocal,
     location,
     rsvp_enabled: input.rsvpEnabled,
+    ...(input.imagePath === undefined ? {} : { image_path: input.imagePath }),
   };
 
   if (input.id) {
@@ -305,6 +343,18 @@ export async function saveEvent(
       .update(payload)
       .eq('id', input.id);
     if (error) throw new Error(`event save failed: ${error.message}`);
+
+    // The OLD file goes LAST, once the row has moved on: the delete policy refuses to
+    // remove an object an event still points at, so the other order cannot be written. A
+    // failure leaves an orphan, which is storage garbage rather than anything a member
+    // sees, so it is not worth failing a save the member already watched succeed.
+    if (input.imagePath !== undefined) {
+      await retireEventImage(
+        supabase,
+        existing?.imagePath ?? null,
+        input.imagePath,
+      );
+    }
     return { ok: true, id: input.id };
   }
 

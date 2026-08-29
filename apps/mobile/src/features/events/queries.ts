@@ -17,7 +17,8 @@ export interface EventListItem {
   starts_at_local: string;
   timezone: string;
   location: string;
-  image_url: string | null;
+  /** Object PATH in the public-read `event-images` bucket; `image.ts` builds the URL. */
+  image_path: string | null;
   status: EventStatus;
   rsvp_enabled: boolean;
 }
@@ -28,7 +29,7 @@ export interface EventDetail extends EventListItem {
 }
 
 const LIST_FIELDS =
-  'id, branch_id, title, starts_at_local, timezone, location, image_url, status, rsvp_enabled';
+  'id, branch_id, title, starts_at_local, timezone, location, image_path, status, rsvp_enabled';
 
 // How far back the list reaches for the Past toggle. A bounded window keeps
 // the read cheap forever; anything older is history, not navigation.

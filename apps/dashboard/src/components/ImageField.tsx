@@ -7,15 +7,22 @@ import { Button } from '@/components/ui/Button';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
-import { MAX_ARTWORK_BYTES } from '@/server/sermonArtwork';
+import { MAX_IMAGE_BYTES } from '@/server/imageShelf';
 
-import { ArtworkPreview, type ArtworkSubject } from './ArtworkPreview';
-import { wholeKb, wholeMb } from './format';
-import type { MintAction } from './state';
-import { uploadViaXhr, type UploadFn } from './upload';
+import { wholeKb, wholeMb } from '@/app/sermon-audio/format';
+import type { MintAction } from '@/app/sermon-audio/state';
+import { uploadViaXhr, type UploadFn } from '@/app/sermon-audio/upload';
+
+import { ImagePreview, type ImageSubject } from './ImagePreview';
 
 /**
- * The picture half of the shelf's forms (frame: `SERMON-AUDIO-ARTWORK`, four moments).
+ * A picture field: choose, upload, and hand the form a PATH (frames: `SERMON-AUDIO-ARTWORK`
+ * four moments, and `NEW EVENT` · Picture).
+ *
+ * Lifted out of `sermon-audio/` in W3.5 slice 4b, when events needed the same field. Copying
+ * it would have been two upload paths to keep in step, which is the drift `upload.ts` was
+ * extracted to prevent one layer down; what varies between the two is the words and the form
+ * key, so those are props.
  *
  * THE ORDER OF TRUST is the audio uploader's, unchanged: the extension allowlist and the
  * size cap here are cheap early refusals, the storage policies admit the upload, and the
@@ -35,8 +42,35 @@ import { uploadViaXhr, type UploadFn } from './upload';
  * hidden, never disabled).
  */
 
-export interface ArtworkSeams {
+export interface ImageFieldSeams {
   upload?: UploadFn;
+}
+
+/** Every sentence this field can show. Both call sites keep theirs in `copy/en.ts`. */
+export interface ImageFieldWords {
+  dropTitle: string;
+  dropSub: string;
+  hasThumbnailHint: string;
+  noThumbnailHint: string;
+  hasArtworkHint: string;
+  onCardsNow: string;
+  /**
+   * The caption when the slot holds the fallback rather than a picture. Optional: the
+   * message shelf captions both the same ("On cards now", because a YouTube thumbnail IS
+   * on the cards), while an event's empty slot is named for what it shows.
+   */
+  captionNone?: string;
+  chosen: string;
+  previewOwn: string;
+  previewYouTube: string;
+  previewNone: string;
+  sendingLabel: string;
+  readyTitle: (kb: number) => string;
+  readyBody: string;
+  chooseAnother: string;
+  pickNotImage: string;
+  pickTooBig: (mb: number) => string;
+  uploadFailed: string;
 }
 
 type Phase =
@@ -58,8 +92,10 @@ const MIME: Record<string, string> = {
   webp: 'image/webp',
 };
 
-export function ArtworkUploader({
+export function ImageField({
   subject,
+  words,
+  fieldName,
   mint,
   submitLabel,
   submittingLabel,
@@ -67,7 +103,16 @@ export function ArtworkUploader({
   seams = {},
 }: {
   /** What members see right now, which decides both the preview and the hint. */
-  subject: ArtworkSubject;
+  subject: ImageSubject;
+  /**
+   * What this field says. A prop rather than one feature's copy bundle, because the
+   * MECHANISM is shared and the VOCABULARY is not: a message's picture competes with a
+   * YouTube thumbnail and is cropped square on a lock screen, an event's stands behind a
+   * gradient at the top of its own page. Same field, different true sentences.
+   */
+  words: ImageFieldWords;
+  /** The hidden input's name, which is the form key the server action reads. */
+  fieldName: string;
   mint: MintAction;
   submitLabel?: string;
   submittingLabel?: string;
@@ -78,12 +123,12 @@ export function ArtworkUploader({
    * looking at one picture or two (seen in the browser, 2026-08-15).
    */
   showSubject?: boolean;
-  seams?: ArtworkSeams;
+  seams?: ImageFieldSeams;
 }) {
   const [state, setState] = useState<Phase>({ phase: 'idle' });
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const text = copy.sermonAudio.artwork;
+  const text = words;
   const upload = seams.upload ?? uploadViaXhr;
 
   // The chosen picture is drawn from an object URL, which is a live handle rather than a
@@ -103,7 +148,7 @@ export function ArtworkUploader({
       setState({ phase: 'idle', problem: text.pickNotImage });
       return;
     }
-    if (file.size > MAX_ARTWORK_BYTES) {
+    if (file.size > MAX_IMAGE_BYTES) {
       setState({ phase: 'idle', problem: text.pickTooBig(wholeMb(file.size)) });
       return;
     }
@@ -171,7 +216,7 @@ export function ArtworkUploader({
     return (
       <div className="max-w-[40rem]">
         <div className="mt-2 flex flex-wrap items-start gap-3.5">
-          <ArtworkPreview
+          <ImagePreview
             url={state.previewUrl}
             caption={text.chosen}
             alt={text.previewOwn}
@@ -186,7 +231,7 @@ export function ArtworkUploader({
             </Notice>
           </div>
         </div>
-        <input type="hidden" name="artworkPath" value={state.path} />
+        <input type="hidden" name={fieldName} value={state.path} />
         <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
           {submitLabel === undefined ? null : (
             <SubmitButton
@@ -244,9 +289,13 @@ export function ArtworkUploader({
       ) : null}
       <div className="mt-2 flex flex-wrap items-start gap-3.5">
         {showSubject ? (
-          <ArtworkPreview
+          <ImagePreview
             url={subject.url}
-            caption={text.onCardsNow}
+            caption={
+              subject.url === null
+                ? (text.captionNone ?? text.onCardsNow)
+                : text.onCardsNow
+            }
             alt={
               subject.url === null
                 ? text.previewNone
