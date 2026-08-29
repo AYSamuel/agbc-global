@@ -563,6 +563,20 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
+# Activity notices (docs/spec/09 §Notifications, `15`; W3.6 slice 2). Cron-invoked every
+# minute, same as the two above: two of its three arms are answers a member is waiting on,
+# and the third paces itself with its own settle window.
+#
+# `verify_jwt = false` for ADR 0024's reason, which every job here shares: pg_cron reaches
+# the function through `jobs.invoke_edge_function`, which sends the `sb_secret_` key as
+# `apikey` rather than a JWT, so the platform gate would refuse the call before the function
+# ran. Caller auth is `_shared/auth.ts`'s `isServiceRoleRequest`, which is the first line of
+# the handler. Without this block the default would be `verify_jwt = true` and the job would
+# be rejected on every tick, silently, which is the canonical failure `21` §5 names.
+[functions.activity-notices]
+enabled = true
+verify_jwt = false
+
 # Testimony photo magic-byte check (docs/spec/02 §Storage; W2.3 slice 3). Called
 # by the member right after uploading, with THEIR access token: the function
 # validates it with auth.getUser, resolves the real user and refuses any path
