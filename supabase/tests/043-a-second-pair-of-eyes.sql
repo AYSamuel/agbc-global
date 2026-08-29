@@ -17,15 +17,17 @@
 -- segfaults. The ACL assertions read the catalogue and never probe by invoking.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(47);
+select plan(50);
 
 -- Cast: a Glasgow leader who writes, two admins who review, and a member who should reach
--- none of it.
+-- none of it. Plus, since W3.6 slice 1, a BERLIN member, who exists only to be the person a
+-- Glasgow broadcast must not reach.
 insert into auth.users (id, email) values
   ('93000000-0000-4000-8000-00000000000a', 'bc-leader@test.local'),
   ('93000000-0000-4000-8000-00000000000b', 'bc-admin1@test.local'),
   ('93000000-0000-4000-8000-00000000000c', 'bc-admin2@test.local'),
-  ('93000000-0000-4000-8000-00000000000d', 'bc-member@test.local');
+  ('93000000-0000-4000-8000-00000000000d', 'bc-member@test.local'),
+  ('93000000-0000-4000-8000-00000000000e', 'bc-berlin@test.local');
 insert into public.profiles
   (id, email, display_name, branch_id, role, onboarded_at, age_confirmed_at)
 values
@@ -36,7 +38,9 @@ values
   ('93000000-0000-4000-8000-00000000000c', 'bc-admin2@test.local', 'BC Admin Two',
    '00000000-0000-4000-8000-000000000001', 'admin', now(), now()),
   ('93000000-0000-4000-8000-00000000000d', 'bc-member@test.local', 'BC Member',
-   '00000000-0000-4000-8000-000000000001', 'member', now(), now());
+   '00000000-0000-4000-8000-000000000001', 'member', now(), now()),
+  ('93000000-0000-4000-8000-00000000000e', 'bc-berlin@test.local', 'BC Berlin',
+   '00000000-0000-4000-8000-000000000002', 'member', now(), now());
 
 -- ===========================================================================
 -- 1. Shape and posture.
@@ -376,6 +380,51 @@ select is(
    where profile_id = '93000000-0000-4000-8000-00000000000d'),
   1,
   'a BRANCH broadcast reaches that branch');
+
+-- --- and only that branch (W3.6 slice 1) ------------------------------------------
+--
+-- `18`'s Phase 3 exit clause is two halves, "ministry-wide reaches all branches" AND
+-- "branch stays in-branch", and until now this file only ever asked the first one of a
+-- branch broadcast. Reaching the right people and reaching ONLY them are different
+-- claims: a `broadcast_recipients` that lost its `p.branch_id = b.branch_id` predicate
+-- would have passed every assertion above this line, because every other member in the
+-- cast is a Glasgow member. That is what the Berlin member exists for.
+--
+-- The event tier has had both halves since 046 ("Glasgow hears nothing about a Berlin
+-- event") and the service tier gets it from its per-branch ticks in 040. Broadcasts were
+-- the gap, and they are the newest of the three.
+
+select is(
+  (select count(*)::int from public.broadcast_recipients(
+    '93000000-0000-4000-8000-0000000000b3')
+   where profile_id = '93000000-0000-4000-8000-00000000000e'),
+  0,
+  'and stays in it: Berlin is not in a Glasgow broadcast''s audience');
+
+-- `branch_updates` is the column `15`'s tier table names for this tier, and before W3.6
+-- it appeared nowhere in this file or in 044: the ministry pref was proven suppressive
+-- and the branch pref was assumed to be.
+update public.notification_prefs set branch_updates = false
+  where profile_id = '93000000-0000-4000-8000-00000000000d';
+select is(
+  (select count(*)::int from public.broadcast_recipients(
+    '93000000-0000-4000-8000-0000000000b3')
+   where profile_id = '93000000-0000-4000-8000-00000000000d'),
+  0,
+  'a member who turned branch updates off is not in a branch broadcast');
+update public.notification_prefs set branch_updates = true
+  where profile_id = '93000000-0000-4000-8000-00000000000d';
+
+-- The two columns are wired separately, which is what "prefs suppress the CORRESPONDING
+-- categories" means read strictly. This member's `ministry_announcements` has been false
+-- since section 11 and it must not cost them their own branch's news; one `coalesce` on
+-- the wrong column in that CASE would take both tiers away at once.
+select is(
+  (select count(*)::int from public.broadcast_recipients(
+    '93000000-0000-4000-8000-0000000000b3')
+   where profile_id = '93000000-0000-4000-8000-00000000000d'),
+  1,
+  'and the tiers do not bleed: ministry off, the branch''s own news still arrives');
 
 -- ===========================================================================
 -- 12. The delivery ledger's two shapes.

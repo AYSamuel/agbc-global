@@ -70,6 +70,10 @@
       "changes_needed": {
         "title": "Je bericht heeft een kleine wijziging nodig",
         "body": "Tik om te zien wat je nu kunt doen"
+      },
+      "removed": {
+        "title": "Je bericht is verwijderd",
+        "body": "Je gemeenteleider kan het met je bespreken"
       }
     },
     "service": {

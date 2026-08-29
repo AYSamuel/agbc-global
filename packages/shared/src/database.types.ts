@@ -2249,6 +2249,18 @@ export type Database = {
       }
     }
     Functions: {
+      activity_notice_batch: {
+        Args: { p_lookback?: string; p_now?: string; p_settle?: string }
+        Returns: {
+          dedupe_key: string
+          detail: string
+          kind: string
+          recipient_id: string
+          subject_id: string
+          subject_kind: string
+          tally: number
+        }[]
+      }
       advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       approve_broadcast: { Args: { broadcast: string }; Returns: undefined }
       archive_branch: { Args: { branch: string }; Returns: undefined }

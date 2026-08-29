@@ -70,6 +70,10 @@
       "changes_needed": {
         "title": "Votre publication demande une petite modification",
         "body": "Touchez pour voir la suite"
+      },
+      "removed": {
+        "title": "Votre publication a été retirée",
+        "body": "Le responsable de votre branche peut en parler avec vous"
       }
     },
     "service": {
