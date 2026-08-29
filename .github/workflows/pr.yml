@@ -147,4 +147,13 @@ jobs:
           deno-version: v2.x
       # Explicit --config so the import map also governs the shared contract
       # imports (bare "zod" from packages/shared) without a node_modules install.
-      - run: deno test --allow-net=none --config supabase/functions/deno.json supabase/functions
+      #
+      # --allow-read=supabase is for _shared/configBlocks_test.ts (W3.6), which reads the
+      # function directory listing and supabase/config.toml to prove every function is
+      # declared. It is the only test here that touches the filesystem, and it exists
+      # because a function without a config block is a job that no-ops silently in BOTH
+      # environments (404 locally, refused by the platform gate hosted, since ADR 0024's
+      # keys are not JWTs). Scoped to the one directory it needs rather than a blanket
+      # --allow-read, per the least-privilege rule in ~/.claude/standards/devops.md.
+      # --allow-net=none stays: nothing here may reach the network.
+      - run: deno test --allow-net=none --allow-read=supabase --config supabase/functions/deno.json supabase/functions
