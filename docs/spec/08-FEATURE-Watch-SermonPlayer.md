@@ -78,6 +78,12 @@ recorded messages and a large part of the catalogue. Watching a replay is not jo
 ## Acceptance criteria
 - [ ] Audio plays with app backgrounded and shows lock-screen controls.
 - [ ] Reopening a partly-heard sermon resumes within a few seconds of where it stopped (member).
-- [ ] HQ live is detectable and playable with a live "watching now" count.
 - [ ] Guests can watch the latest message with no gate; only personalization gates.
-- [ ] No "live" dead end when nothing is live.
+
+> **Two criteria were struck here on 2026-08-29 (W3.6 slice 1), and the reason is ADR
+> [0021](../decisions/0021-the-app-does-not-carry-live.md), 2026-08-15.** They were "HQ live
+> is detectable and playable with a live 'watching now' count" and "No 'live' dead end when
+> nothing is live". The body of this doc was amended for the cut in the same change (§No
+> live state, §`LIVE` · CUT, §Writes) and this list was missed, so it went on asking the
+> Phase 3 exit audit to sign off two things the app deliberately does not do. Nothing here
+> is deferred: there is no live layer to come back to.
