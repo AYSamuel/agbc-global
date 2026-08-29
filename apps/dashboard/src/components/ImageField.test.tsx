@@ -5,9 +5,9 @@ import { describe, expect, test, vi } from 'vitest';
 import { copy } from '@/copy/en';
 import { expectNoA11yViolations } from '@/test/a11y';
 
-import type { ArtworkSubject } from './ArtworkPreview';
-import { ArtworkUploader } from './ArtworkUploader';
-import type { MintResult } from './state';
+import type { ImageSubject } from '@/components/ImagePreview';
+import { ImageField } from '@/components/ImageField';
+import type { MintResult } from '@/app/sermon-audio/state';
 
 /**
  * The picture picker's four moments (frame: `SERMON-AUDIO-ARTWORK`), with its one
@@ -23,11 +23,11 @@ import type { MintResult } from './state';
 const PATH = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg';
 const text = copy.sermonAudio.artwork;
 
-const YOUTUBE: ArtworkSubject = {
+const YOUTUBE: ImageSubject = {
   url: 'https://i.ytimg.com/vi/abc/hqdefault.jpg',
   kind: 'youtube',
 };
-const NOTHING: ArtworkSubject = { url: null, kind: 'none' };
+const NOTHING: ImageSubject = { url: null, kind: 'none' };
 
 function mintOk(): Promise<MintResult> {
   return Promise.resolve({
@@ -46,7 +46,7 @@ function jpegFile(bytes = 400 * 1024): File {
 
 function renderPicker(
   overrides: {
-    subject?: ArtworkSubject;
+    subject?: ImageSubject;
     mint?: () => Promise<MintResult>;
     upload?: () => Promise<void>;
     submitLabel?: string;
@@ -55,8 +55,10 @@ function renderPicker(
   return render(
     // A real form around it: any Save reads useFormStatus from the form it belongs to.
     <form>
-      <ArtworkUploader
+      <ImageField
         subject={overrides.subject ?? YOUTUBE}
+        words={text}
+        fieldName="artworkPath"
         mint={overrides.mint ?? mintOk}
         submitLabel={overrides.submitLabel}
         submittingLabel={text.saving}

@@ -1,6 +1,6 @@
 /**
  * The picture at the shape members see it (mockup `.artprev`): 16/9, the slot a YouTube
- * thumbnail stands in. Never a filename in a row, because the reader is choosing what a
+ * thumbnail stands in on a message, and the event hero stands in on an event. Never a filename in a row, because the reader is choosing what a
  * card LOOKS like and a name proves nothing about that.
  *
  * `plain` is the third thing that can be in the slot, and it is not an absence: it is the
@@ -17,13 +17,17 @@
  * utility worth minting. What matters is that no value is typed here.
  */
 
-export interface ArtworkSubject {
+export interface ImageSubject {
   /** The public URL of what members see now, or null for the branded fallback. */
   url: string | null;
+  /**
+   * Which of the three things is in the slot, because each has a different true sentence
+   * under it. `youtube` exists only for messages; an event has no third source.
+   */
   kind: 'own' | 'youtube' | 'none';
 }
 
-export function ArtworkPreview({
+export function ImagePreview({
   url,
   caption,
   alt,

@@ -975,9 +975,40 @@ export const copy = {
       rsvpOn: 'Members can say they are going',
       rsvpHint:
         'Turn this off for something nobody needs to book, like a notice. You can still change it later.',
-      picture: 'Picture (optional) · next slice',
-      pictureHint:
-        'Events show the branded cover for now. Uploading a picture arrives with its own storage in the next slice.',
+      picture: 'Picture · optional',
+    },
+    picture: {
+      dropTitle: 'Drop a picture, or choose a file',
+      dropSub: 'JPG, PNG or WebP · up to 5 MB',
+      // Three subjects, three different true things to say. `hasThumbnailHint` cannot
+      // happen for an event (nothing syncs one a picture), but the field's shape asks for
+      // it, so it answers the same way as no picture at all rather than inventing a state.
+      noThumbnailHint:
+        'Without one, the event shows the branded cover at the top of its page, which is a designed state rather than a gap. A wide picture, 1280×720 or larger, sits best behind the title.',
+      hasThumbnailHint:
+        'Without one, the event shows the branded cover at the top of its page, which is a designed state rather than a gap. A wide picture, 1280×720 or larger, sits best behind the title.',
+      hasArtworkHint:
+        'Choosing a picture replaces the one above; the old one is retired as soon as this is saved. A wide picture, 1280×720 or larger, sits best behind the title.',
+      onCardsNow: 'On the event now',
+      // What the empty tile is captioned, which is the frame's word for it: the slot is
+      // not empty, it holds the branded cover, and naming it as an absence would read as a
+      // missing image rather than as the designed state `11` calls for.
+      captionNone: 'Branded cover',
+      chosen: 'Chosen',
+      previewOwn: 'The picture on this event',
+      previewYouTube: 'The picture on this event',
+      previewNone: 'The branded cover this event shows today',
+      sendingLabel: 'Uploading the picture',
+      readyTitle: (kb: number) => `Picture ready, ${String(kb)} KB`,
+      readyBody: 'It goes up when this event is saved.',
+      chooseAnother: 'Choose a different picture',
+      pickNotImage: 'That is not a JPG, PNG or WebP picture.',
+      pickTooBig: (mb: number) =>
+        `That picture is ${String(mb)} MB. The limit is 5 MB.`,
+      uploadFailed: 'The picture did not reach storage. Try it again.',
+      remove: 'Remove the picture',
+      removeHint:
+        'The event goes back to the branded cover. Nothing else changes, and nobody is told: only a new time or venue reaches anyone.',
     },
     // What a save will do, said before it happens.
     postingTellsTitle: (count: number) =>
@@ -1034,6 +1065,10 @@ export const copy = {
       ends_before_start: 'The end time is before the start time.',
       scope_locked:
         'Who an event is for cannot change after it is posted. Post a new one instead.',
+      image_not_found:
+        'The picture did not finish uploading. Choose it again, then save.',
+      image_not_an_image:
+        'That file is not a JPG, PNG or WebP picture, whatever it is named. Nothing was saved.',
       refused:
         'That is not yours to change. Your role may have changed since this page loaded.',
       failed: 'Something went wrong and nothing was changed. Try again.',

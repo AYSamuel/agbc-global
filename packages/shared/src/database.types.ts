@@ -961,7 +961,7 @@ export type Database = {
           description: string
           ends_at_local: string | null
           id: string
-          image_url: string | null
+          image_path: string | null
           location: string
           notice_revision: number
           rsvp_enabled: boolean
@@ -983,7 +983,7 @@ export type Database = {
           description?: string
           ends_at_local?: string | null
           id?: string
-          image_url?: string | null
+          image_path?: string | null
           location?: string
           notice_revision?: number
           rsvp_enabled?: boolean
@@ -1005,7 +1005,7 @@ export type Database = {
           description?: string
           ends_at_local?: string | null
           id?: string
-          image_url?: string | null
+          image_path?: string | null
           location?: string
           notice_revision?: number
           rsvp_enabled?: boolean
@@ -2265,6 +2265,10 @@ export type Database = {
         Args: { target_event: string }
         Returns: undefined
       }
+      assert_event_image_exists: {
+        Args: { target: string }
+        Returns: undefined
+      }
       assert_photo_path_owned: { Args: { target: string }; Returns: undefined }
       assert_photo_validated: { Args: { target: string }; Returns: undefined }
       assert_prayer_link_allowed: {
@@ -2328,6 +2332,7 @@ export type Database = {
       }
       caller_branch_live: { Args: never; Returns: string }
       caller_is_admin_live: { Args: never; Returns: boolean }
+      caller_is_moderator_live: { Args: never; Returns: boolean }
       caller_is_onboarded: { Args: never; Returns: boolean }
       caller_profile_is_live: { Args: never; Returns: boolean }
       caller_role_live: { Args: never; Returns: string }

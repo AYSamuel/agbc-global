@@ -8,6 +8,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
+import { eventImageUrl } from '@/server/eventImages';
 import { loadAudience, loadEvent } from '@/server/events';
 
 import { saveEventAction, setStatusAction } from '../actions';
@@ -120,6 +121,12 @@ export default async function EventPage({
         }
         defaults={{
           id: event.id,
+          // Built from the path, never stored as one: the URL is derivable and a stored
+          // one would pin the project host into the row (`19`).
+          picture:
+            event.imagePath === null
+              ? { url: null, kind: 'none' }
+              : { url: eventImageUrl(supabase, event.imagePath), kind: 'own' },
           scope: event.branchId === null ? 'ministry' : 'branch',
           title: event.title,
           description: event.description,

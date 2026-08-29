@@ -9,8 +9,8 @@ import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
 
 import { CONTROL, FIELD, HINT, LABEL } from '../people/fields';
-import type { ArtworkSubject } from './ArtworkPreview';
-import { ArtworkUploader, type ArtworkSeams } from './ArtworkUploader';
+import type { ImageSubject } from '@/components/ImagePreview';
+import { ImageField, type ImageFieldSeams } from '@/components/ImageField';
 import { AudioUploader, type UploaderSeams } from './AudioUploader';
 import {
   NOT_SAVED,
@@ -50,11 +50,11 @@ export function AttachPanel({
   speaker: string;
   series: string | null;
   /** What members see on this message's card right now (W3.1 slice 5). */
-  artwork: ArtworkSubject;
+  artwork: ImageSubject;
   attach: SaveAction;
   mint: MintAction;
   mintArtwork: MintAction;
-  seams?: UploaderSeams & ArtworkSeams;
+  seams?: UploaderSeams & ImageFieldSeams;
 }) {
   const [state, submit] = useActionState(guarded(attach), NOT_SAVED);
   const text = copy.sermonAudio.attach;
@@ -112,7 +112,13 @@ export function AttachPanel({
             hidden `artworkPath` the action reads. */}
         <div className={FIELD} style={{ maxWidth: '40rem' }}>
           <span className={LABEL}>{picture.label}</span>
-          <ArtworkUploader subject={artwork} mint={mintArtwork} seams={seams} />
+          <ImageField
+            subject={artwork}
+            words={copy.sermonAudio.artwork}
+            fieldName="artworkPath"
+            mint={mintArtwork}
+            seams={seams}
+          />
         </div>
 
         <div className={FIELD}>

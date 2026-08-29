@@ -93,7 +93,7 @@ function event(overrides: Partial<EventListItem> = {}): EventListItem {
     starts_at_local: FUTURE,
     timezone: 'Europe/Berlin',
     location: 'Prinzenstr. 84',
-    image_url: null,
+    image_path: null,
     status: 'scheduled',
     rsvp_enabled: true,
     ...overrides,

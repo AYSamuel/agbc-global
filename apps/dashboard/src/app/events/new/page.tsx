@@ -61,6 +61,7 @@ export default async function NewEventPage() {
         audience={{ going: 0, interested: 0, reachable }}
         defaults={{
           scope: 'branch',
+          picture: { url: null, kind: 'none' },
           title: '',
           description: '',
           startsAtLocal: '',

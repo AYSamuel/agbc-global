@@ -10,7 +10,7 @@ import { copy } from '@/copy/en';
 
 import { CONTROL, FIELD, HINT, LABEL } from '../people/fields';
 import { isNextRedirect } from './AttachPanel';
-import { ArtworkUploader, type ArtworkSeams } from './ArtworkUploader';
+import { ImageField, type ImageFieldSeams } from '@/components/ImageField';
 import { AudioUploader, type UploaderSeams } from './AudioUploader';
 import {
   NOT_SAVED,
@@ -39,7 +39,7 @@ export function NewMessagePanel({
   create: SaveAction;
   mint: MintAction;
   mintArtwork: MintAction;
-  seams?: UploaderSeams & ArtworkSeams;
+  seams?: UploaderSeams & ImageFieldSeams;
 }) {
   const [state, submit] = useActionState(guarded(create), NOT_SAVED);
   const text = copy.sermonAudio.create;
@@ -148,8 +148,10 @@ export function NewMessagePanel({
             a broken state, so the hint argues for a picture rather than demanding one. */}
         <div className={FIELD} style={{ maxWidth: '40rem' }}>
           <span className={LABEL}>{picture.label}</span>
-          <ArtworkUploader
+          <ImageField
             subject={{ url: null, kind: 'none' }}
+            words={copy.sermonAudio.artwork}
+            fieldName="artworkPath"
             mint={mintArtwork}
             seams={seams}
           />
