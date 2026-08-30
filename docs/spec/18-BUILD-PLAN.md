@@ -43,7 +43,10 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 - Push (Expo) + Notification Center + tiers + deep links.
 - ~~WhatsApp broadcast integration~~ (dropped 2026-07-29, ADR 0014: broadcasts are push + in-app only).
 - Dashboard: broadcasts + events + branch/role management (Phase B of `17`).
-- **Exit:** members get the right notifications at the right scope; audio works while driving.
+- **Exit (first clause MET on Android 2026-08-30, W3.6; second clause OPEN):** members get the right notifications at the right scope; audio works while driving.
+  - **"The right notifications at the right scope" is met, and substantiated rather than assumed.** All ten tiers were driven to the physical Android device against PRODUCTION: every one arrived with the right words, on the right one of the six Android channels, and tapped through to the right destination across all four deep-link routes, from BOTH backgrounded and killed. The scoping half was demonstrated with two real accounts in two branches: a ministry broadcast produced recipients in both, a Glasgow branch broadcast produced exactly one delivery row to the Glasgow member and nothing at all for the Berlin device. "Only service reminders interrupt" was proven by contrast (`importance=4` against `importance=3|SILENT` everywhere else). Evidence and method: W3.6 slice 3.
+  - **The audit had to BUILD before it could verify.** Three notification kinds `09` promises had no producer at all, so two NOTIF-PREFS switches gated nothing; W3.6 slice 2 built `activity-notices` and they are now live in production and monitored.
+  - **"Audio works while driving" is NOT yet verified** and rests on W3.1's own testing. W3.6 slice 4 is blocked on having a sermon MP3 to play: production carries no sermon audio by deliberate policy (the traffic fence), so there is nothing on the shelf to test with. See the checklist item below.
 
 ## Phase 4: Store/Library + polish + store submission
 - Bookstore (buy on Payhip) + entitlement pipeline (API-confirmed, see `14`) + **My Library reader** + reading state. Honest sizing: the reader is 2 to 3 weeks (both PDF and EPUB ship in v1 by decision 2026-07-12); the devotional structured-import tool ships with it (`10`/`17`).
@@ -85,7 +88,7 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - [ ] Forced-update gate wired: remote minimum-version check (Android in-app updates + config gate on iOS).
 - [ ] Staged rollout plan with written halt criteria (Play staged %, iOS phased release); crash + ANR reporting live before widening.
 - [ ] Moderation coverage: at least one leader per branch trained on the dashboard; pending-item notifications + 48h admin escalation working (`17`).
-- [ ] Audio owner assigned: weekly sermon MP3 upload is someone's named job (`08`).
+- [ ] **Audio owner AND audio SOURCE assigned**: weekly sermon MP3 upload is someone's named job (`08`), and the job needs a source `08` never names. **Not YouTube.** `08` already forbids the app extracting or proxying a video's audio track, and copyright ownership does not grant a download right, because YouTube's terms govern access to the service separately from who owns the content. The two legitimate sources are the media team's ORIGINAL recording (better quality, no terms question, and the only one that scales to a weekly task) or YouTube Studio's own download of your own upload. Raised 2026-08-30 when W3.6 slice 4 needed a file and there was none.
 - [ ] **YouTube brand asset swap** (`08`, added W3.1 slice 4, 2026-08-15): audio mode attributes YouTube with a badge **we drew** (`features/watch/YouTubeCredit.tsx`). Their developer policies ask for YouTube Brand Features, which means their own asset, so take the official mark from YouTube's branding kit and replace the drawn one before submission. Nothing about the placement or the link changes.
 - [ ] **Play Console `mediaPlayback` foreground-service declaration** (`08`, added W3.1 slice 3): the app now holds `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (expo-audio's config plugin) and uses it for background sermon audio, which the app-content form must declare or the release is rejected. Nothing to build; someone has to fill the form.
 - [ ] Seed content: branches, first daily verses, a devotional plan, courses, initial sermons synced.
@@ -97,6 +100,16 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - [ ] **iOS E2E owed:** the Maestro journeys and the Family loop have run on Android only (no iPhone in the project at W2.10). Run the suite on an iOS build once an Apple device exists; `21` §4 asks for both platforms pre-release.
 - [x] ~~**More tab member variant (scheduled W3.3, not a loose end):** `apps/mobile/app/(tabs)/more.tsx` is guest-only by design.~~ **Built 2026-08-19 (W3.3 slice 5)** and verified on the device in both themes and in German: the member hub draws the `.mehead` identity card, the five "My life" rows all navigate (Profile, My rhythm, My List, My posts, Notifications with its unread count), and My Library lost its "Sign in" badge for members. The rhythm line on the card is omitted until the first "I'm here" (its own approved frame).
 - [ ] **Push tray icon (Android):** `expo-notifications` has its `color` (brand gold) but deliberately no `icon`, because Android's small icon must be a solid-white silhouette with transparency and the only candidate in the repo is the 432x432 adaptive monochrome layer, whose art is inset for the adaptive mask and renders as a small blob in the tray. Until a purpose-built 96x96 exists, Android falls back to the app icon, which rendered correctly on device (2026-08-16). Making that asset is a design task; the decision and its reasoning sit in `app.config.js`'s plugin comment.
+- [ ] **`registration.confirmed` has no producer** (found by W3.6's audit, 2026-08-30). The
+  fourth orphan of the same shape slice 2 fixed: the type, the template in four languages and
+  the channel routing all exist, and nothing ever writes the row, so a member who registers
+  for an Academy course is never told it was confirmed. W2.9 shipped it before push existed
+  (W3.3) and no item claimed the caller afterwards. Now a one-armed addition to
+  `activity_notice_batch`, not new infrastructure. `purchase.added` is the same shape but
+  legitimately W4.1's, since Store does not exist yet.
+- [ ] **Maestro E2E is not in CI** (`21` §4). Six journeys run green on the Android device by
+  hand and nothing runs them on a PR, so a regression in a critical journey is invisible
+  until somebody thinks to run them. Weigh against the CI-budget rule before wiring it up.
 - [ ] **Sentry geo minimisation:** crash events store city-level Geography derived from the sending IP even with `sendDefaultPii:false`. If unwanted under `20`, enable the project's "Prevent Storing of IP Addresses" setting (`21` §6.1).
 
 ---
