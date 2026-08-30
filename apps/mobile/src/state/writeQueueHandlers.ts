@@ -332,6 +332,14 @@ function revertEvicted(): void {
   for (const queryKey of TESTIMONY_SURFACE_KEYS) {
     void queryClient.invalidateQueries({ queryKey });
   }
+  // The prayer surfaces were missing here until #183 (found in the W3.1 slice 4
+  // review, fixed 2026-08-30). An evicted `intercession` left "I will pray"
+  // showing on a card with nothing left to deliver it, which is precisely the
+  // silent broken promise `01` §8 makes eviction responsible for undoing. The
+  // refused-intercession handler above already invalidates exactly this list.
+  for (const queryKey of PRAYER_SURFACE_KEYS) {
+    void queryClient.invalidateQueries({ queryKey });
+  }
   void queryClient.invalidateQueries({ queryKey: savedListQueryKey });
   void queryClient.invalidateQueries({ queryKey: ['saved'] });
 }
