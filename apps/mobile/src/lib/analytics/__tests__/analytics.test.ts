@@ -33,6 +33,26 @@ jest.mock('@/lib/supabase', () => ({
   },
 }));
 
+// THIS FILE GETS ITS OWN TIMEOUT, and the reason is the design below rather than any one
+// test (#215, measured 2026-08-30). Every test calls `loadAnalytics()`, which does a
+// `jest.resetModules()` and re-`require`s the REAL posthog-react-native, 22 times over. That
+// is deliberate and load-bearing: the env var and the module-level singleton have to be
+// fresh per test or the consent gate is not actually isolated, and this file is the one
+// thing in W2.10 that must not be wrong.
+//
+// The cost is real and scales with machine load: the file runs in ~7s idle, ~18s with
+// `supabase test db` and `deno test` competing, and 45s under `--detectOpenHandles`. Against
+// the 15s global `testTimeout` that is close enough to cross, and WHICH test crosses varies
+// (#215 caught "nothing reaches the network until consent is granted"; a later capture
+// caught "after consent the event is sent, to the EU host"). A varying victim is the proof
+// that no single test is at fault, so raising this file's ceiling is the honest fix and
+// tightening one test would not have been.
+//
+// Deliberately NOT the global timeout: the other 90 suites should keep the 15s bar. And
+// deliberately not "make the module reload cheaper", which would trade a GDPR-critical
+// isolation guarantee for seconds.
+jest.setTimeout(60_000);
+
 // One stable array: the fetch spy captures it by reference, so it is cleared in
 // place (`length = 0`) rather than reassigned.
 const requests: SentRequest[] = [];
