@@ -1,10 +1,14 @@
-# Deploying W3.5 to production
+# Deploying to production
 
-**DONE on 2026-08-20 09:32 UTC**, except the two healthchecks and their secrets (steps 5 and
-6, which are Ayo's). PR #204 merged as `afffc3f`, run `32354255696` applied seven migrations
-(`20260819180000` through `20260820160000`) and deployed all sixteen functions. Kept rather
-than deleted, because slice 5 and slice 4b will each make this same journey and the order
-below is the reusable part. Execution notes are at the bottom.
+**Started life as the W3.5 deploy checklist and is now the general procedure.** It has been
+run twice: 2026-08-20 (W3.5 slices 1-4) and 2026-08-29 (the W3.5 tail plus W3.6). The
+ordered steps below are the reusable part; execution notes for both runs are at the bottom,
+and the second run's notes carry the lesson that a function missing its `config.toml` block
+is a job that no-ops silently.
+
+**Run 1, 2026-08-20 09:32 UTC:** PR #204 merged as `afffc3f`, run `32354255696` applied
+seven migrations (`20260819180000` through `20260820160000`) and deployed all sixteen
+functions. Its two healthchecks stayed open for nine days.
 
 Written 2026-08-20, when W3.5 slices 1-4 were complete on `feat/w3-5-broadcast-domain` and
 production was still running W3.4's schema. It is a checklist rather than a narrative
@@ -115,3 +119,64 @@ Steps 1-4 and 7 ran clean, in about eleven minutes end to end.
 **Still open after this deploy:** the two healthchecks and their function secrets. Until
 they are set, `optionalEnv` returns null and both jobs no-op their pings, which is silent
 rather than broken: the jobs work, nobody is watching them.
+
+---
+
+## Execution notes, 2026-08-29 (W3.5 tail + W3.6)
+
+**This is the journey the file above predicted, and it is now complete.** The header kept
+this runbook because "slice 5 and slice 4b will each make this same journey"; both did, in
+one deploy, together with W3.6. Treat the ordered checklist as the general
+production-deploy procedure rather than a W3.5 artefact.
+
+Six migrations, not one, because production had been left at `20260820160000` while five
+more merged:
+
+| Migration | What |
+|---|---|
+| `20260820180000` | a branch that stops meeting (slice 5a) |
+| `20260820200000` | grants are the table boundary (PR #207, closed issue #96) |
+| `20260821120000` | one headquarters, and who moves it (slice 5b) |
+| `20260821140000` | a closed branch takes no attendance |
+| `20260822120000` | an event gets a picture (slice 4b, creates `event-images`) |
+| `20260829120000` | W3.6 slice 2, the only one adding a cron schedule |
+
+`db push` is all-or-nothing, so the choice was these six or nothing. **Check what is
+actually pending before dispatching**, rather than assuming the deploy matches the work item
+you have in your head; `list_migrations` against production answers it in one call.
+
+- **Backup dispatched first** (run `33253447396`, success 12:51 UTC), minutes rather than
+  hours old, exactly as step 3 asks.
+- **Deploy run `33253597950`, success.** Seventeen functions.
+- **Production was empty of everything the six migrations touch**, which made this the
+  safest possible moment for a privilege revocation and a new public-read bucket: 0 events,
+  0 testimonies, 0 prayers, 0 glory reactions, 0 intercessions, 4 branches with exactly 1
+  HQ (so the one-HQ rule could not fail on existing data), 2 profiles.
+- **Verified from the database**: 12 active cron jobs with `activity-notices` at
+  `* * * * *`; `net._http_response` showing `200 {"due":0,"created":0}` and **no 404s**;
+  a lease in `public.job_leases` taken and already released.
+- **The healthcheck and its secret were done the same day**, which is the one thing the
+  2026-08-20 notes left open. `prod-activity-notices`, cron `* * * * *`, UTC, 5 minutes
+  grace. Fourteen checks against the free tier's twenty.
+
+### The lesson this deploy paid for
+
+**A function without a `[functions.<slug>]` block in `supabase/config.toml` is a job that
+no-ops silently, and every test can be green while it happens.** `activity-notices` shipped
+in PR #211 without one. Locally it had been firing every minute into `404 Function not
+found` (49 times) while `cron.job_run_details` recorded "succeeded", because the POST worked.
+Hosted it would have failed differently and just as quietly: no block means `verify_jwt`
+defaults to true, and since ADR 0024 this project's keys are not JWTs, so the platform gate
+refuses `pg_cron`'s call before the function runs.
+
+Caught while reading this runbook's own line that "a new function is a directory plus a
+`config.toml` block", fixed in PR #212 before the deploy, and now guarded by
+`supabase/functions/_shared/configBlocks_test.ts`, which asserts both directions: every
+directory has a block, and every block still has a directory.
+
+### One thing to know before the next app-side session
+
+**`devices` is 0 in production.** No push token is registered, so nothing can be
+push-tested until a build is installed and signed into. `testimonies`, `prayers` and
+`glory_reactions` are also 0, so `activity-notices` correctly finds nothing: its first real
+send will be the first time somebody reacts to something.
