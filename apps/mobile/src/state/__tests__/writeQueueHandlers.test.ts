@@ -1,4 +1,10 @@
-import { writeHandlers } from '../writeQueueHandlers';
+import {
+  PRAYER_SURFACE_KEYS,
+  TESTIMONY_SURFACE_KEYS,
+} from '@/features/family/keys';
+import { useWriteQueueStore } from '@/lib/writeQueue';
+
+import { installWriteHandlers, writeHandlers } from '../writeQueueHandlers';
 
 // What a queued Glory actually does when it reaches the server, and how each
 // kind of refusal is classified. The classification is the load-bearing part: a
@@ -324,5 +330,45 @@ describe('the saved handler (W3.1 slice 4)', () => {
     mockGetSession.mockResolvedValue({ data: { session: null } });
     await expect(writeHandlers.saved(SAVE)).resolves.toBe('retry');
     expect(mockUpsert).not.toHaveBeenCalled();
+  });
+});
+
+describe('reverting an evicted wish (#183)', () => {
+  // `01` §8: eviction must revert the optimistic UI of the entity it drops. The
+  // queue is capped, and a wish removed to stay under that cap is a promise the
+  // app has silently stopped keeping, so the surfaces that showed it have to be
+  // asked again.
+  //
+  // The callback takes no entity, because the cap can drop several at once, so
+  // it refetches whole surfaces rather than rows. That is why the assertion here
+  // is on the KEY LIST rather than on any id.
+
+  function evict(): void {
+    installWriteHandlers();
+    const onEvicted = useWriteQueueStore.getState().onEvicted;
+    expect(onEvicted).not.toBeNull();
+    onEvicted?.();
+  }
+
+  test('an evicted intercession refetches the prayer surfaces', () => {
+    // The bug this file exists to stop coming back: `revertEvicted` refetched
+    // testimonies and saved items and NOT prayers, so an evicted intercession
+    // left "I will pray" showing on a card with nothing left to deliver it.
+    evict();
+
+    for (const queryKey of PRAYER_SURFACE_KEYS) {
+      expect(mockInvalidate).toHaveBeenCalledWith({ queryKey });
+    }
+  });
+
+  test('and still refetches the testimony and saved surfaces', () => {
+    // The two that already worked, asserted so the fix cannot trade one
+    // surface for another.
+    evict();
+
+    for (const queryKey of TESTIMONY_SURFACE_KEYS) {
+      expect(mockInvalidate).toHaveBeenCalledWith({ queryKey });
+    }
+    expect(mockInvalidate).toHaveBeenCalledWith({ queryKey: ['saved'] });
   });
 });
