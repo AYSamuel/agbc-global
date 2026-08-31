@@ -33,7 +33,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(98);
+select plan(100);
 
 -- ===========================================================================
 -- 1. The contract: exactly these columns, these types, this nullability.
@@ -251,6 +251,18 @@ select is(has_table_privilege('service_role', 'public.donations', 'insert'), tru
   'service_role may INSERT: this is the website''s Stripe webhook');
 select is(has_table_privilege('service_role', 'public.donations', 'select'), true,
   'service_role may SELECT');
+
+-- The SAME assertion for the other table this webhook writes, added 2026-08-31 after CI
+-- found it missing. `course_registrations` had no explicit grant to `service_role` at all:
+-- it inherited one from Supabase's bootstrap, which the pinned CI CLI does not hand out, so
+-- every service-key INSERT there failed on a database built fresh from this history while
+-- passing on a developer's older one. `20260831140000` grants it by name; this is what stops
+-- it drifting back to ambient. The consequence if it does is not a red test, it is the
+-- website's Stripe webhook refused mid-checkout.
+select is(has_table_privilege('service_role', 'public.course_registrations', 'insert'), true,
+  'service_role may INSERT into course_registrations: the same webhook, the same road in');
+select is(has_table_privilege('service_role', 'public.course_registrations', 'select'), true,
+  'service_role may SELECT from course_registrations');
 
 -- ===========================================================================
 -- 4. The FK trap from the old project, fixed.
