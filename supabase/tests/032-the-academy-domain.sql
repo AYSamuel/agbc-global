@@ -24,7 +24,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(65);
+select plan(66);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 \set emmen '00000000-0000-4000-8000-000000000003'
@@ -311,8 +311,14 @@ values
 insert into public.course_registrations
   (id, course, format, full_name, email, city, country, amount, currency, payment_status)
 values
+  -- STORED MESSY ON PURPOSE, and on THIS side of the match rather than on the proof side.
+  -- The proof side is now constrained to be normalized (`profile_emails_normalized`,
+  -- 20260831150000), which is what lets the dashboard read it back with a plain equality. This
+  -- column is the website's: `02`'s contract forbids us constraining it, so whitespace and
+  -- capitals are a live possibility here and nowhere else. It is therefore the honest half to
+  -- make messy, and the claim under test is unchanged: the match normalizes BOTH sides.
   (:'regE', 'grace-masterclass', 'Intensive (3 weeks)', 'Second Address',
-   't032-extra@test.local', 'Berlin', 'Germany', 4000, 'gbp', 'paid'),
+   '  T032-Extra@test.local  ', 'Berlin', 'Germany', 4000, 'gbp', 'paid'),
   (:'regF', 'a-course-nobody-knows', 'Intensive', 'Unknown Slug',
    't032-unknown@test.local', 'Nowhere', 'Nowhere', 100, 'gbp', 'paid');
 
@@ -580,10 +586,11 @@ select is(
 reset role;
 select set_config('request.jwt.claims', '', true);
 
--- The verify RPC's write, done directly: stored messy on purpose, because the match
--- must normalize BOTH sides.
+-- The proof, written the way every writer has always written it: normalized. The mess that
+-- makes this a test of BOTH sides now sits on regE, which is the website's column and the only
+-- one of the two that can actually be messy in life (see the fixture's note).
 insert into public.profile_emails (profile_id, email)
-values (:'member1', '  T032-Extra@test.local  ');
+values (:'member1', 't032-extra@test.local');
 
 set local role authenticated;
 set local request.jwt.claims to
@@ -606,11 +613,23 @@ select throws_ok(
   '23514', null,
   'an address that is another account''s sign-in address can never become a proof');
 
+-- TWO GUARANTEES, AND THEY ARE NOT THE SAME ONE. This used to be a single assertion that a
+-- capitalized duplicate hit 23505, which proved uniqueness sees through case. Since
+-- `profile_emails_normalized` (20260831150000) the capitalized form never reaches the index at
+-- all, so both halves are now asserted separately: the column refuses a stray capital, and the
+-- normalized form still refuses a second owner. Collapsing them again would let either one
+-- disappear behind the other.
 select throws_ok(
   format($$insert into public.profile_emails (profile_id, email)
            values (%L, 't032-extra@TEST.local')$$, :'member2'),
+  '23514', null,
+  'the column refuses a stray capital: proofs are stored the way they are matched');
+
+select throws_ok(
+  format($$insert into public.profile_emails (profile_id, email)
+           values (%L, 't032-extra@test.local')$$, :'member2'),
   '23505', null,
-  'one owner per address, however it is capitalized');
+  'one owner per address: a second member cannot prove one that is already proven');
 
 set local role authenticated;
 set local request.jwt.claims to

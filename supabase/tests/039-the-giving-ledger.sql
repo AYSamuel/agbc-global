@@ -33,7 +33,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(100);
+select plan(101);
 
 -- ===========================================================================
 -- 1. The contract: exactly these columns, these types, this nullability.
@@ -375,6 +375,16 @@ select col_is_null('public', 'course_registrations', 'set_aside_at',
   'cr.set_aside_at is nullable (#164): the website never names it');
 select col_is_null('public', 'course_registrations', 'set_aside_by',
   'cr.set_aside_by is nullable (#164): the website never names it');
+
+-- THE DOUBLE-BOOKING WALL, BY NAME. Asserted here because the dashboard now depends on the
+-- name and not just on the behaviour: `link_registration` refuses this case in its own words,
+-- but two admins linking at once race past that check and are stopped by the index itself, so
+-- `mapLinkError` matches this string to report the same refusal rather than "try again"
+-- (apps/dashboard/src/server/registrations.ts). Renaming the index would silently turn that
+-- back into a dead end, which is the bug it was added to fix.
+select has_index('public', 'course_registrations',
+  'course_registrations_active_enrolment_uniq',
+  'the double-booking wall keeps its name: the dashboard reads it out of the error message');
 
 select * from finish();
 rollback;
