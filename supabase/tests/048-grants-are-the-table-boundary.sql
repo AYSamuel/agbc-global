@@ -23,7 +23,7 @@
 -- segfaults. Everything here reads the catalogue or drives a table directly.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(27);
 
 \set member '99000000-0000-4000-8000-00000000000a'
 \set glasgow '00000000-0000-4000-8000-000000000001'
@@ -261,6 +261,40 @@ select throws_ok(
   '42501',
   null,
   'but cannot delete it, which is now refused a step earlier than the missing policy');
+
+-- ===========================================================================
+-- The road IN, and the one table that had lost it
+-- ===========================================================================
+--
+-- Added 2026-08-31, after CI found `course_registrations` granting `service_role` nothing at
+-- all: it had inherited Supabase's bootstrap grant at creation and nobody had written it
+-- down, and the pinned CI CLI builds a database whose bootstrap does not hand that out. Nine
+-- tables were in the same position (`20260831140000`).
+--
+-- ONE assertion rather than nine, and it enumerates rather than lists, so it catches the NEXT
+-- table that forgets instead of only the ones that already did. The four exclusions are the
+-- tables deliberately DENIED to `service_role`: an audit row, a branch move, an admin
+-- bootstrap and a handoff token must not be forgeable with a leaked key.
+--
+-- Why this belongs in the boundary file: issue #96 was the same shape pointing the other way.
+-- That cleanup made sure `anon` and `authenticated` hold only what a migration says they
+-- hold; this makes sure `service_role` holds what a migration says it holds, rather than what
+-- a CLI version happened to hand out.
+-- By OID, and not by a name built with `'public.' || tablename`. The planner is free to
+-- evaluate `has_table_privilege` before the schema filter, so the name form asked about
+-- `public.instances` (which lives in `auth`) and died with "relation does not exist" rather
+-- than reporting anything. An OID needs no resolution, so evaluation order stops mattering.
+select is(
+  (select coalesce(array_agg(c.relname::text order by c.relname), '{}')
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relkind = 'r'
+      and c.relname not in ('bootstrap_admins', 'privileged_actions',
+                            'branch_change_requests', 'course_handoff_tokens')
+      and not has_table_privilege('service_role', c.oid, 'insert')),
+  '{}'::text[],
+  'every public table grants service_role INSERT except the four it is deliberately denied');
 
 select * from finish();
 rollback;
