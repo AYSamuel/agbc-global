@@ -68,9 +68,11 @@ select ok(
 
 -- --- 2. the grant matrix, exactly --------------------------------------------------------------
 
--- The full SELECT column list, sorted. linked_by is DELIBERATELY absent (which staff
--- member linked a row is internal, the moderated_by reasoning); adding a column to
--- this table must come back here and decide.
+-- The full SELECT column list, sorted. linked_by and set_aside_by are DELIBERATELY absent
+-- (which staff member made the call is internal, the moderated_by reasoning); adding a
+-- column to this table must come back here and decide. This assertion is exactly what
+-- forced #164's set_aside_at to be a decision rather than an oversight: the migration
+-- turned this red, which is the guard working.
 select is(
   (select array_agg(distinct column_name::text order by column_name::text)
      from information_schema.role_column_grants
@@ -78,8 +80,8 @@ select is(
       and grantee = 'authenticated' and privilege_type = 'SELECT'),
   array['amount','branch','branch_id','city','country','course','course_id','created_at',
         'currency','email','format','full_name','id','link_method','linked_at','notes',
-        'payment_status','profile_id','source','status','stripe_session_id'],
-  'members read exactly the named registration columns, and linked_by is not among them');
+        'payment_status','profile_id','set_aside_at','source','status','stripe_session_id'],
+  'members read exactly the named registration columns; neither linked_by nor set_aside_by is among them');
 
 select is(
   (select array_agg(distinct column_name::text order by column_name::text)

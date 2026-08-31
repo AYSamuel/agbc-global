@@ -1,8 +1,48 @@
 # #164 · Link a website course registration to a member by hand
 
-**SPEC, not a plan of work in progress.** Written 2026-08-30 from an interview with Ayo.
-Build it from this in a fresh session. Delete this file when the work lands, per the
-convention W3.1, W3.3, W3.4 and W3.5 followed.
+**SPEC, written 2026-08-30 from an interview with Ayo. THE BACKEND HAS LANDED; the screen
+has not.** Delete this file when the screen lands, per the convention W3.1, W3.3, W3.4 and
+W3.5 followed, and not before: everything below §The screen is still the brief.
+
+---
+
+## Status (2026-08-31)
+
+**DONE, in migrations `20260831120000` and `20260831130000`:**
+
+- `set_aside_at` / `set_aside_by`, nullable and additive, with `set_aside_at` granted to
+  `authenticated` and `set_aside_by` withheld on the `linked_by` reasoning.
+- `link_registration`, `unlink_registration`, `set_registration_aside` and
+  `registration_match_suggestions`: all `security definer`, all checking
+  `caller_is_admin_live()` inside, all granted to `authenticated` and revoked from `anon`.
+- The notification, as a fourth `activity_notice_batch` arm exactly as §The notification
+  asked, plus its `core.ts` mapping. `registration.confirmed` has a producer for the first
+  time.
+- Tests: pgTAP `052` (46 assertions), `051` +4 for the new arm, `039` +2 for the shared-table
+  contract, `032`'s grant matrix corrected. Deno `core_test.ts` +3.
+
+**Three things the build learned that this SPEC did not know:**
+
+1. **Half of §The server routines already existed.** `registration_linked` was already in the
+   `privileged_action` enum and `course_registrations_audit` already fired on EVERY change of
+   `profile_id`, so link and unlink are audited by the existing trigger and neither routine
+   writes an audit row. Only set-aside needed a new value and an explicit write, because it
+   changes no owner and so fires no trigger.
+2. **"Linking always writes `profile_emails`" cannot always hold**, and the SPEC did not say
+   what to do when it cannot. Two existing constraints refuse: a global unique on the
+   normalised address, and a guard against taking another account's sign-in address. The
+   decision taken, and asserted in `052`, is to **refuse the whole link** rather than link
+   without proving the address, because either collision means two people claim one mailbox,
+   which is the mis-link decision 5 accepted the risk of. Linking quietly would hide it and
+   leave an admin believing the auto-match had been taught.
+3. **`039` guards the website's columns, not ours**, so what it gained was the two columns'
+   NULLABILITY rather than their existence: a NOT NULL added here would refuse every live
+   website registration while every test in this repo stayed green.
+
+**OWED: the screen** (§The screen below, unchanged). The mockup frames come first and need
+Ayo's approval before any screen code, including the EMPTY queue.
+
+---
 
 Refs: ADR [0017](../decisions/0017-one-course-registrations-table.md) (decisions 2, 4, 5 and
 the 2026-08-11 amendment), ADR [0015](../decisions/0015-branch-is-assigned-not-chosen.md),

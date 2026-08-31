@@ -2,7 +2,13 @@ import { assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
 
 import { allowedByPrefs, routeFor } from '../_shared/pushChannels.ts';
 import { renderTemplate } from '../_shared/pushTemplates.ts';
-import { buildEntries, MY_POSTS_DEEP_LINK, TEMPLATES, type ActivityDueRow } from './core.ts';
+import {
+  ACADEMY_DEEP_LINK,
+  buildEntries,
+  MY_POSTS_DEEP_LINK,
+  TEMPLATES,
+  type ActivityDueRow,
+} from './core.ts';
 
 function due(overrides: Partial<ActivityDueRow> = {}): ActivityDueRow {
   return {
@@ -135,4 +141,48 @@ Deno.test('dedupe keys pass through untouched: the SQL owns the claim', () => {
     buildEntries(rows).map((e) => e.dedupe_key),
     rows.map((r) => r.dedupe_key),
   );
+});
+
+Deno.test('a hand-linked registration points at the course and carries no amount', () => {
+  const [entry] = buildEntries([
+    due({
+      kind: 'registration',
+      subject_id: '99000000-0000-4000-8000-0000000000d1',
+      detail: '99000000-0000-4000-8000-0000000000e1',
+      dedupe_key: 'registration:99000000-0000-4000-8000-0000000000d1:2026-08-31T10:00:00.000000',
+    }),
+  ]);
+
+  assertEquals(entry.type, 'registration');
+  assertEquals(entry.template_key, TEMPLATES.registration);
+  // `subject_id` stays the registration; the COURSE, in `detail`, is where the tap lands.
+  assertEquals(entry.deep_link, '/course/99000000-0000-4000-8000-0000000000e1');
+  // What they paid is on the row and never leaves it (`20`, minimum necessary). The SPEC
+  // keeps the amount off the dashboard for the same reason it stays off a lock screen.
+  assertEquals(entry.params, {});
+});
+
+Deno.test('a registration whose course we cannot name goes to the Academy, not to /course/null', () => {
+  const [entry] = buildEntries([
+    due({
+      kind: 'registration',
+      subject_id: '99000000-0000-4000-8000-0000000000d2',
+      // course_id is resolved from the website's slug at insert time, so a payment for
+      // something outside our catalogue genuinely has none.
+      detail: null,
+      dedupe_key: 'registration:99000000-0000-4000-8000-0000000000d2:2026-08-31T10:00:00.000000',
+    }),
+  ]);
+
+  assertEquals(entry.deep_link, ACADEMY_DEEP_LINK);
+  // A path off the app's allowlist opens the notification centre instead, which would be a
+  // silent downgrade rather than a crash: exactly the failure this fallback avoids.
+  assertEquals(entry.deep_link.startsWith('/'), true);
+});
+
+Deno.test('a confirmed registration is transactional: nothing switches it off', () => {
+  // It answers something the member did, and did with money, so `15` gives it the
+  // transactional channel with no pref key at all.
+  assertEquals(routeFor('registration').pref, null);
+  assertEquals(allowedByPrefs('registration', { testimony_activity: false }), true);
 });

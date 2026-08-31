@@ -33,7 +33,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(96);
+select plan(98);
 
 -- ===========================================================================
 -- 1. The contract: exactly these columns, these types, this nullability.
@@ -355,6 +355,14 @@ select col_has_default('public', 'course_registrations', 'payment_status',
 select col_has_default('public', 'course_registrations', 'id', 'cr.id has a default');
 select col_has_default('public', 'course_registrations', 'created_at',
   'cr.created_at has a default');
+
+-- #164 added these two, and they belong in exactly this half. The website's insert has never
+-- heard of them, so a NOT NULL here would refuse every live registration, charge the donor,
+-- and leave every test in this repo green while it happened.
+select col_is_null('public', 'course_registrations', 'set_aside_at',
+  'cr.set_aside_at is nullable (#164): the website never names it');
+select col_is_null('public', 'course_registrations', 'set_aside_by',
+  'cr.set_aside_by is nullable (#164): the website never names it');
 
 select * from finish();
 rollback;

@@ -656,6 +656,8 @@ export type Database = {
           notes: string | null
           payment_status: string
           profile_id: string | null
+          set_aside_at: string | null
+          set_aside_by: string | null
           source: Database["public"]["Enums"]["course_registration_source"]
           status: Database["public"]["Enums"]["course_registration_status"]
           stripe_session_id: string | null
@@ -682,6 +684,8 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           profile_id?: string | null
+          set_aside_at?: string | null
+          set_aside_by?: string | null
           source?: Database["public"]["Enums"]["course_registration_source"]
           status?: Database["public"]["Enums"]["course_registration_status"]
           stripe_session_id?: string | null
@@ -708,6 +712,8 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           profile_id?: string | null
+          set_aside_at?: string | null
+          set_aside_by?: string | null
           source?: Database["public"]["Enums"]["course_registration_source"]
           status?: Database["public"]["Enums"]["course_registration_status"]
           stripe_session_id?: string | null
@@ -737,6 +743,13 @@ export type Database = {
           {
             foreignKeyName: "course_registrations_profile_id_fkey"
             columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_registrations_set_aside_by_fkey"
+            columns: ["set_aside_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2476,6 +2489,10 @@ export type Database = {
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_role: { Args: never; Returns: string }
+      link_registration: {
+        Args: { member: string; registration: string }
+        Returns: undefined
+      }
       mark_broadcast_deliveries: { Args: { results: Json }; Returns: number }
       mark_broadcast_receipts: { Args: { results: Json }; Returns: number }
       mark_event_announced: {
@@ -2575,6 +2592,17 @@ export type Database = {
           profile_id: string
         }[]
       }
+      registration_match_suggestions: {
+        Args: { limit_to?: number; registration: string }
+        Returns: {
+          branch_name: string
+          display_name: string
+          email: string
+          name_similarity: number
+          profile_id: string
+          reason: string
+        }[]
+      }
       rehome_from_archived_branch: {
         Args: { destination: string }
         Returns: undefined
@@ -2637,10 +2665,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_registration_aside: {
+        Args: { aside: boolean; registration: string }
+        Returns: undefined
+      }
       submit_broadcast: { Args: { broadcast: string }; Returns: undefined }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
+      unlink_registration: {
+        Args: { registration: string }
+        Returns: undefined
+      }
       unprocessed_push_tickets: {
         Args: { batch?: number }
         Returns: {
@@ -2732,6 +2768,7 @@ export type Database = {
         | "branch_changed"
         | "branch_request_rejected"
         | "registration_linked"
+        | "registration_set_aside"
       profile_role: "member" | "leader" | "admin"
       report_status: "open" | "actioned" | "dismissed"
       rsvp_status: "going" | "interested" | "cancelled"
@@ -2900,6 +2937,7 @@ export const Constants = {
         "branch_changed",
         "branch_request_rejected",
         "registration_linked",
+        "registration_set_aside",
       ],
       profile_role: ["member", "leader", "admin"],
       report_status: ["open", "actioned", "dismissed"],

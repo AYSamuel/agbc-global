@@ -6,15 +6,18 @@
 // pgTAP `051`. What is left is the shape of the notification, and one decision per arm
 // about which words to use.
 //
-// THE PAYLOAD RULE IS AT ITS TIGHTEST HERE. These three notifications are about a
-// member's own testimony or prayer request, which is exactly the special-category
-// content `15` and `20` forbid on a lock screen. So:
+// THE PAYLOAD RULE IS AT ITS TIGHTEST HERE. These notifications are about a member's own
+// testimony, prayer request or payment, which is exactly the special-category content `15`
+// and `20` forbid on a lock screen. So:
 //   * `prayed` carries NO params at all. Not the request, not a word of it, not who
 //     prayed. "Someone prayed with you" and a link, nothing else. Same treatment the
 //     prayer nudge already gets.
 //   * `glory` carries a COUNT and nothing more. A number is not content.
 //   * `moderation` carries nothing. The status picks the template; the reason, where
 //     there is one the author may see, is read in the app after auth.
+//   * `registration` carries nothing either. What the member paid is on the row and is
+//     deliberately never shown, on screen or on a lock screen (`20`, minimum necessary):
+//     the amount is irrelevant to "your registration is confirmed".
 
 import type { NotificationEntry } from '../_shared/notify.ts';
 
@@ -33,11 +36,14 @@ export interface ActivityDueRow {
  * The catalogue keys this job can send, all of them already in `_shared/pushTemplates.ts`
  * and in the app's `notifications.json`, in four languages.
  *
- * `moderation.removed` is the one added in this slice, and it is added rather than reusing
- * `moderation.changes_needed` on purpose. `MyPostCard.tsx` states the product rule in a
+ * `moderation.removed` was added in W3.6 rather than reusing `moderation.changes_needed`,
+ * on purpose. `MyPostCard.tsx` states the product rule in a
  * comment: "rejected is a conversation the author can answer (edit and resubmit), removed
  * is not". Telling a member whose post was taken down after review to go and edit it would
  * send them to do the one thing that must not happen.
+ *
+ * `registration.confirmed` is the one added in this slice (#164). It needed no new words at
+ * all: it has existed in four languages since W3.3 and simply never had a caller.
  */
 export const TEMPLATES = {
   prayed: 'prayer.someone_prayed',
@@ -45,6 +51,7 @@ export const TEMPLATES = {
   approved: 'moderation.approved',
   rejected: 'moderation.changes_needed',
   removed: 'moderation.removed',
+  registration: 'registration.confirmed',
 } as const;
 
 /**
@@ -63,10 +70,20 @@ export const TEMPLATES = {
  */
 export const MY_POSTS_DEEP_LINK = '/my-posts';
 
+/**
+ * Where a confirmed registration lands when we cannot name its course.
+ *
+ * `course_id` is resolved from the website's slug when the row is inserted, so a payment for
+ * something not in our catalogue has none. `/course/null` is not a route; the Academy index
+ * is, and it is on the same allowlist. Better a true screen one tap away than a dead one.
+ */
+export const ACADEMY_DEEP_LINK = '/academy';
+
 /** The notification type, which is the routing key that picks the Android channel. */
 function typeFor(row: ActivityDueRow): string {
   if (row.kind === 'glory') return 'testimony_glory';
   if (row.kind === 'moderation') return 'moderation';
+  if (row.kind === 'registration') return 'registration';
   // Both "someone prayed with you" and the commitment nudges ride the `prayer` channel.
   return 'prayer';
 }
@@ -74,6 +91,7 @@ function typeFor(row: ActivityDueRow): string {
 function templateFor(row: ActivityDueRow): string | null {
   if (row.kind === 'prayed') return TEMPLATES.prayed;
   if (row.kind === 'glory') return TEMPLATES.glory;
+  if (row.kind === 'registration') return TEMPLATES.registration;
   if (row.kind === 'moderation') {
     switch (row.detail) {
       case 'approved':
@@ -91,6 +109,11 @@ function templateFor(row: ActivityDueRow): string | null {
 
 function deepLinkFor(row: ActivityDueRow): string {
   if (row.kind === 'moderation') return MY_POSTS_DEEP_LINK;
+  // The registration arm puts the COURSE in `detail`, because the course is where the tap
+  // lands while `subject_id` stays the registration the notice is about.
+  if (row.kind === 'registration') {
+    return row.detail === null ? ACADEMY_DEEP_LINK : `/course/${row.detail}`;
+  }
   if (row.kind === 'glory') return `/testimony/${row.subject_id}`;
   return `/prayer/${row.subject_id}`;
 }
