@@ -60,6 +60,7 @@ const ADMIN_ONLY = new Set<DashboardAction>([
   'approve_broadcast',
   'manage_ministry_events',
   'manage_branches',
+  'link_registrations',
 ]);
 
 export type StaffRole = 'leader' | 'admin';
@@ -170,7 +171,25 @@ export type DashboardAction =
    * that they ask for a fresh authenticator code at the moment of the act (`stepUp.ts`).
    * Authority and freshness are separate questions and are answered in separate places.
    */
-  | 'manage_branches';
+  | 'manage_branches'
+  /**
+   * Attach a website course registration to a member, undo it, or set one aside (W4.0, #164).
+   *
+   * Admin-only, and deliberately NOT branch-scoped, for a reason that is structural rather
+   * than a preference (ADR 0017 decision 5): an unlinked website registration carries no
+   * `branch_id` at all, so "leaders read in-branch" has no answer for it. There is no correct
+   * branch leader for a stranger's payment record, and the `branch` column on the row is a
+   * display name the website typed, which `02` forbids using to scope anything.
+   *
+   * One action for the whole module, like `manage_branches`: link, unlink and set-aside
+   * differ in what they DO, never in who may do them. It is asked for by name here rather
+   * than as a `role === 'admin'` line in the pages for the reason at the top of this file:
+   * the queue, the link screen, the confirm and the unlink confirm would each have to
+   * remember, and one of them eventually would not. The four routines repeat the rule at the
+   * data layer with `caller_is_admin_live()`, which is the boundary; this is what keeps the
+   * refusal inside the shell instead of surfacing as a raw error.
+   */
+  | 'link_registrations';
 
 export interface AuthorizationRequest {
   action: DashboardAction;

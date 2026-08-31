@@ -71,6 +71,21 @@ const BUILT: Destination[] = [
   // `can_moderate_branch()` reads `profiles.branch_id`, so a leader editing their own
   // branch row would be editing the subject of their own authority check.
   { key: 'branches', label: copy.nav.branches, href: '/branches', icon: '▦' },
+  // W4.0, frames approved 2026-08-31, and the first Phase C destination to light up. Only a
+  // slice of one: the rest of the courses module is still Phase C. It is its own row rather
+  // than a corner of People because what lives here is a stranger's PAYMENT record, and
+  // filing that under People would misfile it (#164 decision 8).
+  //
+  // It also took the word "courses" off the dimmed row below, which used to read "Library &
+  // courses". Academy and courses are one domain in this product (the app calls the place
+  // "Grace Academy" and the things in it courses), so two rows naming it would promise the
+  // same module twice; Library keeps the books half, which the app calls "My Library".
+  //
+  // Linked for every staff caller like the five rows above it, and the refusal behind it is
+  // as strict as branch management: admin-only, and a leader gets no version of it at all.
+  // That is ADR 0017 decision 5, and the reason is structural rather than a preference: an
+  // unlinked website row carries no branch, so "leaders read in-branch" has no answer for it.
+  { key: 'academy', label: copy.nav.academy, href: '/academy', icon: '◈' },
 ];
 
 const LATER: Destination[] = [

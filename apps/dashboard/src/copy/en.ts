@@ -97,7 +97,10 @@ export const copy = {
     broadcasts: 'Broadcasts',
     events: 'Events',
     branches: 'Branches',
-    library: 'Library & courses',
+    academy: 'Academy',
+    // Books and devotional content, and NOT courses: Academy above owns those. The app makes
+    // the same split, and names both sides of it ("Grace Academy" against "My Library").
+    library: 'Library',
     insights: 'Insights',
     // Screen-reader text on the dimmed rows, so "Phase B" is not conveyed by dimming alone.
     notYet: (phase: string) => `not built yet, arrives in Phase ${phase}`,
@@ -1349,6 +1352,214 @@ export const copy = {
         'Closed. Its members are asked to choose a new home next time they open the app.',
       reopened: 'Open again, and back in front of members.',
       hqMoved: 'The headquarters has moved.',
+    },
+  },
+
+  /**
+   * Attaching a website course registration to a member by hand (#164, frames approved
+   * 2026-08-31).
+   *
+   * Two rules run through all of it. THE AMOUNT IS NEVER NAMED, anywhere, in any string:
+   * `20` §minimum necessary, and the figure says nothing about who somebody is. And WHO set
+   * a row aside is never named either, because `set_aside_by` is outside the column grant;
+   * every sentence about setting aside says when, or says nothing.
+   */
+  academy: {
+    title: 'Academy',
+    scope: 'Registrations paid on the website',
+
+    stats: {
+      waiting: 'Waiting to be matched',
+      aside: 'Set aside',
+      linkedByHand: 'Linked by hand',
+    },
+
+    filters: {
+      waiting: (count: number) => `Waiting ${String(count)}`,
+      aside: (count: number) => `Set aside ${String(count)}`,
+      linked: 'Linked',
+      label: 'Which registrations',
+    },
+
+    // The judgement warning sits above the decision it governs, the way the moderation
+    // queue's safeguarding rule does. Decision 1's accepted risk, stated to the person who
+    // carries it.
+    guideTitle: 'A link is a judgement, not proof of anything.',
+    guide:
+      'Attaching a payment to the wrong member gives them somebody else’s course, tells them it is theirs, and teaches the app to repeat the mistake the next time that address pays. Where the name is not obviously the same person, leave it here and ask them.',
+
+    waitingLabel: 'Waiting to be matched · newest first',
+    asideLabel: 'Set aside · most recent first',
+    linkedLabel: 'Attached to a member · most recent first',
+
+    // A registration whose slug matched nothing in our catalogue. Not an error: the website
+    // sells things we do not carry, and `course_id` is resolved from the slug at insert.
+    noCourse: 'Not a course in our catalogue',
+    noBranch: 'No branch given',
+    registeredOn: (when: string) => `Registered ${when}`,
+    setAsideOn: (when: string) => `Set aside ${when}`,
+
+    notMatched: 'Not matched',
+    methods: {
+      leader: 'Linked by hand',
+      email_auto: 'Matched on the address',
+      handoff: 'Registered in the app',
+      self: 'Claimed by the member',
+    },
+
+    actions: {
+      find: 'Find their account',
+      setAside: 'No app account',
+      bringBack: 'Bring it back',
+      unlink: 'Unlink',
+      backToQueue: 'Back to the queue',
+      backToSuggestions: 'Back to the suggestions',
+      seeAside: (count: number) => `See the ${String(count)} set aside`,
+    },
+
+    emptyTitle: 'Nothing needs a name',
+    emptyBody:
+      'Registrations attach themselves whenever the payment carries an address the member signs in with. This screen holds only the ones that did not, so most weeks it is empty and that is the system working.',
+    emptyAsideTitle: 'Nothing has been set aside',
+    emptyAsideBody:
+      'A registration lands here when somebody decides the payer never installed the app. Nothing has been judged that way yet.',
+    emptyLinkedTitle: 'Nothing has been attached yet',
+    emptyLinkedBody:
+      'Registrations that found their member, by hand or on their own, are listed here so a wrong one can be undone.',
+
+    link: {
+      title: 'Whose registration is this?',
+      scope: (course: string, when: string) => `${course} · registered ${when}`,
+      paidLabel: 'Paid on the website',
+      // Said out loud because it is the one thing that makes the list below honest: an exact
+      // address was matched automatically long before a human saw the row.
+      guideTitle: 'Every name below is a resemblance, not a match.',
+      guide:
+        'Anyone signing in with this exact address was attached automatically long before the row reached you, so what is left are people whose name looks similar. Each row says what the resemblance is. Read it before you choose.',
+      suggestionsLabel: 'Members who might be them · best first',
+      noneLabel: 'None of them?',
+      searchLabel: 'Search by name, or by the address they sign in with',
+      searchPlaceholder: 'Ade, or ade.o@outlook.com',
+      searchHint:
+        'Two letters or more, and at most eight people come back. There is no way to list everybody. An address is matched exactly, a name loosely.',
+      search: 'Search',
+      resultsLabel: (count: number, query: string) =>
+        `${String(count)} ${count === 1 ? 'person' : 'people'} match “${query}” · closest first`,
+      choose: (name: string) => `Choose ${name}`,
+      noResultsTitle: 'Nobody here is called that',
+      noResultsBody: (query: string) =>
+        `No member’s name or sign-in address matches “${query}”. Try the part of the name they would have typed themselves, or ask them which address they sign in with. If they have never opened the app, this registration is one to set aside.`,
+      tooShortTitle: 'Give it at least two letters',
+      tooShortBody:
+        'A single character would return most of the ministry, and there is no reason to read a list of everybody in order to find one person.',
+      /**
+       * The reason a suggestion carries, as the database phrased it.
+       *
+       * A map rather than a passthrough, so no copy lives outside this file, and with a
+       * fallback to the raw string so a reason added in SQL degrades to itself rather than
+       * to a blank pill. Deliberately NOT re-derived from the similarity score and the
+       * branch names: that would give one visible fact two owners.
+       */
+      reasons: {
+        'similar name': 'Similar name',
+        'similar name, same branch': 'Similar name, same branch',
+      } as Record<string, string>,
+    },
+
+    confirm: {
+      title: (member: string) => `Attach this registration to ${member}?`,
+      becomesLabel: 'Attached to',
+      toldTitle: (member: string) =>
+        `${member} is told, within a minute or two`,
+      toldBody: (course: string) =>
+        `They get “Your place is confirmed” on their phone and in their notifications, in their own language, and it opens ${course}. Nothing at all is sent to the address on the payment.`,
+      // Decision 5 and open risk 1, stated as the accepted risk it is rather than softened.
+      teachesTitle: (address: string, member: string) =>
+        `This also teaches the app that ${address} is ${member}’s`,
+      teachesBody: (member: string) =>
+        `From now on anything paid for with that address attaches to ${member} by itself, with nobody in the loop. That is exactly the point when you are right, and the danger when you are not: a shared or mistyped address quietly becomes one person’s permanent rule.`,
+      undoTitle: 'You can undo the link. You cannot undo the address',
+      undoBody: (member: string) =>
+        `Unlinking puts the registration back in the queue, and ${member} keeps the proven address, because by then it may have been proven another way. Taking an address off somebody is a different act with different consequences, and it is not built.`,
+      submit: (member: string) => `Yes, attach it to ${member}`,
+      pending: 'Attaching…',
+      cancel: 'No, go back',
+    },
+
+    unlink: {
+      title: (member: string) => `Unlink this registration from ${member}?`,
+      scope: (course: string, when: string) => `${course} · linked ${when}`,
+      silenceTitle: (member: string) => `${member} is told nothing at all`,
+      silenceBody: (course: string) =>
+        `There is no kind way to send “that course is not yours after all” to somebody’s lock screen, so nothing is sent. ${course} simply stops appearing as theirs. You are the one who knows why: reach them yourself.`,
+      addressTitle: 'The address stays proven',
+      addressBody: (address: string, member: string) =>
+        `${address} remains one of ${member}’s addresses, so the next payment from it attaches to them again by itself. That is on purpose: it may have been proven another way since, and taking an address off somebody is a different act with different consequences. It is not built.`,
+      backTitle: 'The registration goes back to the queue',
+      backBody:
+        'It appears under Waiting again, exactly as it arrived, with nothing about the payment changed, ready to be attached to whoever it really belongs to.',
+      typeLabel: 'Type the member’s name to confirm',
+      typeHint:
+        'Asked for because this one detaches a person from a course they paid for. No code from your authenticator: nothing leaves for a phone, and linking it again puts it back exactly as it was.',
+      submit: 'Unlink it',
+      pending: 'Unlinking…',
+      cancel: 'Leave it as it is',
+      nameMismatch: 'That is not the name on this registration',
+      // Its own words, not the hint repeated: the reader has just read the hint and needs to
+      // know what to do differently, which is to copy the name exactly as it appears above.
+      nameMismatchBody: (member: string) =>
+        `Type it exactly as it appears above: ${member}. Nothing has been changed.`,
+    },
+
+    refusedTitle: 'That address already belongs to somebody else',
+    refusedScope: 'Nothing has been changed',
+    // `owner` is the member who already holds the address, when we could read one, and the
+    // reason the screen bothers to look it up is the instruction below it: you cannot ring
+    // somebody you have not been told about.
+    takenTitle: (address: string, owner: string | null) =>
+      owner
+        ? `${address} is already proven for ${owner}`
+        : `${address} is already proven for another member`,
+    takenBody: (member: string, owner: string | null) =>
+      `Attaching this registration to ${member} would leave ${owner ? `${owner} and ${member}` : 'two members'} holding one mailbox, and the next payment from it would attach itself to whichever of them the rule names, with no human in the loop. That is the mistake this tool is most dangerous for, so the link is refused rather than made without proving the address.`,
+    signinTitle: (address: string) =>
+      `${address} is the address another account signs in with`,
+    signinBody: (member: string) =>
+      `The same collision seen from its other half: attaching it to ${member} would give one mailbox two owners. The link is refused rather than made without proving the address.`,
+    ringThemTitle: 'This is a phone call, not a form',
+    ringThemBody:
+      'Find out whose address it actually is. If this registration really is theirs and the other row is the wrong one, unlink that registration first and come back. If it is a mailbox a family shares, this one is to set aside rather than force onto a name.',
+
+    // The set-aside guide, on the view where those rows live: decision 4, in the words that
+    // say why the undo matters.
+    asideGuideTitle:
+      'Setting aside is not deleting, and not a decision about their place.',
+    asideGuide:
+      'The payment record stands and they keep their course; what changes is that nobody is still looking for their app account. A queue that only grows is a queue people stop reading, and then a real one is missed among the permanent residents.',
+
+    // The undo banner, which carries the statement AND the reversal, so the outcome Alert is
+    // suppressed while it is on screen: two boxes saying the same sentence is what the first
+    // build put there (seen 2026-08-31).
+    undoTitle: (name: string) => `${name}’s registration is set aside`,
+    undoBody:
+      'It is out of the working queue and nothing about the payment has changed. Their place on the course is exactly as it was.',
+
+    outcome: {
+      linked: 'Attached. They are told within a minute or two.',
+      unlinked: 'Unlinked. It is back in the queue, and nothing was sent.',
+      setAside: 'Set aside. It is out of the working queue.',
+      broughtBack: 'Back in the queue.',
+      alreadyLinked:
+        'Somebody attached that registration already. Open it under Linked to see who has it.',
+      wasSetAside:
+        'That registration was set aside. Bring it back before attaching it to anybody.',
+      notLinked: 'That registration is not attached to anybody.',
+      isLinked:
+        'That registration is already attached to a member, so it is not un-matchable. Unlink it first.',
+      noMember: 'That member no longer has an account.',
+      gone: 'That registration is not there any more.',
+      refused: 'That is not yours to do.',
+      failed: 'That did not go through. Try again.',
     },
   },
 
