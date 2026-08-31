@@ -3,6 +3,8 @@ import { notFound, redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
+import { Button } from '@/components/ui/Button';
+import { FocusOnArrival } from '@/components/ui/FocusOnArrival';
 import { Guide } from '@/components/ui/Guide';
 import { Notice } from '@/components/ui/Notice';
 import { Pill } from '@/components/ui/Pill';
@@ -13,6 +15,7 @@ import { authorize } from '@/server/authorize';
 import {
   loadAddressOwner,
   loadMember,
+  loadMemberByEmail,
   loadRegistration,
   loadSuggestions,
   searchMembers,
@@ -74,7 +77,11 @@ export default async function LinkRegistrationPage({
   const chosen = readParam((await searchParams).member);
   const problem = readProblem(readParam((await searchParams).problem));
 
+  // The catalogue name where there is one, and the website's raw slug where there is not.
+  // `inCatalogue` travels with it because two sentences change on it: where the notification
+  // lands, and whether this string is a course name at all.
   const course = registration.courseName ?? registration.courseSlug;
+  const inCatalogue = registration.courseName !== null;
   const scope = copy.academy.link.scope(
     course,
     onDate(registration.createdAt, readAt),
@@ -85,15 +92,28 @@ export default async function LinkRegistrationPage({
   // of `link_registration` refusing the whole link rather than linking without proving the
   // address.
   if (problem) {
-    // The MEMBER the admin was attaching to, not the payer: the sentence is about what the
-    // link would do to two members, and naming the payer there reads perfectly and says the
-    // wrong thing (seen on screen 2026-08-31, which is why it is called out here).
     const attempted = chosen ? await loadMember(supabase, chosen) : null;
+
+    // WHO ALREADY HOLDS THE ADDRESS, read from whichever half of the collision this is: a
+    // proven address lives in `profile_emails`, a sign-in address in `profiles`. Both are
+    // read so the instruction below can name a person, which is the whole reason this screen
+    // bothers to look one up.
     const owner =
       problem === 'address_taken'
         ? await loadAddressOwner(supabase, registration.email)
         : null;
-    const attemptedName = attempted?.displayName ?? registration.fullName;
+    const signinOwner =
+      problem === 'address_is_signin'
+        ? await loadMemberByEmail(supabase, registration.email)
+        : null;
+
+    // The member the admin was attaching to, NOT the payer. The two are routinely different
+    // words, the sentence is about what the link would do to two members, and naming the payer
+    // there reads perfectly while saying the wrong thing (seen on screen 2026-08-31). The old
+    // fallback to `registration.fullName` quietly restored that same bug whenever `?member=`
+    // was absent or named a closed account, so there is no fallback now: the sentence drops
+    // the name rather than printing the wrong one.
+    const attemptedName = attempted?.displayName ?? null;
 
     return (
       <DashboardShell caller={verdict.caller} current="academy">
@@ -101,22 +121,61 @@ export default async function LinkRegistrationPage({
           title={copy.academy.refusedTitle}
           scope={copy.academy.refusedScope}
         />
-        <Notice
-          tone="bad"
-          title={
-            problem === 'address_taken'
-              ? copy.academy.takenTitle(registration.email, owner)
-              : copy.academy.signinTitle(registration.email)
-          }
-          live="assertive"
-        >
-          {problem === 'address_taken'
-            ? copy.academy.takenBody(attemptedName, owner)
-            : copy.academy.signinBody(attemptedName)}
-        </Notice>
-        <Notice tone="off" title={copy.academy.ringThemTitle}>
-          {copy.academy.ringThemBody}
-        </Notice>
+        <FocusOnArrival signal={problem}>
+          <Notice
+            tone="bad"
+            title={
+              problem === 'address_taken'
+                ? copy.academy.takenTitle(registration.email, owner)
+                : copy.academy.signinTitle(registration.email)
+            }
+            live="assertive"
+          >
+            {problem === 'address_taken'
+              ? copy.academy.takenBody(attemptedName, owner)
+              : copy.academy.signinBody(attemptedName)}
+          </Notice>
+        </FocusOnArrival>
+
+        {/* THE ONE-CLICK WAY OUT, and only this half of the collision has one. The insert
+            guard refuses an address that is ANOTHER account's sign-in (`u.id <> profile_id`),
+            so attaching the registration to the account whose address it actually is
+            succeeds. Usually that is the payer, signed up under the address they paid with,
+            and the admin simply chose the wrong member from a list of similar names. */}
+        {signinOwner ? (
+          <Notice
+            tone="tell"
+            title={copy.academy.signinFixTitle(signinOwner.displayName)}
+            action={
+              <Link
+                href={`/academy/${registration.id}/link?member=${signinOwner.id}`}
+                className="inline-flex min-h-12 items-center rounded-button border border-cardline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
+              >
+                {copy.academy.signinFixAction(signinOwner.displayName)}
+              </Link>
+            }
+          >
+            {copy.academy.signinFixBody(
+              signinOwner.displayName,
+              registration.email,
+            )}
+          </Notice>
+        ) : null}
+
+        {/* ONLY ON THE HALF THAT HAS NO WAY OUT. "Nothing on this screen can move it, and
+            only <owner> can give it up" is true of a PROVEN address and false of a sign-in
+            one, where attaching it to the right account is allowed and is the notice above.
+            Showing both put a true instruction and a false one on the same screen, which is
+            the shape this whole review was about; caught by reading the rendered page rather
+            than the diff. Where the sign-in owner could not be read there is no way out to
+            offer either, so the phone call is the honest answer again. */}
+        {problem === 'address_taken' || !signinOwner ? (
+          <Notice tone="off" title={copy.academy.ringThemTitle}>
+            {problem === 'address_taken'
+              ? copy.academy.ringThemBody(owner)
+              : copy.academy.signinNoOwnerBody}
+          </Notice>
+        ) : null}
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <Link
             href={`/academy/${registration.id}/link`}
@@ -154,7 +213,7 @@ export default async function LinkRegistrationPage({
           tone="tell"
           title={copy.academy.confirm.toldTitle(member.displayName)}
         >
-          {copy.academy.confirm.toldBody(course)}
+          {copy.academy.confirm.toldBody(course, inCatalogue)}
         </Notice>
 
         {/* The banner this screen exists for. The `profile_emails` write is the point of the
@@ -235,7 +294,7 @@ export default async function LinkRegistrationPage({
       {/* A GET form: the query belongs in the URL, so a search is shareable and the back
           button works. It is a member's NAME, never anything about the payer, so nothing
           `20` protects travels in it. */}
-      <form method="get" className="mt-3 max-w-[560px]">
+      <form id="member-search" method="get" className="mt-3 max-w-[560px]">
         <label
           htmlFor="q"
           className="block text-label font-extrabold tracking-widest text-muted uppercase"
@@ -254,13 +313,6 @@ export default async function LinkRegistrationPage({
         <p id="q-hint" className="mt-1.5 text-small text-muted">
           {copy.academy.link.searchHint}
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-cardline pt-3.5">
-          <SubmitButton
-            variant="secondary"
-            label={copy.academy.link.search}
-            pendingLabel={copy.academy.link.search}
-          />
-        </div>
       </form>
 
       {search?.status === 'too_short' ? (
@@ -280,14 +332,18 @@ export default async function LinkRegistrationPage({
           live="polite"
           action={<SetAside id={registration.id} />}
         >
-          {copy.academy.link.noResultsBody(query)}
+          {copy.academy.link.noResultsBody(query, query.includes('@'))}
         </Notice>
       ) : null}
 
       {search?.status === 'ok' && search.members.length > 0 ? (
         <>
           <SectionLabel>
-            {copy.academy.link.resultsLabel(search.members.length, query)}
+            {copy.academy.link.resultsLabel(
+              search.members.length,
+              query,
+              search.truncated,
+            )}
           </SectionLabel>
           {/* A searched row carries NO reason: a suggestion was ranked by the database and
               can say why it is there, while a result is only what the admin asked for.
@@ -302,7 +358,20 @@ export default async function LinkRegistrationPage({
         </>
       ) : null}
 
+      {/* ONE ACTION ROW, as the approved frame draws it: Search on the left, "No app account"
+          pushed to the right by a spacer. The build had grown a second bordered row below the
+          first, which put two rules across the screen and separated the search button from the
+          box it submits.
+
+          Search sits OUTSIDE its form and reaches it by `form="member-search"`, which is the
+          only way to have it share a row with the set-aside form: forms cannot nest. A plain
+          Button rather than a SubmitButton because `useFormStatus` reports the form a button
+          is RENDERED INSIDE, which this one no longer is; nothing is lost, since a GET
+          submission has no pending state and its two labels were already identical. */}
       <div className="mt-6 flex flex-wrap items-center gap-2.5 border-t border-cardline pt-4">
+        <Button type="submit" form="member-search" variant="secondary">
+          {copy.academy.link.search}
+        </Button>
         <Link
           href="/academy"
           className="inline-flex min-h-12 items-center px-2 text-body font-semibold text-blue underline-offset-4 hover:underline"
@@ -375,10 +444,15 @@ function PaymentCard({
         </div>
         <Pill>{registration.courseName ?? registration.courseSlug}</Pill>
       </div>
+      {/* The same meta line the queue card draws, INCLUDING the "not in our catalogue"
+          caveat, which used to be on the browsing card and absent from the two screens where
+          the decision is actually made. A raw website slug printed as though it were a course
+          name is the one thing a reader here cannot check for themselves. */}
       <p className="mt-2.5 text-small font-bold text-muted">
         {copy.academy.registeredOn(onDate(registration.createdAt, now))} ·{' '}
         {formatName(registration.format)} ·{' '}
         {registration.branch ?? copy.academy.noBranch}
+        {registration.courseName ? null : ` · ${copy.academy.noCourse}`}
       </p>
     </article>
   );

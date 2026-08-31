@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { Avatar } from '@/components/ui/Avatar';
 import { Pill } from '@/components/ui/Pill';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
@@ -23,6 +24,12 @@ import { formatName, onDate } from './format';
  * NO AVATAR ON AN UNMATCHED ROW, deliberately. An initials disc is the app's mark of a
  * member, and the whole premise of the waiting queue is that this payer has no matched
  * account. Drawing one would assert the thing the screen is asking about.
+ *
+ * A LINKED ROW IS THE EXCEPTION, and the frame always drew it that way. That argument covers
+ * the waiting and set-aside views and nothing else: a linked row HAS a matched account, the
+ * disc is that member's own mark, and it stands beside their name rather than beside the
+ * payer's. The build had generalised the rule to all three views, which quietly withheld the
+ * one place the mark is true.
  */
 export function RegistrationCard({
   registration,
@@ -55,14 +62,15 @@ export function RegistrationCard({
 
         <span className="ml-auto flex items-center gap-2.5">
           <span className="text-small font-bold text-muted">
-            {view === 'aside'
-              ? copy.academy.registeredOn(onDate(registration.createdAt, now))
-              : onDate(
-                  view === 'linked' && registration.linkedAt
-                    ? registration.linkedAt
-                    : registration.createdAt,
-                  now,
-                )}
+            {/* THE DATE SAYS WHICH DATE IT IS wherever it is not the registration date.
+                This corner means "registered" on the waiting view and "linked" on the linked
+                one, and it was drawn bare on both, so the same row read 26 August under
+                Waiting and 31 August under Linked with nothing to say why. */}
+            {view === 'linked' && registration.linkedAt
+              ? copy.academy.linkedOn(onDate(registration.linkedAt, now))
+              : view === 'aside'
+                ? copy.academy.registeredOn(onDate(registration.createdAt, now))
+                : onDate(registration.createdAt, now)}
           </span>
           {/* ONE QUIET AFFORDANCE PER ROW on the read-only list, and the danger styling
               lives on the screen it opens. The VERSES rule: a destructive control repeated
@@ -90,6 +98,7 @@ export function RegistrationCard({
           <p className="mt-1 flex flex-wrap items-center gap-2 text-body text-muted">
             <span className="break-all">{registration.email}</span>
             <span aria-hidden="true">→</span>
+            <Avatar name={registration.member.displayName} />
             <b className="font-extrabold text-text">
               {registration.member.displayName}
             </b>

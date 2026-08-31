@@ -28,7 +28,10 @@ const WAITING: Registration = {
   email: 'bayo.ogunlesi@example.com',
   courseName: 'Grace Reset',
   courseSlug: 'grace-reset',
-  format: 'part_time',
+  // What the website actually posts: a stable English label with the duration interpolated
+  // per course (Desktop/agbc's RegistrationForm.astro). Not `part_time`, which is a key of
+  // our own catalogue's `formats` object and has never appeared in this column.
+  format: 'Part-time (4 weeks)',
   branch: 'AGBC Lighthouse Berlin',
   createdAt: '2026-08-29T09:00:00Z',
   setAsideAt: null,
@@ -77,6 +80,8 @@ test('a waiting row shows the four facts and offers both ways forward', async ()
   expect(screen.getByText('Grace Reset')).toBeVisible();
   expect(screen.getByText('29 August')).toBeVisible();
   expect(screen.getByText('AGBC Lighthouse Berlin')).toBeVisible();
+  // Shown as the website wrote it. There is nothing to map (see `format.ts`).
+  expect(screen.getByText('Part-time (4 weeks)')).toBeVisible();
 
   expect(
     screen.getByRole('link', { name: 'Find their account' }),
@@ -175,4 +180,52 @@ test('a date from another year carries its year', () => {
   );
 
   expect(screen.getByText('3 July 2024')).toBeVisible();
+});
+
+/**
+ * THE DATE SAYS WHICH DATE IT IS.
+ *
+ * The same corner of the same card means "registered" on the waiting view and "linked" on the
+ * linked one, and it was drawn bare on both, so one row read 26 August under Waiting and 31
+ * August under Linked with nothing to say why. Asserted from both sides of the same row,
+ * because a single-view assertion cannot see that the meaning changed.
+ */
+test('the linked date says it is the linked date, and the waiting one is untouched', () => {
+  const { unmount } = render(
+    <RegistrationCard registration={LINKED} view="linked" now={NOW} />,
+  );
+  expect(screen.getByText('Linked 31 August')).toBeVisible();
+  // The registration date is 29 August; it must not be what this view shows.
+  expect(screen.queryByText('29 August')).toBeNull();
+  unmount();
+
+  render(<RegistrationCard registration={LINKED} view="waiting" now={NOW} />);
+  expect(screen.getByText('29 August')).toBeVisible();
+});
+
+/**
+ * The member's own mark, on the one row where a member is actually known.
+ *
+ * The card withheld it everywhere on an argument that only covers the unmatched views: a
+ * waiting row must not assert an account the whole screen is asking about. A linked row HAS
+ * one, and the approved frame always drew the disc there.
+ *
+ * `aria-hidden` is asserted with it: the name it abbreviates is right beside it, so
+ * announcing "AO" first would read the person twice.
+ */
+test('a linked row carries the member’s initials, and an unmatched row carries none', () => {
+  const { unmount } = render(
+    <RegistrationCard registration={LINKED} view="linked" now={NOW} />,
+  );
+  const disc = screen.getByText('AO');
+  expect(disc).toBeVisible();
+  expect(disc).toHaveAttribute('aria-hidden', 'true');
+  unmount();
+
+  // The payer on the waiting row is "Adebayo Ogunlesi", whose initials are ALSO "AO", so this
+  // is the assertion that matters: not merely that the member's disc is absent, but that the
+  // card draws no disc for the payer either. An initials disc is the app's mark of a member,
+  // and the whole premise of this view is that nobody knows who this payer is.
+  render(<RegistrationCard registration={WAITING} view="waiting" now={NOW} />);
+  expect(screen.queryByText('AO')).toBeNull();
 });
