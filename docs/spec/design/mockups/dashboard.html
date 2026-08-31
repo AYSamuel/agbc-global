@@ -3220,6 +3220,938 @@
   <div class="gallery t-dark" id="w35brDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
   <script>(function(){var l=document.getElementById('w35brLight'),d=document.getElementById('w35brDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
+  <p class="ghead">W4.0 &middot; ACADEMY &middot; linking a website registration by hand &middot; admin only</p>
+  <p class="gnote"><span>Somebody pays for Grace Reset on the website with one address and signs
+    into the app with another. The automatic match runs on the EXACT address, finds nothing, and
+    the app goes on showing them as unregistered. The double-booking wall cannot save them
+    either: it keys on <code>(course_id, profile_id)</code> and their row has no
+    <code>profile_id</code>, so <b>they can pay for the same course twice</b>. ADR 0017 named a
+    self-service claim as the answer to this; it was cut on 2026-08-11 with its backend, and
+    until this screen exists the only fix is a leader reading a stranger's payment record in a
+    SQL client. Behavioural truth stays <b>17</b> §4 and the routines in
+    <b>20260831120000</b>.</span>
+    <span style="margin-top:8px">Three constraints shape every frame below and none of them is a
+    preference. <b>The amount is never on screen</b> (<b>20</b>, minimum necessary: the figure
+    says nothing about who somebody is, and a payment total is a thing to leak over a shoulder or
+    in a screenshot). <b>Who set a row aside is never on screen either</b>, because
+    <code>set_aside_by</code> was deliberately left outside the column grant on the same
+    reasoning as <code>linked_by</code>. And <b>every suggestion carries its reason</b>: the
+    accepted risk of suggesting anybody at all is that a confident-looking wrong name is easier
+    to accept than a wrong one somebody typed themselves, so the reason is what lets an admin
+    disagree with the screen.</span></p>
+  <div class="gallery" id="w40aLight">
+
+    <div class="device">
+      <p class="name"><b>REGISTRATIONS</b> &middot; waiting to be matched &middot; the queue an admin works</p>
+      <!-- The rail gains one lit row. Academy is the first Phase C destination to light up, and
+           only a slice of it: there is no courses module, and burying a payment-record surface
+           inside People would misfile it (SPEC decision 8). Library keeps its dimmed C tag.
+
+           DELIBERATELY NO "waiting 9 days" PILL, unlike the moderation queue, and the reason is
+           decision 4's. Most rows here are not people waiting: they are people who paid on the
+           website and never installed the app, and they will sit here forever. Ageing every row
+           red would put a late badge on the permanent residents and teach an admin to ignore the
+           colour on the one row that is somebody who wrote in last week.
+
+           THE AMOUNT IS NOT DRAWN AND NOT FETCHED. `amount` IS inside the authenticated column
+           grant (20260809202000), so hiding it in CSS would still ship the figure to the
+           browser. The loader names its columns and that one is not among them.
+
+           The third row is the realistic hard case rather than filler: a shared family mailbox,
+           no branch (the website's `branch` is optional and is never used for scoping), and a
+           course slug that resolved to nothing because the website sells things our catalogue
+           does not carry. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <a href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a href="#"><span class="ic">&#9788;</span>Events</a>
+            <a href="#"><span class="ic">&#9750;</span>Branches</a>
+            <a class="on" href="#"><span class="ic">&#9672;</span>Academy</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Academy</h2>
+                <p class="scope">Registrations paid on the website</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="stats">
+              <div class="ps"><div class="n">3</div><div class="l">Waiting to be matched</div></div>
+              <div class="ps"><div class="n">6</div><div class="l">Set aside</div></div>
+              <div class="ps"><div class="n">14</div><div class="l">Linked by hand</div></div>
+            </div>
+
+            <div class="seg">
+              <button class="on">Waiting 3</button>
+              <button>Set aside 6</button>
+              <button>Linked</button>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>A link is a judgement, not proof of anything.</b> Attaching a payment to the
+                wrong member gives them somebody else's course, tells them it is theirs, and
+                teaches the app to repeat the mistake the next time that address pays. Where the
+                name is not obviously the same person, leave it here and ask them.</p>
+            </div>
+
+            <div class="mlabel">Waiting to be matched &middot; newest first</div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill review">Not matched</span>
+                <span class="pill lang">Grace Reset</span>
+                <span class="spacer"></span>
+                <span class="time">29 August</span>
+              </div>
+              <div class="who2">
+                <div><div class="nm">Adebayo Ogunlesi</div>
+                  <div class="sb">bayo.ogunlesi@gmail.com</div></div>
+              </div>
+              <div class="meta">
+                <span>Part time</span><span class="dot"></span>
+                <span>AGBC Lighthouse Berlin</span>
+              </div>
+              <div class="actions">
+                <button class="btn primary">Find their account</button>
+                <button class="btn outline">No app account</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill review">Not matched</span>
+                <span class="pill lang">Grace Masterclass</span>
+                <span class="spacer"></span>
+                <span class="time">24 August</span>
+              </div>
+              <div class="who2">
+                <div><div class="nm">Mary Nwosu</div>
+                  <div class="sb">marynwosu@yahoo.com</div></div>
+              </div>
+              <div class="meta">
+                <span>Intensive</span><span class="dot"></span>
+                <span>AGBC Glasgow</span>
+              </div>
+              <div class="actions">
+                <button class="btn primary">Find their account</button>
+                <button class="btn outline">No app account</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill review">Not matched</span>
+                <span class="pill lang">leadership-intensive</span>
+                <span class="spacer"></span>
+                <span class="time">11 August</span>
+              </div>
+              <div class="who2">
+                <div><div class="nm">G. Achebe</div>
+                  <div class="sb">office@achebefamily.com</div></div>
+              </div>
+              <div class="meta">
+                <span>No branch given</span><span class="dot"></span>
+                <span>Not a course in our catalogue</span>
+              </div>
+              <div class="actions">
+                <button class="btn primary">Find their account</button>
+                <button class="btn outline">No app account</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>REGISTRATIONS-EMPTY</b> &middot; the ordinary week, and it has to say so</p>
+      <!-- The state an admin sees most weeks, which is exactly why it needs a frame of its own
+           (a SURFACE is a STATE). Empty here does not mean "you are caught up", it means the
+           automatic match did its job, and if the screen does not say that the reader is left
+           wondering whether it is broken. Not celebratory, per the REPORTS-EMPTY rule.
+
+           The set-aside count is the one route onward: those rows are the only thing an admin
+           can still act on from an empty queue, and without the link they are invisible. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead"><div><h2>Academy</h2><p class="scope">Registrations paid on the website</p></div></div>
+            <div class="empty">
+              <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+              <h3>Nothing needs a name</h3>
+              <p>Registrations attach themselves whenever the payment carries an address the
+                member signs in with. This screen holds only the ones that did not, so most weeks
+                it is empty and that is the system working.</p>
+              <div class="actions" style="border:none;justify-content:center">
+                <button class="btn outline">See the 6 set aside</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>LINK</b> &middot; who might this be? &middot; suggestions, each saying why</p>
+      <!-- THE REASON PILL IS GREY, NOT GREEN, and that is the whole design of this screen.
+           `registration_match_suggestions` ranks on name similarity then same branch, and
+           returns the reason WITH each row so the screen cannot reconstruct it differently. A
+           green or gold pill would read as "this is the one", which is precisely the accepted
+           risk decision 1 wrote down. The ordering carries the ranking; the pill carries only
+           the fact, and every suggestion is a guess at the same weight. FOR THE SAME REASON NO
+           SUGGESTION GETS THE SOLID BUTTON: a navy Choose on the top row would endorse far
+           louder than a grey pill declines to, so all three are outline and sit inline in the
+           row rather than in an action bar of their own. Three full-width action bars would
+           also read as three decisions rather than one choice among three.
+
+           The exact address is not among the reasons and never can be: anyone whose sign-in
+           address equals this one was matched automatically before the row ever reached a human,
+           so a suggestion is inexact by definition. The guide says that out loud.
+
+           THE SEARCH BOX IS A DELIBERATE DEPARTURE FROM `17` §5, which says exact email only so
+           nobody can sweep for which addresses belong to the ministry. It is narrowed rather
+           than borrowed: admins only (a leader never reaches this surface at all, ADR 0017
+           decision 5), two characters minimum, at most eight rows, no way to list everybody. It
+           exists because the case this whole feature is for is a member whose app address is NOT
+           the one on the payment, so a search that only takes an exact address cannot rescue
+           them. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy/8f2c/link</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <a href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a href="#"><span class="ic">&#9788;</span>Events</a>
+            <a href="#"><span class="ic">&#9750;</span>Branches</a>
+            <a class="on" href="#"><span class="ic">&#9672;</span>Academy</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Whose registration is this?</h2>
+                <p class="scope">Grace Reset &middot; registered 29 August</p>
+              </div>
+              <button class="btn ghost">Back to the queue</button>
+            </div>
+
+            <div class="mlabel">Paid on the website</div>
+            <div class="item">
+              <div class="who2">
+                <div><div class="nm">Adebayo Ogunlesi</div>
+                  <div class="sb">bayo.ogunlesi@gmail.com</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Reset</span>
+              </div>
+              <div class="meta">
+                <span>Registered 29 August</span><span class="dot"></span>
+                <span>Part time</span><span class="dot"></span>
+                <span>AGBC Lighthouse Berlin</span>
+              </div>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>Every name below is a resemblance, not a match.</b> Anyone signing in with
+                this exact address was attached automatically long before the row reached you, so
+                what is left are people whose name looks similar. Each row says what the
+                resemblance is. Read it before you choose.</p>
+            </div>
+
+            <div class="mlabel">Members who might be them &middot; best first</div>
+
+            <div class="item">
+              <div class="who2"><span class="avatar">AO</span>
+                <div><div class="nm">Ade Ogunlesi</div>
+                  <div class="sb">ade.o@outlook.com &middot; AGBC Lighthouse Berlin</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Similar name, same branch</span>
+                <button class="btn outline">Choose Ade</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="who2"><span class="avatar">AO</span>
+                <div><div class="nm">Adebayo Okafor</div>
+                  <div class="sb">adebayo.okafor@gmail.com &middot; AGBC Glasgow</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Similar name</span>
+                <button class="btn outline">Choose Adebayo</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="who2"><span class="avatar">BO</span>
+                <div><div class="nm">Bayo Ogunbiyi</div>
+                  <div class="sb">b.ogunbiyi@proton.me &middot; AGBC Ogbomosho</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Similar name</span>
+                <button class="btn outline">Choose Bayo</button>
+              </div>
+            </div>
+
+            <div class="mlabel">None of them?</div>
+            <div class="field" style="max-width:560px">
+              <span class="lab">Search by name, or by the address they sign in with</span>
+              <div class="inp ph">Ade, or ade.o@outlook.com</div>
+              <div class="hint">Two letters or more, and at most eight people come back. There is
+                no way to list everybody. An address is matched exactly, a name loosely.</div>
+            </div>
+            <div class="actions">
+              <button class="btn outline">Search</button>
+              <span class="spacer"></span>
+              <button class="btn ghost">No app account</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>LINK-SEARCH</b> &middot; the fallback, and what it refuses to do</p>
+      <!-- Its own frame because the search region is the part `17` §5 needed a decision about,
+           and it should be looked at on its own rather than half-read at the foot of the
+           suggestions.
+
+           A searched row carries NO reason pill, and that is not an omission: a suggestion was
+           ranked by the database and can say why it is there, while a search result is only what
+           the admin asked for. Giving it a pill would manufacture an endorsement out of the
+           admin's own typing.
+
+           Clearing the box brings the suggestions back: a search REPLACES them for as long as it
+           is a search, and never sits under them competing for the same decision.
+
+           The two refusals under the results are drawn here together, the way VERSES-LOADING and
+           VERSES-ERROR share a frame; the screen shows one at a time, in place of the results,
+           and the first of them carries the way out rather than only naming it. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy/8f2c/link?q=ogun</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <a href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a href="#"><span class="ic">&#9788;</span>Events</a>
+            <a href="#"><span class="ic">&#9750;</span>Branches</a>
+            <a class="on" href="#"><span class="ic">&#9672;</span>Academy</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Whose registration is this?</h2>
+                <p class="scope">Grace Reset &middot; registered 29 August</p>
+              </div>
+              <button class="btn ghost">Back to the queue</button>
+            </div>
+
+            <div class="field" style="max-width:560px">
+              <span class="lab">Search by name, or by the address they sign in with</span>
+              <div class="inp">ogun</div>
+            </div>
+
+            <div class="mlabel">2 people match &ldquo;ogun&rdquo; &middot; closest first</div>
+
+            <div class="item">
+              <div class="who2"><span class="avatar">AO</span>
+                <div><div class="nm">Ade Ogunlesi</div>
+                  <div class="sb">ade.o@outlook.com &middot; AGBC Lighthouse Berlin</div></div>
+                <span class="spacer"></span>
+                <button class="btn outline">Choose Ade</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="who2"><span class="avatar">BO</span>
+                <div><div class="nm">Bayo Ogunbiyi</div>
+                  <div class="sb">b.ogunbiyi@proton.me &middot; AGBC Ogbomosho</div></div>
+                <span class="spacer"></span>
+                <button class="btn outline">Choose Bayo</button>
+              </div>
+            </div>
+
+            <div class="banner off" style="margin-top:18px">
+              <span class="bi">&#9432;</span>
+              <div>
+                <h4>Nobody here is called that</h4>
+                <p>No member's name or sign-in address matches &ldquo;ogun&rdquo;. Try the part of
+                  the name they would have typed themselves, or ask them which address they sign
+                  in with. If they have never opened the app, this registration is one to set
+                  aside.</p>
+              </div>
+              <span class="act"><button class="btn outline">No app account</button></span>
+            </div>
+
+            <div class="banner off" style="margin-top:12px">
+              <span class="bi">&#9432;</span>
+              <div>
+                <h4>Give it at least two letters</h4>
+                <p>A single character would return most of the ministry, and there is no reason to
+                  read a list of everybody in order to find one person.</p>
+              </div>
+            </div>
+
+            <p style="font-size:12px;color:var(--muted);margin:16px 2px 0">Both refusals are drawn
+              together here; the screen shows one at a time, in place of the results.</p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>LINK-CONFIRM</b> &middot; both sides named, and the address it teaches</p>
+      <!-- NO TYPED NAME AND NO AUTHENTICATOR CODE, deliberately, and the line is the one the
+           branches module drew: blast radius, not danger. Closing a branch asks for a code
+           because it reaches every member and nobody else approves it. This reaches ONE person,
+           with a true and welcome message, and the admin can undo it themselves. Asking for six
+           digits here is how queues stop getting cleared.
+
+           The reason pill travels into the confirm rather than being dropped at the previous
+           screen: what is being accepted IS the resemblance, so the resemblance should still be
+           on screen at the moment of accepting it.
+
+           The middle banner is the whole reason this screen is more than a yes/no. The
+           `profile_emails` write is the point of the feature (the member stops hitting this
+           forever) and is also the standing risk: an admin link is a judgement, and it quietly
+           becomes a permanent automatic rule. Stated in those words rather than softened,
+           because open risk 1 is carried on purpose. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy/8f2c/link?member=41ab</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Attach this registration to Ade Ogunlesi?</h2>
+                <p class="scope">Grace Reset &middot; registered 29 August</p>
+              </div>
+            </div>
+
+            <div class="mlabel">Paid on the website</div>
+            <div class="item">
+              <div class="who2">
+                <div><div class="nm">Adebayo Ogunlesi</div>
+                  <div class="sb">bayo.ogunlesi@gmail.com</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Reset</span>
+              </div>
+              <div class="meta"><span>Part time</span><span class="dot"></span><span>AGBC Lighthouse Berlin</span></div>
+            </div>
+
+            <div class="mlabel">Attached to</div>
+            <div class="item">
+              <div class="who2"><span class="avatar">AO</span>
+                <div><div class="nm">Ade Ogunlesi</div>
+                  <div class="sb">ade.o@outlook.com &middot; AGBC Lighthouse Berlin</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Similar name, same branch</span>
+              </div>
+            </div>
+
+            <div class="banner tell">
+              <span class="bi">&#9993;</span>
+              <div>
+                <h4>Ade is told, within a minute or two</h4>
+                <p>He gets &ldquo;Your place is confirmed&rdquo; on his phone and in his
+                  notifications, in his own language, and it opens Grace Reset. Nothing at all is
+                  sent to the address on the payment.</p>
+              </div>
+            </div>
+
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>This also teaches the app that bayo.ogunlesi@gmail.com is Ade's</h4>
+                <p>From now on anything paid for with that address attaches to Ade by itself, with
+                  nobody in the loop. That is exactly the point when you are right, and the danger
+                  when you are not: a shared or mistyped address quietly becomes one person's
+                  permanent rule.</p>
+              </div>
+            </div>
+
+            <div class="banner off">
+              <span class="bi">&#9788;</span>
+              <div>
+                <h4>You can undo the link. You cannot undo the address</h4>
+                <p>Unlinking puts the registration back in the queue, and Ade keeps the proven
+                  address, because by then it may have been proven another way. Taking an address
+                  off somebody is a different act with different consequences, and it is not
+                  built.</p>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary">Yes, attach it to Ade</button>
+              <button class="btn ghost">No, go back</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>LINK-REFUSED</b> &middot; two people, one mailbox &middot; nothing was written</p>
+      <!-- `link_registration` refuses the WHOLE link rather than linking without proving the
+           address, and this screen is why that refusal is worth having a face. Both collisions
+           it raises mean the same thing: two people have a claim on one mailbox, which is the
+           mis-link this tool is most dangerous for. Linking quietly and skipping the address
+           would hide it and leave an admin believing the automatic match had been taught.
+
+           So the screen does not offer a way to force it. It names who else holds the address,
+           says what that means, and sends the reader to a phone call. The two ways out are both
+           real acts elsewhere: unlink the other registration, or set this one aside. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy/8f2c/link?member=41ab</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>That address already belongs to somebody else</h2>
+                <p class="scope">Nothing has been changed</p>
+              </div>
+            </div>
+
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>bayo.ogunlesi@gmail.com is already proven for Mary Nwosu</h4>
+                <p>Attaching this registration to Ade would leave two members holding one mailbox,
+                  and the next payment from it would attach itself to whichever of them the rule
+                  names, with no human in the loop. That is the mistake this tool is most
+                  dangerous for, so the link is refused rather than made without proving the
+                  address.</p>
+              </div>
+            </div>
+
+            <div class="banner off">
+              <span class="bi">&#9788;</span>
+              <div>
+                <h4>This is a phone call, not a form</h4>
+                <p>Find out whose address it actually is. If it is Ade's and Mary's row is the
+                  wrong one, unlink Mary's registration first and come back. If it is a mailbox
+                  the family shares, this registration is one to set aside rather than force onto
+                  a name.</p>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn outline">Back to the suggestions</button>
+              <span class="spacer"></span>
+              <button class="btn ghost">No app account</button>
+            </div>
+
+            <p style="font-size:12px;color:var(--muted);margin:18px 2px 0">The other refusal from
+              the same routine reads &ldquo;<b>bayo.ogunlesi@gmail.com is the address Mary Nwosu
+              signs in with</b>&rdquo;. The same collision seen from its other half, and the same
+              answer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SET-ASIDE</b> &middot; the judgement, and the undo that makes it safe</p>
+      <!-- Two things in one frame: the banner an admin meets straight after acting, and the
+           filter those rows live in. They belong together because the undo is the whole
+           mitigation. Setting aside is a judgement made about a stranger from four fields; it is
+           reversible, it is audited (explicitly, since it changes no owner and so fires no
+           ownership trigger), and the payment record itself is not touched.
+
+           EVERY ROW SAYS WHEN AND NEVER WHO. `set_aside_by` is outside the column grant on
+           `linked_by`'s reasoning: which staff member made the call is internal. Every human
+           client here is the same `authenticated` role, so withholding it from members withholds
+           it from leaders and admins too, and a screen that ever needs the name gets a definer
+           read path rather than a widened grant. The audit log has it meanwhile. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy?view=aside</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <a href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a href="#"><span class="ic">&#9788;</span>Events</a>
+            <a href="#"><span class="ic">&#9750;</span>Branches</a>
+            <a class="on" href="#"><span class="ic">&#9672;</span>Academy</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Academy</h2>
+                <p class="scope">Registrations paid on the website</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="banner off">
+              <span class="bi">&#9432;</span>
+              <div>
+                <h4>G. Achebe's registration is set aside</h4>
+                <p>It is out of the working queue and nothing about the payment has changed. Their
+                  place on the course is exactly as it was.</p>
+              </div>
+              <span class="act"><button class="btn outline">Bring it back</button></span>
+            </div>
+
+            <div class="stats">
+              <div class="ps"><div class="n">2</div><div class="l">Waiting to be matched</div></div>
+              <div class="ps"><div class="n">7</div><div class="l">Set aside</div></div>
+              <div class="ps"><div class="n">14</div><div class="l">Linked by hand</div></div>
+            </div>
+
+            <div class="seg">
+              <button>Waiting 2</button>
+              <button class="on">Set aside 7</button>
+              <button>Linked</button>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9888;</span>
+              <p><b>Setting aside is not deleting, and not a decision about their place.</b> The
+                payment record stands and they keep their course; what changes is that nobody is
+                still looking for their app account. A queue that only grows is a queue people
+                stop reading, and then a real one is missed among the permanent residents.</p>
+            </div>
+
+            <div class="mlabel">Set aside &middot; most recent first</div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill lang">Set aside 31 August</span>
+                <span class="spacer"></span>
+                <span class="time">Registered 11 August</span>
+              </div>
+              <div class="who2">
+                <div><div class="nm">G. Achebe</div>
+                  <div class="sb">office@achebefamily.com</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">leadership-intensive</span>
+              </div>
+              <div class="meta">
+                <span>No branch given</span><span class="dot"></span>
+                <span>Not a course in our catalogue</span>
+              </div>
+              <div class="actions">
+                <button class="btn outline">Bring it back</button>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill lang">Set aside 12 August</span>
+                <span class="spacer"></span>
+                <span class="time">Registered 3 July</span>
+              </div>
+              <div class="who2">
+                <div><div class="nm">Johannes Bakker</div>
+                  <div class="sb">j.bakker@ziggo.nl</div></div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Reset</span>
+              </div>
+              <div class="meta">
+                <span>Intensive</span><span class="dot"></span>
+                <span>AGBC Emmen</span>
+              </div>
+              <div class="actions">
+                <button class="btn outline">Bring it back</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>LINKED</b> &middot; the history, and the way back out of a mistake</p>
+      <!-- UNLINK IS OFFERED ON EVERY LINKED ROW, not only the ones a human linked, and that is
+           load-bearing rather than lax. A wrong hand-link PROVES the address, so the next payment
+           from it attaches to the wrong member automatically, as `email_auto`. If unlink were
+           restricted to `leader` rows, the very error this tool can cause would be the one error
+           it could not repair, and an admin would be back in a SQL client, which is where #164
+           started.
+
+           The method pill is not decoration: it says whether a human judged this or a rule did,
+           which is the first thing you want to know when somebody tells you a course is not
+           theirs.
+
+           ONE QUIET AFFORDANCE PER ROW, and the red lives on the screen it opens. This is the
+           VERSES rule, and this list is the same kind of list: something an admin is only
+           reading. A danger-styled Unlink in a full action bar, repeated down every row, is the
+           several-hundred-Removes shape that rule was written about. So the row carries the same
+           small ghost control the verse schedule uses for Edit, and the destructive styling
+           appears once, on the confirm, where the person being detached is on screen.
+
+           The arrow always earns its place: what is on the left is the name typed on the
+           PAYMENT, what is on the right is the member it now belongs to, and they are routinely
+           not the same words even when they are the same person. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy?view=linked</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <a href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a href="#"><span class="ic">&#9788;</span>Events</a>
+            <a href="#"><span class="ic">&#9750;</span>Branches</a>
+            <a class="on" href="#"><span class="ic">&#9672;</span>Academy</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Academy</h2>
+                <p class="scope">Registrations paid on the website</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="stats">
+              <div class="ps"><div class="n">2</div><div class="l">Waiting to be matched</div></div>
+              <div class="ps"><div class="n">7</div><div class="l">Set aside</div></div>
+              <div class="ps"><div class="n">14</div><div class="l">Linked by hand</div></div>
+            </div>
+
+            <div class="seg">
+              <button>Waiting 2</button>
+              <button>Set aside 7</button>
+              <button class="on">Linked</button>
+            </div>
+
+            <div class="mlabel">Attached to a member &middot; most recent first</div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill good">Linked by hand</span>
+                <span class="spacer"></span>
+                <span class="time">31 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Unlink</button>
+              </div>
+              <div class="who2"><span class="avatar">AO</span>
+                <div><div class="nm">Adebayo Ogunlesi</div>
+                  <div class="sb" style="display:flex;align-items:center;gap:8px;margin-top:4px">bayo.ogunlesi@gmail.com <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg> <b style="color:var(--text)">Ade Ogunlesi</b></div>
+                </div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Reset</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill lang">Matched on the address</span>
+                <span class="spacer"></span>
+                <span class="time">27 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Unlink</button>
+              </div>
+              <div class="who2"><span class="avatar">SO</span>
+                <div><div class="nm">S. Okafor</div>
+                  <div class="sb" style="display:flex;align-items:center;gap:8px;margin-top:4px">sarah.okafor@gmail.com <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg> <b style="color:var(--text)">Sarah Okafor</b></div>
+                </div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Masterclass</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill lang">Registered in the app</span>
+                <span class="spacer"></span>
+                <span class="time">22 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Unlink</button>
+              </div>
+              <div class="who2"><span class="avatar">DM</span>
+                <div><div class="nm">Daniel L. Meyer</div>
+                  <div class="sb" style="display:flex;align-items:center;gap:8px;margin-top:4px">daniel.meyer@web.de <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg> <b style="color:var(--text)">Daniel Meyer</b></div>
+                </div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Reset</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>UNLINK</b> &middot; the typed confirm &middot; and the silence that follows</p>
+      <!-- A TYPED NAME HERE AND NOT ON THE LINK. The pair is deliberate. Linking tells somebody
+           something true and welcome and can be reversed by the person doing it; unlinking
+           detaches a member from a course they have paid for, and what it hands back to the queue
+           is a stranger's payment record again. A code from the authenticator is still not asked
+           for: nothing leaves for a phone, and linking it again restores it exactly.
+
+           NOTHING IS SENT, which is a decision rather than an oversight (SPEC §The notification).
+           There is no kind way to push "that course is not yours after all", and the admin who
+           unlinked knows why and can reach the member as a person. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy/8f2c/unlink</span></div>
+        <div class="app">
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Unlink this registration from Ade Ogunlesi?</h2>
+                <p class="scope">Grace Reset &middot; linked by hand on 31 August</p>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="who2"><span class="avatar">AO</span>
+                <div><div class="nm">Adebayo Ogunlesi</div>
+                  <div class="sb" style="display:flex;align-items:center;gap:8px;margin-top:4px">bayo.ogunlesi@gmail.com <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg> <b style="color:var(--text)">Ade Ogunlesi</b></div>
+                </div>
+                <span class="spacer"></span>
+                <span class="pill lang">Grace Reset</span>
+              </div>
+            </div>
+
+            <div class="banner off">
+              <span class="bi">&#9993;</span>
+              <div>
+                <h4>Ade is told nothing at all</h4>
+                <p>There is no kind way to send &ldquo;that course is not yours after all&rdquo; to
+                  somebody's lock screen, so nothing is sent. Grace Reset simply stops appearing as
+                  his. You are the one who knows why: reach him yourself.</p>
+              </div>
+            </div>
+
+            <div class="banner bad">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>The address stays proven</h4>
+                <p>bayo.ogunlesi@gmail.com remains one of Ade's addresses, so the next payment from
+                  it attaches to him again by itself. That is on purpose: it may have been proven
+                  another way since, and taking an address off somebody is a different act with
+                  different consequences. It is not built.</p>
+              </div>
+            </div>
+
+            <div class="banner off">
+              <span class="bi">&#9788;</span>
+              <div>
+                <h4>The registration goes back to the queue</h4>
+                <p>It appears under Waiting again, exactly as it arrived, with nothing about the
+                  payment changed, ready to be attached to whoever it really belongs to.</p>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="lab">Type the member's name to confirm</span>
+              <div class="inp ph">Ade Ogunlesi</div>
+              <div class="hint">Asked for because this one detaches a person from a course they
+                paid for. No code from your authenticator: nothing leaves for a phone, and linking
+                it again puts it back exactly as it was.</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn danger">Unlink it</button>
+              <button class="btn ghost">Leave it as it is</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>REGISTRATIONS-LOADING</b> and <b>-ERROR</b> / <b>-OFFLINE</b> &middot; the counts never guess</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/academy</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:150px;height:26px"></div>
+            <div class="skel" style="width:230px;height:14px;margin-top:9px"></div>
+            <div class="stats" style="margin-top:18px">
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:88px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:64px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:76px;height:10px;margin-top:7px"></div></div>
+            </div>
+            <div class="mlabel">Waiting to be matched &middot; newest first</div>
+            <div class="item">
+              <div class="skel" style="width:110px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:52%;height:16px;margin-top:12px"></div>
+              <div class="skel" style="width:38%;height:13px;margin-top:8px"></div>
+            </div>
+            <div class="banner bad" style="margin-top:20px">
+              <span class="bi">&#9888;</span>
+              <div>
+                <h4>We could not load the registrations</h4>
+                <p>That is on us, not you. Nothing has been linked, unlinked or set aside in the
+                  meantime.</p>
+              </div>
+              <span class="act"><button class="btn outline">Try again</button></span>
+            </div>
+            <div class="banner off" style="margin-top:12px">
+              <span class="bi">&#9711;</span>
+              <div>
+                <h4>You are offline</h4>
+                <p>Showing the queue as it was 4 minutes ago. Linking is disabled until you are
+                  back, because a link tells somebody their place is confirmed and a half-sent one
+                  cannot be taken back.</p>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:16px 2px 0">The three counts are
+              skeletons rather than zeros: a &ldquo;0 waiting&rdquo; that becomes &ldquo;3&rdquo; a
+              second later is the one wrong number this screen must never print. Row actions are
+              hidden while loading rather than disabled, so nothing under a skeleton can be
+              clicked.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="ghead">W4.0 &middot; ACADEMY &middot; dark</p>
+  <div class="gallery t-dark" id="w40aDark" style="background:var(--bg);border-radius:14px;padding:18px 14px"></div>
+  <script>(function(){var l=document.getElementById('w40aLight'),d=document.getElementById('w40aDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
 </div>
 
 <div class="stage t-dark">

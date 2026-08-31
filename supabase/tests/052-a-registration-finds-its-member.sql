@@ -28,7 +28,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(46);
+select plan(48);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 \set berlin  '00000000-0000-4000-8000-000000000002'
@@ -156,22 +156,22 @@ set local request.jwt.claims to
 
 select throws_ok(
   format($$select public.link_registration(%L, %L)$$, :'regQueue', :'grace_ber'),
-  '42501', null,
+  '42501', 'linking a payment record to a member is an admin action',
   'a branch leader cannot link a stranger''s payment record (ADR 0017 decision 5)');
 
 select throws_ok(
   format($$select public.set_registration_aside(%L, true)$$, :'regQueue'),
-  '42501', null,
+  '42501', 'setting a registration aside is an admin action',
   'a branch leader cannot set a registration aside');
 
 select throws_ok(
   format($$select public.unlink_registration(%L)$$, :'regLinked'),
-  '42501', null,
+  '42501', 'unlinking a payment record is an admin action',
   'a branch leader cannot detach a member from a course they paid for');
 
 select throws_ok(
   format($$select * from public.registration_match_suggestions(%L)$$, :'regQueue'),
-  '42501', null,
+  '42501', 'suggesting members for a payment record is an admin action',
   'a branch leader cannot ask who a stranger might be');
 
 reset role;
@@ -193,12 +193,12 @@ set local request.jwt.claims to
 
 select throws_ok(
   format($$select public.link_registration(%L, %L)$$, :'regQueue', :'member'),
-  '42501', null,
+  '42501', 'linking a payment record to a member is an admin action',
   'a member cannot claim a registration for themselves: the cut claim flow stays cut');
 
 select throws_ok(
   format($$select public.set_registration_aside(%L, true)$$, :'regQueue'),
-  '42501', null,
+  '42501', 'setting a registration aside is an admin action',
   'a member cannot set a registration aside');
 
 reset role;
@@ -273,7 +273,7 @@ select is(
 
 select throws_ok(
   format($$select public.link_registration(%L, %L)$$, :'regQueue', :'grace_gla'),
-  '23514', null,
+  '23514', 'this registration is already linked; unlink it first',
   'an already-linked row is not silently re-linked: a double submit cannot move a course');
 
 select is(
@@ -287,17 +287,37 @@ select lives_ok(
 
 select throws_ok(
   format($$select public.link_registration(%L, %L)$$, :'regAside', :'grace_ber'),
-  '23514', null,
+  '23514', 'this registration was set aside; bring it back first',
   'a set-aside row must be brought back before it can be linked');
 
 select throws_ok(
   format($$select public.set_registration_aside(%L, true)$$, :'regQueue'),
-  '23514', null,
+  '23514', 'a linked registration is not un-matchable; unlink it first',
   'a LINKED row is not un-matchable: it has already been matched');
+
+-- The two "it is not there" refusals. They are asserted for the same reason as every other
+-- message in this file: the dashboard maps these strings to the words on screen
+-- (`apps/dashboard/src/server/registrations.ts`), because one SQLSTATE covers four different
+-- refusals and they do not all mean the same thing to the person reading them. A migration
+-- that rewords one turns this red rather than quietly degrading the screen to "something
+-- went wrong".
+select throws_ok(
+  format($$select public.link_registration(%L, %L)$$,
+         '00000000-0000-4000-8000-0000000000ff', :'grace_ber'),
+  'P0002', 'no such registration',
+  'a registration id that is not there is refused as such, not as a link failure');
+
+-- regTaken and not regAside: the member check sits BELOW the set-aside check in the routine,
+-- so a row that has just been set aside would raise the wrong refusal and prove nothing.
+select throws_ok(
+  format($$select public.link_registration(%L, %L)$$,
+         :'regTaken', '00000000-0000-4000-8000-0000000000fe'),
+  'P0002', 'no such member',
+  'and a member who is not there is a different refusal again');
 
 select throws_ok(
   format($$select public.unlink_registration(%L)$$, :'regAside'),
-  '23514', null,
+  '23514', 'this registration is not linked',
   'unlinking a row that was never linked is refused rather than silently doing nothing');
 
 -- --- 5. the collision this feature is most dangerous without -----------------------------
@@ -309,7 +329,7 @@ select throws_ok(
 
 select throws_ok(
   format($$select public.link_registration(%L, %L)$$, :'regTaken', :'grace_ber'),
-  '23514', null,
+  '23514', 'that address is already proven by another member',
   'an address another member has already proven refuses the link outright');
 
 select ok(
@@ -323,7 +343,7 @@ select is(
 
 select throws_ok(
   format($$select public.link_registration(%L, %L)$$, :'regSignin', :'grace_ber'),
-  '23514', null,
+  '23514', 'this address is another account''s sign-in address',
   'an address that is another account''s SIGN-IN is refused too: the guard is left to speak');
 
 -- --- 6. the admin is the judge -------------------------------------------------------------
