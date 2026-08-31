@@ -126,9 +126,24 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
   (W3.3) and no item claimed the caller afterwards. Now a one-armed addition to
   `activity_notice_batch`, not new infrastructure. `purchase.added` is the same shape but
   legitimately W4.1's, since Store does not exist yet.
-- [ ] **Maestro E2E is not in CI** (`21` §4). Six journeys run green on the Android device by
-  hand and nothing runs them on a PR, so a regression in a critical journey is invisible
-  until somebody thinks to run them. Weigh against the CI-budget rule before wiring it up.
+- [ ] **Maestro E2E: one journey of six can run in CI, and the other five have nowhere to
+  run.** Rewritten 2026-08-31; the first version of this item said simply "not in CI", which
+  understated it. `nightly.yml` DOES exist and DOES run Maestro, on `workflow_dispatch` with
+  an APK URL as input, and its own comment explains the missing cron as a budget decision
+  deferred until CI can build its own binary.
+  **The deeper blocker is authentication, not minutes.** Five of the six journeys
+  (`otp-signin`, `post-testimony-pending`, `glory-gate-return`, `rsvp`, `block`) sign in
+  through `subflows/signin-review.yaml`, which needs the store-review bypass. That bypass is
+  deliberately OFF on production (`03`, ADR 0023 amendment), and ADR 0023 records that no
+  separate dev project exists or is planned. So there is no environment CI can reach where
+  those five could run at all. `guest-smoke` is the only one wired up because it is the only
+  one that needs no account.
+  **What would actually unblock it**, none of which is a workflow change: Supabase branching
+  for ephemeral per-PR databases (a Pro feature, and Pro is already owed above); or building
+  the APK in CI against a stack started in the same job, which compounds the binary problem
+  rather than solving it; or W4.8's store-review window, when the bypass returns to production
+  anyway and becomes a natural moment to run the full six. Until one of those, the full suite
+  is a pre-release manual run, which is what `21` §4's own cadence line already asks for.
 - [ ] **Sentry geo minimisation:** crash events store city-level Geography derived from the sending IP even with `sendDefaultPii:false`. If unwanted under `20`, enable the project's "Prevent Storing of IP Addresses" setting (`21` §6.1).
 
 ---
