@@ -38,6 +38,16 @@ Composition, top to bottom:
 ## Daily Verse: behavior
 - One verse per day (`daily_verses.date`), same for all users in a language.
 - Source: seeded content set (admin-managed via dashboard; verse CRUD ships in dashboard Phase A, see `17`/`18`): **not** an external API dependency for v1. Translation: **WEB (World English Bible)**, public domain: no attribution requirement, no quotation caps, safe for branded share images (decision 2026-07-12; `translation` column exists if a licensed translation is added later, which would bring an attribution line onto `VerseCard` and share images).
+- **The other three languages, decided 2026-08-31.** WEB is an ENGLISH translation, and this doc named it without saying what German, Dutch and French should use, while `daily_verses.language` has allowed all four since `20260720210000`. The gap surfaced the first time anyone actually queued a verse. Each language now uses a PUBLIC DOMAIN translation, chosen to preserve exactly the property WEB was chosen for, so no language brings an attribution line or a quotation cap:
+
+  | Language | Translation | `translation` value |
+  |---|---|---|
+  | English | World English Bible | `WEB` |
+  | German | Luther 1912 | `Luther 1912` |
+  | Dutch | Statenvertaling | `Statenvertaling` |
+  | French | Louis Segond 1910 | `Louis Segond 1910` |
+
+  **The cost is accepted and worth restating, because somebody will raise it.** Luther 1912 and the Statenvertaling are archaic; the Dutch especially reads to a modern congregation roughly as Jacobean English does to us. The modern alternatives (NBG 1951, Elberfelder, Segond 21) are all copyrighted, so switching means an attribution line on the verse card AND on every share image, plus quotation limits. That is the trade this doc already made once for English; it is made the same way for the other three. Revisiting it is a licensing decision, not a technical one, and it changes this table.
 - **Operations:** 365+ rows/year need an owner, a quarterly batch cadence, and a low-queue alert (fewer than 14 future days queued alerts admins). Pipeline in `22-CONTENT-OPERATIONS.md`.
 - **Phasing:** until the Store/Library + entitlement pipeline ships (build Phase 4), the verse card renders WITHOUT the devotional CTA (verse + share only). The CTA appears when `BOOK-DETAIL` exists to route to (`18`).
 - Caching: prefetch today's on open; cache last N for offline.
