@@ -19,7 +19,7 @@ The software can pass every acceptance criterion and still die in month 3 if the
 ## 2. Launch-content checklist (minimum viable day-1 set)
 
 - [ ] 4 branches seeded and verified (incl. geocoded lat/lng, timezone, `branch_services` schedule rows: the seed JSON does NOT contain these, see `02`)
-- [ ] 90 daily verses queued (WEB translation)
+- [ ] 90 daily verses queued, **in each of the four languages** (`07`'s table: WEB for English, Luther 1912, Statenvertaling, Louis Segond 1910, all public domain). **Status 2026-08-31: one day queued in each**, John 3:16, entered through the dashboard the day it was first deployed. That is a floor rather than a fix: the app shows the most recent verse on or before today, so a thin queue REPEATS yesterday rather than showing nothing, which is quieter than an empty card and just as stale. `verse-monitor` had been alerting both admins every morning since 2026-08-19 that the queue was empty, and it will keep alerting until each language is above 14 days. Use the dashboard's **Import a batch**, which takes a spreadsheet, so a quarter is one sitting for a volunteer rather than 360 form submissions.
 - [ ] The Word Devotional imported as a structured plan; purchase-to-entitlement-to-plan flow tested end to end
 - [ ] 12+ back-catalog sermons synced with cleaned titles/speakers/series; at least 4 with MP3 audio attached
 - [ ] 2+ upcoming events per branch plus 1 ministry-wide event
