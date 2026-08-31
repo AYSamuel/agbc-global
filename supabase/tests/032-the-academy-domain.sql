@@ -24,7 +24,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(66);
+select plan(70);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 \set emmen '00000000-0000-4000-8000-000000000003'
@@ -41,6 +41,10 @@ select plan(66);
 \set regD 'c0320000-0000-4000-8000-000000000004'
 \set regE 'c0320000-0000-4000-8000-000000000005'
 \set regF 'c0320000-0000-4000-8000-000000000006'
+-- ...007 is NOT free: section 8's double-booking fixture spells it inline rather than
+-- naming it here, so the next id to hand out is 008.
+\set regG 'c0320000-0000-4000-8000-000000000008'
+\set regH 'c0320000-0000-4000-8000-000000000009'
 
 insert into auth.users (id, email) values
   (:'member1', 't032-m1@test.local'),
@@ -696,6 +700,70 @@ select is(
     where n.nspname = 'public'
       and p.proname in ('request_email_claim', 'verify_email_claim')),
   0, 'the retired claim RPCs are gone, and profile_emails outlives them');
+
+-- --- 13. a row born attached says WHEN (20260831160000) ----------------------------------------
+-- Deliberately last in the file: these fixtures attach rows to a member, and section 6
+-- asserts exact per-member row counts. A new visible row up there is a red build down here
+-- for the wrong reason.
+--
+-- The gap this closes was invisible to every test above precisely because every fixture in
+-- them names `linked_at` itself. The website does not. regG is inserted the way a handoff
+-- checkout actually arrives: profile_id and link_method, no timestamp.
+--
+-- BOTH ROWS CARRY A SLUG THE CATALOG DOES NOT KNOW, so course_id stays null and the
+-- double-booking partial unique on (course_id, profile_id) cannot interfere. `052`'s fixture
+-- made the same choice, and `20260831150000` was right to call that a mistake THERE, in a
+-- file about the link routine, where the collision is the behaviour under test. Here it is
+-- pure noise: what is asserted is that a profile_id present at INSERT produces a linked_at,
+-- and the course has nothing to do with it. Sections 8 and 9 already spend both members'
+-- enrolments on the real courses, so naming one would only make these four assertions
+-- hostage to a fixture three sections away.
+
+-- The trusted-writer context, restated rather than assumed: `reset role` alone leaves the
+-- last member's claims in place, and the insert guard refuses any write made with a user
+-- context (CLAUDE.md pgTAP trap).
+reset role;
+select set_config('request.jwt.claims', '', true);
+
+insert into public.course_registrations
+  (id, course, format, full_name, email, city, country, amount, currency, payment_status,
+   profile_id, source, link_method)
+values
+  (:'regG', 'a-course-only-section-13-knows', 'Intensive (3 weeks)', 'T032 Born Attached',
+   't032-born@test.local', 'Glasgow', 'Scotland, UK', 4000, 'gbp', 'paid',
+   :'member2', 'app', 'handoff');
+
+select ok(
+  (select linked_at is not null from public.course_registrations where id = :'regG'),
+  'a row that arrives already carrying a member is linked at birth, not two thirds linked');
+
+-- The other half of the same rule, and the one that makes it safe to run over seeds and
+-- fixtures: a caller who names the column keeps the value it chose. Without this, a trigger
+-- written to fill a gap would silently rewrite history every importer restated.
+insert into public.course_registrations
+  (id, course, format, full_name, email, city, country, amount, currency, payment_status,
+   profile_id, source, link_method, linked_at)
+values
+  (:'regH', 'another-course-only-section-13-knows', 'Part-time (4 weeks)',
+   'T032 Linked Long Ago', 't032-longago@test.local', 'Glasgow', 'Scotland, UK',
+   2500, 'gbp', 'paid', :'member1', 'app', 'handoff', '2026-01-02 03:04:05+00');
+
+select is(
+  (select linked_at from public.course_registrations where id = :'regH'),
+  '2026-01-02 03:04:05+00'::timestamptz,
+  'and a writer that names the column keeps the value it chose: never an overwrite');
+
+select ok(
+  (select linked_at is null from public.course_registrations where id = :'regA'),
+  'an unattached website row is given no link date to explain');
+
+-- The invariant the header of 20260831160000 declines to write as a CHECK, because
+-- profile_id is a column the website sends and a refused insert there is a charged member
+-- with no record. Being wrong costs a red build here instead.
+select is(
+  (select count(*)::int from public.course_registrations
+    where profile_id is not null and linked_at is null),
+  0, 'no row anywhere holds a member without the date it gained one');
 
 select * from finish();
 rollback;
