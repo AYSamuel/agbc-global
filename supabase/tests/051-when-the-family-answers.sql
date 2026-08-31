@@ -25,7 +25,7 @@
 -- whatever the other 50 files leave behind.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(34);
+select plan(38);
 
 -- The clock every assertion is measured against. Fixed rather than `now()`, so the settle
 -- window and the hour buckets are arithmetic instead of a race with the wall clock.
@@ -443,7 +443,78 @@ select is(
   'nothing older than the lookback is offered: the scan is bounded, by design');
 
 -- ===========================================================================
--- 6. The indexes each arm's window depends on.
+-- 6. The registration an admin linked by hand (#164).
+-- ===========================================================================
+--
+-- The fourth arm, and the fourth orphaned template to get a producer. The assertions that
+-- matter are again the SUPPRESSIONS: this arm exists ONLY for the case where somebody else
+-- acted and the member cannot know, so the interesting rows are the ones it stays quiet
+-- about.
+
+select set_config('request.jwt.claims', '', true);
+
+insert into auth.users (id, email) values
+  ('a1000000-0000-4000-8000-0000000000fa', 'a-payer@test.local');
+insert into public.profiles (id, email, display_name, branch_id, onboarded_at) values
+  ('a1000000-0000-4000-8000-0000000000fa', 'a-payer@test.local', 'A Payer',
+   '00000000-0000-4000-8000-000000000001', now());
+
+insert into public.course_registrations
+  (id, course, format, full_name, email, city, country, amount,
+   profile_id, link_method, linked_by, linked_at, course_id)
+values
+  -- Linked by an admin five minutes ago: the one case the member has no way to know about.
+  ('c0510000-0000-4000-8000-000000000001', 't051-alpha', 'online', 'A Payer',
+   'a-payer@test.local', 'Glasgow', 'GB', 5000,
+   'a1000000-0000-4000-8000-0000000000fa', 'leader', 'a1000000-0000-4000-8000-00000000000a',
+   :'anchor'::timestamptz - interval '5 minutes',
+   (select id from public.courses where slug = 'further')),
+  -- The member did this one themselves, with the app in their hand.
+  ('c0510000-0000-4000-8000-000000000002', 't051-bravo', 'online', 'A Payer',
+   'a-payer@test.local', 'Glasgow', 'GB', 5000,
+   'a1000000-0000-4000-8000-0000000000fa', 'handoff', null,
+   :'anchor'::timestamptz - interval '5 minutes', null),
+  -- Already told about: the notification row below is the claim on that send (ADR 0022).
+  ('c0510000-0000-4000-8000-000000000003', 't051-charlie', 'online', 'A Payer',
+   'a-payer@test.local', 'Glasgow', 'GB', 5000,
+   'a1000000-0000-4000-8000-0000000000fa', 'leader', 'a1000000-0000-4000-8000-00000000000a',
+   :'anchor'::timestamptz - interval '10 minutes', null);
+
+insert into public.notifications (profile_id, type, template_key, deep_link, dedupe_key)
+values ('a1000000-0000-4000-8000-0000000000fa', 'registration', 'registration.confirmed',
+        '/academy',
+        'registration:c0510000-0000-4000-8000-000000000003:2026-08-29T11:30:00.000000');
+
+select is(
+  (select detail from public.activity_notice_batch(:'anchor'::timestamptz)
+   where kind = 'registration'
+     and subject_id = 'c0510000-0000-4000-8000-000000000001'),
+  (select id::text from public.courses where slug = 'further'),
+  'a hand-linked registration is offered, carrying the course the tap should open');
+
+select is(
+  (select dedupe_key from public.activity_notice_batch(:'anchor'::timestamptz)
+   where kind = 'registration'
+     and subject_id = 'c0510000-0000-4000-8000-000000000001'),
+  'registration:c0510000-0000-4000-8000-000000000001:2026-08-29T11:35:00.000000',
+  'the key carries linked_at, so a relink after an unlink tells the member again');
+
+select is(
+  (select count(*)::int from public.activity_notice_batch(:'anchor'::timestamptz)
+   where kind = 'registration'
+     and subject_id = 'c0510000-0000-4000-8000-000000000002'),
+  0,
+  'a handoff says nothing: the member performed that one themselves, with the app open');
+
+select is(
+  (select count(*)::int from public.activity_notice_batch(:'anchor'::timestamptz)
+   where kind = 'registration'
+     and subject_id = 'c0510000-0000-4000-8000-000000000003'),
+  0,
+  'a registration already told about is not offered twice: the row IS the claim on the send');
+
+-- ===========================================================================
+-- 7. The indexes each arm's window depends on.
 -- ===========================================================================
 
 select is(
@@ -452,8 +523,9 @@ select is(
      and indexname in ('glory_reactions_created_at_idx',
                        'prayer_intercessions_prayed_at_idx',
                        'testimonies_moderated_at_idx',
-                       'prayers_moderated_at_idx')),
-  4,
+                       'prayers_moderated_at_idx',
+                       'course_registrations_linked_at_idx')),
+  5,
   'every arm scans a time window on a column that now has an index behind it');
 
 select * from finish();
