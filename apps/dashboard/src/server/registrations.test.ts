@@ -11,6 +11,8 @@ import {
 
 import {
   linkRegistration,
+  loadMember,
+  loadMemberByEmail,
   loadRegistration,
   loadRegistrationQueue,
   loadSuggestions,
@@ -527,4 +529,126 @@ describe('finding the member', () => {
       expect(byName.members.length).toBeLessThanOrEqual(8);
     }
   });
+});
+
+/**
+ * The four things a review found by driving the screens that 326 green tests had not (see the
+ * migration `20260831150000` and the module's own notes).
+ *
+ * Each of these was invisible to a rendered page or to a passing suite in a different way, so
+ * each is asserted at the layer that actually decides it rather than through a screen.
+ */
+describe('what the review found', () => {
+  /**
+   * THE DOUBLE-BOOKING WALL, WHICH THE OTHER FIXTURES IN THIS FILE ARE BUILT TO AVOID.
+   *
+   * `registration()` above uses a course string that matches no slug precisely so the partial
+   * unique on (course_id, profile_id) cannot interfere, and that exemption is how the one
+   * collision a real admin meets went untested. This test opts back in with a REAL course, and
+   * it is the state the whole feature exists downstream of: somebody the auto-match could not
+   * find is somebody who can pay twice.
+   */
+  test('a second payment for a course the member already holds is refused in words', async () => {
+    const { data: course, error } = await admin()
+      .from('courses')
+      .select('slug')
+      .limit(1)
+      .single();
+    if (error) throw new Error(`could not read a course: ${error.message}`);
+
+    const first = await registration('enrol-a', { course: course.slug });
+    const second = await registration('enrol-b', { course: course.slug });
+
+    const linked = await linkRegistration(ministryAdmin.serverClient(), {
+      registrationId: first,
+      memberId: target.userId,
+    });
+    expect(linked).toEqual({ ok: true });
+
+    const refused = await linkRegistration(ministryAdmin.serverClient(), {
+      registrationId: second,
+      memberId: target.userId,
+    });
+
+    // Not `failed`. That is the whole point: `failed` renders as "That did not go through.
+    // Try again.", and no number of retries could ever change this answer.
+    expect(refused).toEqual({ ok: false, reason: 'already_enrolled' });
+
+    const { data: row } = await admin()
+      .from('course_registrations')
+      .select('profile_id, linked_at')
+      .eq('id', second)
+      .single();
+    expect(row?.profile_id).toBeNull();
+    expect(row?.linked_at).toBeNull();
+  });
+
+  /**
+   * A malformed id is "not there", not a 500.
+   *
+   * PostgREST answers a bad uuid with an ERROR rather than with no rows, so every one of these
+   * reads used to throw into the error boundary. `/academy?undo=<typo>` took down the module's
+   * front door, which is the read this asserts first.
+   */
+  test('an id that is not a uuid is nothing to find, never a crash', async () => {
+    const client = ministryAdmin.serverClient();
+
+    await expect(loadRegistration(client, 'not-a-uuid')).resolves.toMatchObject(
+      { registration: null },
+    );
+    await expect(loadMember(client, 'not-a-uuid')).resolves.toBeNull();
+    await expect(loadSuggestions(client, 'not-a-uuid')).resolves.toEqual([]);
+
+    // The shape is checked, not merely the length: a 36-character string of the wrong
+    // alphabet is exactly what a truncated copy-paste produces.
+    await expect(
+      loadRegistration(client, 'zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz'),
+    ).resolves.toMatchObject({ registration: null });
+  });
+
+  /**
+   * Whose SIGN-IN address it is, which is the half of the collision that has a way out.
+   *
+   * The refusal screen offers "attach it to them instead" off the back of this read, and that
+   * link only works because `profile_emails_insert_guard` refuses another account's address
+   * and not the account's own.
+   */
+  test('the sign-in owner of an address can be named, and linking to them is allowed', async () => {
+    const owner = await loadMemberByEmail(
+      ministryAdmin.serverClient(),
+      target.email.toUpperCase(),
+    );
+    expect(owner?.id).toBe(target.userId);
+
+    const id = await registration('signin-fix', { email: target.email });
+    await expect(
+      linkRegistration(ministryAdmin.serverClient(), {
+        registrationId: id,
+        memberId: target.userId,
+      }),
+    ).resolves.toEqual({ ok: true });
+  });
+
+  /**
+   * The search says how many it is SHOWING, and whether there are more.
+   *
+   * The label used to read "N people match", where N was the length after the eight-row cap,
+   * so forty matches were reported as eight people matching. One row over the cap is fetched
+   * purely to tell a full page from a truncated one.
+   */
+  test('a search that fills the cap says so, and still returns only eight', async () => {
+    const many = await Promise.all(
+      Array.from({ length: 9 }, () =>
+        caller({ role: 'member', branchId, mfa: 'verified' }),
+      ),
+    );
+    expect(many).toHaveLength(9);
+
+    const result = await searchMembers(ministryAdmin.serverClient(), 'Caller');
+    expect(result.status).toBe('ok');
+    if (result.status === 'ok') {
+      expect(result.members).toHaveLength(8);
+      expect(result.truncated).toBe(true);
+    }
+  }, 120_000);
 });

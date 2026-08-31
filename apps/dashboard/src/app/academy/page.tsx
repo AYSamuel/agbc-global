@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
 import { Alert } from '@/components/ui/Alert';
+import { FocusOnArrival } from '@/components/ui/FocusOnArrival';
 import { Guide } from '@/components/ui/Guide';
 import { Notice } from '@/components/ui/Notice';
 import { SubmitButton } from '@/components/ui/SubmitButton';
@@ -14,6 +15,7 @@ import { authorize } from '@/server/authorize';
 import {
   loadRegistration,
   loadRegistrationQueue,
+  QUEUE_LIMIT,
   type QueueView,
 } from '@/server/registrations';
 
@@ -58,7 +60,7 @@ export default async function AcademyPage({
           <PageHeader title={copy.academy.title} scope={copy.academy.scope} />
           <Notice
             tone="off"
-            title={copy.refused.notAdminTitle}
+            title={copy.academy.leaderRefusedTitle}
             action={
               <Link
                 href="/moderation"
@@ -68,7 +70,7 @@ export default async function AcademyPage({
               </Link>
             }
           >
-            {copy.refused.notAdminBody}
+            {copy.academy.leaderRefusedBody}
           </Notice>
         </DashboardShell>
       );
@@ -80,12 +82,28 @@ export default async function AcademyPage({
   const view = readView(params.view);
   const queue = await loadRegistrationQueue(supabase, view);
   const undo = readParam(params.undo);
-  // The undo banner says everything the Alert would, and says it about a named row, so the
-  // two must not both appear: the first build stacked the identical sentence twice.
-  const outcome = undo ? undefined : readOutcome(params.outcome);
-  const undone = undo
-    ? (await loadRegistration(supabase, undo)).registration
-    : null;
+
+  /**
+   * The row the undo banner is about, and it has to BE set aside for the banner to be true.
+   *
+   * `?undo=` is just a string in a URL, so any readable registration id put there rendered
+   * "X's registration is set aside" over a queue whose Set aside count said 0 and which listed
+   * that very row under Waiting. Worse, the Bring it back button beside it worked: the routine
+   * only refuses bringing back a LINKED row, so it happily wrote a `registration_set_aside`
+   * audit row for a state change that never happened and answered "Back in the queue" about a
+   * row that had never left it.
+   */
+  const undone =
+    undo !== undefined
+      ? (await loadRegistration(supabase, undo)).registration
+      : null;
+  const undoable = undone?.setAsideAt ? undone : null;
+
+  // The undo banner says everything the Alert would, and says it about a named row, so the two
+  // must not both appear: the first build stacked the identical sentence twice. Suppressed on
+  // the BANNER rather than on the parameter, because a `?undo=` that resolves to nothing used
+  // to hide the Alert as well and leave the admin with a silent page after a real act.
+  const outcome = undoable ? undefined : readOutcome(params.outcome);
 
   return (
     <DashboardShell caller={verdict.caller} current="academy">
@@ -93,7 +111,9 @@ export default async function AcademyPage({
 
       {outcome ? (
         <div className="mt-4">
-          <Alert tone={outcome.tone}>{outcome.message}</Alert>
+          <FocusOnArrival signal={outcome.code}>
+            <Alert tone={outcome.tone}>{outcome.message}</Alert>
+          </FocusOnArrival>
         </div>
       ) : null}
 
@@ -101,26 +121,32 @@ export default async function AcademyPage({
           is a judgement about a stranger made from four fields; that it is reversible is the
           whole mitigation (SPEC decision 4), so the reversal is offered at the moment the
           judgement is freshest. */}
-      {undone ? (
-        <Notice
-          tone="off"
-          title={copy.academy.undoTitle(undone.fullName)}
-          live="polite"
-          action={
-            <form action={setAsideAction}>
-              <input type="hidden" name="registrationId" value={undone.id} />
-              <input type="hidden" name="aside" value="false" />
-              <input type="hidden" name="view" value="waiting" />
-              <SubmitButton
-                variant="secondary"
-                label={copy.academy.actions.bringBack}
-                pendingLabel={copy.academy.actions.bringBack}
-              />
-            </form>
-          }
-        >
-          {copy.academy.undoBody}
-        </Notice>
+      {undoable ? (
+        <FocusOnArrival signal={undoable.id}>
+          <Notice
+            tone="off"
+            title={copy.academy.undoTitle(undoable.fullName)}
+            live="polite"
+            action={
+              <form action={setAsideAction}>
+                <input
+                  type="hidden"
+                  name="registrationId"
+                  value={undoable.id}
+                />
+                <input type="hidden" name="aside" value="false" />
+                <input type="hidden" name="view" value="waiting" />
+                <SubmitButton
+                  variant="secondary"
+                  label={copy.academy.actions.bringBack}
+                  pendingLabel={copy.academy.actions.bringBack}
+                />
+              </form>
+            }
+          >
+            {copy.academy.undoBody}
+          </Notice>
+        </FocusOnArrival>
       ) : null}
 
       <dl className="mt-4 flex flex-wrap gap-2.5">
@@ -181,6 +207,13 @@ export default async function AcademyPage({
           />
         ))
       )}
+
+      {/* Under the list rather than over it: it describes where the list STOPS. */}
+      {queue.truncated ? (
+        <Notice tone="off" title={copy.academy.truncatedTitle(QUEUE_LIMIT)}>
+          {copy.academy.truncatedBody}
+        </Notice>
+      ) : null}
     </DashboardShell>
   );
 }
@@ -265,7 +298,15 @@ function readView(value: string | string[] | undefined): QueueView {
     : 'waiting';
 }
 
-const OUTCOMES: Record<string, { message: string; tone: 'error' | 'info' }> = {
+interface Outcome {
+  message: string;
+  tone: 'error' | 'info';
+}
+
+// The value type carries the `undefined`, because a `Record<string, T>` lookup is typed as
+// always-present and this one is not: `?outcome=` is whatever somebody put in the URL. Said in
+// the type rather than at the call site, where an annotation is narrowed away again.
+const OUTCOMES: Record<string, Outcome | undefined> = {
   linked: { message: copy.academy.outcome.linked, tone: 'info' },
   unlinked: { message: copy.academy.outcome.unlinked, tone: 'info' },
   set_aside: { message: copy.academy.outcome.setAside, tone: 'info' },
@@ -278,6 +319,10 @@ const OUTCOMES: Record<string, { message: string; tone: 'error' | 'info' }> = {
     message: copy.academy.outcome.wasSetAside,
     tone: 'error',
   },
+  already_enrolled: {
+    message: copy.academy.outcome.alreadyEnrolled,
+    tone: 'error',
+  },
   not_linked: { message: copy.academy.outcome.notLinked, tone: 'error' },
   is_linked: { message: copy.academy.outcome.isLinked, tone: 'error' },
   no_member: { message: copy.academy.outcome.noMember, tone: 'error' },
@@ -288,9 +333,15 @@ const OUTCOMES: Record<string, { message: string; tone: 'error' | 'info' }> = {
 
 function readOutcome(
   value: string | string[] | undefined,
-): { message: string; tone: 'error' | 'info' } | undefined {
+): (Outcome & { code: string }) | undefined {
   const candidate = readParam(value);
-  return candidate ? OUTCOMES[candidate] : undefined;
+  if (!candidate) return undefined;
+
+  const found = OUTCOMES[candidate];
+
+  // The code travels with the message so the focus wrapper can tell one arrival from the
+  // next: two acts in a row on the same route reuse the component instance.
+  return found ? { code: candidate, ...found } : undefined;
 }
 
 function readParam(value: string | string[] | undefined): string | undefined {

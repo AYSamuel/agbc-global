@@ -1398,6 +1398,23 @@ export const copy = {
     noBranch: 'No branch given',
     registeredOn: (when: string) => `Registered ${when}`,
     setAsideOn: (when: string) => `Set aside ${when}`,
+    // The linked view's date is the day it was ATTACHED, while the same corner of the same
+    // card means "registered" on the other two views. It was drawn bare on all three, so the
+    // one place it changes meaning was the one place it did not say which it was.
+    linkedOn: (when: string) => `Linked ${when}`,
+
+    /**
+     * The list is not everything there is.
+     *
+     * Said out loud because the counts beside it are exact and the list is capped, so a busy
+     * queue showed "Waiting 250" above 200 rows with nothing admitting the gap. It matters
+     * most under Linked, which grows forever and is where somebody goes to undo an old
+     * mistake.
+     */
+    truncatedTitle: (limit: number) =>
+      `Showing the most recent ${String(limit)}`,
+    truncatedBody:
+      'There are more than fit on one screen. The counts above are the true totals; this list is not. Older rows are not reachable from here yet.',
 
     notMatched: 'Not matched',
     methods: {
@@ -1443,12 +1460,35 @@ export const copy = {
       searchHint:
         'Two letters or more, and at most eight people come back. There is no way to list everybody. An address is matched exactly, a name loosely.',
       search: 'Search',
-      resultsLabel: (count: number, query: string) =>
-        `${String(count)} ${count === 1 ? 'person' : 'people'} match “${query}” · closest first`,
+      /**
+       * What came back, and NOT how it was ranked.
+       *
+       * "closest first" was here until a review ran a real search: a name search comes back
+       * alphabetically and an address search is one exact row, so the label promised a
+       * ranking that does not exist and manufactured the endorsement this module withholds
+       * from a searched row everywhere else. The count was the length AFTER the eight-row
+       * cap, so with forty matches it said eight people matched, which is a different claim
+       * again. Both are now said the way they actually are.
+       */
+      resultsLabel: (count: number, query: string, truncated: boolean) =>
+        truncated
+          ? `The first ${String(count)} people whose name contains “${query}”. There are more: narrow it down.`
+          : `${String(count)} ${count === 1 ? 'person matches' : 'people match'} “${query}”`,
       choose: (name: string) => `Choose ${name}`,
-      noResultsTitle: 'Nobody here is called that',
-      noResultsBody: (query: string) =>
-        `No member’s name or sign-in address matches “${query}”. Try the part of the name they would have typed themselves, or ask them which address they sign in with. If they have never opened the app, this registration is one to set aside.`,
+      /**
+       * Two different empty answers, because two different things were searched.
+       *
+       * One sentence covered both until a review typed a fragment that appears in every
+       * member's address and was told no address matched it. A query with an `@` is matched
+       * against sign-in addresses EXACTLY and never against names; a query without one is
+       * matched against names only. Saying "no name or address matches" claimed both roads
+       * had been driven when only one ever is.
+       */
+      noResultsTitle: 'Nobody came back',
+      noResultsBody: (query: string, wasAddress: boolean) =>
+        wasAddress
+          ? `Nobody signs in with “${query}”. An address has to match exactly, so a near miss finds nothing: check it character by character, or search their name instead. If they have never opened the app, this registration is one to set aside.`
+          : `No member’s name contains “${query}”. Addresses are not searched unless you type one with an @ in it. Try the part of the name they would have typed themselves, or ask them which address they sign in with. If they have never opened the app, this registration is one to set aside.`,
       tooShortTitle: 'Give it at least two letters',
       tooShortBody:
         'A single character would return most of the ministry, and there is no reason to read a list of everybody in order to find one person.',
@@ -1471,8 +1511,19 @@ export const copy = {
       becomesLabel: 'Attached to',
       toldTitle: (member: string) =>
         `${member} is told, within a minute or two`,
-      toldBody: (course: string) =>
-        `They get “Your place is confirmed” on their phone and in their notifications, in their own language, and it opens ${course}. Nothing at all is sent to the address on the payment.`,
+      /**
+       * Where the tap actually lands, which is not always the course.
+       *
+       * `course_id` is resolved from the website's slug at insert, so a payment for something
+       * we do not carry has none, and `activity-notices` sends those to the Academy index
+       * because `/course/null` is not a route. This sentence used to promise the slug either
+       * way: "it opens marriage-course", naming a thing that does not exist in our catalogue
+       * and a screen the notification would never open.
+       */
+      toldBody: (course: string, inCatalogue: boolean) =>
+        inCatalogue
+          ? `They get “Your place is confirmed” on their phone and in their notifications, in their own language, and it opens ${course}. Nothing at all is sent to the address on the payment.`
+          : `They get “Your place is confirmed” on their phone and in their notifications, in their own language. It opens the Academy rather than a course, because “${course}” is not one we carry and there is no page to send them to. Nothing at all is sent to the address on the payment.`,
       // Decision 5 and open risk 1, stated as the accepted risk it is rather than softened.
       teachesTitle: (address: string, member: string) =>
         `This also teaches the app that ${address} is ${member}’s`,
@@ -1520,15 +1571,64 @@ export const copy = {
       owner
         ? `${address} is already proven for ${owner}`
         : `${address} is already proven for another member`,
-    takenBody: (member: string, owner: string | null) =>
-      `Attaching this registration to ${member} would leave ${owner ? `${owner} and ${member}` : 'two members'} holding one mailbox, and the next payment from it would attach itself to whichever of them the rule names, with no human in the loop. That is the mistake this tool is most dangerous for, so the link is refused rather than made without proving the address.`,
+    /**
+     * `member` is the member the admin was attaching TO, and it is nullable on purpose.
+     *
+     * The build fixed a version of this that named the PAYER where it meant the member, then
+     * kept a fallback to the payer's name for when `?member=` was missing or named a closed
+     * account, which restored the same bug on the same sentence. A name that might be the
+     * wrong person is worse than no name here, so both take null and say "the member you
+     * chose" instead.
+     */
+    takenBody: (member: string | null, owner: string | null) =>
+      `Attaching this registration to ${member ?? 'the member you chose'} would leave ${
+        owner ? `${owner} and ${member ?? 'them'}` : 'two members'
+      } holding one mailbox, and the next payment from it would attach itself to whichever of them the rule names, with no human in the loop. That is the mistake this tool is most dangerous for, so the link is refused rather than made without proving the address.`,
     signinTitle: (address: string) =>
       `${address} is the address another account signs in with`,
-    signinBody: (member: string) =>
-      `The same collision seen from its other half: attaching it to ${member} would give one mailbox two owners. The link is refused rather than made without proving the address.`,
+    signinBody: (member: string | null) =>
+      `The same collision seen from its other half: attaching it to ${member ?? 'the member you chose'} would give one mailbox two owners. The link is refused rather than made without proving the address.`,
+
+    /**
+     * WHAT TO DO NEXT, and the two refusals need different answers.
+     *
+     * Both used to share one instruction: "unlink that registration first and come back."
+     * That is false, and following it loops. Unlinking deliberately does not un-prove the
+     * address (the unlink screen says so in bold), so the admin comes back to the same wall
+     * with nothing changed. Proven on a running dashboard: linked, unlinked, retried, refused
+     * again with the owner holding zero registrations.
+     *
+     * The honest answers are not the same shape:
+     *
+     *   * ADDRESS TAKEN is a dead end here, and saying so is the useful thing. Only the member
+     *     who holds a proven address may remove it (`profile_emails` has a delete policy for
+     *     its owner and none for an admin), and no screen in the app offers that yet, so
+     *     moving it is a developer's job. What this screen can do is name the person to ring.
+     *   * ADDRESS IS SIGN-IN has a real route out, one click wide, and nobody had noticed:
+     *     `profile_emails_insert_guard` refuses an address that is ANOTHER account's sign-in
+     *     (`u.id <> new.profile_id`), so attaching the registration to the account whose
+     *     address it actually is succeeds. Usually that IS the payer, signed up under the
+     *     address they paid with, and the admin simply picked the wrong member.
+     */
     ringThemTitle: 'This is a phone call, not a form',
-    ringThemBody:
-      'Find out whose address it actually is. If this registration really is theirs and the other row is the wrong one, unlink that registration first and come back. If it is a mailbox a family shares, this one is to set aside rather than force onto a name.',
+    ringThemBody: (owner: string | null) =>
+      `Find out whose mailbox it actually is, because nothing on this screen can move it. Unlinking a registration deliberately leaves the address proven, so that is not a way round; only ${owner ?? 'the member who holds it'} can give it up, and no screen offers that yet, which makes it a developer's job. If it is a mailbox a family shares, this registration is one to set aside rather than force onto a name.`,
+
+    /**
+     * The sign-in half with nobody to name.
+     *
+     * `loadMemberByEmail` finds nothing when the account behind the address has been closed
+     * since, so the one-click way out cannot be offered. `ringThemBody` must NOT stand in
+     * here: it says only the holder can give the address up, which is true of a proven address
+     * and false of a sign-in one.
+     */
+    signinNoOwnerBody:
+      'The account that signs in with this address is not one we can read, so there is nobody to offer you here. Find out whose mailbox it is: if the payer already has an account under it, attaching this registration to that account is allowed and is the fix. If the payment and the account belong to two different people, this one is to set aside rather than force onto a name.',
+
+    signinFixTitle: (owner: string) => `Did you mean ${owner}?`,
+    signinFixBody: (owner: string, address: string) =>
+      `${address} is how ${owner} signs in, so attaching this registration to them is allowed and is usually what happened: somebody paid with the address they already had an account under. If that is not who this is, the payment and the account genuinely belong to two people and this one is to set aside.`,
+    signinFixAction: (owner: string) => `Attach it to ${owner} instead`,
 
     // The set-aside guide, on the view where those rows live: decision 4, in the words that
     // say why the undo matters.
@@ -1536,6 +1636,20 @@ export const copy = {
       'Setting aside is not deleting, and not a decision about their place.',
     asideGuide:
       'The payment record stands and they keep their course; what changes is that nobody is still looking for their app account. A queue that only grows is a queue people stop reading, and then a real one is missed among the permanent residents.',
+
+    /**
+     * The leader's refusal, in this module's own terms.
+     *
+     * It reused `refused.notAdminBody` verbatim, which ends "What is yours is deciding who
+     * joins your branch" and offers the moderation queue. True of the People screen it was
+     * written for and about nothing on this one, so a leader was told why they could not do
+     * something else. The real reason is structural and worth saying, because it is not a
+     * ranking: an unlinked website registration carries no branch at all, so there is no
+     * in-branch version of this screen to give anybody (ADR 0017 decision 5).
+     */
+    leaderRefusedTitle: 'A payment record has no branch to be yours',
+    leaderRefusedBody:
+      'A registration paid on the website arrives before anybody knows who made it, so it belongs to no branch and there is no in-branch version of this queue. Attaching one to a member is a ministry admin’s call for that reason rather than as a matter of rank. Nothing is wrong with your account.',
 
     // The undo banner, which carries the statement AND the reversal, so the outcome Alert is
     // suppressed while it is on screen: two boxes saying the same sentence is what the first
@@ -1553,6 +1667,11 @@ export const copy = {
         'Somebody attached that registration already. Open it under Linked to see who has it.',
       wasSetAside:
         'That registration was set aside. Bring it back before attaching it to anybody.',
+      // The double payment this whole module exists downstream of. It used to arrive as
+      // `failed` = "That did not go through. Try again.", which was a lie twice over: nothing
+      // was wrong with the attempt, and no number of retries could ever change the answer.
+      alreadyEnrolled:
+        'That member already has a place on that course, so this is a second payment for the same thing rather than a missing link. Check whether it needs refunding, and set this one aside once you have.',
       notLinked: 'That registration is not attached to anybody.',
       isLinked:
         'That registration is already attached to a member, so it is not un-matchable. Unlink it first.',

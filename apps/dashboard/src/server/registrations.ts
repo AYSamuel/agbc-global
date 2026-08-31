@@ -39,6 +39,25 @@ import type { Database } from '@agbc/shared/database';
 
 type Client = SupabaseClient<Database>;
 
+/**
+ * Is this string shaped like a row id at all?
+ *
+ * Every id on these screens arrives from the URL, and PostgREST answers a malformed uuid with
+ * an ERROR (22P02) rather than with no rows. So `.eq('id', 'not-a-uuid')` threw, the throw
+ * reached the error boundary, and `/academy?undo=<typo>` returned a 500 from the module's own
+ * front door instead of the "not there" the next line was already written to handle.
+ *
+ * Checked here rather than in each page, because the three screens and the queue read ids
+ * through four different functions and only one of them would have remembered. "Fail closed"
+ * (~/.claude/standards/security.md) means a value that cannot be an id is treated as an id
+ * that is not there, which is what every caller already renders.
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isRowId(value: string): boolean {
+  return UUID.test(value);
+}
+
 export type LinkMethod =
   Database['public']['Enums']['course_registration_link_method'];
 
@@ -97,9 +116,32 @@ export interface Registration {
   member: { id: string; displayName: string } | null;
 }
 
+/**
+ * The most rows any one view will draw.
+ *
+ * Exported so the screen can say the number out loud rather than hard-coding a second copy
+ * of it in a sentence.
+ */
+export const QUEUE_LIMIT = 200;
+
 export interface RegistrationQueue {
   rows: Registration[];
   counts: { waiting: number; aside: number; linkedByHand: number };
+  /**
+   * Whether the list stops short of everything there is.
+   *
+   * It has to be said on screen, because the counts beside the list are EXACT and the list is
+   * not: 250 waiting rows drew "Waiting 250" above 200 rows with nothing admitting the gap.
+   * It matters most on the linked view, which is the one that grows forever (every
+   * registration ever matched, by any method, is in it) and is the one an admin reaches for
+   * to undo an old mistake.
+   *
+   * Derived from the page coming back full rather than from a second count, so it costs no
+   * round trip. Exactly 200 rows reports truncation with nothing behind it, which is a
+   * sentence that is still true ("the most recent 200 are listed") and the only inaccuracy
+   * this shape can produce.
+   */
+  truncated: boolean;
   /**
    * The instant this was read at, returned rather than recomputed by the screen.
    *
@@ -130,7 +172,12 @@ export async function loadRegistrationQueue(
     countLinkedByHand(supabase),
   ]);
 
-  return { rows, counts: { waiting, aside, linkedByHand }, readAt: Date.now() };
+  return {
+    rows,
+    counts: { waiting, aside, linkedByHand },
+    truncated: rows.length >= QUEUE_LIMIT,
+    readAt: Date.now(),
+  };
 }
 
 async function readView(
@@ -158,7 +205,7 @@ async function readView(
             .order('linked_at', { ascending: false, nullsFirst: false });
 
   const { data, error } = await query
-    .limit(200)
+    .limit(QUEUE_LIMIT)
     .overrideTypes<RegistrationRow[], { merge: false }>();
 
   if (error) {
@@ -227,6 +274,9 @@ export async function loadRegistration(
   supabase: Client,
   id: string,
 ): Promise<RegistrationRead> {
+  // A malformed id is "not there", not a crash. See `isRowId`.
+  if (!isRowId(id)) return { registration: null, readAt: Date.now() };
+
   const { data, error } = await supabase
     .from('course_registrations')
     .select(REGISTRATION_COLUMNS)
@@ -286,6 +336,9 @@ export async function loadMember(
   supabase: Client,
   memberId: string,
 ): Promise<MemberMatch | null> {
+  // `?member=` is typed by anybody, so it reaches here as any string at all.
+  if (!isRowId(memberId)) return null;
+
   const { data, error } = await supabase
     .from('profiles')
     .select('id, display_name, email, branches!profiles_branch_id_fkey(name)')
@@ -323,6 +376,17 @@ export async function loadMember(
  * cannot ring somebody they have not been told about. Reading it is no wider a disclosure
  * than the surface already carries, since an admin reads every profile and every proven
  * address under RLS anyway.
+ *
+ * A PLAIN EQUALITY ON A COLUMN THAT IS NOW CONSTRAINED TO BE NORMALIZED
+ * (`profile_emails_normalized`, migration `20260831150000`). Before that constraint this read
+ * and the uniqueness behind it disagreed: the index matches on lower(trim(email)) and this
+ * compared the raw column, so one stored capital and the database still refused the link
+ * while this screen lost the name and fell back to "another member". Proven on a running
+ * dashboard, which is the only place the two halves meet.
+ *
+ * Loosening the read was the wrong half to change. PostgREST has no case-insensitive equality:
+ * `ilike` is the nearest thing and it would read the underscore in an address as a wildcard,
+ * so the fix belongs in the column.
  */
 export async function loadAddressOwner(
   supabase: Client,
@@ -341,6 +405,52 @@ export async function loadAddressOwner(
   // Never fatal: the refusal is still true and still worth showing without a name.
   if (error || !data) return null;
   return data.profiles?.display_name ?? null;
+}
+
+/**
+ * Whose SIGN-IN address this is, if it is anybody's.
+ *
+ * The other half of `loadAddressOwner`, and the half that has a way out. A proven address
+ * lives in `profile_emails` and cannot be moved from this dashboard; a sign-in address lives
+ * here, and `profile_emails_insert_guard` only refuses an address that is ANOTHER account's
+ * (`u.id <> new.profile_id`), so attaching the registration to the account whose address it
+ * actually is succeeds. The refusal screen offers exactly that, which turns the commonest
+ * version of this collision, an admin picking the wrong member from a list of similar names,
+ * from a dead end into one click.
+ *
+ * Plain equality is right here for the reason `searchMembers` records: `profiles.email`
+ * mirrors `auth.users.email`, which GoTrue stores lowercased.
+ */
+export async function loadMemberByEmail(
+  supabase: Client,
+  email: string,
+): Promise<MemberMatch | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, display_name, email, branches!profiles_branch_id_fkey(name)')
+    .eq('email', email.trim().toLowerCase())
+    .is('deleted_at', null)
+    .maybeSingle()
+    .overrideTypes<
+      {
+        id: string;
+        display_name: string;
+        email: string;
+        branches: { name: string } | null;
+      },
+      { merge: false }
+    >();
+
+  // Never fatal, for the same reason `loadAddressOwner` is not: the refusal above it is true
+  // and worth showing whether or not this screen can name a way out of it.
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    displayName: data.display_name,
+    email: data.email,
+    branchName: data.branches?.name ?? null,
+  };
 }
 
 export interface Suggestion extends MemberMatch {
@@ -363,6 +473,10 @@ export async function loadSuggestions(
   supabase: Client,
   registrationId: string,
 ): Promise<Suggestion[]> {
+  // Its callers have already read the row back, so this cannot fire today. It is here so the
+  // next caller that has not cannot reintroduce the 500 the other two just lost.
+  if (!isRowId(registrationId)) return [];
+
   const { data, error } = await supabase.rpc('registration_match_suggestions', {
     registration: registrationId,
     limit_to: SUGGESTION_LIMIT,
@@ -389,7 +503,20 @@ export const SEARCH_MINIMUM = 2;
 export const SEARCH_LIMIT = 8;
 
 export type SearchResult =
-  { status: 'ok'; members: MemberMatch[] } | { status: 'too_short' };
+  | {
+      status: 'ok';
+      members: MemberMatch[];
+      /**
+       * Whether the cap cut the answer short.
+       *
+       * Carried because the label above the list used to say "N people match", where N was
+       * the length AFTER the cap: with forty matches it said eight people matched, which is
+       * a different claim and a false one. The screen now says how many are SHOWN and admits
+       * when there are more.
+       */
+      truncated: boolean;
+    }
+  | { status: 'too_short' };
 
 /**
  * The fallback when no suggestion is the right person.
@@ -416,6 +543,18 @@ export type SearchResult =
  * An address is matched EXACTLY (the `findMemberByEmail` road next door), a name loosely: a
  * partial address is the sweep the rule is about, while a partial name is how a human
  * actually looks for somebody they have just spoken to.
+ *
+ * THERE IS NO RANKING HERE, and the screen must not imply one. A name search comes back in
+ * alphabetical order and an address search is a single exact row; neither is "closest first",
+ * which is what the results label claimed until a review read it against a real search. The
+ * suggestions next door ARE ranked and say why each row is there; a searched row is only what
+ * the admin asked for, and dressing it as a ranking manufactures the endorsement this module
+ * deliberately withholds from it everywhere else.
+ *
+ * The address road compares with a plain equality, which is correct here for a reason that
+ * does NOT hold next door in `loadAddressOwner`: `profiles.email` mirrors `auth.users.email`,
+ * which GoTrue stores lowercased, and its uniqueness is a plain unique on the column, so the
+ * read and the constraint already agree.
  */
 export async function searchMembers(
   supabase: Client,
@@ -434,11 +573,13 @@ export async function searchMembers(
   const selection =
     'id, display_name, email, branches!profiles_branch_id_fkey(name)';
 
+  // One more than the cap, so a full page can be told apart from a page that happens to be
+  // exactly full. The extra row is dropped before it reaches anybody.
   const rows = supabase
     .from('profiles')
     .select(selection)
     .is('deleted_at', null)
-    .limit(SEARCH_LIMIT);
+    .limit(SEARCH_LIMIT + 1);
 
   const { data, error } = await (
     isAddress
@@ -460,7 +601,8 @@ export async function searchMembers(
 
   return {
     status: 'ok',
-    members: data.map((row) => ({
+    truncated: data.length > SEARCH_LIMIT,
+    members: data.slice(0, SEARCH_LIMIT).map((row) => ({
       id: row.id,
       displayName: row.display_name,
       email: row.email,
@@ -491,6 +633,16 @@ export type LinkFailure =
   | 'already_linked'
   /** It was judged un-matchable; it has to be brought back first. */
   | 'set_aside'
+  /**
+   * The member already holds a live registration for that course.
+   *
+   * The double-booking wall, and the state this whole feature exists downstream of: somebody
+   * who could not be matched automatically is somebody who could pay twice. Until
+   * `20260831150000` it had no words at all and arrived as a bare unique violation, which
+   * this layer reported as `failed` = "That did not go through. Try again." Retrying could
+   * never work.
+   */
+  | 'already_enrolled'
   /** The payment's address is already proven for a DIFFERENT member. */
   | 'address_taken'
   /** The payment's address is another account's sign-in address. */
@@ -615,8 +767,18 @@ function mapLinkError(message: string): LinkFailure {
   if (says('no such member')) return 'no_member';
   if (says('already linked')) return 'already_linked';
   if (says('was set aside')) return 'set_aside';
+  if (says('already has a place on that course')) return 'already_enrolled';
   if (says('already proven by another member')) return 'address_taken';
   if (says("another account's sign-in address")) return 'address_is_signin';
+
+  // The same refusal, arriving from the index instead of from the routine. Two admins
+  // attaching two payments to one member and one course at the same moment both pass the
+  // routine's check, because it locks the registration being linked and not the other one, so
+  // the second is stopped by `course_registrations_active_enrolment_uniq` itself. Matching
+  // the constraint NAME rather than Postgres's sentence around it: the name is ours, it is
+  // asserted in pgTAP `039`, and it does not move when a server is upgraded.
+  if (says('course_registrations_active_enrolment_uniq'))
+    return 'already_enrolled';
 
   // An unmapped refusal is still a refusal: falling through to a generic failure is what
   // keeps a future migration's new rule from reading as success.

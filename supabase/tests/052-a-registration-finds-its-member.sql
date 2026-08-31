@@ -28,7 +28,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(48);
+select plan(53);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 \set berlin  '00000000-0000-4000-8000-000000000002'
@@ -48,6 +48,8 @@ select plan(48);
 \set regSame     'c0520000-0000-4000-8000-000000000005'
 \set regMismatch 'c0520000-0000-4000-8000-000000000006'
 \set regSignin   'c0520000-0000-4000-8000-000000000007'
+\set regEnrolA   'c0520000-0000-4000-8000-000000000008'
+\set regEnrolB   'c0520000-0000-4000-8000-000000000009'
 
 -- The insert guard refuses a registration while auth.uid() is set: these rows belong to the
 -- website's service key in life, and to the trusted path here.
@@ -75,6 +77,11 @@ insert into public.profiles (id, email, display_name, branch_id, role, onboarded
 -- Course strings deliberately match no slug, so course_id stays null and the double-booking
 -- partial unique on (course_id, profile_id) cannot interfere with linking several fixtures to
 -- one member. This file is about identity, not enrolment.
+--
+-- THAT EXEMPTION IS ALSO HOW THE DOUBLE-BOOKING REFUSAL WENT UNTESTED for a whole work item,
+-- so the last two rows break it on purpose: `grace-reset` is a seeded slug, they resolve to a
+-- real course_id, and section 4b drives the collision a real admin actually meets. Everything
+-- above them keeps the exemption, which is still right for the identity half.
 insert into public.course_registrations
   (id, course, format, full_name, email, city, country, branch, amount, currency)
 values
@@ -91,7 +98,11 @@ values
   (:'regMismatch', 't052-foxtrot', 'online', 'Someone Entirely Else', 'mismatch@test.local',
    'Berlin', 'DE', 'AGBC Lighthouse Berlin', 5000, 'eur'),
   (:'regSignin',   't052-golf', 'online', 'Grace Adeyemi',         't052-leader@test.local',
-   'Berlin', 'DE', 'AGBC Lighthouse Berlin', 5000, 'eur');
+   'Berlin', 'DE', 'AGBC Lighthouse Berlin', 5000, 'eur'),
+  (:'regEnrolA',   'grace-reset', 'online', 'Zebedee Nakamura',    'zeb-first@test.local',
+   'Emmen', 'NL', 'AGBC Emmen', 5000, 'eur'),
+  (:'regEnrolB',   'grace-reset', 'online', 'Zebedee Nakamura',    'zeb-second@test.local',
+   'Emmen', 'NL', 'AGBC Emmen', 5000, 'eur');
 
 -- regLinked starts life already attached, so the unlink paths have something to act on.
 update public.course_registrations
@@ -319,6 +330,50 @@ select throws_ok(
   format($$select public.unlink_registration(%L)$$, :'regAside'),
   '23514', 'this registration is not linked',
   'unlinking a row that was never linked is refused rather than silently doing nothing');
+
+-- --- 4b. the double-booking wall, in words (migration 20260831150000) ---------------------
+--
+-- THE ONE STATE THIS FILE'S OWN FIXTURES WERE BUILT TO AVOID. The note above the inserts says
+-- the course strings match no slug "so the double-booking partial unique cannot interfere",
+-- which was right for a file about identity and is exactly why the collision a real admin
+-- meets went untested until a review drove the screens by hand. `link_registration` ends in an
+-- UPDATE that sets profile_id, so a member who already holds a live registration for that
+-- course made it raise a bare 23505, which the dashboard could only report as "That did not
+-- go through. Try again." Retrying could never work, and the member in question is the one
+-- who paid twice, which is the whole premise of #164.
+--
+-- regEnrolA and regEnrolB therefore carry a REAL slug and are the only two fixtures in this
+-- file that resolve to a course. They go in with the others at the top, where the insert
+-- guard's cleared claims already are; only the acting happens here, on the ambient admin
+-- claims this section already runs under.
+select isnt(
+  (select course_id from public.course_registrations where id = :'regEnrolA'),
+  null,
+  'the fixture resolved to a real course, so the double-booking index can actually bite');
+
+select lives_ok(
+  format($$select public.link_registration(%L, %L)$$, :'regEnrolA', :'other'),
+  'the first payment for a course attaches to the member normally');
+
+select throws_ok(
+  format($$select public.link_registration(%L, %L)$$, :'regEnrolB', :'other'),
+  '23514', 'this member already has a place on that course',
+  'a SECOND payment for the same course refuses in words, not as a bare unique violation');
+
+select ok(
+  (select profile_id is null and linked_at is null
+     from public.course_registrations where id = :'regEnrolB'),
+  'and the refused row is untouched: no half-link, no linked_at');
+
+-- THE REFUSAL MUST NOT BE WIDER THAN THE INDEX IT SPEAKS FOR. A cancelled registration is
+-- outside `course_registrations_active_enrolment_uniq` (partial on status <> 'cancelled'), so
+-- the slot is genuinely free and the second payment must link. Without this the routine could
+-- quietly refuse links the database would have allowed, and nothing would say so.
+update public.course_registrations set status = 'cancelled' where id = :'regEnrolA';
+
+select lives_ok(
+  format($$select public.link_registration(%L, %L)$$, :'regEnrolB', :'other'),
+  'a cancelled registration frees the slot, exactly as the index reads it');
 
 -- --- 5. the collision this feature is most dangerous without -----------------------------
 --

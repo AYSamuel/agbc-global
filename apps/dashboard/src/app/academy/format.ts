@@ -22,17 +22,25 @@ export function onDate(isoTimestamp: string, now: number = Date.now()): string {
 }
 
 /**
- * The website's `format` column, in words.
+ * The website's `format` column, shown as it was written.
  *
- * A website value rather than one of ours, so it is mapped rather than trusted: `02` names
- * the column as the site's and the contract forbids us constraining it, which means a value
- * we have never seen is a real possibility and must render as itself instead of as blank.
+ * THERE IS NOTHING TO MAP, and the map that used to be here was built against the wrong
+ * vocabulary. `intensive` and `part_time` are the keys of `courses.formats`, our catalogue's
+ * own duration object, which the app reads (`apps/mobile/src/features/academy/queries.ts`).
+ * They are not what the website writes here. `Desktop/agbc`'s RegistrationForm.astro posts
+ * `value={`Intensive (${intensive})`}`, described there as "a stable, locale-independent
+ * label (posted to the server + shown on the Stripe receipt)", so a real row holds
+ * "Intensive (2 weeks)" or "Part-time (6 weeks)" and the duration varies per course. `online`
+ * was never an option on that form at all.
+ *
+ * So every production row fell through the map to the raw value, which reads perfectly well:
+ * the mapping was dead in life while its comment framed the raw value as the exception. Kept
+ * as a function rather than inlined so the reasoning has somewhere to live, because the
+ * instinct on seeing a bare website string on screen is to add exactly that map back.
+ *
+ * `02`'s contract forbids us constraining this column, so a value we have never seen is a
+ * real possibility and must render as itself. That is now the only behaviour.
  */
 export function formatName(raw: string): string {
-  const known: Record<string, string> = {
-    intensive: 'Intensive',
-    part_time: 'Part time',
-    online: 'Online',
-  };
-  return known[raw] ?? raw;
+  return raw;
 }

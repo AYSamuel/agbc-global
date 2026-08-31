@@ -36,6 +36,22 @@ function text(form: FormData, key: string): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+/**
+ * The view to return to, and only ever one of the three.
+ *
+ * It arrives from a hidden field, so it was going into `?view=${view}` verbatim. A value of
+ * `waiting&outcome=linked&x` produced `?view=waiting&outcome=linked&x&outcome=gone`, and the
+ * page reads the FIRST occurrence of a repeated parameter, so a failed act announced
+ * "Attached. They are told within a minute or two." Nobody could do that to anybody else
+ * (Next compares Origin against Host on every Server Action, and the field is our own), which
+ * makes it a correctness bug rather than a hole; the fix is the same either way, and this is
+ * the "validate at every boundary" line in ~/.claude/standards/backend.md.
+ */
+function view(form: FormData): 'waiting' | 'aside' | 'linked' {
+  const value = text(form, 'view');
+  return value === 'aside' || value === 'linked' ? value : 'waiting';
+}
+
 /** Every action asks the same question first. */
 async function admin() {
   const supabase = await createServerComponentClient();
@@ -46,7 +62,7 @@ async function admin() {
 export async function setAsideAction(formData: FormData): Promise<void> {
   const registrationId = text(formData, 'registrationId');
   const aside = text(formData, 'aside') === 'true';
-  const view = text(formData, 'view');
+  const from = view(formData);
 
   const { supabase, ok } = await admin();
   if (!ok) redirect('/academy?outcome=refused');
@@ -56,7 +72,7 @@ export async function setAsideAction(formData: FormData): Promise<void> {
     aside,
   });
 
-  if (!result.ok) redirect(`/academy?view=${view}&outcome=${result.reason}`);
+  if (!result.ok) redirect(`/academy?view=${from}&outcome=${result.reason}`);
 
   // Back to the view they were working, with the undo beside the result: setting aside is a
   // judgement about a stranger made from four fields, and the undo is the whole mitigation
@@ -82,7 +98,8 @@ export async function linkAction(formData: FormData): Promise<void> {
   // The two address collisions go BACK to the link screen, which renders the refusal in
   // full: they are the mis-link this tool is most dangerous for, and "that did not go
   // through" at the top of a queue is not enough to act on. Everything else is a state the
-  // queue itself can explain.
+  // queue itself can explain, INCLUDING `already_enrolled`: what it asks for (check the
+  // refund, then set this row aside) is done from the queue, not from the link screen.
   if (
     result.reason === 'address_taken' ||
     result.reason === 'address_is_signin'

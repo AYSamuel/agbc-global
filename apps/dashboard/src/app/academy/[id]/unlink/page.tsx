@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
+import { FocusOnArrival } from '@/components/ui/FocusOnArrival';
 import { Notice } from '@/components/ui/Notice';
 import { Pill } from '@/components/ui/Pill';
 import { SubmitButton } from '@/components/ui/SubmitButton';
@@ -119,14 +120,20 @@ export default async function UnlinkRegistrationPage({
       <form action={unlinkAction} className="mt-4 max-w-[520px]">
         <input type="hidden" name="registrationId" value={registration.id} />
 
+        {/* Focused on arrival: this is a FAILED SUBMIT rendered by a redirect, so the
+            button that was focused is gone and, without this, a keyboard user lands on
+            `<body>` eleven tab stops above the field they have to correct
+            (~/.claude/standards/frontend.md: move focus to the error summary). */}
         {mismatch ? (
-          <Notice
-            tone="bad"
-            title={copy.academy.unlink.nameMismatch}
-            live="assertive"
-          >
-            {copy.academy.unlink.nameMismatchBody(member.displayName)}
-          </Notice>
+          <FocusOnArrival signal="name_mismatch">
+            <Notice
+              tone="bad"
+              title={copy.academy.unlink.nameMismatch}
+              live="assertive"
+            >
+              {copy.academy.unlink.nameMismatchBody(member.displayName)}
+            </Notice>
+          </FocusOnArrival>
         ) : null}
 
         <div className="mt-4">
