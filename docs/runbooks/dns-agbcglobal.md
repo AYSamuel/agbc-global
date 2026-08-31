@@ -24,11 +24,31 @@ and redirects, and a migration should change routing behaviour by zero.
 | `@` | TXT | `v=spf1 include:_spf.mx.cloudflare.net ~all` | | **Exactly one apex SPF.** Two would be a permerror |
 | `cf2024-1._domainkey` | TXT | Cloudflare DKIM | | Email Routing |
 | `www` | CNAME | `96dd1a05caa4576c.vercel-dns-017.com` | | Vercel |
+| `app-dashboard` | A | `76.76.21.21` | | **Vercel, the LEADER DASHBOARD** (added 2026-08-31). The value is what `vercel domains inspect` asked for, not a guess. DNS only, like everything else here: proxying it would break the certificate |
 | `send` | MX | `feedback-smtp.eu-west-1.amazonses.com` | 10 | **Resend** custom MAIL FROM. Deleted by accident and restored, see below |
 | `send` | TXT | `v=spf1 include:amazonses.com ~all` | | **Resend**, sending SPF |
 | `_dmarc` | TXT | `v=DMARC1; p=none; rua=mailto:dmarc@agbcglobal.com; fo=1` | | Still monitoring, but **now collecting reports**; see below |
 | `resend._domainkey` | TXT | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXnNIOhLcha1C5QMW6sxWxNXD7B6BZnzZzzdHfklO1JXs/qETmqHkoiu3z6z5227xGRslqwvuSfIdsnxNuOCpcAjxY9LojVtszrv0jymwpkGz9tIwTGFVGwmNfl8mem6L4W0GDsLrJLH8ObQl60PW3lRFM/FasUN+thmMpI69FNwIDAQAB` | | **Resend**, DKIM. Byte-compared old vs new before cutover |
-| `tache` | A | `167.233.51.98` | | Known to Ayo, retained deliberately. **Cloudflare's scan did not find it**; it was carried across from the captured inventory |
+| `tache` | A | `167.233.51.98` | | **NOT OURS. A separate platform run by somebody else on this domain** (identified by Ayo 2026-08-31, resolving the open question below). Nothing in this repo points at it and nothing here should change it. Retained deliberately: **Cloudflare's scan did not find it**, so it survives only because it was carried across from the captured inventory. Treat it as live third-party service on every future zone change |
+
+## The dashboard record, 2026-08-31
+
+`app-dashboard.agbcglobal.com` was added when the leader dashboard was first deployed
+(Vercel project `agbc-dashboard`). One record, one zone change, and the procedure this file
+exists to demand was followed rather than assumed:
+
+1. **The whole zone was captured first**, all 12 records, before anything was touched. That
+   is precisely the "copy to compare against" whose absence caused the 2026-08-18 incident
+   this runbook was written for.
+2. **One record added.** The count went 12 to 13 and every one of the original twelve was
+   checked present afterwards, by name and value.
+3. **DNS only, and it nearly was not.** Cloudflare's Add record dialog defaults Proxy status
+   to **Proxied**, and the first click at the toggle missed it. It was caught because the
+   dialog's own summary line still read "and has its traffic proxied through Cloudflare", and
+   nothing was saved until that clause disappeared. Had it saved proxied, the certificate
+   would have failed exactly as this file's header warns.
+4. Verified end to end: resolves to `76.76.21.21` at `1.1.1.1`, serves HTTPS 200, and a
+   signed-out request to `/moderation` is turned away at `/sign-in`.
 
 **Inbound mail is Cloudflare Email Routing**, not Namecheap forwarding. Status Enabled, three
 rules Active: `auth@` → `aysamuel007@gmail.com` · `hello@` → `oami.gospel@gmail.com` ·
@@ -57,7 +77,7 @@ refuses to configure while non-Cloudflare MX exist, and two apex SPF records are
 | `send` | MX | `feedback-smtp.eu-west-1.amazonses.com` | 10 | **Resend**, custom MAIL FROM. **DELETED 2026-08-18, see below** |
 | `_dmarc` | TXT | `v=DMARC1; p=none;` | | monitoring only, no `rua` |
 | `resend._domainkey` | TXT | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXnNIOhLcha1C5QMW6sxWxNXD7B6BZnzZzzdHfklO1JXs/qETmqHkoiu3z6z5227xGRslqwvuSfIdsnxNuOCpcAjxY9LojVtszrv0jymwpkGz9tIwTGFVGwmNfl8mem6L4W0GDsLrJLH8ObQl60PW3lRFM/FasUN+thmMpI69FNwIDAQAB` | | **Resend**, DKIM |
-| `tache` | A | `167.233.51.98` | | **UNKNOWN.** Not Vercel, not Resend. Identify before any migration drops it |
+| `tache` | A | `167.233.51.98` | | ~~**UNKNOWN.** Not Vercel, not Resend. Identify before any migration drops it~~ **RESOLVED 2026-08-31: a separate platform someone else runs on this domain.** Left in place above; see the current table |
 
 Email forwarders configured at Namecheap (not DNS records):
 `hello@` → `oami.gospel@gmail.com` · `auth@` → `aysamuel007@gmail.com`
