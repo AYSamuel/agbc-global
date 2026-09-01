@@ -48,6 +48,7 @@ select plan(50);
 \set anon_p   '97000000-0000-4000-8000-0000000000b2'
 \set other_p  '97000000-0000-4000-8000-0000000000b3'
 \set bcast    '97000000-0000-4000-8000-0000000000c1'
+\set sermon   '97000000-0000-4000-8000-0000000000d1'
 
 -- ===========================================================================
 -- 1. THE CATALOGUE: every road to a member is a decision somebody took.
@@ -193,10 +194,17 @@ values ('97000000-0000-4000-8000-0000000000a3', :'leaver', 'not right', 'open', 
 -- The personal tables, one row each where a row is cheap to make.
 insert into public.streaks (profile_id, current_weeks, longest_weeks)
   values (:'leaver', 3, 5);
-insert into public.saved_items (profile_id, sermon_id)
-  select :'leaver', s.id from public.sermons s limit 1;
+-- A sermon of this file's OWN, never `from public.sermons limit 1`. Sermons are SYNCED from
+-- YouTube and never seeded, so on any database where the sync has not run (CI, which applies
+-- migrations and seeds and nothing else) that select returns no rows, the insert silently
+-- inserts nothing, and the road it was meant to put a row on is left empty. `saved_items` and
+-- `sermon_notes` did exactly that from slice 1 until §2b started asking, and the sweep below
+-- reported them clean in CI for the same reason an empty table is clean.
+insert into public.sermons (id, title) values (:'sermon', 'A sermon for the erasure test');
+
+insert into public.saved_items (profile_id, sermon_id) values (:'leaver', :'sermon');
 insert into public.sermon_notes (profile_id, sermon_id, body)
-  select :'leaver', s.id, 'my notes' from public.sermons s limit 1;
+  values (:'leaver', :'sermon', 'my notes');
 insert into public.reading_state (profile_id, book_id, location)
   select :'leaver', b.id, '42' from public.books b limit 1;
 insert into public.entitlements (profile_id, book_id, source, source_ref)
@@ -269,7 +277,7 @@ insert into public.attendance (profile_id, branch_id, service_date)
   values (:'leaver', :'glasgow', current_date);
 insert into public.milestones (profile_id, kind) values (:'leaver', 'first_month');
 insert into public.playback_positions (profile_id, sermon_id, position_sec)
-  select :'leaver', s.id, 120 from public.sermons s limit 1;
+  values (:'leaver', :'sermon', 120);
 insert into public.rsvps (event_id, profile_id, status)
   select e.id, :'leaver', 'going' from public.events e limit 1;
 insert into public.course_interest (course_id, profile_id)
