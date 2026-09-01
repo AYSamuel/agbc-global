@@ -33,12 +33,20 @@ interface AuthState {
   /** The session's email (AUTH-2 masking, profile screens). */
   email: string | null;
   profile: ProfileSnapshot | null;
-  /** True when a session ended WITHOUT the user asking (refresh failure):
-   * the root layout shows the non-blocking signed-out toast (docs/spec/03). */
-  signedOutBanner: boolean;
+  /**
+   * Why a session ended WITHOUT the user asking, or null when none did. The root layout
+   * shows a non-blocking toast for it (docs/spec/03).
+   *
+   * `signed-out` is the refresh failure. `deleted` is the account being erased somewhere
+   * ELSE, which `03` gives its own words because they are a different fact: not "sign in
+   * again", but "there is nothing to sign in to".
+   */
+  endedSession: 'signed-out' | 'deleted' | null;
   hydrated: boolean;
   setHydrated: () => void;
-  clearSignedOutBanner: () => void;
+  clearEndedSession: () => void;
+  /** The account was erased elsewhere: same transition as a refresh failure, other words. */
+  markAccountDeleted: () => void;
   /** Launch + auth-event reconciliation; safe to call repeatedly. */
   syncFromSession: () => Promise<void>;
   /** AUTH-2 success: decides AUTH-3 vs AUTH-4. */
@@ -55,12 +63,23 @@ interface ProfileRow {
   language: string;
   role: string;
   onboarded_at: string | null;
+  /**
+   * Set when this account has been erased, from this device or another one (W4.5).
+   *
+   * IT IS READ RATHER THAN INFERRED. `03` describes noticing when "a write is rejected for
+   * a deleted profile", and a rejection is a 42501 that half a dozen other policies also
+   * produce, so acting on one would mean telling somebody their account is gone on the
+   * strength of a guess. The erased member can still SELECT their own row (the erasure
+   * strips it rather than removing it, because the audit trail points at it), so the app
+   * can ask the question outright and get an answer that cannot mean anything else.
+   */
+  deleted_at: string | null;
 }
 
 async function fetchProfile(userId: string): Promise<ProfileRow | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('display_name, branch_id, language, role, onboarded_at')
+    .select('display_name, branch_id, language, role, onboarded_at, deleted_at')
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;
@@ -89,10 +108,26 @@ export const useAuthStore = create<AuthState>()(
       status: 'loading',
       email: null,
       profile: null,
-      signedOutBanner: false,
+      endedSession: null,
       hydrated: false,
       setHydrated: () => set({ hydrated: true }),
-      clearSignedOutBanner: () => set({ signedOutBanner: false }),
+      clearEndedSession: () => set({ endedSession: null }),
+
+      // The same transition a refresh failure takes (guest in place, personal caches gone,
+      // any pending gate action dropped), with the other banner. Idempotent: a second
+      // caller finding the store already guest changes nothing.
+      markAccountDeleted: () => {
+        if (get().status === 'guest' || get().status === 'loading') return;
+        set({
+          status: 'guest',
+          email: null,
+          profile: null,
+          endedSession: 'deleted',
+        });
+        useGateStore.getState().clearPending();
+        forgetWhoeverThatWas();
+        void supabase.auth.signOut().catch(() => undefined);
+      },
 
       syncFromSession: async () => {
         const { data } = await supabase.auth.getSession();
@@ -108,6 +143,15 @@ export const useAuthStore = create<AuthState>()(
           set({ status: 'member', email });
           fetchProfile(session.user.id)
             .then((row) => {
+              // THE SECOND DEVICE NOTICES HERE (docs/spec/03, W4.5). A phone whose owner
+              // deleted the account from somewhere else still holds an access token good
+              // for up to an hour, so it keeps rendering a member shell over data that is
+              // gone. The refresh failure catches it eventually; this catches it on the
+              // next look, which is what somebody staring at the screen experiences.
+              if (row?.deleted_at != null) {
+                get().markAccountDeleted();
+                return;
+              }
               if (row?.onboarded_at) set({ profile: toSnapshot(row) });
             })
             .catch(() => undefined); // stale snapshot is acceptable offline
@@ -115,6 +159,10 @@ export const useAuthStore = create<AuthState>()(
         }
         try {
           const row = await fetchProfile(session.user.id);
+          if (row?.deleted_at != null) {
+            get().markAccountDeleted();
+            return;
+          }
           if (row?.onboarded_at) {
             set({ status: 'member', email, profile: toSnapshot(row) });
           } else {
@@ -253,7 +301,7 @@ supabase.auth.onAuthStateChange((event, session) => {
       status: 'guest',
       email: null,
       profile: null,
-      signedOutBanner: !userInitiatedSignOut,
+      endedSession: userInitiatedSignOut ? null : 'signed-out',
     });
     // A session ending in any way orphans a pending gate action (W2.2).
     useGateStore.getState().clearPending();

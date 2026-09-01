@@ -143,7 +143,7 @@ beforeEach(() => {
     status: 'guest',
     email: null,
     profile: null,
-    signedOutBanner: false,
+    endedSession: null,
   });
   useBranchStore.setState({
     branch: {

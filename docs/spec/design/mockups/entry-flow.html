@@ -829,7 +829,11 @@
   .radiorow .rt{font-size:14px;font-weight:600;color:var(--text)}
   .radiorow .rd{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
   .gatecfm{margin:14px 16px 0}
-  .gatecfm .gl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block}
+  /* padding-left 4 so this label lines up with `.mlabel`, which sits at 20 while
+     `.gatecfm` sits at 16 with the cards. Corrected 2026-09-01 (W4.5): on the device
+     the DELETE screen's three labels did not line up with each other, and this was
+     why. */
+  .gatecfm .gl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-left:4px;display:block}
   .confirminp{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.1em;color:var(--muted)}
   .btn.danger{background:var(--red);color:#fff}
   .btn.danger.dis{background:rgba(224,52,44,.4)}
