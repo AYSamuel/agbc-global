@@ -25,6 +25,7 @@ import {
   SegmentedControl,
   ToggleList,
   ToggleRow,
+  TrashIcon,
   useToast,
 } from '@/components/ui';
 import { useBlockedMembers } from '@/features/family/moderation';
@@ -203,6 +204,19 @@ export default function Settings() {
               void WebBrowser.openBrowserAsync(PRIVACY_URL);
             }}
           />
+          {/* The frame's `.mrow.danger`, and members only: a guest has no account to delete,
+              while the Privacy row above it is a link anybody may follow. `MenuRow` already
+              carried the `danger` tone before anything used it (W4.5). */}
+          {isMember ? (
+            <MenuRow
+              icon={TrashIcon}
+              label={t('settings:deleteRow')}
+              danger
+              onPress={() => {
+                router.push('/settings/delete');
+              }}
+            />
+          ) : null}
         </MenuCard>
 
         <MenuLabel label={t('settings:aboutSection')} />

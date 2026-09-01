@@ -41,8 +41,19 @@ export async function lookupAuthorNames(
     .from('profiles')
     .select('id, display_name')
     .in('id', unique);
+  // A DELETED ACCOUNT HAS NO NAME (W4.5): `display_name` went nullable so the erasure could
+  // strip it, and a deleted profile is stripped rather than removed, because the audit trail
+  // still points at its id. Such a row is dropped here rather than carried as a null, so it
+  // reaches every caller as a MISSING entry instead of an empty one. That matters because
+  // every caller already has to handle a missing name (an id can name a profile this query
+  // could not read), so the deleted case arrives on a path that is already correct and
+  // already worded, rather than as a second kind of nothing each of them has to learn.
   return new Map(
-    (data ?? []).map((profile) => [profile.id, profile.display_name]),
+    (data ?? []).flatMap((profile) =>
+      profile.display_name === null
+        ? []
+        : [[profile.id, profile.display_name] as const],
+    ),
   );
 }
 

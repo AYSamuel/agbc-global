@@ -75,7 +75,7 @@ beforeEach(() => {
     status: 'loading',
     email: null,
     profile: null,
-    signedOutBanner: false,
+    endedSession: null,
   });
 });
 
@@ -152,7 +152,7 @@ describe('the refresh-failure transition (docs/spec/03)', () => {
     fireAuthEvent('SIGNED_OUT');
     const state = useAuthStore.getState();
     expect(state.status).toBe('guest');
-    expect(state.signedOutBanner).toBe(true);
+    expect(state.endedSession).toBe('signed-out');
   });
 
   it('a user-initiated sign-out shows no banner', async () => {
@@ -162,13 +162,33 @@ describe('the refresh-failure transition (docs/spec/03)', () => {
     await signOutDone;
     const state = useAuthStore.getState();
     expect(state.status).toBe('guest');
-    expect(state.signedOutBanner).toBe(false);
+    expect(state.endedSession).toBeNull();
   });
 
   it('a SIGNED_OUT while already guest is a no-op', () => {
     useAuthStore.setState({ status: 'guest' });
     fireAuthEvent('SIGNED_OUT');
-    expect(useAuthStore.getState().signedOutBanner).toBe(false);
+    expect(useAuthStore.getState().endedSession).toBeNull();
+  });
+
+  // docs/spec/03's other transition, and the one that had never been built: the account was
+  // erased somewhere ELSE, and this device still holds an access token good for up to an
+  // hour. `03` gives it its own words because "please sign in again" would send somebody to
+  // a door that no longer opens.
+  it('an account erased elsewhere ends the session with its own words', () => {
+    useAuthStore.setState({ status: 'member', email: 'a@test.local' });
+    useAuthStore.getState().markAccountDeleted();
+    const state = useAuthStore.getState();
+    expect(state.status).toBe('guest');
+    expect(state.endedSession).toBe('deleted');
+    expect(state.profile).toBeNull();
+    expect(state.email).toBeNull();
+  });
+
+  it('and does nothing to a device that is already a guest', () => {
+    useAuthStore.setState({ status: 'guest' });
+    useAuthStore.getState().markAccountDeleted();
+    expect(useAuthStore.getState().endedSession).toBeNull();
   });
 
   it("takes the member's cached reads with them (W2.8)", () => {

@@ -65,7 +65,10 @@ interface EventRecord {
   image_path: string | null;
   status_changed_at: string | null;
   branch: { name: string } | null;
-  changedBy: { display_name: string } | null;
+  // Nullable since W4.5: a deleted account keeps its id in the audit trail and loses its
+  // name, so an event cancelled by somebody who has since left reads the same way as one
+  // cancelled by an admin this caller may not see. Line 92 already treats both as "no name".
+  changedBy: { display_name: string | null } | null;
 }
 
 const COLUMNS =

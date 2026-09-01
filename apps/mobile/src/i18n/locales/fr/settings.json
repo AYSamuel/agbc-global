@@ -112,5 +112,26 @@
     "emptyBody": "Si vous en avez besoin un jour, vous pouvez bloquer un membre depuis les actions de sa publication."
   },
   "signout": "Se déconnecter",
-  "signedOut": "Déconnecté. Vous pouvez continuer à explorer."
+  "signedOut": "Déconnecté. Vous pouvez continuer à explorer.",
+  "delete": {
+    "title": "Supprimer le compte",
+    "warning": "Cette action est irréversible. La suppression retire votre compte et vos données personnelles d'AGBC.",
+    "removedLabel": "Ce qui sera supprimé",
+    "removedProfile": "Votre profil, votre nom, votre photo et votre e-mail",
+    "removedRhythm": "Votre présence, votre série, vos jalons et votre progression de lecture",
+    "removedPurchases": "Vos inscriptions et vos accès à la bibliothèque",
+    "removedPending": "Tout témoignage ou toute prière en attente (ils ne seront pas publiés)",
+    "postsLabel": "Vos publications",
+    "removePosts": "Supprimer toutes mes publications",
+    "keepPosts": "Conserver mes publications approuvées",
+    "keepPostsBody": "Attribuées à « Un membre », comme une publication anonyme",
+    "kept": "Par sécurité, certains enregistrements (comme les signalements) sont conservés un temps limité, comme l'exige la loi. Votre nom n'y figure pas.",
+    "confirmWord": "SUPPRIMER",
+    "typeToConfirm": "Tapez {{word}} pour confirmer",
+    "understand": "Je comprends que cette action est définitive.",
+    "confirm": "Supprimer mon compte",
+    "failed": "Nous n'avons pas pu supprimer votre compte. Rien n'a changé. Vérifiez votre connexion et réessayez.",
+    "done": "Votre compte a été supprimé."
+  },
+  "deleteRow": "Supprimer le compte"
 }

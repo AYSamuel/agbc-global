@@ -112,5 +112,26 @@
     "emptyBody": "If you ever need to, you can block a member from the post actions menu on their post."
   },
   "signout": "Sign out",
-  "signedOut": "Signed out. You can keep browsing."
+  "signedOut": "Signed out. You can keep browsing.",
+  "delete": {
+    "title": "Delete account",
+    "warning": "This can't be undone. Deleting removes your account and your personal data from AGBC.",
+    "removedLabel": "What will be removed",
+    "removedProfile": "Your profile, name, photo and email",
+    "removedRhythm": "Your attendance, streak, milestones and reading progress",
+    "removedPurchases": "Your registrations and library entitlements",
+    "removedPending": "Any pending testimonies or prayers (they will not be published)",
+    "postsLabel": "Your posts",
+    "removePosts": "Remove all my posts",
+    "keepPosts": "Keep my approved posts",
+    "keepPostsBody": "Credited to \"A member\", like an anonymous post",
+    "kept": "For safety, some records (like reports) are kept for a limited time as required. We don't keep your name on them.",
+    "confirmWord": "DELETE",
+    "typeToConfirm": "Type {{word}} to confirm",
+    "understand": "I understand this is permanent.",
+    "confirm": "Delete my account",
+    "failed": "We couldn't delete your account. Nothing has changed. Check your connection and try again.",
+    "done": "Your account has been deleted."
+  },
+  "deleteRow": "Delete account"
 }

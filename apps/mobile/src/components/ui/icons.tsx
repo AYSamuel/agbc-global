@@ -75,6 +75,7 @@ import ShoppingBag from 'lucide-react-native/icons/shopping-bag';
 import SquarePen from 'lucide-react-native/icons/square-pen';
 import Star from 'lucide-react-native/icons/star';
 import Trash2 from 'lucide-react-native/icons/trash-2';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import User from 'lucide-react-native/icons/user';
 import Users from 'lucide-react-native/icons/users';
 import Video from 'lucide-react-native/icons/video';
@@ -186,6 +187,10 @@ export const GlobeIcon = houseStyle(Globe, 'GlobeIcon');
 export const LegalIcon = houseStyle(FileText, 'LegalIcon');
 export const EditIcon = houseStyle(SquarePen, 'EditIcon');
 export const TrashIcon = houseStyle(Trash2, 'TrashIcon');
+/** DELETE's `.warnband` glyph (W4.5). Lucide's `triangle-alert`, which is what the frame
+ * draws: this screen is the one place in the app where a warning is the point rather than
+ * the aftermath of something. */
+export const WarnIcon = houseStyle(TriangleAlert, 'WarnIcon');
 export const BookmarkIcon = houseStyle(Bookmark, 'BookmarkIcon');
 export const FlameIcon = houseStyle(Flame, 'FlameIcon');
 /** ANALYTICS-ASK's `.gi` tile (W2.10). Lucide's `chart-column-increasing`, the glyph the

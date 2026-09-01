@@ -112,5 +112,26 @@
     "emptyBody": "Als het ooit nodig is, kun je een lid blokkeren via de berichtacties bij hun bericht."
   },
   "signout": "Afmelden",
-  "signedOut": "Afgemeld. Je kunt gewoon verder kijken."
+  "signedOut": "Afgemeld. Je kunt gewoon verder kijken.",
+  "delete": {
+    "title": "Account verwijderen",
+    "warning": "Dit kan niet ongedaan worden gemaakt. Verwijderen wist je account en je persoonlijke gegevens bij AGBC.",
+    "removedLabel": "Wat wordt verwijderd",
+    "removedProfile": "Je profiel, naam, foto en e-mailadres",
+    "removedRhythm": "Je aanwezigheid, reeks, mijlpalen en leesvoortgang",
+    "removedPurchases": "Je inschrijvingen en bibliotheektoegang",
+    "removedPending": "Alle wachtende getuigenissen of gebeden (ze worden niet geplaatst)",
+    "postsLabel": "Je berichten",
+    "removePosts": "Al mijn berichten verwijderen",
+    "keepPosts": "Mijn goedgekeurde berichten behouden",
+    "keepPostsBody": "Op naam van \"Een lid\", net als een anoniem bericht",
+    "kept": "Voor de veiligheid worden sommige gegevens (zoals meldingen) een beperkte tijd bewaard, zoals vereist. Je naam staat er niet bij.",
+    "confirmWord": "VERWIJDEREN",
+    "typeToConfirm": "Typ {{word}} om te bevestigen",
+    "understand": "Ik begrijp dat dit definitief is.",
+    "confirm": "Mijn account verwijderen",
+    "failed": "We konden je account niet verwijderen. Er is niets veranderd. Controleer je verbinding en probeer het opnieuw.",
+    "done": "Je account is verwijderd."
+  },
+  "deleteRow": "Account verwijderen"
 }

@@ -112,5 +112,26 @@
     "emptyBody": "Falls du es einmal brauchst: Du kannst ein Mitglied über die Beitragsaktionen an seinem Beitrag blockieren."
   },
   "signout": "Abmelden",
-  "signedOut": "Abgemeldet. Du kannst weiter stöbern."
+  "signedOut": "Abgemeldet. Du kannst weiter stöbern.",
+  "delete": {
+    "title": "Konto löschen",
+    "warning": "Das lässt sich nicht rückgängig machen. Beim Löschen werden dein Konto und deine persönlichen Daten von AGBC entfernt.",
+    "removedLabel": "Was entfernt wird",
+    "removedProfile": "Dein Profil, Name, Foto und deine E-Mail-Adresse",
+    "removedRhythm": "Deine Anwesenheit, Serie, Meilensteine und dein Lesefortschritt",
+    "removedPurchases": "Deine Anmeldungen und Bibliotheks-Freischaltungen",
+    "removedPending": "Alle wartenden Zeugnisse oder Gebete (sie werden nicht veröffentlicht)",
+    "postsLabel": "Deine Beiträge",
+    "removePosts": "Alle meine Beiträge entfernen",
+    "keepPosts": "Meine freigegebenen Beiträge behalten",
+    "keepPostsBody": "Gekennzeichnet als „Ein Mitglied“, wie ein anonymer Beitrag",
+    "kept": "Aus Sicherheitsgründen werden manche Aufzeichnungen (etwa Meldungen) für begrenzte Zeit aufbewahrt, wie vorgeschrieben. Dein Name steht nicht darauf.",
+    "confirmWord": "LÖSCHEN",
+    "typeToConfirm": "Tippe {{word}} zur Bestätigung",
+    "understand": "Mir ist klar, dass das endgültig ist.",
+    "confirm": "Mein Konto löschen",
+    "failed": "Wir konnten dein Konto nicht löschen. Es hat sich nichts geändert. Prüfe deine Verbindung und versuche es erneut.",
+    "done": "Dein Konto wurde gelöscht."
+  },
+  "deleteRow": "Konto löschen"
 }

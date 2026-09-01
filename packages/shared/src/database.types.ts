@@ -34,6 +34,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_erasures: {
+        Row: {
+          attempts: number
+          auth_done_at: string | null
+          auth_user_id: string
+          completed_at: string | null
+          id: string
+          keep_posts: boolean
+          last_error: string | null
+          profile_id: string
+          requested_at: string
+          storage_done_at: string | null
+          storage_paths: Json
+        }
+        Insert: {
+          attempts?: number
+          auth_done_at?: string | null
+          auth_user_id: string
+          completed_at?: string | null
+          id?: string
+          keep_posts: boolean
+          last_error?: string | null
+          profile_id: string
+          requested_at?: string
+          storage_done_at?: string | null
+          storage_paths?: Json
+        }
+        Update: {
+          attempts?: number
+          auth_done_at?: string | null
+          auth_user_id?: string
+          completed_at?: string | null
+          id?: string
+          keep_posts?: boolean
+          last_error?: string | null
+          profile_id?: string
+          requested_at?: string
+          storage_done_at?: string | null
+          storage_paths?: Json
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           key: string
@@ -1535,7 +1577,7 @@ export type Database = {
       prayers: {
         Row: {
           answered_at: string | null
-          author_id: string
+          author_id: string | null
           body: string
           branch_id: string
           consent_version: string
@@ -1556,7 +1598,7 @@ export type Database = {
         }
         Insert: {
           answered_at?: string | null
-          author_id: string
+          author_id?: string | null
           body: string
           branch_id: string
           consent_version: string
@@ -1577,7 +1619,7 @@ export type Database = {
         }
         Update: {
           answered_at?: string | null
-          author_id?: string
+          author_id?: string | null
           body?: string
           branch_id?: string
           consent_version?: string
@@ -1705,8 +1747,8 @@ export type Database = {
           branch_id: string
           created_at: string
           deleted_at: string | null
-          display_name: string
-          email: string
+          display_name: string | null
+          email: string | null
           id: string
           language: string
           onboarded_at: string | null
@@ -1720,8 +1762,8 @@ export type Database = {
           branch_id: string
           created_at?: string
           deleted_at?: string | null
-          display_name?: string
-          email: string
+          display_name?: string | null
+          email?: string | null
           id: string
           language?: string
           onboarded_at?: string | null
@@ -1735,8 +1777,8 @@ export type Database = {
           branch_id?: string
           created_at?: string
           deleted_at?: string | null
-          display_name?: string
-          email?: string
+          display_name?: string | null
+          email?: string | null
           id?: string
           language?: string
           onboarded_at?: string | null
@@ -2110,7 +2152,7 @@ export type Database = {
       }
       testimonies: {
         Row: {
-          author_id: string
+          author_id: string | null
           body: string
           branch_id: string
           category_id: string | null
@@ -2131,7 +2173,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          author_id: string
+          author_id?: string | null
           body: string
           branch_id: string
           category_id?: string | null
@@ -2152,7 +2194,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          author_id?: string
+          author_id?: string | null
           body?: string
           branch_id?: string
           category_id?: string | null
@@ -2499,6 +2541,7 @@ export type Database = {
       advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       approve_broadcast: { Args: { broadcast: string }; Returns: undefined }
       archive_branch: { Args: { branch: string }; Returns: undefined }
+      assert_avatar_path_owned: { Args: { target: string }; Returns: undefined }
       assert_book_object_exists: {
         Args: { bucket: string; target: string }
         Returns: undefined
@@ -2625,6 +2668,7 @@ export type Database = {
         Args: { approve: boolean; note?: string; request: string }
         Returns: undefined
       }
+      delete_my_account: { Args: { p_keep_posts: boolean }; Returns: string }
       deliver_notifications: {
         Args: { entries: Json }
         Returns: {
@@ -2654,6 +2698,10 @@ export type Database = {
         }[]
       }
       email_belongs_to_caller: { Args: { target: string }; Returns: boolean }
+      erase_profile: {
+        Args: { p_keep_posts: boolean; p_profile_id: string }
+        Returns: string
+      }
       event_notice_key: {
         Args: {
           event_id: string
@@ -2702,6 +2750,7 @@ export type Database = {
         Args: { batch: Json; dry_run?: boolean; replace_existing?: boolean }
         Returns: Json
       }
+      in_account_erasure: { Args: never; Returns: boolean }
       in_audit_maintenance: { Args: never; Returns: boolean }
       in_bootstrap_promote: { Args: never; Returns: boolean }
       in_counter_write: { Args: never; Returns: boolean }
@@ -2756,6 +2805,10 @@ export type Database = {
         }[]
       }
       prayer_has_live_testimony: { Args: { target: string }; Returns: boolean }
+      prayer_held_for_safeguarding: {
+        Args: { p_prayer_id: string }
+        Returns: boolean
+      }
       prayer_is_published: { Args: { target: string }; Returns: boolean }
       prayer_reminder_batch: {
         Args: { at_time?: string }
@@ -2897,6 +2950,10 @@ export type Database = {
       }
       submit_broadcast: { Args: { broadcast: string }; Returns: undefined }
       sync_upsert_sermons: { Args: { rows: Json }; Returns: number }
+      testimony_held_for_safeguarding: {
+        Args: { p_testimony_id: string }
+        Returns: boolean
+      }
       testimony_is_published: { Args: { target: string }; Returns: boolean }
       try_iso_date: { Args: { raw: string }; Returns: string }
       unlink_registration: {

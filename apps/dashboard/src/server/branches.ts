@@ -602,7 +602,14 @@ export async function loadCloseImpact(
   );
 
   return {
-    leaders: leaders.data.map((row) => row.display_name),
+    // `display_name` went nullable in W4.5 so an erasure can strip it, and only a DELETED
+    // profile ever holds a null. The query above already filters those out
+    // (`.is('deleted_at', null)`), so this filter is belt and braces rather than a real
+    // case: what it buys is that the day somebody drops that clause, this list loses a name
+    // instead of rendering an empty one beside "reassign these leaders first".
+    leaders: leaders.data.flatMap((row) =>
+      row.display_name === null ? [] : [row.display_name],
+    ),
     membersToRehome: branch.memberCount,
     gatheringsCancelled: affected.length,
     peopleTold,

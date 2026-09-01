@@ -104,8 +104,12 @@ export default function ProfileScreen() {
           <Skeleton width={220} height={14} />
         </View>
       ) : profile.data ? (
+        /* `displayName` is empty once the account has been erased from somewhere else: the
+           web deletion path can erase it while this device still holds a session. W4.5
+           slice 3 turns that window into `03`'s "This account no longer exists" transition;
+           until then an empty name is the harmless way to be wrong. */
         <ProfileHead
-          name={profile.data.displayName}
+          name={profile.data.displayName ?? ''}
           line={t('settings:profile.since', {
             branch: homeBranchName,
             year: memberSince,
