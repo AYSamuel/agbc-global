@@ -1,4 +1,4 @@
--- W4.5 slice 1: the account erasure (docs/spec/16 §DELETE, `20`, `02`, `21` §4).
+-- W4.5 slices 1 and 5: the account erasure (docs/spec/16 §DELETE, `20`, `02`, `21` §4).
 --
 -- THE ASSERTION THIS FILE EXISTS FOR is §1's, and it is not about any single table. `16`'s
 -- reach table is a HAND-MAINTAINED LIST, and this item's failure mode is silent and legally
@@ -10,8 +10,17 @@
 --
 -- §2 is the behavioural half: a member with rows scattered across the reach is erased, and
 -- every table that should be empty of them is checked BY ENUMERATION rather than by a list
--- written twice. Its honest limit is that a table nobody seeded passes trivially, which is
--- exactly why §1 exists beside it.
+-- written twice.
+--
+-- THAT HALF HAD AN HONEST LIMIT AND SLICE 5 CLOSED IT. A table nobody seeded passed the
+-- enumeration trivially, and fourteen of the twenty-two roads into a member were unseeded, so
+-- the erasure was proven for eight of them and merely unrefuted for the rest. §2b now builds
+-- the catalogue ONCE and asserts the fixture reaches every road before the erasure runs; §5
+-- reads the same list afterwards. One list, so what is looked at and what is put there cannot
+-- drift apart. What enumeration still cannot see is a row that STAYED and had to change, so
+-- §5b and §5c assert those by hand: the prayer choices, the label that must never move, the
+-- destruction of what nobody can see, the photo set handed to the sweep, and the purchase
+-- pipeline's copies of the address.
 --
 -- The rest is the branches: the member's two choices, the safeguarding hold, the last admin,
 -- and the second-device hole `02` closes with `deleted_at`.
@@ -23,7 +32,7 @@
 -- segfaults. The two safeguarding predicates are asserted from the catalogue, never invoked.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(50);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 
@@ -34,6 +43,11 @@ select plan(37);
 
 \set kept_t   '97000000-0000-4000-8000-0000000000a1'
 \set held_t   '97000000-0000-4000-8000-0000000000a2'
+
+\set kept_p   '97000000-0000-4000-8000-0000000000b1'
+\set anon_p   '97000000-0000-4000-8000-0000000000b2'
+\set other_p  '97000000-0000-4000-8000-0000000000b3'
+\set bcast    '97000000-0000-4000-8000-0000000000c1'
 
 -- ===========================================================================
 -- 1. THE CATALOGUE: every road to a member is a decision somebody took.
@@ -201,6 +215,146 @@ select c.slug, 'intensive', 'Leaver Person', 'leaver@test.local', 'Glasgow', 'GB
        12000, 'gbp', 'paid', 'cs_erasure_test_1', :'leaver', now(), 'leader'
 from public.courses c limit 1;
 
+-- ---------------------------------------------------------------------------
+-- W4.5 slice 5: the rest of the reach, so §5 below is an observation and not a
+-- coincidence.
+-- ---------------------------------------------------------------------------
+-- §5's own comment names the hole it left: "a table nobody seeded passes trivially".
+-- Fourteen of the twenty-two roads into a member were unseeded when this file was written,
+-- so the erasure was PROVEN for eight of them and merely UNREFUTED for the rest, and the
+-- whole prayer half of `16`'s reach was never exercised at all. Everything below exists to
+-- make that difference, and §2b then refuses to let the hole reopen.
+
+-- A picture on three posts, because WHICH ones get collected is a decision, not a sweep.
+update public.profiles set avatar_url = 'avatars/leaver.jpg' where id = :'leaver';
+update public.testimonies set image_path = 'testimony-photos/kept.jpg' where id = :'kept_t';
+update public.testimonies set image_path = 'testimony-photos/held.jpg' where id = :'held_t';
+
+-- Content nobody can see: destroyed outright whatever the member chose, picture and all.
+insert into public.testimonies
+  (author_id, branch_id, body, status, image_path, consent_version, consented_at)
+values
+  (:'leaver', :'glasgow', 'Turned down.', 'rejected', 'testimony-photos/rejected.jpg',
+   'content-share-v1', now()),
+  (:'leaver', :'glasgow', 'Taken down.', 'removed', null, 'content-share-v1', now());
+
+-- Prayers. `16` treats them exactly like testimonies and nothing in this file touched one.
+insert into public.prayers
+  (id, author_id, branch_id, body, status, is_anonymous, consent_version, consented_at)
+values
+  (:'kept_p', :'leaver', :'glasgow', 'Pray for my mother.', 'approved', false,
+   'content-share-v1', now()),
+  (:'anon_p', :'leaver', :'glasgow', 'Something I could not sign.', 'approved', true,
+   'content-share-v1', now()),
+  (gen_random_uuid(), :'leaver', :'glasgow', 'Still waiting.', 'pending', false,
+   'content-share-v1', now()),
+  (gen_random_uuid(), :'leaver', :'glasgow', 'Turned down.', 'rejected', false,
+   'content-share-v1', now()),
+  (gen_random_uuid(), :'leaver', :'glasgow', 'Taken down.', 'removed', false,
+   'content-share-v1', now());
+
+-- Somebody else's prayer that the leaver committed to pray for.
+insert into public.prayers
+  (id, author_id, branch_id, body, status, consent_version, consented_at)
+values (:'other_p', :'stayer', :'glasgow', 'Pray for my exams.', 'approved',
+        'content-share-v1', now());
+insert into public.prayer_intercessions (prayer_id, profile_id) values (:'other_p', :'leaver');
+
+-- The other direction of a block: neither the one they made nor the one made against them
+-- has a subject any more (`16`), and only the first direction was ever seeded.
+insert into public.blocked_users (blocker_id, blocked_id) values (:'stayer', :'leaver');
+
+-- The rhythm, the queues, the devices: everything that is only ever theirs.
+insert into public.attendance (profile_id, branch_id, service_date)
+  values (:'leaver', :'glasgow', current_date);
+insert into public.milestones (profile_id, kind) values (:'leaver', 'first_month');
+insert into public.playback_positions (profile_id, sermon_id, position_sec)
+  select :'leaver', s.id, 120 from public.sermons s limit 1;
+insert into public.rsvps (event_id, profile_id, status)
+  select e.id, :'leaver', 'going' from public.events e limit 1;
+insert into public.course_interest (course_id, profile_id)
+  select c.id, :'leaver' from public.courses c limit 1;
+insert into public.course_handoff_tokens (profile_id, course_id, token_hash, expires_at)
+  select :'leaver', c.id, repeat('a', 64), now() + interval '1 hour'
+    from public.courses c limit 1;
+insert into public.notifications (profile_id, type, deep_link, title, body)
+  values (:'leaver', 'prayer', '/family', 'Someone prayed', 'A member prayed for you.');
+-- notification_prefs needs no insert: a row is created for every new profile by trigger,
+-- which is itself worth knowing, since it means that road was already seeded by accident.
+insert into public.devices (profile_id, expo_push_token, platform)
+  values (:'leaver', 'ExponentPushToken[erasure-test]', 'android');
+insert into public.branch_change_requests (profile_id, from_branch_id, to_branch_id)
+  select :'leaver', :'glasgow', b.id
+    from public.branches b where b.id <> :'glasgow'::uuid limit 1;
+insert into public.job_alerts (kind, recipient_id, subject)
+  values ('queue_new', :'leaver', 'a test alert');
+insert into public.broadcasts (id, author_id, scope, branch_id, title, body)
+  values (:'bcast', :'admin_b', 'branch', :'glasgow', 'A word this week', 'Body.');
+insert into public.broadcast_deliveries (broadcast_id, profile_id, channel)
+  values (:'bcast', :'leaver', 'push');
+
+-- The purchase pipeline's copies of the address, each with somebody else's row beside it, so
+-- "the leaver's row is gone" cannot be satisfied by a statement that emptied the table.
+insert into public.unmatched_purchases (buyer_email, source_ref, payload)
+values ('leaver@test.local', 'ph_erasure_1', '{"email":"leaver@test.local"}'::jsonb),
+       ('someone@test.local', 'ph_erasure_2', '{"email":"someone@test.local"}'::jsonb);
+insert into public.payhip_events (event_id, event_type, payload)
+values ('ev_erasure_1', 'paid',
+        '{"id":"ord_1","type":"paid","date":"2026-09-01","price":1200,"currency":"GBP","items":[],"email":"leaver@test.local","name":"Leaver Person"}'::jsonb),
+       ('ev_erasure_2', 'paid',
+        '{"id":"ord_2","type":"paid","date":"2026-09-01","price":1200,"currency":"GBP","items":[],"email":"someone@test.local","name":"Someone Else"}'::jsonb);
+
+-- ===========================================================================
+-- 2b. Every road into a member, and proof that this fixture walks all of them.
+-- ===========================================================================
+-- The catalogue is built ONCE here and read twice: by the guard immediately below, which
+-- says the FIXTURE reaches every road, and by §5 after the erasure, which says the ERASURE
+-- did too. Written out twice it would drift, and it would drift silently in the direction
+-- that matters, because a road nobody seeded is a road §5 cannot see.
+
+create temporary table erasure_reached (tbl text, col text) on commit drop;
+
+insert into erasure_reached (tbl, col)
+select c.conrelid::regclass::text, a.attname
+  from pg_constraint c
+  join pg_namespace ns on ns.oid = c.connamespace
+  cross join lateral unnest(c.conkey) k(attnum)
+  join pg_attribute a on a.attrelid = c.conrelid and a.attnum = k.attnum
+ where c.contype = 'f'
+   and c.confrelid = 'public.profiles'::regclass
+   and ns.nspname = 'public'
+   -- The nulled and the retained, named here and nowhere else in this file.
+   and (c.conrelid::regclass::text || '.' || a.attname) not in (
+     'prayers.author_id', 'testimonies.author_id', 'reports.reporter_id',
+     'course_registrations.profile_id',
+     'app_config.updated_by', 'branches.archived_by', 'broadcasts.approved_by',
+     'broadcasts.author_id', 'course_registrations.linked_by',
+     'course_registrations.set_aside_by', 'events.status_changed_by',
+     'giving_config.updated_by', 'prayers.moderated_by', 'testimonies.moderated_by',
+     'unmatched_purchases.resolved_profile_id');
+
+create temporary table erasure_unseeded (tbl text, col text) on commit drop;
+
+do $$
+declare
+  r record;
+  n integer;
+begin
+  for r in select * from erasure_reached loop
+    execute format('select count(*)::int from %s where %I = $1', r.tbl, r.col)
+      into n using '97000000-0000-4000-8000-00000000000a'::uuid;
+    if n = 0 then
+      insert into erasure_unseeded values (r.tbl, r.col);
+    end if;
+  end loop;
+end;
+$$;
+
+select is(
+  (select coalesce(array_agg(tbl || '.' || col order by tbl), '{}') from erasure_unseeded),
+  '{}'::text[],
+  'the fixture puts a row on EVERY road into this member, which is what turns the sweep below from "nothing was found" into "everything was looked for"');
+
 select is(
   (select glory_count from public.testimonies where id = '97000000-0000-4000-8000-0000000000a3'),
   1,
@@ -280,8 +434,9 @@ select is(
 -- ===========================================================================
 -- 5. Every reached table, by enumeration rather than by a list written twice.
 -- ===========================================================================
--- The honest limit: a table nobody seeded passes trivially. §1 is what covers those, by
--- refusing to go green when a new one appears at all.
+-- The list comes from §2b, which has already asserted that the fixture put a row on every one
+-- of these roads. Before slice 5 that was not true and this sweep was blind to the difference:
+-- a road nobody seeded reports nothing left behind for the same reason an empty table does.
 
 create temporary table erasure_leftovers (relname text, colname text, n integer) on commit drop;
 
@@ -290,24 +445,10 @@ declare
   r record;
   n integer;
 begin
-  for r in
-    select c.conrelid::regclass::text as tbl, a.attname as col
-      from pg_constraint c
-      join pg_namespace ns on ns.oid = c.connamespace
-      cross join lateral unnest(c.conkey) k(attnum)
-      join pg_attribute a on a.attrelid = c.conrelid and a.attnum = k.attnum
-     where c.contype = 'f'
-       and c.confrelid = 'public.profiles'::regclass
-       and ns.nspname = 'public'
-       -- The nulled and the retained, named here and nowhere else in this block.
-       and (c.conrelid::regclass::text || '.' || a.attname) not in (
-         'prayers.author_id', 'testimonies.author_id', 'reports.reporter_id',
-         'course_registrations.profile_id',
-         'app_config.updated_by', 'branches.archived_by', 'broadcasts.approved_by',
-         'broadcasts.author_id', 'course_registrations.linked_by',
-         'course_registrations.set_aside_by', 'events.status_changed_by',
-         'giving_config.updated_by', 'prayers.moderated_by', 'testimonies.moderated_by',
-         'unmatched_purchases.resolved_profile_id')
+  -- The same catalogue §2b built and proved the fixture walks. Reading it rather than
+  -- rebuilding it is the point: one list, so the roads looked at here are exactly the roads
+  -- something was put on.
+  for r in select * from erasure_reached
   loop
     execute format('select count(*)::int from %s where %I = $1', r.tbl, r.col)
       into n using '97000000-0000-4000-8000-00000000000a'::uuid;
@@ -341,6 +482,79 @@ select is(
   (select glory_count from public.testimonies where id = '97000000-0000-4000-8000-0000000000a3'),
   0,
   'the counters corrected themselves as the reactions went, by their own AFTER DELETE triggers: the nightly reconcile is the net under this, not the mechanism');
+
+-- ===========================================================================
+-- 5b. The prayer half of the reach, which enumeration cannot see.
+-- ===========================================================================
+-- §5 proves a row is GONE. It cannot prove a row that stayed was changed correctly, and
+-- `16` gives prayers three behaviours no count would catch: the member's choice, the
+-- destruction of what nobody can see, and the one label that must never move.
+
+select is(
+  (select author_id from public.prayers where id = :'kept_p'),
+  null,
+  'a kept prayer is anonymised exactly as a kept testimony is: the reach table names both and only one of them was ever exercised here');
+
+select is(
+  (select count(*)::int from public.prayers where id = :'kept_p' and deleted_at is null),
+  1,
+  'and it is still live, because "keep my posts" that quietly hid them would be the opposite of what the member chose');
+
+select is(
+  (select is_anonymous from public.prayers where id = :'anon_p'),
+  true,
+  'AN ANONYMOUS PRAYER STAYS ANONYMOUS (`16`): anonymity chosen at post time is never altered by later account state, and re-labelling one would tell the family that its author had left');
+
+select is(
+  (select count(*)::int from public.prayers
+    where author_id is null and status in ('pending', 'rejected', 'removed')),
+  0,
+  'the prayers nobody can see are destroyed rather than anonymised: consent is withdrawn and no member-facing surface will ever draw them again');
+
+select is(
+  (select count(*)::int from public.testimonies
+    where author_id is null and status in ('rejected', 'removed')),
+  0,
+  'and the same for testimonies, the branch this file had never taken');
+
+-- ===========================================================================
+-- 5c. The pictures, and the addresses the purchase pipeline kept.
+-- ===========================================================================
+
+select is(
+  (select storage_paths -> 'avatars' from public.account_erasures where profile_id = :'leaver'),
+  '["avatars/leaver.jpg"]'::jsonb,
+  'the avatar is written down for the sweep: it is a photograph of the member, and the transaction cannot reach the bytes');
+
+select is(
+  (select storage_paths -> 'testimony-photos' from public.account_erasures where profile_id = :'leaver'),
+  '["testimony-photos/rejected.jpg"]'::jsonb,
+  'and EXACTLY the pictures of the posts being destroyed: not the kept post''s, because a post without its picture is not the post they left standing, and not the held one''s, because the picture may be the evidence');
+
+select is(
+  (select count(*)::int from public.unmatched_purchases where source_ref = 'ph_erasure_1'),
+  0,
+  'an unmatched purchase in their name goes whole: once its owner is gone the row is an email address and nothing else');
+
+select is(
+  (select count(*)::int from public.unmatched_purchases where source_ref = 'ph_erasure_2'),
+  1,
+  'and somebody else''s is untouched, which is what makes the line above an erasure rather than a truncate');
+
+select is(
+  (select payload ->> 'email' from public.payhip_events where event_id = 'ev_erasure_1'),
+  null,
+  'the webhook body loses the buyer and keeps the sale: `16` retires the address, and the order id and price are the church''s record of a purchase');
+
+select isnt(
+  (select redacted_at from public.payhip_events where event_id = 'ev_erasure_1'),
+  null,
+  'and says when, so the retention job can tell a redacted body from one it has yet to reach');
+
+select is(
+  (select payload ->> 'email' from public.payhip_events where event_id = 'ev_erasure_2'),
+  'someone@test.local',
+  'while another buyer''s body is left alone: the redaction is keyed on this member''s address, not on the table');
 
 -- ===========================================================================
 -- 6. The ledger the sweep drains.
