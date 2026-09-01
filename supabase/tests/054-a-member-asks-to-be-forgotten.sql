@@ -23,7 +23,7 @@
 -- segfaults. The two safeguarding predicates are asserted from the catalogue, never invoked.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(35);
+select plan(37);
 
 \set glasgow '00000000-0000-4000-8000-000000000001'
 
@@ -130,6 +130,20 @@ insert into auth.users (id, email) values
   (:'stayer', 'stayer@test.local'),
   (:'admin_a', 'admin-a@test.local'),
   (:'admin_b', 'admin-b@test.local');
+
+-- A REAL identity row, the shape Supabase's own signup writes: provider 'email',
+-- provider_id = the user id, and the address inside identity_data. `identities.email` is a
+-- GENERATED column over that JSON and cannot be inserted.
+--
+-- Seeded auth users in this project have no identities at all, which is exactly how the bug
+-- this fixture exists for stayed invisible: the erasure nulled `auth.users.email` and the
+-- suite went green, while a real account's address survived in `identity_data` and the
+-- address stayed occupied. Driven against the live auth API before it was written down.
+insert into auth.identities (id, user_id, provider, provider_id, identity_data, last_sign_in_at)
+values (gen_random_uuid(), :'leaver', 'email', :'leaver',
+        jsonb_build_object('sub', :'leaver', 'email', 'leaver@test.local',
+                           'email_verified', true, 'phone_verified', false),
+        now());
 
 insert into public.profiles
   (id, email, display_name, branch_id, role, onboarded_at, age_confirmed_at)
@@ -333,9 +347,18 @@ select is(
 -- ===========================================================================
 
 select is(
+  (select count(*)::int from auth.identities where user_id = :'leaver'),
+  0,
+  'THE IDENTITY IS GONE, which is what actually frees the address. Nulling auth.users.email alone does NOT: driven against the real auth API, a signup for the same address is still refused 422 email_exists, because identities.email is a generated column over identity_data and the signup check reads it too');
+select is(
+  (select count(*)::int from auth.users where id = :'leaver' and email is null),
+  1,
+  'and the auth user is an inert shell rather than a deleted row: deleting it would cascade the profile away and take the audit trail with it');
+
+select is(
   (select count(*)::int from public.account_erasures where profile_id = :'leaver'),
   1,
-  'the out-of-database half is written down: storage objects and the auth user, for slice 2');
+  'the one half that cannot join the transaction is written down: the storage objects, for the sweep');
 select is(
   (select keep_posts from public.account_erasures where profile_id = :'leaver'),
   true,

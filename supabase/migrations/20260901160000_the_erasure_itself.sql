@@ -18,12 +18,11 @@
  * only, for the web deletion path (slice 4), where the OTP has proved the address but no
  * session exists.
  *
- * WHAT IS DELIBERATELY LEFT UNDONE, and recorded rather than attempted: storage objects and
- * the `auth.users` row need calls to services outside Postgres. They are written into
- * `account_erasures` and slice 2 finishes them, with a sweep behind it. The seam is chosen so
- * that the side which can be atomic IS atomic, and the side that cannot is idempotent and
- * retryable. The SESSIONS are the exception and are killed here: a live refresh token is a
- * working account, and that cannot wait for a sweep.
+ * WHAT IS DELIBERATELY LEFT UNDONE, and recorded rather than attempted: the storage OBJECTS,
+ * whose bytes live outside Postgres. Their paths are written into `account_erasures` and a
+ * sweep removes them. Everything else, the auth user's address and identities included, is
+ * done here, so the seam falls in the one place it has to: what can be atomic is atomic, and
+ * what cannot is idempotent and retryable.
  *
  * Rollback plan: drop the three routines. The data they would have erased is not recoverable
  * by a migration either way, which is the other reason every step below is tested before it
@@ -364,14 +363,33 @@ begin
    where p.id = p_profile_id;
 
   -- ---------------------------------------------------------------------
-  -- 12. The sessions, now
+  -- 12. The auth user: no address, no way in, and the row left standing
   -- ---------------------------------------------------------------------
-  -- The auth user's own row is slice 2's (it is the half that needs the admin API), but the
-  -- sessions cannot wait for a sweep: a live refresh token is a working account. Note the
-  -- cast: `auth.refresh_tokens.user_id` is a varchar in Supabase's schema while
-  -- `auth.sessions.user_id` is a uuid, and comparing the first to a uuid raises rather than
-  -- matching nothing, which is the better failure but still a failure.
+  -- The ROW survives, because `profiles.id` cascades from it and the profile must survive
+  -- (section 11). What goes is everything that makes it an account.
+  --
+  -- BOTH THE EMAIL AND THE IDENTITIES, and that is a measured fact rather than caution.
+  -- `16` says nulling `auth.users.email` "frees the unique constraint so the address can
+  -- register again", and it does not: driven against the real auth API on 2026-09-01, a
+  -- signup for the same address after nulling ONLY the email is still refused 422
+  -- `email_exists`, because `auth.identities.email` is a GENERATED column over
+  -- `identity_data ->> 'email'` and the signup check consults it too. Delete the identities
+  -- as well and the same signup returns 200. So this is what `16`'s promise actually
+  -- requires, and the identity row is also where the raw address would otherwise sit for
+  -- ever after an erasure, inside `identity_data`.
+  --
+  -- The SESSIONS go here rather than waiting for a sweep: a live refresh token is a working
+  -- account. Note the cast: `auth.refresh_tokens.user_id` is a varchar in Supabase's schema
+  -- while `auth.sessions.user_id` is a uuid, and comparing the first to a uuid raises rather
+  -- than matching nothing, which is the better failure but still a failure.
+  --
+  -- Writing `auth` directly is deliberate and is the reason this can be atomic at all.
+  -- Supabase's admin API is the alternative and cannot join this transaction, and its
+  -- `deleteUser` does the one thing that must not happen here: removing the row, which
+  -- cascades the profile away and takes the audit trail with it.
 
+  update auth.users u set email = null, phone = null where u.id = p_profile_id;
+  delete from auth.identities i where i.user_id = p_profile_id;
   delete from auth.refresh_tokens rt where rt.user_id = p_profile_id::text;
   delete from auth.sessions s where s.user_id = p_profile_id;
 

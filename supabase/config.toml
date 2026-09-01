@@ -573,6 +573,18 @@ verify_jwt = false
 # ran. Caller auth is `_shared/auth.ts`'s `isServiceRoleRequest`, which is the first line of
 # the handler. Without this block the default would be `verify_jwt = true` and the job would
 # be rejected on every tick, silently, which is the canonical failure `21` §5 names.
+# The last half of an account deletion (docs/spec/16, `21` §5; W4.5 slice 2). Cron-invoked
+# every 15 minutes, same shape as every other job here: service-key auth in code, so the
+# platform gate stays off.
+#
+# A function with no block here is a job that no-ops SILENTLY in both environments (404
+# locally, refused by the platform gate hosted, since ADR 0024's keys are not JWTs) while
+# cron.job_run_details records "succeeded". The W3.6 lesson, and it would be a quiet one
+# here: nobody notices unreachable files failing to be deleted.
+[functions.erasure-sweep]
+enabled = true
+verify_jwt = false
+
 [functions.activity-notices]
 enabled = true
 verify_jwt = false
