@@ -49,7 +49,8 @@ interface AuthState {
 }
 
 interface ProfileRow {
-  display_name: string;
+  // Null once the account has been erased (W4.5). See MyProfile in features/profile/queries.
+  display_name: string | null;
   branch_id: string;
   language: string;
   role: string;
@@ -68,7 +69,10 @@ async function fetchProfile(userId: string): Promise<ProfileRow | null> {
 
 function toSnapshot(row: ProfileRow): ProfileSnapshot {
   return {
-    displayName: row.display_name,
+    // The snapshot is a persisted ROUTING mirror, so it keeps a plain string rather than
+    // learning about erasure: an empty name routes exactly like any other and nothing draws
+    // it. The one caller that shows a name reads the live profile, not this (W4.5).
+    displayName: row.display_name ?? '',
     branchId: row.branch_id,
     language: row.language,
     role: row.role,

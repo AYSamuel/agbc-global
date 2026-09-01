@@ -152,9 +152,16 @@ export async function loadReportsInbox(
       isAnonymous: row.isAnonymous,
       // The promise the app makes reaches the dashboard: an anonymous request shows no
       // name here either, even though a moderator's RLS could read one.
-      authorName: row.isAnonymous
-        ? null
-        : (authorNames.get(row.authorId) ?? null),
+      //
+      // A null `authorId` is the third way there is no name (W4.5): the author deleted
+      // their account and chose to leave the post standing. It lands on the same `null` the
+      // other two produce, so the queue reads "no name" once rather than three times, and a
+      // reported post whose author has gone is still reviewable, which is the point of
+      // keeping it.
+      authorName:
+        row.isAnonymous || row.authorId === null
+          ? null
+          : (authorNames.get(row.authorId) ?? null),
       contentStatus: row.status,
     });
   }
@@ -252,7 +259,9 @@ interface ContentRow {
   language: string;
   updatedAt: string;
   isAnonymous: boolean;
-  authorId: string;
+  // Nullable since W4.5: the author deleted their account and chose to leave the post
+  // standing, so the row survives with nobody on it (docs/spec/16).
+  authorId: string | null;
   status: Database['public']['Enums']['content_status'];
 }
 

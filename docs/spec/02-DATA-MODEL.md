@@ -136,7 +136,7 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 | field | type | notes |
 |-------|------|-------|
 | id | uuid PK | = auth user id |
-| email | text unique | the sign-in identity (mirrors `auth.users.email`, kept in sync server-side; see `03`); **verified by definition** (sign-in IS the verification); backs Payhip entitlement matching (`14`); nulled on account deletion so the address can re-register (see `16`) |
+| email | text unique **null** | the sign-in identity (mirrors `auth.users.email`, kept in sync server-side; see `03`); **verified by definition** (sign-in IS the verification); backs Payhip entitlement matching (`14`); nulled on account deletion so the address can re-register (see `16`) |
 | display_name | text | |
 | avatar_url | text null | |
 | branch_id | uuid FK→branches | user's **home branch** (drives attendance timezone, reminders, branch notifications; see `07` branch-context model) |
@@ -145,7 +145,7 @@ The app user. Created on first successful OTP; a guest has **no** profile row.
 | theme_pref | enum | `system` \| `light` \| `dark` |
 | onboarded_at | timestamptz | set ONLY when `AUTH-3` completes; a session whose profile has `onboarded_at IS NULL` is routed to `AUTH-3` before anything else (abandoned half-created profiles resume there); content/reaction/RSVP/attendance INSERT policies additionally require `onboarded_at IS NOT NULL` |
 | age_confirmed_at | timestamptz | the 16+ self-declaration evidence (`20`), written in the same `AUTH-3` update |
-| deleted_at | timestamptz null | account deletion; `email` nulled at the same time (see `16`) |
+| deleted_at | timestamptz null | account deletion; `email` AND `display_name` AND `avatar_url` nulled at the same time (see `16`). **The row is KEPT, deliberately** (W4.5): `profiles.id` references `auth.users(id)` ON DELETE CASCADE, so removing the auth user would hard-delete this row and cascade into twenty tables, taking the retained audit trail with it (`broadcasts.author_id` is NOT NULL with NO ACTION and points here). The auth user is neutralised in place instead, its email nulled, which frees the address because `auth.users_email_partial_key` is a PARTIAL unique index |
 
 ### `devices`
 Push targets; a profile may have several. Rows are created on/after sign-in only: v1 push is member-oriented (see `15`), so guests never register tokens.
@@ -570,3 +570,5 @@ Delivery truth for AUTOMATED pushes (service reminders, activity, transactional)
 - **"My branch" scoping** uses `testimonies.branch_id` / `prayers.branch_id`. **"Everywhere"** removes the branch filter (approved rows only).
 - All user-generated content (`testimonies`, `prayers`) is **`pending` until a leader approves**: public reads filter `status='approved'`; authors can always see their own pending rows; the Write-path invariants make this unforgeable.
 - **Account deletion** (see `16` for the full deletion-reach table): profile soft-deleted AND `email` nulled (the unique constraint would otherwise block that address from registering again); pending content hard-cancelled (never approvable post-consent-withdrawal); reactions removed with counter reconciliation; Storage objects deleted in the same job.
+
+**BUILT W4.5 slice 1 (`20260901140000`/`150000`/`160000`), and four columns had to widen first.** `testimonies.author_id`, `prayers.author_id`, `profiles.email` and `profiles.display_name` were all NOT NULL, so `16`'s own instructions to null them were impossible. Nulling the author is what makes "keep my posts" an ANONYMISATION rather than a pseudonymisation: a kept post pointing at the stripped profile shell would still carry one stable identifier joining everything its author ever wrote. `testimony_feed` became a LEFT JOIN in the same change, or every kept post would have vanished from the feed instead. **Content under an OPEN safeguarding report is anonymised and soft-deleted rather than destroyed**, because `reports` cascades from both content tables and a hard delete would take the evidence with it, which contradicts this doc's own line above and `20`'s 24-month retention; the hold only bites where the row would otherwise have been destroyed. **`account_erasures`** (service-role only, FORCE RLS with zero policies) carries the half that cannot join the transaction: the storage objects and the auth user, drained by W4.5 slice 2.

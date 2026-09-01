@@ -16,7 +16,15 @@ import { useAuthStore } from '@/state/auth';
  */
 
 export interface MyProfile {
-  displayName: string;
+  /**
+   * Null once the account has been erased (W4.5): the erasure strips the name and keeps the
+   * row, because the audit trail still points at its id. Reachable in the app because the WEB
+   * deletion path can erase an account while this device still holds a session, so this read
+   * can land in the window before the next refresh fails. W4.5 slice 3 turns that into `03`'s
+   * "This account no longer exists" transition; until then it renders as an empty name rather
+   * than crashing the screen, which is the safer of the two ways to be wrong.
+   */
+  displayName: string | null;
   branchId: string;
   /** ISO timestamp of the profile row's creation: the "Member since" line. */
   joinedAt: string;
