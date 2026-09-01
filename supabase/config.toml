@@ -581,6 +581,13 @@ verify_jwt = false
 # locally, refused by the platform gate hosted, since ADR 0024's keys are not JWTs) while
 # cron.job_run_details records "succeeded". The W3.6 lesson, and it would be a quiet one
 # here: nobody notices unreachable files failing to be deleted.
+# Deleting an account without the app (docs/spec/16 §Web deletion path; W4.5 slice 4).
+# Called by the church website's API route with the project's secret key, never by a
+# browser; `isServiceRoleRequest` is the gate, same as every job here.
+[functions.web-delete-account]
+enabled = true
+verify_jwt = false
+
 [functions.erasure-sweep]
 enabled = true
 verify_jwt = false
