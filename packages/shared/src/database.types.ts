@@ -141,6 +141,60 @@ export type Database = {
           },
         ]
       }
+      books: {
+        Row: {
+          author: string
+          cover_path: string | null
+          created_at: string
+          description: string
+          file_path: string | null
+          format: Database["public"]["Enums"]["book_format"]
+          id: string
+          payhip_product_id: string
+          payhip_product_link: string | null
+          payhip_url: string
+          price_currency: string
+          price_minor: number
+          published_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          cover_path?: string | null
+          created_at?: string
+          description?: string
+          file_path?: string | null
+          format: Database["public"]["Enums"]["book_format"]
+          id?: string
+          payhip_product_id: string
+          payhip_product_link?: string | null
+          payhip_url: string
+          price_currency: string
+          price_minor: number
+          published_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          cover_path?: string | null
+          created_at?: string
+          description?: string
+          file_path?: string | null
+          format?: Database["public"]["Enums"]["book_format"]
+          id?: string
+          payhip_product_id?: string
+          payhip_product_link?: string | null
+          payhip_url?: string
+          price_currency?: string
+          price_minor?: number
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bootstrap_admins: {
         Row: {
           created_at: string
@@ -964,6 +1018,54 @@ export type Database = {
         }
         Relationships: []
       }
+      entitlements: {
+        Row: {
+          book_id: string
+          granted_at: string
+          id: string
+          profile_id: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          source: Database["public"]["Enums"]["entitlement_source"]
+          source_ref: string | null
+        }
+        Insert: {
+          book_id: string
+          granted_at?: string
+          id?: string
+          profile_id: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          source?: Database["public"]["Enums"]["entitlement_source"]
+          source_ref?: string | null
+        }
+        Update: {
+          book_id?: string
+          granted_at?: string
+          id?: string
+          profile_id?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          source?: Database["public"]["Enums"]["entitlement_source"]
+          source_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entitlements_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entitlements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           announced_location: string | null
@@ -1296,6 +1398,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payhip_events: {
+        Row: {
+          attempts: number
+          event_id: string
+          event_type: string
+          id: string
+          last_error: string | null
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          redacted_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          event_id: string
+          event_type: string
+          id?: string
+          last_error?: string | null
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          redacted_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          event_id?: string
+          event_type?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          redacted_at?: string | null
+        }
+        Relationships: []
       }
       playback_positions: {
         Row: {
@@ -1644,6 +1782,42 @@ export type Database = {
             columns: ["device_id"]
             isOneToOne: false
             referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_state: {
+        Row: {
+          book_id: string
+          location: string
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          location: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          location?: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_state_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_state_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2104,6 +2278,54 @@ export type Database = {
         }
         Relationships: []
       }
+      unmatched_purchases: {
+        Row: {
+          book_id: string | null
+          buyer_email: string
+          created_at: string
+          id: string
+          payload: Json
+          resolved_at: string | null
+          resolved_profile_id: string | null
+          source_ref: string
+        }
+        Insert: {
+          book_id?: string | null
+          buyer_email: string
+          created_at?: string
+          id?: string
+          payload: Json
+          resolved_at?: string | null
+          resolved_profile_id?: string | null
+          source_ref: string
+        }
+        Update: {
+          book_id?: string | null
+          buyer_email?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          resolved_at?: string | null
+          resolved_profile_id?: string | null
+          source_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unmatched_purchases_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unmatched_purchases_resolved_profile_id_fkey"
+            columns: ["resolved_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       blocked_members: {
@@ -2277,6 +2499,10 @@ export type Database = {
       advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       approve_broadcast: { Args: { broadcast: string }; Returns: undefined }
       archive_branch: { Args: { branch: string }; Returns: undefined }
+      assert_book_object_exists: {
+        Args: { bucket: string; target: string }
+        Returns: undefined
+      }
       assert_consent_covers_photo: {
         Args: { target_version: string }
         Returns: undefined
@@ -2739,6 +2965,7 @@ export type Database = {
     }
     Enums: {
       attendance_source: "here_button" | "live_watch"
+      book_format: "pdf" | "epub"
       branch_request_status: "pending" | "approved" | "rejected" | "cancelled"
       branch_status: "active" | "archived"
       broadcast_scope: "branch" | "ministry"
@@ -2761,6 +2988,7 @@ export type Database = {
       delivery_channel: "push" | "in_app"
       delivery_status: "pending" | "sent" | "failed"
       device_platform: "ios" | "android"
+      entitlement_source: "payhip" | "gift"
       event_status: "scheduled" | "cancelled"
       intercession_state: "committed" | "prayed"
       privileged_action:
@@ -2906,6 +3134,7 @@ export const Constants = {
   public: {
     Enums: {
       attendance_source: ["here_button", "live_watch"],
+      book_format: ["pdf", "epub"],
       branch_request_status: ["pending", "approved", "rejected", "cancelled"],
       branch_status: ["active", "archived"],
       broadcast_scope: ["branch", "ministry"],
@@ -2930,6 +3159,7 @@ export const Constants = {
       delivery_channel: ["push", "in_app"],
       delivery_status: ["pending", "sent", "failed"],
       device_platform: ["ios", "android"],
+      entitlement_source: ["payhip", "gift"],
       event_status: ["scheduled", "cancelled"],
       intercession_state: ["committed", "prayed"],
       privileged_action: [

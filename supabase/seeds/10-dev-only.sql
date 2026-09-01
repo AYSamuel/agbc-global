@@ -438,3 +438,58 @@ from (values
        deep_link, read_after, age)
 join public.profiles p on p.email = v.email
 on conflict (id) do nothing;
+
+-- --- the bookshelf (W4.1 slice 2) -----------------------------------------------------------
+-- Three books in three shelf states, so STORE, BOOK-DETAIL and LIBRARY (W4.2) each have
+-- something real to render before the Payhip pipeline exists. The real catalogue is the
+-- pastor's own and arrives with the dashboard's Library module.
+--
+-- `file_path` and `cover_path` stay NULL, deliberately. A seed runs as the service role, so
+-- `books_object_path_guard` waives itself and a path here would be a DANGLING reference that
+-- nothing refuses: the first real reader would meet a Read button that dies on open. Dev
+-- objects go on the shelf the way the audio and artwork do, with a script at the slice that
+-- needs them.
+
+insert into public.books
+  (id, title, author, description, format, price_minor, price_currency,
+   payhip_url, payhip_product_id, payhip_product_link, published_at)
+values
+  ('61000000-0000-4000-8000-000000000001',
+   'Grace That Carries', 'Olayinka Ademiluka',
+   'Thirty days in the goodness of God, for the season that feels longer than it should.',
+   'pdf', 899, 'GBP',
+   'https://payhip.com/b/devbook1', 'dev-product-1', 'devbook1', now() - interval '30 days'),
+  ('61000000-0000-4000-8000-000000000002',
+   'The Praying Family', 'Olayinka Ademiluka',
+   'What happens to a household that prays together, and how to begin.',
+   'epub', 1299, 'GBP',
+   'https://payhip.com/b/devbook2', 'dev-product-2', 'devbook2', now() - interval '5 days'),
+  -- Not on sale: the state that proves an unpublished row is invisible to everyone who does
+  -- not already own it.
+  ('61000000-0000-4000-8000-000000000003',
+   'Ogbomosho Notebook', 'Olayinka Ademiluka',
+   'Letters home from the mission field. Coming soon.',
+   'pdf', 700, 'GBP',
+   'https://payhip.com/b/devbook3', 'dev-product-3', 'devbook3', null)
+on conflict (id) do nothing;
+
+-- Tobi owns one of them, so LIBRARY has a row and STORE has a book showing "Read" rather
+-- than "Buy". Entitlements have NO client write path at all, which is exactly why a seed is
+-- the only way to get one locally until the pipeline lands.
+insert into public.entitlements (id, profile_id, book_id, source, source_ref, granted_at)
+select
+  '62000000-0000-4000-8000-000000000001',
+  p.id,
+  '61000000-0000-4000-8000-000000000001',
+  'payhip',
+  'dev-transaction-1',
+  now() - interval '9 days'
+from public.profiles p
+where p.email = 'dev.tobi@example.test'
+on conflict (id) do nothing;
+
+insert into public.reading_state (profile_id, book_id, location, updated_at)
+select p.id, '61000000-0000-4000-8000-000000000001', '42', now() - interval '2 days'
+from public.profiles p
+where p.email = 'dev.tobi@example.test'
+on conflict (profile_id, book_id) do nothing;
