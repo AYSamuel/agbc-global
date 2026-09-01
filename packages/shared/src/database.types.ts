@@ -2541,6 +2541,7 @@ export type Database = {
       advance_prayer_reminders: { Args: { ids: string[] }; Returns: number }
       approve_broadcast: { Args: { broadcast: string }; Returns: undefined }
       archive_branch: { Args: { branch: string }; Returns: undefined }
+      assert_avatar_path_owned: { Args: { target: string }; Returns: undefined }
       assert_book_object_exists: {
         Args: { bucket: string; target: string }
         Returns: undefined
