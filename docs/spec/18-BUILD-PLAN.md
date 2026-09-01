@@ -120,13 +120,13 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
   key for both admins, and the QR failed to scan even inside Google Authenticator. Every
   future staff member has to enrol, and an admin without a second factor cannot assign roles
   at all, so this stops being a curiosity the moment somebody who is not Ayo needs access.
-- [ ] **`registration.confirmed` has no producer** (found by W3.6's audit, 2026-08-30). The
+- [x] ~~**`registration.confirmed` has no producer** (found by W3.6's audit, 2026-08-30).~~ **Built in W4.0 (#164, 2026-08-31)** as a fourth arm on `activity_notice_batch` (`20260831130000`), deployed to production the same day and verified against a real link. This line stayed unticked when the work landed; struck 2026-09-01 while W4.1 picked up the last orphan below. The
   fourth orphan of the same shape slice 2 fixed: the type, the template in four languages and
   the channel routing all exist, and nothing ever writes the row, so a member who registers
   for an Academy course is never told it was confirmed. W2.9 shipped it before push existed
   (W3.3) and no item claimed the caller afterwards. Now a one-armed addition to
   `activity_notice_batch`, not new infrastructure. `purchase.added` is the same shape but
-  legitimately W4.1's, since Store does not exist yet.
+  legitimately W4.1's, since Store does not exist yet, and is slice 6 of it.
 - [ ] **Maestro E2E: one journey of six can run in CI, and the other five have nowhere to
   run.** Rewritten 2026-08-31; the first version of this item said simply "not in CI", which
   understated it. `nightly.yml` DOES exist and DOES run Maestro, on `workflow_dispatch` with
