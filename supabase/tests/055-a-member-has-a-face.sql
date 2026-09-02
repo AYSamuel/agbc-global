@@ -16,7 +16,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(15);
 
 \set alice '96000000-0000-4000-8000-00000000000a'
 \set bob   '96000000-0000-4000-8000-00000000000b'
@@ -125,6 +125,14 @@ select throws_ok(
   '23514',
   null,
   'and NOT at one in somebody else''s: without this, their own erasure would collect a stranger''s path and the sweep would delete a stranger''s picture');
+
+select throws_ok(
+  $$update public.profiles
+       set avatar_url = 'https://example.com/someone.jpg'
+     where id = '96000000-0000-4000-8000-00000000000a'$$,
+  '23514',
+  null,
+  'and NOT at a URL: the sweep skips URL-shaped values rather than guessing a bucket out of a hostname, so one stored here would mean an erasure that reports success while the face stays in storage for ever');
 
 reset role;
 set local request.jwt.claims to '{}';
