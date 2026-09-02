@@ -53,8 +53,19 @@ function answering(result: ImportResult, rows = 360): CheckAction {
 
 const neverApplies = () => undefined;
 
+/**
+ * PASTE, pasted rather than typed.
+ *
+ * `user.type` walks the whole event pipeline once per character, and every keystroke
+ * re-renders a form driven by `useActionState`. Nine tests of a hundred characters each is
+ * most of this file's runtime, and it was the file's own contribution to #184: under a
+ * loaded runner it stretched to 48s and two `findBy` calls ran out of their 1000ms while
+ * the panel was still catching up. Pasting is one event, and it is also the gesture the
+ * field is named for: nobody types a spreadsheet column in by hand.
+ */
 async function check(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.type(screen.getByLabelText('Paste from your spreadsheet'), PASTE);
+  await user.click(screen.getByLabelText('Paste from your spreadsheet'));
+  await user.paste(PASTE);
   await user.click(screen.getByRole('button', { name: 'Check this batch' }));
 }
 
