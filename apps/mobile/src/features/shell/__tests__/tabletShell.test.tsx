@@ -41,6 +41,17 @@ jest.mock('expo-router', () => ({
 
 // The list pane fetches; stubbed so this suite is about the SHELL's rules and
 // not about Watch's data.
+jest.mock('@/features/family/FamilyListPane', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Text } = require('react-native') as typeof import('react-native');
+  return {
+    FamilyListPane: ({ selectedId }: { selectedId: string | null }) => {
+      const label = 'family:' + (selectedId ?? 'none');
+      return <Text>{label}</Text>;
+    },
+  };
+});
+
 jest.mock('@/features/watch/WatchListPane', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Text } = require('react-native') as typeof import('react-native');
@@ -182,4 +193,34 @@ describe('the tablet two-pane (mockup WATCH · rail + two-pane)', () => {
     expect(screen.queryByText(/^pane:/)).not.toBeOnTheScreen();
     expect(screen.queryByRole('tab', { name: 'Home' })).not.toBeOnTheScreen();
   });
+});
+
+describe('FAMILY two-pane (mockup FAMILY · feed + detail)', () => {
+  beforeEach(() => {
+    mockWidth = 1400;
+    mockHeight = 900;
+  });
+
+  test.each([
+    ['testimony', '/testimony/t-1', 't-1'],
+    ['prayer', '/prayer/p-9', 'p-9'],
+  ])('a %s opens beside the feed', async (route, path, id) => {
+    mockSegments = [route, '[id]'];
+    mockPathname = path;
+    await renderShell();
+    expect(screen.getByText(`family:${id}`)).toBeOnTheScreen();
+  });
+
+  test.each([['/testimony/compose'], ['/prayer/compose']])(
+    'COMPOSE is a full screen, not a detail pane (%s)',
+    async (path) => {
+      mockSegments = [path.split('/')[1] ?? '', 'compose'];
+      mockPathname = path;
+      await renderShell();
+      // Composing is a flow with its own consent step; it must not open beside
+      // the feed as though it were a post you had tapped.
+      expect(screen.queryByText(/^family:/)).not.toBeOnTheScreen();
+      expect(screen.getByText(CONTENT)).toBeOnTheScreen();
+    },
+  );
 });

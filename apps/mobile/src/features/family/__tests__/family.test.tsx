@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui';
 import i18n from '@/i18n';
+import { useFamilyViewStore } from '@/features/family/viewState';
 import { useAuthStore } from '@/state/auth';
 import { ThemeScope } from '@/theme';
 
@@ -170,6 +171,10 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // The feed's sub-tab and scope live in a store now (W4.7 slice 4: the tablet
+  // draws the feed twice and two copies would disagree), and a module-level
+  // store outlives a test. Reset it, the way the theme store already is.
+  useFamilyViewStore.setState({ tab: 'testimonies', scope: 'everywhere' });
   // Guest by default: the gate paths below are the majority case.
   useAuthStore.setState({ status: 'guest', profile: null });
   mockParams.mockReturnValue({});

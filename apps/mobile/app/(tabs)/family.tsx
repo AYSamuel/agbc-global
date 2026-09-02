@@ -20,7 +20,7 @@ import {
 import { FamilyMap } from '@/features/family/FamilyMap';
 import { joinMeta } from '@/features/family/format';
 import { useBlockedAuthorIds } from '@/features/family/moderation';
-import { AnsweredPrayerCard, PrayerCard } from '@/features/family/PrayerCard';
+import { AnsweredPrayerCard } from '@/features/family/PrayerCard';
 import {
   usePrayerFeedQuery,
   useTestimonyFeedQuery,
@@ -28,11 +28,13 @@ import {
   type PrayerFeedItem,
   type TestimonyFeedItem,
 } from '@/features/family/queries';
+import { PrayerRow } from '@/features/family/PrayerRow';
 import { ScopeToggle } from '@/features/family/ScopeToggle';
+import { useFamilyViewStore } from '@/features/family/viewState';
+import { useLayout } from '@/lib/layout';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
 import { useBranchColors } from '@/features/family/useBranchColors';
-import { useIntercessionPress } from '@/features/family/useIntercession';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
 import { useMapBranches } from '@/features/family/useMapBranches';
@@ -67,8 +69,24 @@ export default function Family() {
   // `?tab=testimonies` (with a nonce `k` so a repeat tap still re-applies it).
   // Applied with React's "adjust state on a changed prop" pattern (no effect):
   // track the nonce and set the tab during render when it changes.
+  //
+  // The tab and the scope moved into a store at W4.7 slice 4: on a tablet the
+  // feed is drawn twice, here and in the list pane beside an open post, and two
+  // copies of "which feed am I looking at" is the one-owner rule broken.
   const params = useLocalSearchParams<{ tab?: string; k?: string }>();
-  const [tab, setTab] = useState<SubTab>(asSubTab(params.tab) ?? 'testimonies');
+  const tab = useFamilyViewStore((s) => s.tab);
+  const setTab = useFamilyViewStore((s) => s.setTab);
+  // Seeding on ARRIVAL is its own case, and moving the tab into a store lost it
+  // until the suite said so: `useState(asSubTab(params.tab) ?? ...)` used to do
+  // this implicitly, while the nonce below only fires when `k` CHANGES, which it
+  // has not on the first render. Both paths are needed: this one for the first
+  // arrival, the nonce for a repeat tap of the same link.
+  const [seeded, setSeeded] = useState(false);
+  if (!seeded) {
+    setSeeded(true);
+    const requested = asSubTab(params.tab);
+    if (requested) setTab(requested);
+  }
   const [lastNav, setLastNav] = useState(params.k);
   if (params.k !== lastNav) {
     setLastNav(params.k);
@@ -77,9 +95,11 @@ export default function Family() {
   }
   // Everywhere is the default so "one family, many nations" is what you meet
   // first; narrowing to your branch is the deliberate act (docs/spec/09).
-  const [scope, setScope] = useState<FamilyScope>('everywhere');
+  const scope = useFamilyViewStore((s) => s.scope);
+  const setScope = useFamilyViewStore((s) => s.setScope);
   const [gateVisible, setGateVisible] = useState(false);
 
+  const { isTablet } = useLayout();
   const branchId = branch?.id ?? null;
   // Guard: "My branch" needs a chosen branch. If it is somehow selected without
   // one, fall back to Everywhere so the feed loads instead of skeleton-locking on
@@ -389,7 +409,11 @@ export default function Family() {
         </Screen>
       ) : (
         <ListScreen
-          widthClass="capped"
+          // The frame's `.tcol` on a tablet (`FAMILY · tablet portrait · single
+          // column + rail`): 600 rather than the 680 reading measure, because
+          // this is a column of cards beside a rail, not a page of prose. On a
+          // phone neither measure binds.
+          widthClass={isTablet ? 'column' : 'capped'}
           padded={false}
           refreshing={manualRefresh.refreshing}
           onRefresh={manualRefresh.onRefresh}
@@ -444,32 +468,3 @@ export default function Family() {
  * One prayer card. Its own component because the commitment hook has to be
  * called per row, and a hook cannot live inside the `map` that renders the feed.
  */
-function PrayerRow({
-  prayer,
-  branchName,
-  scope,
-  onOpen,
-  onGate,
-}: {
-  prayer: PrayerFeedItem;
-  branchName: string | null;
-  scope: FamilyScope;
-  onOpen: () => void;
-  onGate: () => void;
-}) {
-  const { commitment, onPress, onUndo } = useIntercessionPress(
-    prayer,
-    onGate,
-    scope,
-  );
-  return (
-    <PrayerCard
-      prayer={prayer}
-      branchName={branchName}
-      commitment={commitment}
-      onPress={onOpen}
-      onCommit={onPress ?? (() => undefined)}
-      onUndo={onUndo}
-    />
-  );
-}

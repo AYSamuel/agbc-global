@@ -14,6 +14,7 @@ import {
   type IconProps,
   type TabItem,
 } from '@/components/ui';
+import { FamilyListPane } from '@/features/family/FamilyListPane';
 import { WatchListPane } from '@/features/watch/WatchListPane';
 import { useLayout } from '@/lib/layout';
 
@@ -109,9 +110,30 @@ export function TabletShell({ children }: PropsWithChildren) {
    * of doing this route-first: a notification deep link into a sermon lights the
    * right row for free.
    */
-  const sermonId =
-    first === 'sermon' ? (/^\/sermon\/([^/]+)/.exec(pathname)?.[1] ?? null) : null;
-  const twoPane = isLandscape && sermonId !== null;
+  /**
+   * The id a `/<family>/<id>` route is showing, or null.
+   *
+   * `compose` is excluded by name because it is a SIBLING of the ids, not one of
+   * them: `/testimony/compose` and `/prayer/compose` are full-screen flows with
+   * their own consent step, and matching them here would have opened the
+   * composer in a detail pane beside the feed.
+   */
+  const detailId = (family: string): string | null => {
+    if (first !== family) return null;
+    const id = new RegExp(`^/${family}/([^/]+)`).exec(pathname)?.[1] ?? null;
+    return id === 'compose' ? null : id;
+  };
+  const sermonId = detailId('sermon');
+  // Both Family detail routes sit beside the same feed: the pane already knows
+  // which sub-tab is showing, so a prayer and a testimony need no separate case.
+  const familyId = detailId('testimony') ?? detailId('prayer');
+  const paneFor =
+    sermonId !== null ? (
+      <WatchListPane selectedId={sermonId} />
+    ) : familyId !== null ? (
+      <FamilyListPane selectedId={familyId} />
+    ) : null;
+  const twoPane = isLandscape && paneFor !== null;
 
   const items: TabItem<TabName>[] = TAB_CONFIG.map((tab) => ({
     key: tab.name,
@@ -135,10 +157,7 @@ export function TabletShell({ children }: PropsWithChildren) {
       />
       <View style={{ flex: 1, minWidth: 0 }}>
         {twoPane ? (
-          <TwoPane
-            list={<WatchListPane selectedId={sermonId} />}
-            detail={children}
-          />
+          <TwoPane list={paneFor} detail={children} />
         ) : (
           children
         )}
