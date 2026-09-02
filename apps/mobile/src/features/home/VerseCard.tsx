@@ -89,6 +89,9 @@ export function VerseCard({ verse }: { verse: DailyVerse }) {
           accessibilityRole="button"
           accessibilityLabel={t('home:shareVerse')}
           onPress={share}
+          // The chip is the frame's 32dp; slop carries it to the 44 floor
+          // rather than growing the chip and breaking the frame (W4.7 slice 5).
+          hitSlop={{ top: 6, bottom: 6 }}
           style={({ pressed }) => ({
             backgroundColor: verseCard.chipBg,
             borderWidth: 1,

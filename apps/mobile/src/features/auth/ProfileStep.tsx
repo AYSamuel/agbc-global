@@ -162,7 +162,9 @@ export function ProfileStep({ onBack, onDone }: ProfileStepProps) {
     justifyContent: 'space-between' as const,
     backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.cardline,
+    // The mockup's `.pickrow`: a control that opens a picker sheet, so its edge is
+    // the affordance rather than decoration (W4.7 slice 2).
+    borderColor: colors.controlline,
     borderRadius: radius.button,
     paddingVertical: 14,
     paddingHorizontal: spacing.lg,

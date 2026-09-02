@@ -174,7 +174,7 @@ function ReviewActions({ id }: { id: string }) {
           name="note"
           required
           placeholder={copy.broadcasts.rejectPrompt}
-          className="min-h-12 flex-1 rounded-input border border-cardline bg-card px-3.5 text-body text-text"
+          className="min-h-12 flex-1 rounded-input border border-controlline bg-card px-3.5 text-body text-text"
         />
         <SubmitButton
           variant="secondary"

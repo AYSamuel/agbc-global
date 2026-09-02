@@ -79,5 +79,6 @@
   "notesUnsaved": "Pas encore enregistré",
   "notesKeptOnPhone": "Gardé sur ce téléphone. Nous l'enregistrerons dès que vous serez de nouveau en ligne.",
   "notesGuestTitle": "Connectez-vous pour garder vos notes",
-  "notesGuestBody": "Vos notes sont privées et restent liées à votre compte, pour les retrouver sur n'importe quel téléphone."
+  "notesGuestBody": "Vos notes sont privées et restent liées à votre compte, pour les retrouver sur n'importe quel téléphone.",
+  "paneTitle": "Messages"
 }

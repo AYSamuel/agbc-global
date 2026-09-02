@@ -21,7 +21,8 @@ import {
   EmptyState,
   HeartIcon,
   PersonIcon,
-  Screen,
+  ListRow,
+  ListScreen,
   Skeleton,
   StarIcon,
 } from '@/components/ui';
@@ -232,101 +233,105 @@ export default function NotificationsScreen() {
     if (route !== FALLBACK_ROUTE) router.push(route as Href);
   };
 
-  return (
-    <Screen widthClass="capped" padded={false}>
-      <AppHeader
-        title={t('notifications:title')}
-        onBack={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/(tabs)/home');
-        }}
-        backLabel={t('common:back')}
-        trailing={
-          signedIn && hasUnread ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('notifications:markAllRead')}
-              onPress={() => {
-                markAllRead.mutate();
-              }}
-              hitSlop={8}
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-            >
-              <Text
-                style={{
-                  fontFamily: fontFamily.body.bold,
-                  fontSize: 12.5,
-                  color: colors.blue,
-                }}
-              >
-                {t('notifications:markAllRead')}
-              </Text>
-            </Pressable>
-          ) : undefined
-        }
-      />
+  // Rows apart from placeholders so the list can virtualize (W4.7 slice 3). This
+  // is the one list in the app that genuinely paginates, so it is also the one
+  // where mounting every row was least defensible: "show older" appends a page
+  // each time and nothing ever unmounts.
+  const showRows = signedIn && !query.isPending && !query.isError;
 
-      {!signedIn ? (
-        <View style={{ paddingHorizontal: spacing.lg }}>
-          {/* Reachable signed-out only by deep link (the bell gates earlier);
-              the same full-screen gate MY-LIST wears. */}
-          <EmptyState
-            icon={<EmptyGlyph Icon={PersonIcon} />}
-            title={t('notifications:guestTitle')}
-            body={t('notifications:guestBody')}
-            actionLabel={t('common:signIn')}
-            onAction={() => {
-              track('gate_shown', { action_type: 'notifications' });
-              beginGateSignIn({ kind: 'notifications' });
-              router.push('/auth');
-            }}
-          />
-        </View>
-      ) : query.isPending ? (
-        <View
-          style={{
-            gap: spacing.sm,
-            marginTop: spacing.md,
-            paddingHorizontal: spacing.lg,
+  const placeholder = !signedIn ? (
+    // Reachable signed-out only by deep link (the bell gates earlier);
+    // the same full-screen gate MY-LIST wears.
+    <EmptyState
+      icon={<EmptyGlyph Icon={PersonIcon} />}
+      title={t('notifications:guestTitle')}
+      body={t('notifications:guestBody')}
+      actionLabel={t('common:signIn')}
+      onAction={() => {
+        track('gate_shown', { action_type: 'notifications' });
+        beginGateSignIn({ kind: 'notifications' });
+        router.push('/auth');
+      }}
+    />
+  ) : query.isPending ? (
+    <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+      <Skeleton height={68} />
+      <Skeleton height={68} />
+      <Skeleton height={68} />
+      <Skeleton height={68} />
+    </View>
+  ) : query.isError ? (
+    <EmptyState
+      title={t('errors:somethingWrong')}
+      body={t('errors:couldntLoad')}
+      actionLabel={t('errors:tryAgain')}
+      onAction={() => {
+        void query.refetch();
+      }}
+    />
+  ) : (
+    // Frame `NC · empty (all caught up)`.
+    <EmptyState
+      icon={<EmptyGlyph Icon={BellIcon} />}
+      title={t('notifications:emptyTitle')}
+      body={t('notifications:emptyBody')}
+    />
+  );
+
+  return (
+    <ListScreen
+      widthClass="capped"
+      padded={false}
+      data={showRows ? rows : []}
+      keyExtractor={(row) => row.id}
+      renderItem={(row) => (
+        <NotificationRowView
+          row={row}
+          onPress={() => {
+            open(row);
           }}
-        >
-          <Skeleton height={68} />
-          <Skeleton height={68} />
-          <Skeleton height={68} />
-          <Skeleton height={68} />
-        </View>
-      ) : query.isError ? (
-        <View style={{ paddingHorizontal: spacing.lg }}>
-          <EmptyState
-            title={t('errors:somethingWrong')}
-            body={t('errors:couldntLoad')}
-            actionLabel={t('errors:tryAgain')}
-            onAction={() => {
-              void query.refetch();
+        />
+      )}
+      header={
+        <>
+          <AppHeader
+            title={t('notifications:title')}
+            onBack={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace('/(tabs)/home');
             }}
+            backLabel={t('common:back')}
+            trailing={
+              signedIn && hasUnread ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('notifications:markAllRead')}
+                  onPress={() => {
+                    markAllRead.mutate();
+                  }}
+                  hitSlop={8}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fontFamily.body.bold,
+                      fontSize: 12.5,
+                      color: colors.blue,
+                    }}
+                  >
+                    {t('notifications:markAllRead')}
+                  </Text>
+                </Pressable>
+              ) : undefined
+            }
           />
-        </View>
-      ) : rows.length === 0 ? (
-        <View style={{ paddingHorizontal: spacing.lg }}>
-          {/* Frame `NC · empty (all caught up)`. */}
-          <EmptyState
-            icon={<EmptyGlyph Icon={BellIcon} />}
-            title={t('notifications:emptyTitle')}
-            body={t('notifications:emptyBody')}
-          />
-        </View>
-      ) : (
-        <View style={{ marginTop: 4 }}>
-          {rows.map((row) => (
-            <NotificationRowView
-              key={row.id}
-              row={row}
-              onPress={() => {
-                open(row);
-              }}
-            />
-          ))}
-          {query.hasNextPage ? (
+          {showRows && rows.length > 0 ? <View style={{ height: 4 }} /> : null}
+        </>
+      }
+      empty={<ListRow>{placeholder}</ListRow>}
+      footer={
+        showRows && rows.length > 0 ? (
+          query.hasNextPage ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('notifications:showOlder')}
@@ -365,9 +370,9 @@ export default function NotificationsScreen() {
             >
               {t('notifications:retentionFooter')}
             </Text>
-          )}
-        </View>
-      )}
-    </Screen>
+          )
+        ) : null
+      }
+    />
   );
 }

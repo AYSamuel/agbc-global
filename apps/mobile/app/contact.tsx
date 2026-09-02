@@ -141,7 +141,8 @@ export default function Contact() {
   const inputStyle = {
     backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.cardline,
+    // An input's edge is the whole of what says a field is there (W4.7 slice 2).
+    borderColor: colors.controlline,
     borderRadius: radius.button,
     paddingHorizontal: spacing.lg,
     fontFamily: fontFamily.body.regular,

@@ -43,6 +43,17 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: mockBack }),
 }));
 
+// W4.7 slice 1: two MORE rows and a whole section now sit behind a flag until
+// their features are built. A GETTER, because `jest.mock` is hoisted above the
+// `More` import and the factory would otherwise capture this const before it is
+// initialised.
+const mockFeatures = { store: false, devotionalPlan: false };
+jest.mock('@/lib/features', () => ({
+  get features() {
+    return mockFeatures;
+  },
+}));
+
 jest.mock('expo-localization', () => ({
   getLocales: jest.fn(() => [{ languageCode: 'en' }]),
 }));
@@ -75,17 +86,17 @@ function inTheme(ui: React.ReactElement) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockFeatures.store = false;
+  mockFeatures.devotionalPlan = false;
 });
 
 describe('MORE hub (docs/spec/04 tab 5): every row navigates', () => {
   const rowRoutes: [string, string][] = [
     ['Grace Academy', '/academy'],
-    ['Daily devotional', '/plan'],
     ['Branches', '/branches'],
     ['Events', '/events'],
     ['About the church', '/about'],
     ['Contact', '/contact'],
-    ['Bookstore', '/store'],
     ['Settings', '/settings'],
   ];
 
@@ -100,8 +111,31 @@ describe('MORE hub (docs/spec/04 tab 5): every row navigates', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(mockPush).toHaveBeenCalledWith('/auth');
   });
+});
+
+// The rows the MVP does not draw. `04`'s "every row navigates" guarantee still has
+// to hold for them, or W4.2 and W4.4 would delete their flag and reveal rows that
+// nothing has covered since W1.2. Driven with the flags ON, which is the only way
+// these rows can be reached at all.
+describe('MORE hub: the rows waiting on their feature (W4.7 slice 1)', () => {
+  const deferredRoutes: [string, string][] = [
+    ['Daily devotional', '/plan'],
+    ['Bookstore', '/store'],
+  ];
+
+  test.each(deferredRoutes)(
+    '%s routes to %s once its feature ships',
+    async (label, route) => {
+      mockFeatures.store = true;
+      mockFeatures.devotionalPlan = true;
+      await inTheme(<More />);
+      await fireEvent.press(screen.getByRole('button', { name: label }));
+      expect(mockPush).toHaveBeenCalledWith(route);
+    },
+  );
 
   test('My Library is locked for guests and routes to the auth placeholder', async () => {
+    mockFeatures.store = true;
     await inTheme(<More />);
     await fireEvent.press(screen.getByRole('button', { name: 'My Library' }));
     expect(mockPush).toHaveBeenCalledWith('/auth');

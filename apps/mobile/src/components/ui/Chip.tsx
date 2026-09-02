@@ -42,7 +42,7 @@ export function Chip({
         borderRadius: radius.full,
         backgroundColor: selected ? activeBg : colors.card,
         borderWidth: 1,
-        borderColor: selected ? 'transparent' : colors.cardline,
+        borderColor: selected ? 'transparent' : colors.controlline,
         opacity: pressed ? 0.85 : 1,
       })}
     >

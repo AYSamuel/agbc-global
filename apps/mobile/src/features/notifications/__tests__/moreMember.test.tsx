@@ -49,6 +49,21 @@ jest.mock('@/features/family/useBranchNames', () => ({
   useBranchNames: () => ({ 'b-berlin': 'AGBC Lighthouse Berlin' }),
 }));
 
+// Mutable so the deferred surfaces can be tested from BOTH sides: the doors are
+// shut in the MVP, and the behaviour behind them (W3.3's badge-free member
+// Library) still has to be asserted, or deleting the flag at W4.2 would restore
+// a row nothing covers. Named `mock*` so jest's hoisting allows the reference.
+const mockFeatures = { store: false, devotionalPlan: false };
+jest.mock('@/lib/features', () => ({
+  // A GETTER, not `features: mockFeatures`. `jest.mock` is hoisted above the
+  // `more.tsx` import, so the factory runs while this file is still importing,
+  // before the `const` above is initialised: handing the value over directly
+  // caches `undefined` and every test dies on the first flag read.
+  get features() {
+    return mockFeatures;
+  },
+}));
+
 const mockRhythm = jest.fn<{ data: { currentWeeks: number } | null }, []>(
   () => ({ data: null }),
 );
@@ -87,6 +102,10 @@ beforeEach(() => {
   mockAuthState.mockReturnValue(member);
   mockRhythm.mockReturnValue({ data: null });
   mockUnread.mockReturnValue({ data: 0 });
+  // The shipping configuration, restored per test (qa-testing: test the
+  // production flag state, not the combinatorial explosion).
+  mockFeatures.store = false;
+  mockFeatures.devotionalPlan = false;
 });
 
 test('the member card says who you are, and opens the profile', async () => {
@@ -135,9 +154,23 @@ test('the unread number caps at 99+', async () => {
 });
 
 test('a member reaches the Library without being asked to sign in', async () => {
+  // W3.3's badge rule, asserted from behind the flag so it survives until W4.2
+  // deletes the flag and the row comes back for real.
+  mockFeatures.store = true;
   await renderScreen();
   await fireEvent.press(screen.getByRole('button', { name: 'My Library' }));
   expect(mockPush).toHaveBeenCalledWith('/library');
+});
+
+test('the MVP advertises nothing it has not built', async () => {
+  await renderScreen();
+  // The two W4.2 rows, and the section label that holds only them.
+  expect(screen.queryByText('Bookstore')).not.toBeOnTheScreen();
+  expect(screen.queryByText('My Library')).not.toBeOnTheScreen();
+  expect(screen.queryByText('Read')).not.toBeOnTheScreen();
+  // W4.4's row, whose section survives because Grace Academy shipped.
+  expect(screen.queryByText('Daily devotional')).not.toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: 'Grace Academy' })).toBeOnTheScreen();
 });
 
 test('a guest still gets the sign-in card and no My life section', async () => {
@@ -147,4 +180,8 @@ test('a guest still gets the sign-in card and no My life section', async () => {
     screen.getByText('Post, pray, and track your rhythm'),
   ).toBeOnTheScreen();
   expect(screen.queryByText('My life')).not.toBeOnTheScreen();
+  // The Read section was never member-gated, so hiding it has to hold here too:
+  // a guest used to see Bookstore plus a Library wearing the "Sign in" badge.
+  expect(screen.queryByText('Bookstore')).not.toBeOnTheScreen();
+  expect(screen.queryByText('My Library')).not.toBeOnTheScreen();
 });

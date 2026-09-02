@@ -2,9 +2,20 @@
 <title>AGBC Global · Screens</title>
 <style>
   :root{
-    --bg:#fbf8f3; --card:#ffffff;--raised:#ffffff; --text:#14213d; --sub:#546077; --muted:#8a7f6a;
+    --bg:#fbf8f3; --card:#ffffff;--raised:#ffffff; --text:#14213d; --sub:#546077; --muted:#716857;
     --border:#e8e0d0; --alt:#f0ece3; --btnBg:#14213d; --btnText:#ffffff;
-    --ink:#0e1420; --gold:#ffcf4a; --navy:#14213d; --blue:#2f6fed; --green:#1f8a5b; --red:#e0342c;
+    --ink:#0e1420; --gold:#ffcf4a; --navy:#14213d; --blue:#2963d4; --green:#1f8a5b; --red:#e0342c;
+    /* THE BOUNDARY THAT IS THE CONTROL, split out of --border at W4.7 (2026-09-02).
+       --border does two jobs: the decorative hairline around a card, and the edge of
+       an input, an OTP box, a checkbox, a radio, an unselected chip, an outline
+       button and an OFF switch. Only the second kind carries WCAG 1.4.11, which asks
+       3:1 of anything needed to identify a control or its state, and --border was at
+       1.24:1 on the page and 1.31:1 on a card. A card survives that because its
+       CONTENT identifies it; an empty input has nothing else to be. Measured against
+       every surface a control sits on (page, card and alt), worst case 3.03:1 light
+       and 3.00:1 dark. Cards and bands keep the delicate hairline they were designed
+       with; nothing decorative moves. */
+    --ctlline:#8c877d;
     /* The edge an ink band gets. --ink is the same in both themes AND is exactly the dark
        --bg, so an unbordered band reads as floating text at night. Transparent in light,
        where ink inverts against cream and needs no help; always applied, so a band measures
@@ -15,8 +26,17 @@
     --font:"Hanken Grotesk","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
     --disp:"Bricolage Grotesque","Segoe UI Semibold",system-ui,sans-serif;
   }
-  .t-light{--bg:#fbf8f3;--card:#ffffff;--text:#14213d;--sub:#546077;--muted:#8a7f6a;--border:#e8e0d0;--alt:#f0ece3;--btnBg:#14213d;--btnText:#ffffff;--framestroke:rgba(20,33,61,0.14);--dshadow:rgba(20,33,61,0.22);--mapsea:#f4efe4;--mapland:rgba(20,33,61,0.10);--eye:#b98600;--bandline:transparent;color:var(--text)}
-  .t-dark{--bg:#0e1420;--card:#18212f;--raised:#28323f;--text:#eef2f8;--sub:#aab4c6;--muted:#7c8698;--border:#28323f;--alt:#141d2a;--btnBg:#ffcf4a;--btnText:#14213d;--framestroke:rgba(255,255,255,0.10);--dshadow:rgba(0,0,0,0.5);--mapsea:#0b111b;--mapland:rgba(255,255,255,0.07);--eye:#ffcf4a;--bandline:#28323f;color:var(--text)}
+  /* W4.7 contrast pass (2026-09-02). Four values moved because they carry TEXT at the
+     sizes the app actually renders them (10 to 14px, so no large-text exemption) and
+     sat under WCAG 1.4.3's 4.5:1: light --muted 3.35 (meta lines, timestamps, city
+     lines), light --blue 4.29 on the page (every "See all" link at 12.5px), light
+     --eye 3.06 (the 12px bold uppercase kicker), and dark --muted 4.41 on a card. Each
+     is the same hue darkened or lightened until it clears 4.5 on the WORST surface it
+     sits on, with headroom: 4.63 to 4.66. Dark --blue is pinned to its old value here
+     rather than following :root, so this pass changes nothing that was already
+     passing; `05` deliberately lightens it further to #5a9bff in the app and says so. */
+  .t-light{--bg:#fbf8f3;--card:#ffffff;--text:#14213d;--sub:#546077;--muted:#716857;--border:#e8e0d0;--ctlline:#8c877d;--alt:#f0ece3;--btnBg:#14213d;--btnText:#ffffff;--blue:#2963d4;--framestroke:rgba(20,33,61,0.14);--dshadow:rgba(20,33,61,0.22);--mapsea:#f4efe4;--mapland:rgba(20,33,61,0.10);--eye:#896300;--bandline:transparent;color:var(--text)}
+  .t-dark{--bg:#0e1420;--card:#18212f;--raised:#28323f;--text:#eef2f8;--sub:#aab4c6;--muted:#808a9c;--border:#28323f;--ctlline:#646b74;--alt:#141d2a;--btnBg:#ffcf4a;--btnText:#14213d;--blue:#2f6fed;--framestroke:rgba(255,255,255,0.10);--dshadow:rgba(0,0,0,0.5);--mapsea:#0b111b;--mapland:rgba(255,255,255,0.07);--eye:#ffcf4a;--bandline:#28323f;color:var(--text)}
   .phone{color:var(--text)}
   .ghead{max-width:1400px;margin:16px auto 6px;font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text)}
   /* Section tabs (page chrome, not part of any frame; "sectabs" because .tabbar is the
@@ -67,7 +87,7 @@
      `.hero .btns .btn.gold.on` gives "You're here", but keeping --text rather than the
      hero's #fff, because off the ink card white is invisible in light mode. */
   .btn.confirmed{background:rgba(255,207,74,.20);border:1.5px solid var(--eye);color:var(--eye)}
-  .btn.outline{background:var(--card);border:1px solid var(--border);color:var(--text);font-weight:700}
+  .btn.outline{background:var(--card);border:1px solid var(--ctlline);color:var(--text);font-weight:700}
   .btn.ghost{background:none;color:var(--muted);font-weight:700;font-size:13.5px;padding:12px}
   .btn.glass{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.28);backdrop-filter:blur(4px)}
   .btn.sm{padding:13px;font-size:14.5px;border-radius:12px}
@@ -97,7 +117,7 @@
   .obhead h1{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.02em;margin:12px 0 4px}
   .obhead p{font-size:13.5px;color:var(--sub);margin:0}
   .list{padding:18px 20px 0;display:flex;flex-direction:column;gap:10px}
-  .sel{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px}
+  .sel{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--ctlline);border-radius:16px;padding:14px}
   .sel.on{border:2px solid var(--btnBg);padding:13px}
   .sel .tile{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#2f6fed,#14213d);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:17px;flex:none}
   .sel .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -105,7 +125,7 @@
   .sel .t{font-size:15px;font-weight:700}
   .sel .s{font-size:12.5px;color:var(--muted);margin-top:2px}
   .sel .hq{font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--navy);background:var(--gold);border-radius:100px;padding:3px 8px;margin-left:6px}
-  .sel .ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex:none}
+  .sel .ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--ctlline);flex:none}
   .sel.on .ck{border-color:var(--btnBg);background:var(--btnBg);display:grid;place-items:center}
   .sel.on .ck::after{content:"";width:6px;height:11px;border:2px solid var(--btnText);border-top:0;border-left:0;transform:rotate(45deg);margin-top:-2px}
   .obfoot{padding:16px 20px 26px;display:flex;flex-direction:column;gap:6px}
@@ -132,7 +152,9 @@
 
   .verse{margin:14px 16px 0;border-radius:18px;padding:17px 18px;background:linear-gradient(135deg,#fbf3dd,#f5e8ce);border:1px solid #eeddb5}
   .verse .row1{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .verse .row1 .eye{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#b98600}
+  /* W4.7: was #b98600, 2.68:1 on the darker end of this card's own gradient, the
+     worst text contrast in the app and on the surface Home leads with. */
+  .verse .row1 .eye{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#866100}
   .verse .txt{font-family:var(--disp);font-weight:700;font-size:17px;line-height:1.45;color:#2b2517}
   .verse .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
   .verse .ref{font-size:13px;font-weight:800;color:#7a5b12}
@@ -155,7 +177,7 @@
   .testi .mt{font-size:11.5px;color:var(--muted);margin-top:1px}
   .testi .body{font-size:15px;line-height:1.5}
   .testi .acts{display:flex;align-items:center;gap:14px;margin-top:12px}
-  .glory{display:inline-flex;align-items:center;gap:7px;background:var(--alt);border:1px solid var(--border);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:12.5px;font-weight:700}
+  .glory{display:inline-flex;align-items:center;gap:7px;background:var(--alt);border:1px solid var(--ctlline);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:12.5px;font-weight:700}
   .glory .st{color:var(--gold);-webkit-text-stroke:.3px var(--navy)}
   .shr{font-size:13px;font-weight:700;color:var(--sub)}
 
@@ -259,27 +281,27 @@
   .authwrap .lead b{color:var(--text)}
   .field{margin-bottom:14px}
   .field .lab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block}
-  .inp{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0 16px;font-family:var(--font);font-size:15.5px;color:var(--text);min-height:52px;display:flex;align-items:center}
+  .inp{width:100%;background:var(--card);border:1px solid var(--ctlline);border-radius:14px;padding:0 16px;font-family:var(--font);font-size:15.5px;color:var(--text);min-height:52px;display:flex;align-items:center}
   .inp .ph{color:var(--muted)}
   .phonein{display:flex;gap:10px}
-  .cc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0 14px;font-weight:700;font-size:15.5px;color:var(--text);display:flex;align-items:center;gap:7px;flex:none}
+  .cc{background:var(--card);border:1px solid var(--ctlline);border-radius:14px;padding:0 14px;font-weight:700;font-size:15.5px;color:var(--text);display:flex;align-items:center;gap:7px;flex:none}
   .otpwrap{display:flex;gap:9px;justify-content:space-between;margin:2px 0 18px}
-  .otp{flex:1;height:60px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:24px;color:var(--text)}
+  .otp{flex:1;height:60px;background:var(--card);border:1.5px solid var(--ctlline);border-radius:12px;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:24px;color:var(--text)}
   .otp.f{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,111,237,.18)}
   .authlink{color:var(--blue);font-weight:700;font-size:13.5px;cursor:pointer}
   .authnote{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.5}
   .rowlink{display:flex;justify-content:space-between;align-items:center}
   .rowlink .t{font-size:13.5px;color:var(--sub);font-weight:600}
-  .pickrow{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .pickrow{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--ctlline);border-radius:14px;padding:14px 16px;margin-bottom:12px}
   .pickrow .l{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
   .pickrow .v{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
   .checkrow{display:flex;align-items:center;gap:12px;margin:8px 0 6px}
-  .cbox{width:24px;height:24px;border-radius:7px;border:2px solid var(--border);flex:none;background:var(--card);display:grid;place-items:center}
+  .cbox{width:24px;height:24px;border-radius:7px;border:2px solid var(--ctlline);flex:none;background:var(--card);display:grid;place-items:center}
   .cbox.on{background:var(--btnBg);border-color:var(--btnBg)}
   .cbox.on::after{content:"";width:6px;height:11px;border:2px solid var(--btnText);border-top:0;border-left:0;transform:rotate(45deg);margin-top:-2px}
   .checkrow .ct{font-size:14px;color:var(--text);font-weight:600}
   .avapick{display:flex;justify-content:center;margin:2px 0 18px}
-  .avapick .c{width:84px;height:84px;border-radius:50%;background:var(--alt);border:1px dashed var(--border);display:grid;place-items:center;color:var(--muted);position:relative}
+  .avapick .c{width:84px;height:84px;border-radius:50%;background:var(--alt);border:1px dashed var(--ctlline);display:grid;place-items:center;color:var(--muted);position:relative}
   .avapick .cam{position:absolute;bottom:-2px;right:-2px;width:30px;height:30px;border-radius:50%;background:var(--btnBg);color:var(--btnText);display:grid;place-items:center;border:2px solid var(--bg)}
   .spacer{flex:1;min-height:16px}
   .success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 34px;background:var(--bg)}
@@ -296,12 +318,12 @@
   .chead{display:flex;align-items:center;justify-content:space-between;padding:52px 18px 12px}
   .chead .x{width:40px;height:40px;border-radius:50%;background:var(--alt);border:none;color:var(--text);display:grid;place-items:center;cursor:pointer}
   .chead .ct{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.02em}
-  .ctext{margin:2px 18px 0;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;min-height:140px;font-size:15.5px;line-height:1.55;color:var(--text)}
+  .ctext{margin:2px 18px 0;background:var(--card);border:1px solid var(--ctlline);border-radius:16px;padding:16px;min-height:140px;font-size:15.5px;line-height:1.55;color:var(--text)}
   .clabel{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:18px 20px 8px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px}
-  .catchip{background:var(--card);border:1px solid var(--border);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:13px;font-weight:700}
+  .catchip{background:var(--card);border:1px solid var(--ctlline);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:13px;font-weight:700}
   .catchip.on{background:var(--btnBg);color:var(--btnText);border-color:var(--btnBg)}
-  .addphoto{margin:14px 18px 0;border:1px dashed var(--border);border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-weight:700;font-size:14px}
+  .addphoto{margin:14px 18px 0;border:1px dashed var(--ctlline);border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-weight:700;font-size:14px}
   /* Testimony photo, W2.3 slice 3. The picked image replaces the dashed .addphoto box in
      place; the sandbox draws every real photo as the same navy/blue gradient the ONB hero
      and the WATCH .thumb use, with a .ph label naming the file. */
@@ -330,7 +352,7 @@
   .prayer .meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px}
   .prayer .body{font-size:15px;line-height:1.5;color:var(--text)}
   .prayer .acts{display:flex;align-items:center;gap:14px;margin-top:12px}
-  .praybtn{display:inline-flex;align-items:center;gap:7px;background:var(--alt);border:1px solid var(--border);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:12.5px;font-weight:700}
+  .praybtn{display:inline-flex;align-items:center;gap:7px;background:var(--alt);border:1px solid var(--ctlline);color:var(--sub);border-radius:100px;padding:8px 14px;font-size:12.5px;font-weight:700}
   .praybtn.on{background:rgba(31,138,91,.14);border-color:rgba(31,138,91,.4);color:var(--green)}
   .praybtn.committed{background:rgba(185,134,0,.14);border-color:rgba(185,134,0,.42);color:var(--eye)}
   .praycount{font-size:12px;color:var(--muted);font-weight:600}
@@ -478,7 +500,7 @@
   .pl-seg button.on{background:var(--raised);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.10)}
   .pl-seg button.off{opacity:.45}
   .pl-acts{display:flex;gap:10px;margin-top:10px}
-  .pl-act{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:1px solid var(--border);border-radius:12px;padding:13px 10px;font-family:var(--font);font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer}
+  .pl-act{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:1px solid var(--ctlline);border-radius:12px;padding:13px 10px;font-family:var(--font);font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer}
   .pl-act .v{color:var(--eye);font-weight:800}
 
   /* B · one bar, three segments, hairlines between them. */
@@ -561,7 +583,7 @@
   .note{max-width:1400px;margin:6px auto 0;font-size:12.5px;color:var(--muted)}
   .note code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--alt);padding:1px 5px;border-radius:5px;color:var(--text)}
   /* --- added components (HTML-first pass) --- */
-  .searchbar{display:flex;align-items:center;gap:10px;margin:8px 16px 2px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 14px;color:var(--muted)}
+  .searchbar{display:flex;align-items:center;gap:10px;margin:8px 16px 2px;background:var(--card);border:1px solid var(--ctlline);border-radius:14px;padding:11px 14px;color:var(--muted)}
   .searchbar .q{flex:1;font-size:15px;color:var(--text)}
   .searchbar .cancel{font-size:14px;font-weight:700;color:var(--blue);flex:none}
   .filterrow{display:flex;gap:8px;padding:12px 16px 2px;flex-wrap:wrap}
@@ -576,7 +598,7 @@
   .notecard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px 16px;margin:0 16px 10px}
   .notecard .nt{font-size:11px;font-weight:800;color:var(--eye);letter-spacing:.04em}
   .notecard .nb{font-size:14.5px;line-height:1.5;color:var(--text);margin-top:6px}
-  .noteadd{display:flex;align-items:center;gap:10px;margin:4px 16px 0;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 14px;color:var(--muted);font-size:14.5px}
+  .noteadd{display:flex;align-items:center;gap:10px;margin:4px 16px 0;background:var(--card);border:1px solid var(--ctlline);border-radius:14px;padding:11px 14px;color:var(--muted);font-size:14.5px}
   .noteadd .plus{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;flex:none;font-size:18px;font-weight:700}
   /* The notes surface is ONE document (W3.1 slice 4). `sermon_notes` holds one body
      per member per message and 08 autosaves it, so the cards this frame used to draw
@@ -602,7 +624,7 @@
   .profstats .ps{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center}
   .profstats .ps .n{font-family:var(--disp);font-weight:800;font-size:20px;color:var(--text)}
   .profstats .ps .l{font-size:10.5px;color:var(--muted);font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
-  .txtarea{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;min-height:108px;color:var(--muted);font-size:15px;line-height:1.5;margin:4px 16px 12px}
+  .txtarea{background:var(--card);border:1px solid var(--ctlline);border-radius:14px;padding:14px;min-height:108px;color:var(--muted);font-size:15px;line-height:1.5;margin:4px 16px 12px}
   .aboutsec{padding:0 20px}
   .aboutsec h3{font-family:var(--disp);font-weight:800;font-size:17px;color:var(--text);margin:16px 0 6px}
   .aboutsec p{font-size:14.5px;line-height:1.6;color:var(--sub);margin:0}
@@ -718,7 +740,7 @@
   .fontstep button{width:44px;height:40px;border:none;background:var(--card);border-radius:9px;font-family:var(--disp);font-weight:800;color:var(--text);cursor:pointer}
   .fontstep .fv{font-size:13px;font-weight:700;color:var(--text)}
   .themeseg{display:flex;gap:8px}
-  .themeseg .ts{flex:1;border-radius:12px;padding:12px 0;text-align:center;font-size:12.5px;font-weight:700;border:1.5px solid var(--border)}
+  .themeseg .ts{flex:1;border-radius:12px;padding:12px 0;text-align:center;font-size:12.5px;font-weight:700;border:1.5px solid var(--ctlline)}
   .themeseg .ts.light{background:#fff;color:#14213d}
   .themeseg .ts.sepia{background:#f4ead2;color:#5a4a28}
   .themeseg .ts.dark{background:#12100c;color:#d8d2c4}
@@ -804,7 +826,7 @@
   .togrow .tl{font-size:14.5px;font-weight:700;color:var(--text)}
   .togrow .td{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
   .switch{width:46px;height:28px;border-radius:100px;background:var(--green);position:relative;flex:none}
-  .switch.off{background:var(--border)}
+  .switch.off{background:var(--ctlline)}
   .switch i{position:absolute;top:3px;left:21px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
   .switch.off i{left:3px}
   .osbanner{margin:6px 16px 0;background:var(--alt);border:1px solid var(--border);border-radius:14px;padding:13px 15px}
@@ -1864,7 +1886,21 @@
   <div class="gallery t-light" id="w33Light">
 
     <!-- MORE · member. Variant B of two shown to Ayo 2026-08-15; A (Home's rhythm
-         band in this slot) was not chosen and is deleted rather than kept as clutter. -->
+         band in this slot) was not chosen and is deleted rather than kept as clutter.
+
+         W4.7 (2026-09-02): THE SHIPPING MVP DRAWS THREE FEWER ROWS THAN THIS FRAME,
+         and that is a deliberate deviation rather than drift. "Daily devotional"
+         (W4.4) and the whole "Read" block, Bookstore plus My Library (W4.2), are
+         deferred by `18`'s own MVP definition, and their screens are still
+         `StubScreen` placeholders. A row that opens "on its way" is the placeholder
+         content App Store guideline 2.1 rejects, so the doors are shut behind
+         `apps/mobile/src/lib/features.ts` until their items land. The Read LABEL
+         goes with its two rows: those are all it holds, and a labelled card with
+         nothing in it is worse than no section.
+
+         The frame keeps all three, on purpose: it is the design for the finished
+         hub, and W4.2/W4.4 delete their flag and build to exactly this. Do not
+         "fix" the app back to the frame in the meantime. -->
     <div class="device">
       <p class="name"><b>More</b> &middot; member (the &#8220;My life&#8221; section)</p>
       <div class="phone">
@@ -2297,7 +2333,12 @@
       </div>
     </div>
 
-    <!-- MORE (guest) -->
+    <!-- MORE (guest). The same W4.7 deviation as the member frame applies here:
+         Daily devotional and the Read block (Bookstore + My Library) are hidden in
+         the shipping MVP behind `apps/mobile/src/lib/features.ts`. It matters on
+         THIS frame too, because the Read section was never member-gated: a guest
+         used to see Bookstore and a My Library wearing the "Sign in" badge. See the
+         full note on the W3.3 member frame above. -->
     <div class="device">
       <p class="name"><b>More</b> · guest hub (no rhythm band)</p>
       <div class="phone">

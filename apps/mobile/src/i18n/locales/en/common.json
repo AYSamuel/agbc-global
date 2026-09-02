@@ -15,7 +15,8 @@
     "watch": "Watch",
     "family": "Family",
     "give": "Give",
-    "more": "More"
+    "more": "More",
+    "railLabel": "Main navigation"
   },
   "onboarding": {
     "welcomeEyebrow": "One family, many nations",

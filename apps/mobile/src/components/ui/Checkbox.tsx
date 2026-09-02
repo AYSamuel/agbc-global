@@ -61,7 +61,7 @@ export function Checkbox({
             height: 24,
             borderRadius: 7,
             borderWidth: 2,
-            borderColor: checked ? colors.btnBg : colors.cardline,
+            borderColor: checked ? colors.btnBg : colors.controlline,
             backgroundColor: checked ? colors.btnBg : colors.card,
             alignItems: 'center',
             justifyContent: 'center',

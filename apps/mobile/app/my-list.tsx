@@ -10,9 +10,10 @@ import {
   CircleIconButton,
   EmptyGlyph,
   EmptyState,
+  ListRow,
+  ListScreen,
   MenuLabel,
   PersonIcon,
-  Screen,
   Skeleton,
 } from '@/components/ui';
 import { queueSave, useSavedListQuery } from '@/features/watch/saved';
@@ -42,118 +43,130 @@ export default function MyListScreen() {
   const signedIn = status === 'member';
   const query = useSavedListQuery(signedIn);
 
-  return (
-    <Screen widthClass="capped" padded={false}>
-      <AppHeader
-        title={t('watch:myListTitle')}
-        onBack={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/(tabs)/more');
-        }}
-        backLabel={t('common:back')}
-      />
+  // Rows only when there ARE rows. Every other case is a placeholder, and a
+  // virtualized list needs the two apart (W4.7 slice 3): the four states are
+  // unchanged, only their shape moved.
+  const rows = signedIn && !query.isPending && !query.isError ? query.data : [];
 
-      {/* `.rrow` sits at a 16px inset like the frame; the empty and guest
-          states bring their own padding. */}
-      <View style={{ paddingHorizontal: spacing.lg }}>
-        {!signedIn ? (
-          // Reachable by deep link only: the PROFILE row that leads here exists
-          // only for a member, and the Save gate stands in front of the action.
-          // Same PERSON glyph and sentence shape as MY-POSTS and PROFILE: the
-          // account is what holds the answer.
-          <EmptyState
-            icon={<EmptyGlyph Icon={PersonIcon} />}
-            title={t('watch:myListGuestTitle')}
-            body={t('watch:myListGuestBody')}
-            actionLabel={t('common:signIn')}
-            onAction={() => {
-              // A full-screen gate: "shown" has no earlier honest moment than
-              // the CTA tap (the my_posts precedent).
-              track('gate_shown', { action_type: 'my_list' });
-              beginGateSignIn({ kind: 'my_list' });
-              router.push('/auth');
+  const placeholder = !signedIn ? (
+    // Reachable by deep link only: the PROFILE row that leads here exists
+    // only for a member, and the Save gate stands in front of the action.
+    // Same PERSON glyph and sentence shape as MY-POSTS and PROFILE: the
+    // account is what holds the answer.
+    <EmptyState
+      icon={<EmptyGlyph Icon={PersonIcon} />}
+      title={t('watch:myListGuestTitle')}
+      body={t('watch:myListGuestBody')}
+      actionLabel={t('common:signIn')}
+      onAction={() => {
+        // A full-screen gate: "shown" has no earlier honest moment than
+        // the CTA tap (the my_posts precedent).
+        track('gate_shown', { action_type: 'my_list' });
+        beginGateSignIn({ kind: 'my_list' });
+        router.push('/auth');
+      }}
+    />
+  ) : query.isPending ? (
+    <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+      <Skeleton height={92} />
+      <Skeleton height={92} />
+      <Skeleton height={92} />
+    </View>
+  ) : query.isError ? (
+    <EmptyState
+      title={t('errors:somethingWrong')}
+      body={t('errors:couldntLoad')}
+      actionLabel={t('errors:tryAgain')}
+      onAction={() => {
+        void query.refetch();
+      }}
+    />
+  ) : (
+    // The frame's `nothing saved yet`: teach the gesture, then send them
+    // where the messages are (08's browse CTA).
+    <EmptyState
+      icon={<EmptyGlyph Icon={BookmarkIcon} />}
+      title={t('watch:myListEmptyTitle')}
+      body={t('watch:myListEmptyBody')}
+      actionLabel={t('watch:browseMessages')}
+      onAction={() => {
+        router.push('/(tabs)/watch');
+      }}
+    />
+  );
+
+  return (
+    <ListScreen
+      widthClass="capped"
+      padded={false}
+      data={rows}
+      keyExtractor={(item) => item.sermon.id}
+      header={
+        <>
+          <AppHeader
+            title={t('watch:myListTitle')}
+            onBack={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace('/(tabs)/more');
             }}
+            backLabel={t('common:back')}
           />
-        ) : query.isPending ? (
-          <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
-            <Skeleton height={92} />
-            <Skeleton height={92} />
-            <Skeleton height={92} />
-          </View>
-        ) : query.isError ? (
-          <EmptyState
-            title={t('errors:somethingWrong')}
-            body={t('errors:couldntLoad')}
-            actionLabel={t('errors:tryAgain')}
-            onAction={() => {
-              void query.refetch();
+          {rows.length > 0 ? (
+            // The frame's `.mlabel` under the header ("12 saved"): MenuLabel
+            // is that class, and the screen's 16px inset plus its own 4px
+            // lands on the frame's 20px side padding.
+            <ListRow>
+              <MenuLabel label={t('watch:savedCount', { count: rows.length })} />
+            </ListRow>
+          ) : null}
+        </>
+      }
+      // `.rrow` sits at a 16px inset like the frame; the empty and guest
+      // states bring their own padding.
+      empty={<ListRow>{placeholder}</ListRow>}
+      renderItem={(item) => (
+        <ListRow>
+          <SermonRow
+            sermon={item.sermon}
+            // Nothing left to play: unavailable AND no self-hosted audio
+            // (08: audio that survived keeps the row ordinary).
+            gone={
+              item.sermon.status === 'unavailable' &&
+              item.sermon.audio_path === null
+            }
+            onPress={() => {
+              router.push({
+                pathname: '/sermon/[id]',
+                params: { id: item.sermon.id },
+              });
             }}
-          />
-        ) : query.data.length === 0 ? (
-          // The frame's `nothing saved yet`: teach the gesture, then send them
-          // where the messages are (08's browse CTA).
-          <EmptyState
-            icon={<EmptyGlyph Icon={BookmarkIcon} />}
-            title={t('watch:myListEmptyTitle')}
-            body={t('watch:myListEmptyBody')}
-            actionLabel={t('watch:browseMessages')}
-            onAction={() => {
-              router.push('/(tabs)/watch');
-            }}
-          />
-        ) : (
-          <>
-            {/* The frame's `.mlabel` under the header ("12 saved"): MenuLabel
-                is that class, and the screen's 16px inset plus its own 4px
-                lands on the frame's 20px side padding. */}
-            <MenuLabel
-              label={t('watch:savedCount', { count: query.data.length })}
-            />
-            {query.data.map((item) => (
-              <SermonRow
-                key={item.sermon.id}
-                sermon={item.sermon}
-                // Nothing left to play: unavailable AND no self-hosted audio
-                // (08: audio that survived keeps the row ordinary).
-                gone={
-                  item.sermon.status === 'unavailable' &&
-                  item.sermon.audio_path === null
-                }
-                onPress={() => {
-                  router.push({
-                    pathname: '/sermon/[id]',
-                    params: { id: item.sermon.id },
-                  });
-                }}
-                trailing={
-                  // `.rsave`, at the library's 40px rather than the frame's 36:
-                  // 36 is below our own 44px touch-target floor (05), and this
-                  // is the same control the player's top bar carries. With
-                  // CircleIconButton's hitSlop it answers at 48.
-                  //
-                  // Deliberately NOT dimmed on a gone row: the way out is where
-                  // the hand already expects it, which is the frame's own note.
-                  <CircleIconButton
-                    accessibilityLabel={t('watch:removeFromList')}
-                    backgroundColor={colors.alt}
-                    icon={
-                      <BookmarkIcon
-                        size={17}
-                        color={palette.gold}
-                        fill={palette.gold}
-                      />
-                    }
-                    onPress={() => {
-                      queueSave(item.sermon.id, false);
-                    }}
+            trailing={
+              // `.rsave`, at the library's 40px rather than the frame's 36:
+              // 36 is below our own 44px touch-target floor (05), and this
+              // is the same control the player's top bar carries. With
+              // CircleIconButton's hitSlop it answers at 48.
+              //
+              // Deliberately NOT dimmed on a gone row: the way out is where
+              // the hand already expects it, which is the frame's own note.
+              <CircleIconButton
+                accessibilityLabel={t('watch:removeFromList')}
+                backgroundColor={colors.alt}
+                icon={
+                  <BookmarkIcon
+                    size={17}
+                    color={palette.gold}
+                    fill={palette.gold}
                   />
                 }
+                onPress={() => {
+                  queueSave(item.sermon.id, false);
+                }}
               />
-            ))}
-            <View style={{ height: spacing.md }} />
-          </>
-        )}
-      </View>
-    </Screen>
+            }
+          />
+        </ListRow>
+      )}
+      footer={rows.length > 0 ? <View style={{ height: spacing.md }} /> : null}
+    />
   );
 }

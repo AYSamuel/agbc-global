@@ -78,5 +78,6 @@
   "notesUnsaved": "Noch nicht gespeichert",
   "notesKeptOnPhone": "Auf diesem Handy aufbewahrt. Wir speichern es, sobald du wieder online bist.",
   "notesGuestTitle": "Anmelden, um deine Notizen zu behalten",
-  "notesGuestBody": "Deine Notizen sind privat und bleiben bei deinem Konto, damit sie auf jedem Handy da sind."
+  "notesGuestBody": "Deine Notizen sind privat und bleiben bei deinem Konto, damit sie auf jedem Handy da sind.",
+  "paneTitle": "Botschaften"
 }

@@ -10,6 +10,7 @@ import {
   WatchTabIcon,
   type IconProps,
 } from '@/components/ui';
+import { useLayout } from '@/lib/layout';
 
 // The five roots per docs/spec/04: Home · Watch · Family · Give · More. Icons and
 // order match the mockup .tabbar exactly.
@@ -40,6 +41,7 @@ interface TabBarSlice {
 
 function AppTabBar({ state, navigation }: TabBarSlice) {
   const { t } = useTranslation();
+  const { isTablet } = useLayout();
 
   const items = state.routes.map((route) => {
     const config = TAB_CONFIG.find((tab) => tab.name === route.name);
@@ -69,6 +71,12 @@ function AppTabBar({ state, navigation }: TabBarSlice) {
       navigation.navigate(key);
     }
   };
+
+  // `05` (2026-07-12): above ~600dp the bottom bar becomes a rail, and the rail
+  // is drawn by `TabletShell` OUTSIDE this navigator so it survives a pushed
+  // route. A bar slot cannot do that, because it belongs to the five roots.
+  // Here that leaves nothing to draw.
+  if (isTablet) return null;
 
   return <TabBar items={items} activeKey={activeKey} onPress={onPress} />;
 }

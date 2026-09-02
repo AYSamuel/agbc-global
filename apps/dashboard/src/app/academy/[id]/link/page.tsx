@@ -149,7 +149,7 @@ export default async function LinkRegistrationPage({
             action={
               <Link
                 href={`/academy/${registration.id}/link?member=${signinOwner.id}`}
-                className="inline-flex min-h-12 items-center rounded-button border border-cardline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
+                className="inline-flex min-h-12 items-center rounded-button border border-controlline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
               >
                 {copy.academy.signinFixAction(signinOwner.displayName)}
               </Link>
@@ -179,7 +179,7 @@ export default async function LinkRegistrationPage({
         <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <Link
             href={`/academy/${registration.id}/link`}
-            className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+            className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
           >
             {copy.academy.actions.backToSuggestions}
           </Link>
@@ -308,7 +308,7 @@ export default async function LinkRegistrationPage({
           defaultValue={query}
           placeholder={copy.academy.link.searchPlaceholder}
           aria-describedby="q-hint"
-          className="mt-1.5 min-h-12 w-full rounded-input border border-cardline bg-card px-3.5 py-3 text-body text-text"
+          className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3.5 py-3 text-body text-text"
         />
         <p id="q-hint" className="mt-1.5 text-small text-muted">
           {copy.academy.link.searchHint}
@@ -513,7 +513,7 @@ function MemberRow({
       {reason ? <Pill>{reason}</Pill> : null}
       <Link
         href={`/academy/${registrationId}/link?member=${member.id}`}
-        className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+        className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
       >
         {copy.academy.link.choose(firstName(member.displayName))}
       </Link>

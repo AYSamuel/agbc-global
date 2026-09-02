@@ -66,6 +66,7 @@ export function TestimonyCard({
   onGloryGate,
   onShare,
   scope,
+  selected = false,
 }: {
   testimony: TestimonyFeedItem;
   branchName: string | null;
@@ -80,6 +81,11 @@ export function TestimonyCard({
   /** Which feed is showing this card, for `glory_tapped`. Only the Family feed
    * has one; Home's highlight and the detail screen leave it out. */
   scope?: FamilyScope;
+  /** Open in a tablet two-pane's detail. The mockup sets `border-color:var(--blue)`
+   * on the `.testi` ITSELF, so the card's own border changes colour: it does not
+   * gain a second ring, and nothing is drawn outside it. Getting that wrong is
+   * what made the first version ring the whole padded row (Ayo, 2026-09-02). */
+  selected?: boolean;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -107,7 +113,7 @@ export function TestimonyCard({
       style={({ pressed }) => ({
         backgroundColor: colors.card,
         borderWidth: 1,
-        borderColor: colors.cardline,
+        borderColor: selected ? colors.blue : colors.cardline,
         borderRadius: radius.card,
         padding: CARD_PADDING,
         marginBottom: spacing.md,
@@ -224,7 +230,13 @@ export function TestimonyCard({
           accessibilityRole="button"
           accessibilityLabel={t('family:share')}
           onPress={onShare}
-          hitSlop={spacing.sm}
+          // 13px of bold text is a ~17dp line box, so `spacing.sm` on every side
+          // left the TOUCH target 33dp tall: under this project's own 44 floor
+          // (`hitTarget.min`), on the most-tapped card in the app. Found by
+          // measuring the accessibility tree at W4.7 slice 5, not by looking.
+          // 17 + 14 + 14 = 45. Horizontal keeps the smaller inset: the row has
+          // the Glory pill beside it and there is nothing to gain by overlapping.
+          hitSlop={{ top: 14, bottom: 14, left: spacing.sm, right: spacing.sm }}
         >
           <Text
             style={{

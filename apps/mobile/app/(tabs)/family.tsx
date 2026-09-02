@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
@@ -10,6 +10,8 @@ import {
   Fab,
   FamilyTabIcon,
   GateSheet,
+  ListRow,
+  ListScreen,
   Screen,
   SegmentedControl,
   Skeleton,
@@ -18,18 +20,21 @@ import {
 import { FamilyMap } from '@/features/family/FamilyMap';
 import { joinMeta } from '@/features/family/format';
 import { useBlockedAuthorIds } from '@/features/family/moderation';
-import { AnsweredPrayerCard, PrayerCard } from '@/features/family/PrayerCard';
+import { AnsweredPrayerCard } from '@/features/family/PrayerCard';
 import {
   usePrayerFeedQuery,
   useTestimonyFeedQuery,
   type FamilyScope,
   type PrayerFeedItem,
+  type TestimonyFeedItem,
 } from '@/features/family/queries';
+import { PrayerRow } from '@/features/family/PrayerRow';
 import { ScopeToggle } from '@/features/family/ScopeToggle';
+import { useFamilyViewStore } from '@/features/family/viewState';
+import { useLayout } from '@/lib/layout';
 import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
 import { useBranchColors } from '@/features/family/useBranchColors';
-import { useIntercessionPress } from '@/features/family/useIntercession';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
 import { useMapBranches } from '@/features/family/useMapBranches';
@@ -64,19 +69,36 @@ export default function Family() {
   // `?tab=testimonies` (with a nonce `k` so a repeat tap still re-applies it).
   // Applied with React's "adjust state on a changed prop" pattern (no effect):
   // track the nonce and set the tab during render when it changes.
+  //
+  // The tab and the scope moved into a store at W4.7 slice 4: on a tablet the
+  // feed is drawn twice, here and in the list pane beside an open post, and two
+  // copies of "which feed am I looking at" is the one-owner rule broken.
   const params = useLocalSearchParams<{ tab?: string; k?: string }>();
-  const [tab, setTab] = useState<SubTab>(asSubTab(params.tab) ?? 'testimonies');
-  const [lastNav, setLastNav] = useState(params.k);
-  if (params.k !== lastNav) {
-    setLastNav(params.k);
+  const tab = useFamilyViewStore((s) => s.tab);
+  const setTab = useFamilyViewStore((s) => s.setTab);
+  // A caller can land the user on a specific sub-tab: Home's "From the family >
+  // See all" pushes `?tab=testimonies` with a nonce `k`, so a repeat tap of the
+  // same link re-applies it.
+  //
+  // AN EFFECT, NOT AN ADJUST-DURING-RENDER. While the tab was this component's
+  // own `useState`, setting it during render was React's documented "adjust
+  // state on a changed prop" pattern. Moving it into a store made that a write
+  // to a DIFFERENT component's state during render, which React cannot track:
+  // the device showed "Can't perform a React state update on a component that
+  // hasn't mounted yet" the moment the screen loaded (2026-09-02). Keyed on both
+  // the tab and the nonce, this one effect covers the first arrival AND the
+  // repeat tap, so the two hand-rolled paths it replaces are both gone.
+  useEffect(() => {
     const requested = asSubTab(params.tab);
     if (requested) setTab(requested);
-  }
+  }, [params.tab, params.k, setTab]);
   // Everywhere is the default so "one family, many nations" is what you meet
   // first; narrowing to your branch is the deliberate act (docs/spec/09).
-  const [scope, setScope] = useState<FamilyScope>('everywhere');
+  const scope = useFamilyViewStore((s) => s.scope);
+  const setScope = useFamilyViewStore((s) => s.setScope);
   const [gateVisible, setGateVisible] = useState(false);
 
+  const { isTablet } = useLayout();
   const branchId = branch?.id ?? null;
   // Guard: "My branch" needs a chosen branch. If it is somehow selected without
   // one, fall back to Everywhere so the feed loads instead of skeleton-locking on
@@ -157,7 +179,14 @@ export default function Family() {
   // carries its own centred "Share" CTA, and a map has nothing to compose.
   const showFab = tab !== 'map' && (active.data?.length ?? 0) > 0;
 
-  const renderFeed = () => {
+  /**
+   * The four states, split from the ROWS so the list can virtualize (W4.7 slice
+   * 3). This used to be one `renderFeed()` returning either a placeholder or an
+   * array of cards into a `ScrollView`; a `FlatList` needs the two separately,
+   * so the decision is unchanged and only its shape moved. Returns null when
+   * there are rows to draw.
+   */
+  const feedPlaceholder = (): ReactElement | null => {
     // Loading: skeleton cards at the real card height so nothing shifts when
     // content lands (mockup STATE loading). Primary actions stay hidden rather
     // than disabled while loading (project convention, 2026-07-20).
@@ -186,93 +215,103 @@ export default function Family() {
       );
     }
 
-    if (tab === 'testimonies') {
-      const rows = testimonies.data ?? [];
-      if (rows.length === 0) {
-        return (
-          <EmptyState
-            title={t('family:emptyTestimoniesTitle')}
-            body={t('family:emptyTestimoniesBody')}
-            icon={<StubIcon Icon={FamilyTabIcon} />}
-            actionLabel={t('family:shareTestimony')}
-            onAction={() => {
-              startCompose('testimony');
-            }}
-          />
-        );
-      }
-      return rows.map((item) => {
-        const branchName = branchNames[item.branch_id] ?? null;
-        return (
-          <TestimonyCard
-            key={item.id}
-            testimony={item}
-            branchName={branchName}
-            branchColor={branchColorFor(item.branch_id)}
-            // This screen is the one surface with a scope; the tap's event
-            // carries it from here (docs/spec/22 §5, W2.4's one-owner rule).
-            scope={effectiveScope}
-            onPress={() => {
-              router.push({
-                pathname: '/testimony/[id]',
-                params: { id: item.id },
-              });
-            }}
-            onGloryGate={() => {
-              openGate({ kind: 'glory', testimonyId: item.id });
-            }}
-            // Sharing is outbound, not a gated contribution: open the OS sheet.
-            onShare={() => {
-              void shareText(
-                testimonyShareText(
-                  item.body,
-                  joinMeta([item.author_name, branchName]),
-                  t('appName'),
-                ),
-              );
-            }}
-          />
-        );
-      });
-    }
+    if ((active.data ?? []).length > 0) return null;
 
-    const rows = prayers.data ?? [];
-    if (rows.length === 0) {
+    return tab === 'testimonies' ? (
+      <EmptyState
+        title={t('family:emptyTestimoniesTitle')}
+        body={t('family:emptyTestimoniesBody')}
+        icon={<StubIcon Icon={FamilyTabIcon} />}
+        actionLabel={t('family:shareTestimony')}
+        onAction={() => {
+          startCompose('testimony');
+        }}
+      />
+    ) : (
+      <EmptyState
+        title={t('family:emptyPrayerTitle')}
+        body={t('family:emptyPrayerBody')}
+        icon={<StubIcon Icon={FamilyTabIcon} />}
+        actionLabel={t('family:sharePrayer')}
+        onAction={() => {
+          startCompose('prayer');
+        }}
+      />
+    );
+  };
+
+  /**
+   * A tagged row rather than the raw union, so `renderItem` narrows without
+   * asking which query it came from. The two tabs never mix, but the list takes
+   * one `data` array and the tag is what keeps that type-safe.
+   */
+  type FeedRow =
+    | { kind: 'testimony'; item: TestimonyFeedItem }
+    | { kind: 'prayer'; item: PrayerFeedItem };
+
+  const feedRows: FeedRow[] =
+    tab === 'testimonies'
+      ? (testimonies.data ?? []).map((item) => ({
+          kind: 'testimony' as const,
+          item,
+        }))
+      : (prayers.data ?? []).map((item) => ({ kind: 'prayer' as const, item }));
+
+  const renderFeedRow = (row: FeedRow): ReactElement => {
+    if (row.kind === 'testimony') {
+      const item = row.item;
+      const branchName = branchNames[item.branch_id] ?? null;
       return (
-        <EmptyState
-          title={t('family:emptyPrayerTitle')}
-          body={t('family:emptyPrayerBody')}
-          icon={<StubIcon Icon={FamilyTabIcon} />}
-          actionLabel={t('family:sharePrayer')}
-          onAction={() => {
-            startCompose('prayer');
+        <TestimonyCard
+          testimony={item}
+          branchName={branchName}
+          branchColor={branchColorFor(item.branch_id)}
+          // This screen is the one surface with a scope; the tap's event
+          // carries it from here (docs/spec/22 §5, W2.4's one-owner rule).
+          scope={effectiveScope}
+          onPress={() => {
+            router.push({
+              pathname: '/testimony/[id]',
+              params: { id: item.id },
+            });
+          }}
+          onGloryGate={() => {
+            openGate({ kind: 'glory', testimonyId: item.id });
+          }}
+          // Sharing is outbound, not a gated contribution: open the OS sheet.
+          onShare={() => {
+            void shareText(
+              testimonyShareText(
+                item.body,
+                joinMeta([item.author_name, branchName]),
+                t('appName'),
+              ),
+            );
           }}
         />
       );
     }
-    return rows.map((item) =>
-      item.answered_at ? (
-        <AnsweredPrayerCard
-          key={item.id}
-          prayer={item}
-          onPress={() => {
-            router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
-          }}
-        />
-      ) : (
-        <PrayerRow
-          key={item.id}
-          prayer={item}
-          branchName={branchNames[item.branch_id] ?? null}
-          scope={effectiveScope}
-          onOpen={() => {
-            router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
-          }}
-          onGate={() => {
-            openGate({ kind: 'intercede', prayerId: item.id });
-          }}
-        />
-      ),
+
+    const item = row.item;
+    return item.answered_at ? (
+      <AnsweredPrayerCard
+        prayer={item}
+        onPress={() => {
+          router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
+        }}
+      />
+    ) : (
+      <PrayerRow
+        prayer={item}
+        branchName={branchNames[item.branch_id] ?? null}
+        scope={effectiveScope}
+        onOpen={() => {
+          router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
+        }}
+        onGate={() => {
+          openGate({ kind: 'intercede', prayerId: item.id });
+        }}
+      />
     );
   };
 
@@ -368,23 +407,28 @@ export default function Family() {
           </View>
         </Screen>
       ) : (
-        <Screen
-          widthClass="capped"
+        <ListScreen
+          // The frame's `.tcol` on a tablet (`FAMILY · tablet portrait · single
+          // column + rail`): 600 rather than the 680 reading measure, because
+          // this is a column of cards beside a rail, not a page of prose. On a
+          // phone neither measure binds.
+          widthClass={isTablet ? 'column' : 'capped'}
           padded={false}
           refreshing={manualRefresh.refreshing}
           onRefresh={manualRefresh.onRefresh}
-        >
-          {header}
-          {/* Cards sit at 16px (mockup .testi/.prayer margin 16), inside the
-              title's 20px gutter. */}
-          <View
-            style={{ paddingHorizontal: spacing.lg, marginTop: spacing.sm }}
-          >
-            {renderFeed()}
-          </View>
-          {/* Clears the last card from under the pinned FAB (mockup's spacer). */}
-          {showFab ? <View style={{ height: 88 }} /> : null}
-        </Screen>
+          data={feedRows}
+          keyExtractor={(row) => row.item.id}
+          // Cards sit at 16px (mockup .testi/.prayer margin 16), inside the
+          // title's 20px gutter. The ScrollView version wrapped the whole feed in
+          // one padded View; a list has no such wrapper, so the inset is the row's.
+          renderItem={(row) => <ListRow>{renderFeedRow(row)}</ListRow>}
+          header={
+            <View style={{ marginBottom: spacing.sm }}>{header}</View>
+          }
+          empty={<ListRow>{feedPlaceholder()}</ListRow>}
+          // Clears the last card from under the pinned FAB (mockup's spacer).
+          footer={showFab ? <View style={{ height: 88 }} /> : null}
+        />
       )}
 
       {showFab ? (
@@ -423,32 +467,3 @@ export default function Family() {
  * One prayer card. Its own component because the commitment hook has to be
  * called per row, and a hook cannot live inside the `map` that renders the feed.
  */
-function PrayerRow({
-  prayer,
-  branchName,
-  scope,
-  onOpen,
-  onGate,
-}: {
-  prayer: PrayerFeedItem;
-  branchName: string | null;
-  scope: FamilyScope;
-  onOpen: () => void;
-  onGate: () => void;
-}) {
-  const { commitment, onPress, onUndo } = useIntercessionPress(
-    prayer,
-    onGate,
-    scope,
-  );
-  return (
-    <PrayerCard
-      prayer={prayer}
-      branchName={branchName}
-      commitment={commitment}
-      onPress={onOpen}
-      onCommit={onPress ?? (() => undefined)}
-      onUndo={onUndo}
-    />
-  );
-}

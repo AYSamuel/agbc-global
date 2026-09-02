@@ -85,7 +85,7 @@ export function Schedule({
           action={
             <Link
               href="/verses/import"
-              className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+              className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
             >
               {copy.verses.runningOutAction(nameOf(worst.language))}
             </Link>
@@ -131,7 +131,7 @@ export function Schedule({
         </Link>
         <Link
           href="/verses/new"
-          className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+          className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
         >
           {copy.verses.addAction}
         </Link>

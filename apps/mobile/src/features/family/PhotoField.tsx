@@ -154,7 +154,7 @@ export function PhotoField({
           gap: 10,
           borderWidth: 1,
           borderStyle: 'dashed',
-          borderColor: colors.cardline,
+          borderColor: colors.controlline,
           borderRadius: radius.cardTight,
           padding: 18,
           opacity: pressed ? 0.7 : 1,

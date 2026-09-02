@@ -356,6 +356,45 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - **One contrast finding is already measured and waiting for this item** (W3.3 slice 1, 2026-08-15): in DARK, surface separation is carried by hairlines at **~1.43:1** (`cardline` and `bandline` are both `#28323f` on a `#0e1420` page), under WCAG 1.4.11's 3:1 for a boundary that identifies a component. It is the whole dark theme rather than one component, so it was deliberately not fixed inside a feature slice. Decide here whether those boundaries need to identify anything (content mostly does that on its own) or whether the dark palette gets re-toned; either way it is one decision applied to every card, band and toast at once.
 - Done: the `21` §4 manual matrix executed and recorded on the real low-end Android + current iPhone.
 
+**W4.7 is COMPLETE (2026-09-02), all six slices.** Three of its clauses turned out to describe
+work that had never been done rather than work needing a check: no tablet layout code existed
+at all, no list in the app was virtualized, and the contrast problem was both themes plus
+light-mode TEXT nobody had measured. What shipped: the deferred-surface flags (`18`'s MVP cut
+made true in the app, since a "coming soon" row is what App Store 2.1 rejects), the contrast
+pass, virtualization behind a shared `ListScreen`, the tablet shell with its rail plus HOME's
+grid and WATCH's and FAMILY's two-panes, and five hit targets a thumb could miss. SETTINGS'
+two-pane is deferred to v1.1 (`05`) because its frame needs an information architecture
+Settings does not have. The manual matrix is executed except for a LOW-END device and a human
+TalkBack pass, both deliberately left un-ticked rather than claimed.
+
+**The lessons, and the first three are one lesson wearing three hats.**
+- **An instrument that cannot fail is not evidence.** The first screen-state sweep marked every
+  screen green on all four states because it followed imports into the shared component
+  library; it was thrown away. The first contrast before/after put both versions on one page
+  sharing the NEW stylesheet, so every difference it showed was an artefact.
+- **An instrument can be blind in one direction.** The hit-target sweep reads VIEW bounds, so
+  it FINDS a target that is too small and can never CONFIRM the fix, because `hitSlop` does not
+  move bounds. Re-running it printed byte-identical output. Where a tool cannot see the repair,
+  a test has to hold it.
+- **Verify on the device the layout was drawn for.** Tablet layouts were first "verified" on a
+  phone by forcing the breakpoint down to 300dp. That proves the switch fires and nothing else.
+  On the real tablet the rail turned out to vanish on every pushed route, which is a defect no
+  phone could have shown.
+- **`sw600dp` means SMALLEST width.** `isTablet` measured the current width while its own
+  comment claimed alignment with Android's qualifier. A large phone in landscape is over
+  1000dp wide, so it would have been handed a two-pane sermon on the one screen this app lets a
+  phone rotate to, where turning the device means "make the video bigger".
+- **A missing i18n key renders as the key, in silence.** `t('watch:title')` drew the literal
+  word "title" on a device, and no test noticed. W4.6's missing-key pass is the systematic
+  answer and should be given teeth.
+- **An offline fallback that works perfectly is indistinguishable from a working backend.**
+  Academy and Watch erroring while Home showed a real branch and address looked exactly like a
+  production fault, and was a missing `adb reverse` for the database port: the branch came from
+  W1.1's bundled snapshot. Ask which rows came from where before diagnosing.
+- **Ask the system what it holds** (the W3.6 lesson, in a new costume). A blank tablet survived
+  four wrong explanations; the cause was Metro wedged, still LISTENING on 8081 and no longer
+  answering `/status`. One `curl` would have found it.
+
 **W4.8 · Store submission** (with Ayo)
 - Refs: `18` launch checklist, `19` (store product, listings, age ratings), `03` (review notes).
 - Build: store assets EN/DE/NL/FR + screenshot matrix (incl. iPad/tablet), privacy labels + data-safety form (web deletion link), age-rating answer sheet, review notes (fixed-code review email, prod bypass window on), release-note copy for Grace Portal installs; TestFlight + Play internal; staged-rollout plan with written halt criteria; submit.

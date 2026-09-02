@@ -23,7 +23,7 @@ export function VersesRefusal() {
       action={
         <Link
           href="/people/requests"
-          className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+          className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
         >
           {copy.verses.notAdminAction}
         </Link>

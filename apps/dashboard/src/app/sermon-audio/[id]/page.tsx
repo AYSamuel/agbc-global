@@ -190,7 +190,7 @@ function Manage({
       <div className="mt-4 flex max-w-[40rem] flex-wrap items-center gap-2.5">
         <Link
           href={`/sermon-audio/${sermon.id}?replace=1`}
-          className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+          className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
         >
           {text.replace}
         </Link>
@@ -241,7 +241,7 @@ function Manage({
               <input type="hidden" name="sermonId" value={sermon.id} />
               <button
                 type="submit"
-                className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+                className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
               >
                 {picture.remove}
               </button>

@@ -56,7 +56,7 @@ export function WaitingRequest({
             which is why this surface may use the URL where `/people` may not. */}
         <a
           href={`/people/requests?refuse=${request.id}`}
-          className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+          className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
         >
           {copy.requests.refuseOpen}
         </a>

@@ -232,7 +232,7 @@ export function BranchForm({
               id={`serviceWeekday-${String(index)}`}
               name="serviceWeekday"
               defaultValue={String(row.weekday)}
-              className="mt-1.5 min-h-12 w-full rounded-input border border-cardline bg-card px-3 py-3 text-body text-text"
+              className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3 py-3 text-body text-text"
             >
               {copy.branches.weekdays.map((day, dayIndex) => (
                 <option key={day} value={String(dayIndex)}>
@@ -255,7 +255,7 @@ export function BranchForm({
               required
               defaultValue={row.startTime}
               aria-invalid={problem === 'service_incomplete' || undefined}
-              className="mt-1.5 min-h-12 w-full rounded-input border border-cardline bg-card px-3 py-3 text-body text-text"
+              className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3 py-3 text-body text-text"
             />
           </div>
           <div className="w-[112px]">
@@ -266,7 +266,7 @@ export function BranchForm({
               id={`serviceKind-${String(index)}`}
               name="serviceKind"
               defaultValue={row.kind}
-              className="mt-1.5 min-h-12 w-full rounded-input border border-cardline bg-card px-3 py-3 text-body text-text"
+              className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3 py-3 text-body text-text"
             >
               {Object.entries(copy.branches.serviceKinds).map(
                 ([kind, label]) => (
@@ -289,7 +289,7 @@ export function BranchForm({
               name="serviceLabel"
               placeholder={copy.branches.serviceLabelLabel}
               defaultValue={row.label}
-              className="mt-1.5 min-h-12 w-full rounded-input border border-cardline bg-card px-3.5 py-3 text-body text-text"
+              className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3.5 py-3 text-body text-text"
             />
           </div>
           <button
@@ -367,7 +367,7 @@ export function BranchForm({
               name="leaderName"
               defaultValue={person.name}
               placeholder={copy.branches.leaderNameLabel}
-              className="min-h-12 w-full rounded-input border border-cardline bg-card px-3.5 py-3 text-body text-text"
+              className="min-h-12 w-full rounded-input border border-controlline bg-card px-3.5 py-3 text-body text-text"
             />
           </div>
           <div className="min-w-[140px] flex-1">
@@ -379,7 +379,7 @@ export function BranchForm({
               name="leaderRole"
               defaultValue={person.role}
               placeholder={copy.branches.leaderRoleLabel}
-              className="min-h-12 w-full rounded-input border border-cardline bg-card px-3.5 py-3 text-body text-text"
+              className="min-h-12 w-full rounded-input border border-controlline bg-card px-3.5 py-3 text-body text-text"
             />
           </div>
           <button
@@ -604,7 +604,7 @@ function Locked({
       <span className="block text-caption font-extrabold tracking-widest text-muted uppercase">
         {label}
       </span>
-      <p className="mt-1.5 min-h-12 rounded-input border border-cardline bg-alt px-3.5 py-3 text-body font-bold text-muted">
+      <p className="mt-1.5 min-h-12 rounded-input border border-controlline bg-alt px-3.5 py-3 text-body font-bold text-muted">
         {value}
       </p>
       <p className="mt-1.5 text-small text-muted">{hint}</p>

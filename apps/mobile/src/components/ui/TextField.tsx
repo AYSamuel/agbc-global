@@ -40,7 +40,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(
           style={{
             backgroundColor: colors.card,
             borderWidth: 1,
-            borderColor: colors.cardline,
+            borderColor: colors.controlline,
             borderRadius: radius.button,
             paddingHorizontal: spacing.lg,
             fontFamily: fontFamily.body.regular,

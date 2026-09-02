@@ -16,11 +16,34 @@ import { useTheme } from '@/theme';
  */
 export const CAPPED_MAX_WIDTH = 680;
 
+/**
+ * The mockup draws FOUR content measures and this app had one (W4.7 slice 4).
+ * `.tcol` 600 for a centred form or list, `.readwrap` 680 for reading, `.dash`
+ * 1000 for the Home dashboard grid, `.tgrid` 1040 for the store grid. On a phone
+ * none of them binds, since no phone is 600dp wide, so these are tablet measures
+ * that happen to be expressed as a maximum.
+ *
+ * `capped` deliberately keeps 680 and its meaning, so nothing that already used
+ * it moves; the other two are added rather than substituted. The store's 1040 is
+ * absent because the store is, and it arrives with W4.2.
+ */
+export const WIDTH_MEASURES = {
+  /** `.tcol`: a form or a centred list. */
+  column: 600,
+  /** `.readwrap`, and the measure `capped` has always meant. */
+  capped: CAPPED_MAX_WIDTH,
+  /** `.dash`: the Home dashboard grid, which is two columns inside this. */
+  dashboard: 1000,
+} as const;
+
+export type WidthClass = 'full' | keyof typeof WIDTH_MEASURES;
+
 export interface ScreenProps extends PropsWithChildren {
   /** Scrollable by default; static screens (players, maps) opt out. */
   scroll?: boolean;
-  /** 'capped' centers content at ~680 max width on wide screens. */
-  widthClass?: 'full' | 'capped';
+  /** Centres content at one of the mockup's measures on wide screens; 'full'
+   *  spans the viewport. See `WIDTH_MEASURES`. */
+  widthClass?: WidthClass;
   /** Apply the horizontal gutter (05: 18-20). Defaults on. */
   padded?: boolean;
   /**
@@ -56,13 +79,13 @@ export function Screen({
   const bottomPad = bottomInset ? insets.bottom : 0;
 
   const contentWidth =
-    widthClass === 'capped'
-      ? {
+    widthClass === 'full'
+      ? null
+      : {
           width: '100%' as const,
-          maxWidth: CAPPED_MAX_WIDTH,
+          maxWidth: WIDTH_MEASURES[widthClass],
           alignSelf: 'center' as const,
-        }
-      : null;
+        };
 
   const inner = (
     <View

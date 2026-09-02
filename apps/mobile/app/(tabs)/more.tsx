@@ -37,6 +37,7 @@ import {
 import { useUnreadCount, unreadLabel } from '@/features/notifications/nc';
 import { useRhythmQuery } from '@/features/rhythm/queries';
 import { useBranchNames } from '@/features/family/useBranchNames';
+import { features } from '@/lib/features';
 import { useAuthStore } from '@/state/auth';
 import { useTheme } from '@/theme';
 
@@ -279,13 +280,17 @@ export default function More() {
               router.push('/academy');
             }}
           />
-          <MenuRow
-            icon={BookOpenIcon}
-            label={t('more.rows.devotional')}
-            onPress={() => {
-              router.push('/plan');
-            }}
-          />
+          {/* The devotional plan is W4.4 and does not ship in the MVP, so its
+              row is hidden rather than opening a "coming soon" (features.ts). */}
+          {features.devotionalPlan ? (
+            <MenuRow
+              icon={BookOpenIcon}
+              label={t('more.rows.devotional')}
+              onPress={() => {
+                router.push('/plan');
+              }}
+            />
+          ) : null}
         </MenuCard>
 
         <MenuLabel label={t('more.sections.church')} />
@@ -320,25 +325,34 @@ export default function More() {
           />
         </MenuCard>
 
-        <MenuLabel label={t('more.sections.read')} />
-        <MenuCard>
-          <MenuRow
-            icon={StoreIcon}
-            label={t('more.rows.bookstore')}
-            onPress={() => {
-              router.push('/store');
-            }}
-          />
-          {/* Members lose the "Sign in" lock badge here (W3.3 slice 1's note). */}
-          <MenuRow
-            icon={LibraryIcon}
-            label={t('more.rows.library')}
-            badge={isMember ? undefined : t('more.signin')}
-            onPress={() => {
-              router.push(isMember ? '/library' : '/auth');
-            }}
-          />
-        </MenuCard>
+        {/* The whole Read section goes with its two rows: Bookstore and My
+            Library are all it holds, and a labelled card with nothing in it is
+            worse than no section. Both are W4.2, deferred by `18`'s MVP
+            definition, so the frame's Read block is deliberately absent here
+            (features.ts, and the note on the frame itself). */}
+        {features.store ? (
+          <>
+            <MenuLabel label={t('more.sections.read')} />
+            <MenuCard>
+              <MenuRow
+                icon={StoreIcon}
+                label={t('more.rows.bookstore')}
+                onPress={() => {
+                  router.push('/store');
+                }}
+              />
+              {/* Members lose the "Sign in" lock badge here (W3.3 slice 1's note). */}
+              <MenuRow
+                icon={LibraryIcon}
+                label={t('more.rows.library')}
+                badge={isMember ? undefined : t('more.signin')}
+                onPress={() => {
+                  router.push(isMember ? '/library' : '/auth');
+                }}
+              />
+            </MenuCard>
+          </>
+        ) : null}
 
         <MenuLabel label={t('more.sections.app')} />
         <MenuCard>
