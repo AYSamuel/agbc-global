@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 
 import { ToastProvider } from '@/components/ui';
+import { TabletShell } from '@/features/shell/TabletShell';
 import { AnalyticsAsk } from '@/features/analytics/AnalyticsAsk';
 import { prefetchHome } from '@/features/home/queries';
 import { prefetchBranches } from '@/features/onboarding/useBranches';
@@ -39,12 +40,17 @@ function PushRuntime() {
 function ThemedStack() {
   const { colors } = useTheme();
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.bg },
-      }}
-    />
+    // The rail is a SIBLING of the whole stack on a tablet, so it survives a
+    // pushed route the way every tablet frame draws it (W4.7 slice 4). On a
+    // phone TabletShell renders its children and nothing else.
+    <TabletShell>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      />
+    </TabletShell>
   );
 }
 

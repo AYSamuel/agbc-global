@@ -78,5 +78,6 @@
   "notesUnsaved": "Not saved yet",
   "notesKeptOnPhone": "Kept on this phone. We will save it when you are back online.",
   "notesGuestTitle": "Sign in to keep your notes",
-  "notesGuestBody": "Your notes are private to you, and they stay with your account so they are there on any phone."
+  "notesGuestBody": "Your notes are private to you, and they stay with your account so they are there on any phone.",
+  "paneTitle": "Messages"
 }

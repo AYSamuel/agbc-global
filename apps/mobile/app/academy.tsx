@@ -175,7 +175,9 @@ export default function Academy() {
 
   return (
     <Screen
-      widthClass="capped"
+      // The frame's `.tcol`, 600 rather than the 680 reading measure: ACADEMY
+      // tablet portrait is a centred LIST, not a page of prose (W4.7 slice 4).
+      widthClass="column"
       padded={false}
       refreshing={manualRefresh.refreshing}
       onRefresh={manualRefresh.onRefresh}

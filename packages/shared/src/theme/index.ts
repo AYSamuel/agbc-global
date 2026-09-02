@@ -68,6 +68,32 @@ export const tonal = {
     bg: 'rgba(47,111,237,0.05)',
     border: 'transparent',
   },
+  /**
+   * The tablet nav rail's SELECTED item (mockup `.railnav .ritem.on`), and the
+   * two-pane menu's selected row (`.panesel.on`) at its own lighter weight.
+   *
+   * A third blue wash rather than a reuse of the two above, and deliberately so:
+   * the frame draws them at .10 and .06 while NC's disc is .12 and its unread
+   * row .05. Nobody can see two points of alpha, and they are kept apart anyway
+   * for the reason `redRow` and `redSoft` are: they mean different things and
+   * will drift the day one of them changes for its own sake. This one says
+   * "this is the tab you are on", which is a selected STATE, not a decoration.
+   */
+  blueRail: {
+    bg: 'rgba(47,111,237,0.10)',
+  },
+  /**
+   * THE ROW WHOSE DETAIL IS SHOWING, in a tablet two-pane list.
+   *
+   * The mockup draws this idea twice and one point apart: `.panesel.on` at .06
+   * in the SETTINGS frame, and WATCH's selected `.rrow` at .07. One point of
+   * alpha is not a difference anybody can see and the two mean exactly the same
+   * thing, so unlike `blueRail` above they share a token rather than minting a
+   * third. Taken at the WATCH value, which is the frame this was built from.
+   */
+  bluePane: {
+    bg: 'rgba(47,111,237,0.07)',
+  },
   /** The answered-prayer card (mockup .answered). */
   greenCard: {
     bg: 'rgba(31,138,91,0.10)',

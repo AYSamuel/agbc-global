@@ -64,6 +64,8 @@ import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
 import { useGateStore, type GateAction } from '@/state/gate';
+import { useLayout } from '@/lib/layout';
+import { HomeDashboard } from '@/features/home/HomeDashboard';
 import { useTheme } from '@/theme';
 
 // HOME (docs/spec/07, mockups "Home · guest" and W2.8 "HOME · checked in"):
@@ -338,10 +340,17 @@ export default function Home() {
     ]),
   );
 
+  // The frame draws the dashboard grid for tablet LANDSCAPE only, so that is
+  // the one place Home widens (W4.7 slice 4).
+  const { isTablet, isLandscape } = useLayout();
+  const dashboard = isTablet && isLandscape;
+
   return (
     <Screen
       padded={false}
-      widthClass="capped"
+      // The dashboard grid gets the frame's wider `.dash` measure; everywhere
+      // else keeps the reading column it has always had.
+      widthClass={dashboard ? 'dashboard' : 'capped'}
       refreshing={refreshing}
       onRefresh={refreshAll}
     >
@@ -519,50 +528,55 @@ export default function Home() {
         />
       ) : null}
 
-      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.lg }}>
-        {/* What used to be here, and why the deletion is the fix: `archive_branch()`
+      <HomeDashboard
+        service={
+          <>
+            {/* What used to be here, and why the deletion is the fix: `archive_branch()`
             leaves `branch_services` alone (there is no flag to clear, which is
             also why re-opening restores the diary) and the services query carries
             no status filter, so a closed branch went on drawing "THIS SUNDAY ·
             11:00 AM" with a "Plan a visit" that dead-ended on BRANCH-INFO's own
             refusal, and on a Sunday a check-in that the server now refuses too. */}
-        {closedQuiet ? null : servicesQuery.data === undefined &&
-          !servicesQuery.isError ? (
-          <Skeleton height={190} />
-        ) : (
-          <NextServiceCard
-            next={next}
-            displayTimes={displayTimes}
-            branchName={branch?.name ?? ''}
-            addressLine={resolveAddressLine(
-              currentBranch?.address ?? null,
-              branch?.name ?? '',
+            {closedQuiet ? null : servicesQuery.data === undefined &&
+              !servicesQuery.isError ? (
+              <Skeleton height={190} />
+            ) : (
+              <NextServiceCard
+                next={next}
+                displayTimes={displayTimes}
+                branchName={branch?.name ?? ''}
+                addressLine={resolveAddressLine(
+                  currentBranch?.address ?? null,
+                  branch?.name ?? '',
+                )}
+                onPlanVisit={() => {
+                  // BRANCH-INFO is the 04 destination; the list is the fallback
+                  // when no browsing branch is set.
+                  if (branch) {
+                    router.push({
+                      pathname: '/branch/[id]',
+                      params: { id: branch.id },
+                    });
+                  } else {
+                    router.push('/branches');
+                  }
+                }}
+                onWatchLive={() => {
+                  router.push('/watch');
+                }}
+                imHere={
+                  serviceToday
+                    ? { checkedIn: imHere.checkedIn, onPress: imHere.press }
+                    : null
+                }
+                visitingBranchName={visitingBranchName}
+              />
             )}
-            onPlanVisit={() => {
-              // BRANCH-INFO is the 04 destination; the list is the fallback
-              // when no browsing branch is set.
-              if (branch) {
-                router.push({
-                  pathname: '/branch/[id]',
-                  params: { id: branch.id },
-                });
-              } else {
-                router.push('/branches');
-              }
-            }}
-            onWatchLive={() => {
-              router.push('/watch');
-            }}
-            imHere={
-              serviceToday
-                ? { checkedIn: imHere.checkedIn, onPress: imHere.press }
-                : null
-            }
-            visitingBranchName={visitingBranchName}
-          />
-        )}
-
-        {/* The rhythm strip sits directly under the service card because it is
+          </>
+        }
+        rhythm={
+          <>
+            {/* The rhythm strip sits directly under the service card because it is
             what "I'm here" pays off (docs/spec/07 §3, ordering rationale). A tap
             on the card above and the streak it feeds are one loop, so nothing
             goes between them: the member must not have to scroll to see that
@@ -571,179 +585,195 @@ export default function Home() {
             (docs/spec/04), which reads the same cached `rhythm_state` row this
             panel is drawn from, so opening it costs nothing and can say nothing
             different. */}
-        {closedQuiet ? null : isMember ? (
-          rhythm === null && !rhythmQuery.isError ? (
-            <Skeleton height={92} />
-          ) : rhythm !== null ? (
-            <StreakStrip
-              rhythm={rhythm}
-              onPress={() => {
-                router.push('/rhythm');
-              }}
-            />
-          ) : null
-        ) : null}
-
-        {verseQuery.data === undefined && !verseQuery.isError ? (
-          <Skeleton height={150} />
-        ) : verseQuery.data ? (
-          <VerseCard verse={verseQuery.data} />
-        ) : null}
-
-        {/* From the family (docs/spec/07): the latest testimony, the same card the
+            {closedQuiet ? null : isMember ? (
+              rhythm === null && !rhythmQuery.isError ? (
+                <Skeleton height={92} />
+              ) : rhythm !== null ? (
+                <StreakStrip
+                  rhythm={rhythm}
+                  onPress={() => {
+                    router.push('/rhythm');
+                  }}
+                />
+              ) : null
+            ) : null}
+          </>
+        }
+        verse={
+          <>
+            {verseQuery.data === undefined && !verseQuery.isError ? (
+              <Skeleton height={150} />
+            ) : verseQuery.data ? (
+              <VerseCard verse={verseQuery.data} />
+            ) : null}
+          </>
+        }
+        family={
+          <>
+            {/* From the family (docs/spec/07): the latest testimony, the same card the
             Family feed uses. Its Glory/Share gate for guests; the card taps
             through to the detail. Empty only if the family has posted nothing.
             It sits ABOVE the latest message on purpose: sermons already own a
             bottom tab, testimonies live two levels deep under Family, so Home
             surfaces the harder-to-reach thing (docs/spec/07, ordering
             rationale). */}
-        {closedQuiet ? null : (
-          <View>
-            <SectionHeader
-              label={t('home:fromTheFamily')}
-              actionLabel={t('watch:seeAll')}
-              onAction={() => {
-                // Land on the Testimonies sub-tab specifically (the section is
-                // testimonies); `k` forces it even if Family was left elsewhere.
-                router.push({
-                  pathname: '/family',
-                  params: { tab: 'testimonies', k: String(Date.now()) },
-                });
-              }}
-            />
-            {testimonyHighlight.data === undefined &&
-            !testimonyHighlight.isError ? (
-              <Skeleton height={150} />
-            ) : testimonyHighlight.data ? (
-              <TestimonyCard
-                testimony={testimonyHighlight.data}
-                branchName={
-                  branchNames[testimonyHighlight.data.branch_id] ?? null
-                }
-                branchColor={branchColorFor(testimonyHighlight.data.branch_id)}
-                onPress={() => {
-                  router.push({
-                    pathname: '/testimony/[id]',
-                    params: { id: testimonyHighlight.data?.id ?? '' },
-                  });
-                }}
-                onGloryGate={() => {
-                  const id = testimonyHighlight.data?.id;
-                  if (id) openGate({ kind: 'glory', testimonyId: id });
-                }}
-                // Sharing is outbound, not a gated contribution (matches the Family
-                // feed): open the OS sheet rather than the gate.
-                onShare={() => {
-                  const item = testimonyHighlight.data;
-                  if (!item) return;
-                  void shareText(
-                    testimonyShareText(
-                      item.body,
-                      joinMeta([
-                        item.author_name,
-                        branchNames[item.branch_id] ?? null,
-                      ]),
-                      t('appName'),
-                    ),
-                  );
-                }}
-              />
-            ) : (
-              <Card>
-                <EmptyState
-                  title={t('home:familySoonTitle')}
-                  body={t('home:familySoonBody')}
+            {closedQuiet ? null : (
+              <View>
+                <SectionHeader
+                  label={t('home:fromTheFamily')}
+                  actionLabel={t('watch:seeAll')}
+                  onAction={() => {
+                    // Land on the Testimonies sub-tab specifically (the section is
+                    // testimonies); `k` forces it even if Family was left elsewhere.
+                    router.push({
+                      pathname: '/family',
+                      params: { tab: 'testimonies', k: String(Date.now()) },
+                    });
+                  }}
                 />
-              </Card>
+                {testimonyHighlight.data === undefined &&
+                !testimonyHighlight.isError ? (
+                  <Skeleton height={150} />
+                ) : testimonyHighlight.data ? (
+                  <TestimonyCard
+                    testimony={testimonyHighlight.data}
+                    branchName={
+                      branchNames[testimonyHighlight.data.branch_id] ?? null
+                    }
+                    branchColor={branchColorFor(
+                      testimonyHighlight.data.branch_id,
+                    )}
+                    onPress={() => {
+                      router.push({
+                        pathname: '/testimony/[id]',
+                        params: { id: testimonyHighlight.data?.id ?? '' },
+                      });
+                    }}
+                    onGloryGate={() => {
+                      const id = testimonyHighlight.data?.id;
+                      if (id) openGate({ kind: 'glory', testimonyId: id });
+                    }}
+                    // Sharing is outbound, not a gated contribution (matches the Family
+                    // feed): open the OS sheet rather than the gate.
+                    onShare={() => {
+                      const item = testimonyHighlight.data;
+                      if (!item) return;
+                      void shareText(
+                        testimonyShareText(
+                          item.body,
+                          joinMeta([
+                            item.author_name,
+                            branchNames[item.branch_id] ?? null,
+                          ]),
+                          t('appName'),
+                        ),
+                      );
+                    }}
+                  />
+                ) : (
+                  <Card>
+                    <EmptyState
+                      title={t('home:familySoonTitle')}
+                      body={t('home:familySoonBody')}
+                    />
+                  </Card>
+                )}
+              </View>
             )}
-          </View>
-        )}
-
-        {closedQuiet ? null : sermonsQuery.data === undefined &&
-          !sermonsQuery.isError ? (
-          <View>
-            <SectionHeader
-              label={t('home:latestMessage')}
-              actionLabel={t('watch:seeAll')}
-              onAction={() => {
-                router.push('/watch');
-              }}
-            />
-            <Skeleton height={96} />
-          </View>
-        ) : latestSermon ? (
-          <View>
-            <SectionHeader
-              label={t('home:latestMessage')}
-              actionLabel={t('watch:seeAll')}
-              onAction={() => {
-                router.push('/watch');
-              }}
-            />
-            {/* Mockup .sermon: a 12px card, not the 20px default: the row
+          </>
+        }
+        sermons={
+          <>
+            {closedQuiet ? null : sermonsQuery.data === undefined &&
+              !sermonsQuery.isError ? (
+              <View>
+                <SectionHeader
+                  label={t('home:latestMessage')}
+                  actionLabel={t('watch:seeAll')}
+                  onAction={() => {
+                    router.push('/watch');
+                  }}
+                />
+                <Skeleton height={96} />
+              </View>
+            ) : latestSermon ? (
+              <View>
+                <SectionHeader
+                  label={t('home:latestMessage')}
+                  actionLabel={t('watch:seeAll')}
+                  onAction={() => {
+                    router.push('/watch');
+                  }}
+                />
+                {/* Mockup .sermon: a 12px card, not the 20px default: the row
                 carries its own spacing (2026-07-20). */}
-            <Card style={{ padding: spacing.md }}>
-              <SermonRow
-                sermon={latestSermon}
-                size="featured"
-                onPress={() => {
-                  router.push({
-                    pathname: '/sermon/[id]',
-                    params: { id: latestSermon.id },
-                  });
-                }}
-              />
-            </Card>
-          </View>
-        ) : null}
-
-        {/* The guest's Join card (docs/spec/07 §7), the last block on the
+                <Card style={{ padding: spacing.md }}>
+                  <SermonRow
+                    sermon={latestSermon}
+                    size="featured"
+                    onPress={() => {
+                      router.push({
+                        pathname: '/sermon/[id]',
+                        params: { id: latestSermon.id },
+                      });
+                    }}
+                  />
+                </Card>
+              </View>
+            ) : null}
+          </>
+        }
+        join={
+          <>
+            {/* The guest's Join card (docs/spec/07 §7), the last block on the
             screen: a member has their rhythm strip up under the service card
             instead, so only one of the two ever renders. */}
-        {isMember ? null : (
-          <Card>
-            <Text
-              style={{
-                fontFamily: fontFamily.display.extraBold,
-                fontSize: 18,
-                letterSpacing: -0.36,
-                color: colors.text,
-              }}
-            >
-              {t('home:joinTitle')}
-            </Text>
-            <Text
-              style={{
-                fontFamily: fontFamily.body.regular,
-                fontSize: 13,
-                lineHeight: 19,
-                color: colors.sub,
-                marginTop: spacing.xs,
-                marginBottom: spacing.md,
-              }}
-            >
-              {t('home:joinBody')}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('more.signin')}
-              onPress={() => {
-                router.push('/auth');
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: fontFamily.body.bold,
-                  fontSize: 14,
-                  color: colors.blue,
-                }}
-              >
-                {t('more.signin')}
-              </Text>
-            </Pressable>
-          </Card>
-        )}
-      </View>
+            {isMember ? null : (
+              <Card>
+                <Text
+                  style={{
+                    fontFamily: fontFamily.display.extraBold,
+                    fontSize: 18,
+                    letterSpacing: -0.36,
+                    color: colors.text,
+                  }}
+                >
+                  {t('home:joinTitle')}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: fontFamily.body.regular,
+                    fontSize: 13,
+                    lineHeight: 19,
+                    color: colors.sub,
+                    marginTop: spacing.xs,
+                    marginBottom: spacing.md,
+                  }}
+                >
+                  {t('home:joinBody')}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('more.signin')}
+                  onPress={() => {
+                    router.push('/auth');
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fontFamily.body.bold,
+                      fontSize: 14,
+                      color: colors.blue,
+                    }}
+                  >
+                    {t('more.signin')}
+                  </Text>
+                </Pressable>
+              </Card>
+            )}
+          </>
+        }
+      />
 
       {/* Arriving takes the whole screen, tab bar included, which is why it is a Modal
           over Home rather than Home's own content: `BranchWelcome` says why. Home still

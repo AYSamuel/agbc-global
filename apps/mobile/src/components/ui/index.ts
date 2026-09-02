@@ -51,6 +51,8 @@ export {
   ListRow,
   type ListScreenProps,
 } from './ListScreen';
+export { NavRail, type NavRailProps } from './NavRail';
+export { TwoPane, PANE_LIST_WIDTH, type TwoPaneProps } from './TwoPane';
 export { Screen, type ScreenProps } from './Screen';
 export {
   SegmentedControl,

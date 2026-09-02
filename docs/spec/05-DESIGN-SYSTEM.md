@@ -183,6 +183,20 @@ Every feature's acceptance criteria include the verification matrix: small phone
 
 ## Tablet & orientation (decision 2026-07-12: full tablet layouts in v1)
 
+- **W4.7 status (2026-09-02), so this section is not read as all-or-nothing.** Built and
+  verified on a Galaxy Tab S10+: the nav rail (which lives ABOVE the navigator, so it survives
+  a pushed route the way every frame here draws it), HOME's `.dash` grid, WATCH's two-pane, and
+  the four content measures the mockup actually uses (`.tcol` 600, `.readwrap` 680, `.dash`
+  1000, `.tgrid` 1040). Owed: FAMILY landscape and portrait. **SETTINGS' menu-plus-pane is
+  DEFERRED to v1.1 by Ayo's decision**, and the reason is worth keeping: its frame lists
+  Appearance, Privacy and About as selectable sections, and none of the three is a route. The
+  theme control is inline on the Settings root, and Privacy and About link out to the website,
+  so building the frame as drawn would mean giving Settings an information architecture it does
+  not have, which changes the PHONE too. On a tablet Settings stays a single column, wider.
+- **"Tablet" is SMALLEST width, not current width** (corrected W4.7): Android's own `sw600dp`.
+  A large phone in landscape is over 1000dp wide, and the only screen this app lets a phone
+  rotate to is the player, where turning the device means "make the video bigger" rather than
+  "spend 396dp on a list".
 - v1 ships real tablet layouts, not just a capped column. Direction: above ~600dp width, list-heavy tabs (Watch, Family, Events, Store) move to master-detail or multi-column grids; Home caps content width (~680px) and splits its sections into a two-column dashboard grid (see the tablet HOME frames); player and reader support landscape on all devices.
 - Android 16+ ignores orientation/resizability locks on large screens, so tablet rendering is not optional; iPad support is claimed on the App Store (adds iPad screenshots to the store matrix, see `19`).
 - Each feature doc's screens are designed at phone AND tablet widths during the design phase; the frontend-bootstrap component library builds responsive primitives first (`Screen` handles width classes).

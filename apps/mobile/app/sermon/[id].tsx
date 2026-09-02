@@ -63,6 +63,7 @@ import {
   usePlaybackStore,
 } from '@/features/watch/playback';
 import { SermonMeta } from '@/features/watch/SermonMeta';
+import { useLandscapeAllowed } from '@/features/watch/useLandscapeAllowed';
 import {
   saveServerPosition,
   useServerPositionQuery,
@@ -177,6 +178,12 @@ function SermonVideo({
 // (W3.1 slice 3), and the resume that follows a member between the two. Guest
 // playback is free; notes gate. Rot state per 08.
 export default function Sermon() {
+  // `05`: the player supports landscape on all devices, while the app itself
+  // stays portrait. The lock is lifted for this screen only and put back on the
+  // way out (see the hook; it no-ops on a dev client built before the native
+  // module was linked).
+  useLandscapeAllowed();
+
   const router = useRouter();
   const { t } = useTranslation();
   const locale = useFormattingLocale();

@@ -6,7 +6,7 @@ import { spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
-import { CAPPED_MAX_WIDTH, type ScreenProps } from './Screen';
+import { WIDTH_MEASURES, type ScreenProps } from './Screen';
 
 /**
  * `Screen`, but the scroller is virtualized.
@@ -81,9 +81,9 @@ export function ListScreen<T>({
           paddingBottom: (bottomInset ? insets.bottom : 0) + spacing.x2l,
         },
         padded && { paddingHorizontal: spacing.gutter },
-        widthClass === 'capped' && {
+        widthClass !== 'full' && {
           width: '100%',
-          maxWidth: CAPPED_MAX_WIDTH,
+          maxWidth: WIDTH_MEASURES[widthClass],
           alignSelf: 'center',
         },
       ]}
