@@ -82,7 +82,19 @@ const SHELL_FREE = new Set([
 
 export function TabletShell({ children }: PropsWithChildren) {
   const { isTablet, isLandscape } = useLayout();
-  const segments = useSegments();
+  // READ AS PLAIN STRINGS, DELIBERATELY, because `useSegments()`'s own type is
+  // not the same type in every environment. It resolves through expo-router's
+  // GENERATED route types, which live in the gitignored `.expo/types/`: here
+  // they describe every route in the app, and on a CI runner, where nothing has
+  // ever run expo, there is no such file and the type falls back to a
+  // one-element tuple. So `segments[1]` typechecked on this machine and failed
+  // the build with TS2493. It is the same trap as the gitignored
+  // `expo-env.d.ts` that `env.d.ts` exists to close.
+  //
+  // Widening costs nothing here: this component matches segment names against
+  // TAB_CONFIG and ROUTE_OWNER rather than trusting the type, which is what the
+  // note on `activeKey` below already says.
+  const segments: readonly string[] = useSegments();
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useTranslation();
