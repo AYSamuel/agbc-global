@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
@@ -10,6 +10,8 @@ import {
   Fab,
   FamilyTabIcon,
   GateSheet,
+  ListRow,
+  ListScreen,
   Screen,
   SegmentedControl,
   Skeleton,
@@ -24,6 +26,7 @@ import {
   useTestimonyFeedQuery,
   type FamilyScope,
   type PrayerFeedItem,
+  type TestimonyFeedItem,
 } from '@/features/family/queries';
 import { ScopeToggle } from '@/features/family/ScopeToggle';
 import { shareText, testimonyShareText } from '@/features/family/share';
@@ -157,7 +160,14 @@ export default function Family() {
   // carries its own centred "Share" CTA, and a map has nothing to compose.
   const showFab = tab !== 'map' && (active.data?.length ?? 0) > 0;
 
-  const renderFeed = () => {
+  /**
+   * The four states, split from the ROWS so the list can virtualize (W4.7 slice
+   * 3). This used to be one `renderFeed()` returning either a placeholder or an
+   * array of cards into a `ScrollView`; a `FlatList` needs the two separately,
+   * so the decision is unchanged and only its shape moved. Returns null when
+   * there are rows to draw.
+   */
+  const feedPlaceholder = (): ReactElement | null => {
     // Loading: skeleton cards at the real card height so nothing shifts when
     // content lands (mockup STATE loading). Primary actions stay hidden rather
     // than disabled while loading (project convention, 2026-07-20).
@@ -186,93 +196,103 @@ export default function Family() {
       );
     }
 
-    if (tab === 'testimonies') {
-      const rows = testimonies.data ?? [];
-      if (rows.length === 0) {
-        return (
-          <EmptyState
-            title={t('family:emptyTestimoniesTitle')}
-            body={t('family:emptyTestimoniesBody')}
-            icon={<StubIcon Icon={FamilyTabIcon} />}
-            actionLabel={t('family:shareTestimony')}
-            onAction={() => {
-              startCompose('testimony');
-            }}
-          />
-        );
-      }
-      return rows.map((item) => {
-        const branchName = branchNames[item.branch_id] ?? null;
-        return (
-          <TestimonyCard
-            key={item.id}
-            testimony={item}
-            branchName={branchName}
-            branchColor={branchColorFor(item.branch_id)}
-            // This screen is the one surface with a scope; the tap's event
-            // carries it from here (docs/spec/22 §5, W2.4's one-owner rule).
-            scope={effectiveScope}
-            onPress={() => {
-              router.push({
-                pathname: '/testimony/[id]',
-                params: { id: item.id },
-              });
-            }}
-            onGloryGate={() => {
-              openGate({ kind: 'glory', testimonyId: item.id });
-            }}
-            // Sharing is outbound, not a gated contribution: open the OS sheet.
-            onShare={() => {
-              void shareText(
-                testimonyShareText(
-                  item.body,
-                  joinMeta([item.author_name, branchName]),
-                  t('appName'),
-                ),
-              );
-            }}
-          />
-        );
-      });
-    }
+    if ((active.data ?? []).length > 0) return null;
 
-    const rows = prayers.data ?? [];
-    if (rows.length === 0) {
+    return tab === 'testimonies' ? (
+      <EmptyState
+        title={t('family:emptyTestimoniesTitle')}
+        body={t('family:emptyTestimoniesBody')}
+        icon={<StubIcon Icon={FamilyTabIcon} />}
+        actionLabel={t('family:shareTestimony')}
+        onAction={() => {
+          startCompose('testimony');
+        }}
+      />
+    ) : (
+      <EmptyState
+        title={t('family:emptyPrayerTitle')}
+        body={t('family:emptyPrayerBody')}
+        icon={<StubIcon Icon={FamilyTabIcon} />}
+        actionLabel={t('family:sharePrayer')}
+        onAction={() => {
+          startCompose('prayer');
+        }}
+      />
+    );
+  };
+
+  /**
+   * A tagged row rather than the raw union, so `renderItem` narrows without
+   * asking which query it came from. The two tabs never mix, but the list takes
+   * one `data` array and the tag is what keeps that type-safe.
+   */
+  type FeedRow =
+    | { kind: 'testimony'; item: TestimonyFeedItem }
+    | { kind: 'prayer'; item: PrayerFeedItem };
+
+  const feedRows: FeedRow[] =
+    tab === 'testimonies'
+      ? (testimonies.data ?? []).map((item) => ({
+          kind: 'testimony' as const,
+          item,
+        }))
+      : (prayers.data ?? []).map((item) => ({ kind: 'prayer' as const, item }));
+
+  const renderFeedRow = (row: FeedRow): ReactElement => {
+    if (row.kind === 'testimony') {
+      const item = row.item;
+      const branchName = branchNames[item.branch_id] ?? null;
       return (
-        <EmptyState
-          title={t('family:emptyPrayerTitle')}
-          body={t('family:emptyPrayerBody')}
-          icon={<StubIcon Icon={FamilyTabIcon} />}
-          actionLabel={t('family:sharePrayer')}
-          onAction={() => {
-            startCompose('prayer');
+        <TestimonyCard
+          testimony={item}
+          branchName={branchName}
+          branchColor={branchColorFor(item.branch_id)}
+          // This screen is the one surface with a scope; the tap's event
+          // carries it from here (docs/spec/22 §5, W2.4's one-owner rule).
+          scope={effectiveScope}
+          onPress={() => {
+            router.push({
+              pathname: '/testimony/[id]',
+              params: { id: item.id },
+            });
+          }}
+          onGloryGate={() => {
+            openGate({ kind: 'glory', testimonyId: item.id });
+          }}
+          // Sharing is outbound, not a gated contribution: open the OS sheet.
+          onShare={() => {
+            void shareText(
+              testimonyShareText(
+                item.body,
+                joinMeta([item.author_name, branchName]),
+                t('appName'),
+              ),
+            );
           }}
         />
       );
     }
-    return rows.map((item) =>
-      item.answered_at ? (
-        <AnsweredPrayerCard
-          key={item.id}
-          prayer={item}
-          onPress={() => {
-            router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
-          }}
-        />
-      ) : (
-        <PrayerRow
-          key={item.id}
-          prayer={item}
-          branchName={branchNames[item.branch_id] ?? null}
-          scope={effectiveScope}
-          onOpen={() => {
-            router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
-          }}
-          onGate={() => {
-            openGate({ kind: 'intercede', prayerId: item.id });
-          }}
-        />
-      ),
+
+    const item = row.item;
+    return item.answered_at ? (
+      <AnsweredPrayerCard
+        prayer={item}
+        onPress={() => {
+          router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
+        }}
+      />
+    ) : (
+      <PrayerRow
+        prayer={item}
+        branchName={branchNames[item.branch_id] ?? null}
+        scope={effectiveScope}
+        onOpen={() => {
+          router.push({ pathname: '/prayer/[id]', params: { id: item.id } });
+        }}
+        onGate={() => {
+          openGate({ kind: 'intercede', prayerId: item.id });
+        }}
+      />
     );
   };
 
@@ -368,23 +388,24 @@ export default function Family() {
           </View>
         </Screen>
       ) : (
-        <Screen
+        <ListScreen
           widthClass="capped"
           padded={false}
           refreshing={manualRefresh.refreshing}
           onRefresh={manualRefresh.onRefresh}
-        >
-          {header}
-          {/* Cards sit at 16px (mockup .testi/.prayer margin 16), inside the
-              title's 20px gutter. */}
-          <View
-            style={{ paddingHorizontal: spacing.lg, marginTop: spacing.sm }}
-          >
-            {renderFeed()}
-          </View>
-          {/* Clears the last card from under the pinned FAB (mockup's spacer). */}
-          {showFab ? <View style={{ height: 88 }} /> : null}
-        </Screen>
+          data={feedRows}
+          keyExtractor={(row) => row.item.id}
+          // Cards sit at 16px (mockup .testi/.prayer margin 16), inside the
+          // title's 20px gutter. The ScrollView version wrapped the whole feed in
+          // one padded View; a list has no such wrapper, so the inset is the row's.
+          renderItem={(row) => <ListRow>{renderFeedRow(row)}</ListRow>}
+          header={
+            <View style={{ marginBottom: spacing.sm }}>{header}</View>
+          }
+          empty={<ListRow>{feedPlaceholder()}</ListRow>}
+          // Clears the last card from under the pinned FAB (mockup's spacer).
+          footer={showFab ? <View style={{ height: 88 }} /> : null}
+        />
       )}
 
       {showFab ? (
