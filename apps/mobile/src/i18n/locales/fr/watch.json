@@ -62,6 +62,7 @@
   "saveGateBody": "Les messages enregistrés restent liés à votre compte, prêts sur chaque téléphone où vous vous connectez.",
   "myListTitle": "Ma liste",
   "savedCount_one": "{{count}} enregistré",
+  "savedCount_many": "{{count}} enregistrés",
   "savedCount_other": "{{count}} enregistrés",
   "myListEmptyTitle": "Rien d'enregistré pour l'instant",
   "myListEmptyBody": "Enregistrez un message à regarder ou écouter plus tard : il vous attendra ici.",

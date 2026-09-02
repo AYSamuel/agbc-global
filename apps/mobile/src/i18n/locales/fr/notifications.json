@@ -58,6 +58,7 @@
     "testimony": {
       "glory_batch": {
         "title_one": "{{count}} personne a dit Gloire",
+        "title_many": "{{count}} personnes ont dit Gloire",
         "title_other": "{{count}} personnes ont dit Gloire",
         "body": "À propos de votre témoignage"
       }
