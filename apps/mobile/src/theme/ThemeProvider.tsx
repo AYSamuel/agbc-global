@@ -1,6 +1,4 @@
 import { StatusBar } from 'expo-status-bar';
-
-import { useLayout } from '@/lib/layout';
 import { createContext, useContext, type PropsWithChildren } from 'react';
 import { useColorScheme } from 'react-native';
 
@@ -24,25 +22,14 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: PropsWithChildren) {
   const system = useColorScheme();
-  const { isTablet } = useLayout();
   const pref = useThemePrefStore((s) => s.pref);
   const setPref = useThemePrefStore((s) => s.setPref);
   const name = resolveTheme(pref, system);
 
   return (
     <ThemeContext.Provider value={{ name, colors: color[name], pref, setPref }}>
-      {/* Status bar re-themes with the theme (05: device chrome must match),
-          and is HIDDEN on a tablet (Ayo, 2026-09-02). The mockup's tablet frames
-          draw their own `.tstatus` strip and the app's own chrome starts at the
-          very top of the screen: the rail runs the full height and the two-pane
-          reaches the top edge, so the system bar sat on top of a layout that had
-          already accounted for that space. A phone keeps it, because a phone is
-          held one-handed and glanced at, and the clock and battery are part of
-          what it is for. */}
-      <StatusBar
-        style={name === 'dark' ? 'light' : 'dark'}
-        hidden={isTablet}
-      />
+      {/* Status bar re-themes with the theme (05: device chrome must match). */}
+      <StatusBar style={name === 'dark' ? 'light' : 'dark'} />
       {children}
     </ThemeContext.Provider>
   );

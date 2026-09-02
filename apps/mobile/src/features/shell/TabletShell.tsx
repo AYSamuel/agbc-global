@@ -2,6 +2,10 @@ import { usePathname, useRouter, useSegments } from 'expo-router';
 import type { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import {
+  SafeAreaInsetsContext,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import {
   FamilyTabIcon,
@@ -17,6 +21,7 @@ import {
 import { FamilyListPane } from '@/features/family/FamilyListPane';
 import { WatchListPane } from '@/features/watch/WatchListPane';
 import { useLayout } from '@/lib/layout';
+import { useTheme } from '@/theme';
 
 /**
  * The tablet shell: a nav rail beside EVERYTHING, not just the tab roots.
@@ -81,6 +86,8 @@ export function TabletShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   // A length check rather than `?? 'index'`: expo-router types `segments[0]` as
   // a plain string, so the nullish fallback reads as dead to the linter, while
@@ -144,24 +151,45 @@ export function TabletShell({ children }: PropsWithChildren) {
   }));
 
   return (
-    <View style={{ flex: 1, flexDirection: 'row' }}>
-      <NavRail
-        items={items}
-        activeKey={activeKey}
-        onPress={(key) => {
-          // `navigate` rather than `push`: tapping a root you are already deep
-          // inside should return to it, not stack a second copy.
-          router.navigate(`/(tabs)/${key}`);
-        }}
-        accessibilityLabel={t('tabs.railLabel')}
-      />
-      <View style={{ flex: 1, minWidth: 0 }}>
-        {twoPane ? (
-          <TwoPane list={paneFor} detail={children} />
-        ) : (
-          children
-        )}
-      </View>
+    /**
+     * THE TABLET STARTS BELOW THE STATUS BAR (Ayo, 2026-09-02).
+     *
+     * Android draws edge-to-edge, so the app's own surfaces ran up behind the
+     * system bar: content was never overlapped (the rail's first item measured
+     * at exactly `insets.top` + its own padding), but the RAIL's card colour
+     * reached y=0, which put a seam of app chrome behind the clock. On a phone
+     * that is the intended look; on a tablet the rail and the panes are the
+     * app's frame, and a frame should begin where the app does.
+     *
+     * The inset is consumed ONCE here and then ZEROED for everything below, by
+     * overriding the insets context. Without that, `Screen` and the panes would
+     * each add `insets.top` again and push their content a status bar further
+     * down. One owner for one measurement.
+     */
+    <View
+      style={{
+        flex: 1,
+        paddingTop: insets.top,
+        backgroundColor: colors.bg,
+      }}
+    >
+      <SafeAreaInsetsContext.Provider value={{ ...insets, top: 0 }}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <NavRail
+            items={items}
+            activeKey={activeKey}
+            onPress={(key) => {
+              // `navigate` rather than `push`: tapping a root you are already deep
+              // inside should return to it, not stack a second copy.
+              router.navigate(`/(tabs)/${key}`);
+            }}
+            accessibilityLabel={t('tabs.railLabel')}
+          />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            {twoPane ? <TwoPane list={paneFor} detail={children} /> : children}
+          </View>
+        </View>
+      </SafeAreaInsetsContext.Provider>
     </View>
   );
 }

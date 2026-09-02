@@ -193,11 +193,16 @@ Every feature's acceptance criteria include the verification matrix: small phone
   theme control is inline on the Settings root, and Privacy and About link out to the website,
   so building the frame as drawn would mean giving Settings an information architecture it does
   not have, which changes the PHONE too. On a tablet Settings stays a single column, wider.
-- **A tablet hides the system status bar** (Ayo, 2026-09-02). The tablet frames draw their own
-  `.tstatus` strip and the app's chrome starts at the very top: the rail runs the full height
-  and the two-pane reaches the top edge, so the system bar sat on top of a layout that had
-  already accounted for that space. A PHONE keeps it, because a phone is held one-handed and
-  glanced at, and the clock and battery are part of what it is for.
+- **A tablet STARTS BELOW the status bar** (Ayo, 2026-09-02). Android draws edge-to-edge, so
+  the app's own surfaces ran up behind the system bar. Content was never overlapped, and
+  measuring proved it: the rail's first item sat at exactly `insets.top` plus its own padding.
+  What was wrong is that the RAIL's card colour reached y=0, putting a seam of app chrome
+  behind the clock. On a phone edge-to-edge is the intended look; on a tablet the rail and the
+  panes ARE the app's frame, and a frame should begin where the app does.
+  **The mechanism matters as much as the rule:** `TabletShell` consumes the top inset once and
+  then ZEROES it for everything below by overriding `SafeAreaInsetsContext`. Without that,
+  `Screen` and the panes each add `insets.top` again and push their content a status bar
+  further down. One owner for one measurement.
 - **A selected card in a two-pane recolours its OWN border**, it does not gain a ring. The
   frame sets `border-color:var(--blue)` on the `.testi` itself. Drawing the border on the
   padded row wrapper instead put it a whole gutter outside the card, which read as "the space
