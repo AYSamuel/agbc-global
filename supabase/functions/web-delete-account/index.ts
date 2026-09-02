@@ -15,6 +15,10 @@
 // (20260901160000 §12), so the token the confirmation created dies inside the same
 // transaction that answers for it.
 //
+// "Discarded" has to be built rather than asserted, and this file did assert it for a day:
+// the client that verifies an OTP keeps that member's token and sends it on everything
+// afterwards, so the erasure ran as the member and the database refused it. See `confirm()`.
+//
 // UNIFORM RESPONSES, ALWAYS. Both actions answer `{ ok: true }` whatever happened, so neither
 // can be used to ask whether an address has an account here. An address with no account, a
 // wrong code and a successful erasure are indistinguishable from outside. The only non-200s
@@ -130,8 +134,26 @@ async function confirm(
   code: string,
   keepPosts: boolean,
 ): Promise<Response> {
-  const supabase = client();
-  const verified = await supabase.auth.verifyOtp({
+  // TWO CLIENTS, AND THE SECOND ONE EXISTS BECAUSE OF A BUG THIS SHIPPED WITH.
+  // supabase-js REMEMBERS the session that verifyOtp mints and sends that member's access
+  // token as the Authorization header on every later request from the same client. So the
+  // erasure went out as the MEMBER rather than as the service role, hit `revoke all on
+  // function erase_profile from authenticated` (20260901160000), and came back "permission
+  // denied for function erase_profile" against a grant that was entirely correct. The
+  // refusal was the database doing its job: a member must not be able to name a profile id
+  // and erase it, which is the whole reason `delete_my_account()` exists beside it.
+  //
+  // The header above already claimed the session was used for one thing and then discarded.
+  // It was not, until here. `persistSession: false` does not help: it governs storage, not
+  // the in-memory session the client attaches to its own requests. So the client that
+  // spends the code and the client that erases are separate objects, and the second is
+  // built fresh, after verification, having never seen a session.
+  //
+  // Found only by driving the live website against production (W4.5, 2026-09-02). No unit
+  // test here could have: the fake would have to reproduce supabase-js's own session
+  // bookkeeping, which is precisely the behaviour that was not known.
+  const codeSpender = client();
+  const verified = await codeSpender.auth.verifyOtp({
     email,
     token: code,
     type: 'email',
@@ -145,7 +167,10 @@ async function confirm(
     return done();
   }
 
-  const { error } = await supabase.rpc('erase_profile', {
+  // Fresh, and therefore anonymous of any member: this one is the service role.
+  const privileged = client();
+
+  const { error } = await privileged.rpc('erase_profile', {
     p_profile_id: userId,
     p_keep_posts: keepPosts,
   });
@@ -153,7 +178,9 @@ async function confirm(
   if (error) {
     // `no_data_found` is the half-finished signup above, and it is not a failure.
     if (error.code === 'P0002') {
-      const removed = await supabase.auth.admin.deleteUser(userId);
+      // The admin API needs the service role just as the routine does, so it takes the
+      // same untainted client rather than the one holding the member's token.
+      const removed = await privileged.auth.admin.deleteUser(userId);
       if (removed.error) throw new Error(removed.error.message);
       console.info('web-delete-account: erased an account with no profile');
       return done();
