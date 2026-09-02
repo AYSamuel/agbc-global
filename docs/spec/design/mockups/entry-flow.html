@@ -1864,7 +1864,21 @@
   <div class="gallery t-light" id="w33Light">
 
     <!-- MORE · member. Variant B of two shown to Ayo 2026-08-15; A (Home's rhythm
-         band in this slot) was not chosen and is deleted rather than kept as clutter. -->
+         band in this slot) was not chosen and is deleted rather than kept as clutter.
+
+         W4.7 (2026-09-02): THE SHIPPING MVP DRAWS THREE FEWER ROWS THAN THIS FRAME,
+         and that is a deliberate deviation rather than drift. "Daily devotional"
+         (W4.4) and the whole "Read" block, Bookstore plus My Library (W4.2), are
+         deferred by `18`'s own MVP definition, and their screens are still
+         `StubScreen` placeholders. A row that opens "on its way" is the placeholder
+         content App Store guideline 2.1 rejects, so the doors are shut behind
+         `apps/mobile/src/lib/features.ts` until their items land. The Read LABEL
+         goes with its two rows: those are all it holds, and a labelled card with
+         nothing in it is worse than no section.
+
+         The frame keeps all three, on purpose: it is the design for the finished
+         hub, and W4.2/W4.4 delete their flag and build to exactly this. Do not
+         "fix" the app back to the frame in the meantime. -->
     <div class="device">
       <p class="name"><b>More</b> &middot; member (the &#8220;My life&#8221; section)</p>
       <div class="phone">
@@ -2297,7 +2311,12 @@
       </div>
     </div>
 
-    <!-- MORE (guest) -->
+    <!-- MORE (guest). The same W4.7 deviation as the member frame applies here:
+         Daily devotional and the Read block (Bookstore + My Library) are hidden in
+         the shipping MVP behind `apps/mobile/src/lib/features.ts`. It matters on
+         THIS frame too, because the Read section was never member-gated: a guest
+         used to see Bookstore and a My Library wearing the "Sign in" badge. See the
+         full note on the W3.3 member frame above. -->
     <div class="device">
       <p class="name"><b>More</b> · guest hub (no rhythm band)</p>
       <div class="phone">
