@@ -193,6 +193,15 @@ Every feature's acceptance criteria include the verification matrix: small phone
   theme control is inline on the Settings root, and Privacy and About link out to the website,
   so building the frame as drawn would mean giving Settings an information architecture it does
   not have, which changes the PHONE too. On a tablet Settings stays a single column, wider.
+- **A tablet hides the system status bar** (Ayo, 2026-09-02). The tablet frames draw their own
+  `.tstatus` strip and the app's chrome starts at the very top: the rail runs the full height
+  and the two-pane reaches the top edge, so the system bar sat on top of a layout that had
+  already accounted for that space. A PHONE keeps it, because a phone is held one-handed and
+  glanced at, and the clock and battery are part of what it is for.
+- **A selected card in a two-pane recolours its OWN border**, it does not gain a ring. The
+  frame sets `border-color:var(--blue)` on the `.testi` itself. Drawing the border on the
+  padded row wrapper instead put it a whole gutter outside the card, which read as "the space
+  is selected" rather than "this post is" (caught on the device, 2026-09-02).
 - **"Tablet" is SMALLEST width, not current width** (corrected W4.7): Android's own `sw600dp`.
   A large phone in landscape is over 1000dp wide, and the only screen this app lets a phone
   rotate to is the player, where turning the device means "make the video bigger" rather than

@@ -17,12 +17,15 @@ export function PrayerRow({
   scope,
   onOpen,
   onGate,
+  selected = false,
 }: {
   prayer: PrayerFeedItem;
   branchName: string | null;
   scope: FamilyScope;
   onOpen: () => void;
   onGate: () => void;
+  /** Passed through to the card: the tablet two-pane's selected state. */
+  selected?: boolean;
 }) {
   const { commitment, onPress, onUndo } = useIntercessionPress(
     prayer,
@@ -37,6 +40,7 @@ export function PrayerRow({
       onPress={onOpen}
       onCommit={onPress ?? (() => undefined)}
       onUndo={onUndo}
+      selected={selected}
     />
   );
 }

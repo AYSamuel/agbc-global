@@ -66,6 +66,7 @@ export function TestimonyCard({
   onGloryGate,
   onShare,
   scope,
+  selected = false,
 }: {
   testimony: TestimonyFeedItem;
   branchName: string | null;
@@ -80,6 +81,11 @@ export function TestimonyCard({
   /** Which feed is showing this card, for `glory_tapped`. Only the Family feed
    * has one; Home's highlight and the detail screen leave it out. */
   scope?: FamilyScope;
+  /** Open in a tablet two-pane's detail. The mockup sets `border-color:var(--blue)`
+   * on the `.testi` ITSELF, so the card's own border changes colour: it does not
+   * gain a second ring, and nothing is drawn outside it. Getting that wrong is
+   * what made the first version ring the whole padded row (Ayo, 2026-09-02). */
+  selected?: boolean;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -107,7 +113,7 @@ export function TestimonyCard({
       style={({ pressed }) => ({
         backgroundColor: colors.card,
         borderWidth: 1,
-        borderColor: colors.cardline,
+        borderColor: selected ? colors.blue : colors.cardline,
         borderRadius: radius.card,
         padding: CARD_PADDING,
         marginBottom: spacing.md,

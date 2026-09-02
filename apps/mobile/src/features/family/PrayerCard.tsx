@@ -150,6 +150,7 @@ export function PrayerCard({
   onPress,
   onCommit,
   onUndo,
+  selected = false,
 }: {
   prayer: PrayerFeedItem;
   branchName: string | null;
@@ -158,6 +159,9 @@ export function PrayerCard({
   onCommit: () => void;
   /** Present only while the 5s way back is open (docs/spec/09 undo window). */
   onUndo?: () => void;
+  /** Open in a tablet two-pane's detail: the card's OWN border turns blue, the
+   *  way the frame draws it. No extra ring, nothing outside the card. */
+  selected?: boolean;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -175,7 +179,7 @@ export function PrayerCard({
       style={({ pressed }) => ({
         backgroundColor: colors.card,
         borderWidth: 1,
-        borderColor: colors.cardline,
+        borderColor: selected ? colors.blue : colors.cardline,
         borderRadius: radius.card,
         padding: CARD_PADDING,
         marginBottom: spacing.md,

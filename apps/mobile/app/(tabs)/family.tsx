@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState, type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
@@ -76,23 +76,22 @@ export default function Family() {
   const params = useLocalSearchParams<{ tab?: string; k?: string }>();
   const tab = useFamilyViewStore((s) => s.tab);
   const setTab = useFamilyViewStore((s) => s.setTab);
-  // Seeding on ARRIVAL is its own case, and moving the tab into a store lost it
-  // until the suite said so: `useState(asSubTab(params.tab) ?? ...)` used to do
-  // this implicitly, while the nonce below only fires when `k` CHANGES, which it
-  // has not on the first render. Both paths are needed: this one for the first
-  // arrival, the nonce for a repeat tap of the same link.
-  const [seeded, setSeeded] = useState(false);
-  if (!seeded) {
-    setSeeded(true);
+  // A caller can land the user on a specific sub-tab: Home's "From the family >
+  // See all" pushes `?tab=testimonies` with a nonce `k`, so a repeat tap of the
+  // same link re-applies it.
+  //
+  // AN EFFECT, NOT AN ADJUST-DURING-RENDER. While the tab was this component's
+  // own `useState`, setting it during render was React's documented "adjust
+  // state on a changed prop" pattern. Moving it into a store made that a write
+  // to a DIFFERENT component's state during render, which React cannot track:
+  // the device showed "Can't perform a React state update on a component that
+  // hasn't mounted yet" the moment the screen loaded (2026-09-02). Keyed on both
+  // the tab and the nonce, this one effect covers the first arrival AND the
+  // repeat tap, so the two hand-rolled paths it replaces are both gone.
+  useEffect(() => {
     const requested = asSubTab(params.tab);
     if (requested) setTab(requested);
-  }
-  const [lastNav, setLastNav] = useState(params.k);
-  if (params.k !== lastNav) {
-    setLastNav(params.k);
-    const requested = asSubTab(params.tab);
-    if (requested) setTab(requested);
-  }
+  }, [params.tab, params.k, setTab]);
   // Everywhere is the default so "one family, many nations" is what you meet
   // first; narrowing to your branch is the deliberate act (docs/spec/09).
   const scope = useFamilyViewStore((s) => s.scope);

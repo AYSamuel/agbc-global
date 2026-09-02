@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import { fontFamily, spacing } from '@agbc/shared/theme';
 
 import { EmptyState, SegmentedControl, Skeleton } from '@/components/ui';
 import { useTheme } from '@/theme';
@@ -163,24 +163,15 @@ export function FamilyListPane({ selectedId }: FamilyListPaneProps) {
       renderItem={({ item: row }) => {
         const selected = row.item.id === selectedId;
         return (
-          <View
-            style={{
-              paddingHorizontal: spacing.lg,
-              // The frame's `border-color:var(--blue)` on the open card. Drawn
-              // as a ring around the card rather than by reaching into it, so
-              // the card stays the one the phone renders.
-              ...(selected
-                ? {
-                    borderRadius: radius.card,
-                    borderWidth: 1,
-                    borderColor: colors.blue,
-                    marginHorizontal: spacing.xs,
-                  }
-                : {}),
-            }}
-          >
+          // The selection belongs to the CARD, not to this padded row. Ringing
+          // the wrapper drew the border a whole gutter outside the card, which
+          // read as "the space is selected" rather than "this post is" (Ayo,
+          // 2026-09-02). The frame sets `border-color` on the `.testi` itself,
+          // so `selected` goes down to the card and recolours its own border.
+          <View style={{ paddingHorizontal: spacing.lg }}>
             {row.kind === 'testimony' ? (
               <TestimonyCard
+                selected={selected}
                 testimony={row.item}
                 branchName={branchNames[row.item.branch_id] ?? null}
                 branchColor={branchColorFor(row.item.branch_id)}
@@ -219,6 +210,7 @@ export function FamilyListPane({ selectedId }: FamilyListPaneProps) {
               />
             ) : (
               <PrayerRow
+                selected={selected}
                 prayer={row.item}
                 branchName={branchNames[row.item.branch_id] ?? null}
                 scope={effectiveScope}
