@@ -135,7 +135,7 @@ export function Button({
             ? 'rgba(255,255,255,0.28)'
             : variant === 'confirmed'
               ? colors.eye
-              : colors.cardline,
+              : colors.controlline,
         opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
         alignSelf: fullWidth ? 'stretch' : 'auto',
         flex: fill ? 1 : undefined,

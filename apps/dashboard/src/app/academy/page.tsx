@@ -64,7 +64,7 @@ export default async function AcademyPage({
             action={
               <Link
                 href="/moderation"
-                className="inline-flex min-h-12 items-center rounded-button border border-cardline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
+                className="inline-flex min-h-12 items-center rounded-button border border-controlline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
               >
                 {copy.queue.title}
               </Link>
@@ -250,7 +250,7 @@ function Empty({ view, asideCount }: { view: QueueView; asideCount: number }) {
       {view === 'waiting' && asideCount > 0 ? (
         <Link
           href="/academy?view=aside"
-          className="mt-4 inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+          className="mt-4 inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
         >
           {copy.academy.actions.seeAside(asideCount)}
         </Link>

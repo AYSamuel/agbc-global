@@ -39,7 +39,7 @@ export function PlayerAction({
         justifyContent: 'center',
         gap: spacing.sm,
         borderWidth: 1,
-        borderColor: colors.cardline,
+        borderColor: colors.controlline,
         borderRadius: radius.control,
         paddingVertical: 13,
         paddingHorizontal: 10,

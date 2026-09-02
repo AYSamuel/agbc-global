@@ -59,7 +59,7 @@ export function OtpInput({
                 height: 60,
                 backgroundColor: colors.card,
                 borderWidth: 1.5,
-                borderColor: isActive ? palette.blue : colors.cardline,
+                borderColor: isActive ? palette.blue : colors.controlline,
                 borderRadius: radius.control,
                 alignItems: 'center',
                 justifyContent: 'center',

@@ -105,7 +105,7 @@ function Switch({ on }: { on: boolean }) {
         width: TRACK_WIDTH,
         height: TRACK_HEIGHT,
         borderRadius: radius.full,
-        backgroundColor: on ? palette.green : colors.cardline,
+        backgroundColor: on ? palette.green : colors.controlline,
         justifyContent: 'center',
       }}
     >

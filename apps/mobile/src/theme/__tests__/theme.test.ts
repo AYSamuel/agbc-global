@@ -27,7 +27,10 @@ describe('tokens match docs/spec/05', () => {
     expect(color.light.bg).toBe('#fbf8f3');
     expect(color.light.text).toBe('#14213d');
     expect(color.light.accent).toBe('#ffcf4a');
-    expect(color.light.eye).toBe('#b98600');
+    // W4.7 moved this from #b98600 (3.06:1, a 12px bold uppercase kicker) after
+    // the mockup and `05` moved first, which is the order this guard exists to
+    // enforce. It did its job: this was the only test that noticed.
+    expect(color.light.eye).toBe('#896300');
     expect(color.light.btnBg).toBe('#14213d');
     expect(color.dark.blue).toBe('#5a9bff');
     expect(color.dark.card).toBe('#18212f');

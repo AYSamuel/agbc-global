@@ -50,7 +50,7 @@ export default async function PeoplePage() {
               // surface that IS theirs, rather than being told what is not.
               <a
                 href="/people/requests"
-                className="inline-flex min-h-12 items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+                className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
               >
                 {copy.refused.notAdminAction}
               </a>

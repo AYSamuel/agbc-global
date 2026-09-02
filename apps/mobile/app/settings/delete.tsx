@@ -288,7 +288,7 @@ export default function DeleteAccount() {
                 style={{
                   backgroundColor: colors.card,
                   borderWidth: 1.5,
-                  borderColor: wordMatches ? palette.red : colors.cardline,
+                  borderColor: wordMatches ? palette.red : colors.controlline,
                   borderRadius: radius.button,
                   paddingHorizontal: 16,
                   paddingVertical: 14,

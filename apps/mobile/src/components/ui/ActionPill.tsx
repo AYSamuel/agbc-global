@@ -54,7 +54,7 @@ export function ActionPill({
 
   const toneStyle =
     tone === 'neutral'
-      ? { bg: colors.alt, border: colors.cardline, fg: colors.sub }
+      ? { bg: colors.alt, border: colors.controlline, fg: colors.sub }
       : tone === 'gold'
         ? { ...tonal.gold, fg: colors.text }
         : tone === 'goldSoft'

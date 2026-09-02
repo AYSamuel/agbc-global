@@ -86,7 +86,7 @@ export default async function CloseBranchPage({
             action={
               <Link
                 href="/people"
-                className="inline-flex min-h-12 items-center rounded-button border border-cardline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
+                className="inline-flex min-h-12 items-center rounded-button border border-controlline px-5 text-body font-bold whitespace-nowrap text-text hover:bg-alt"
               >
                 {copy.branches.closeBlockedAction}
               </Link>

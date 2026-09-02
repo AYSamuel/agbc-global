@@ -62,7 +62,7 @@ export function RadioRow({
           height: 22,
           borderRadius: radius.full,
           borderWidth: 2,
-          borderColor: selected ? colors.btnBg : colors.cardline,
+          borderColor: selected ? colors.btnBg : colors.controlline,
           marginTop: 1,
           alignItems: 'center',
           justifyContent: 'center',

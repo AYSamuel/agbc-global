@@ -164,7 +164,12 @@ export const verseCard = {
   to: '#f5e8ce',
   border: '#eeddb5',
   text: '#2b2517',
-  eyebrow: '#b98600',
+  // W4.7: was #b98600, and at 2.68:1 on the darker end of its own gradient it was
+  // the WORST text contrast in the app, on the daily verse card that Home leads
+  // with. It failed even the 3:1 large-text bar, and the eyebrow is 12px anyway.
+  // Darkened to 4.65 worst. This card is a constant cream surface in both themes,
+  // so unlike `color.light.eye` there is no second palette to satisfy.
+  eyebrow: '#866100',
   reference: '#7a5b12',
   chipBg: 'rgba(255,255,255,0.72)',
   chipBorder: '#e6d3a4',
@@ -180,7 +185,27 @@ export interface ColorTokens {
   /** Tertiary/meta text: steps, timestamps, city lines (mockup --muted). */
   muted: string;
   card: string;
+  /** The DECORATIVE hairline: a card's edge, a list separator, the bar above the
+   * tab bar. It stays deliberately delicate (1.24 to 1.42:1) because a card is
+   * identified by its CONTENT, so nothing depends on seeing this line. Where a
+   * boundary does carry meaning, use `controlline` instead. */
   cardline: string;
+  /** The boundary that IS the control, or its state.
+   *
+   * Split out of `cardline` at W4.7 (2026-09-02) because one token was doing two
+   * jobs across 66 usages, and only one of them carries WCAG 1.4.11's 3:1 for
+   * "visual information required to identify user interface components and
+   * states". An empty text field, an unchecked checkbox, an unselected radio or
+   * chip, an outline button and an OFF switch have nothing but this line to say
+   * what they are; at `cardline`'s 1.31:1 on a card they were very nearly not
+   * drawn at all. The switch is the sharpest case, because there the token is a
+   * FILL rather than a border: `on ? green : this`, so the whole difference
+   * between on and off rested on a colour at 1.31:1.
+   *
+   * Measured to 3:1 against every surface a control sits on (`bg`, `card` and
+   * `alt`): worst case 3.03:1 light, 3.00:1 dark. Do not reach for it to make a
+   * card stand out; that is what content is for. */
+  controlline: string;
   /** Elevated chip on an alt track (the segmented control's active state). In
    * light this IS card (white on beige reads raised by itself); dark needs a
    * genuinely lighter surface, because card on alt is a 3-point difference and
@@ -226,17 +251,29 @@ export const color: Record<ThemeName, ColorTokens> = {
     alt: '#f0ece3',
     text: '#14213d',
     sub: '#546077',
-    muted: '#8a7f6a',
+    // W4.7: was #8a7f6a, which is 3.35:1 on `alt` where 4.5 is the bar. `muted`
+    // carries meta lines, timestamps and city lines at 10 to 14px, so there is no
+    // large-text exemption to hide behind. Same hue darkened to 4.66 worst case.
+    muted: '#716857',
     card: '#ffffff',
     cardline: '#e8e0d0',
+    controlline: '#8c877d',
     raised: '#ffffff',
     band: palette.ink,
     bandtext: '#ffffff',
     bandline: 'transparent',
     accent: palette.gold,
-    blue: palette.blue,
-    eye: '#b98600',
-    count: '#b98600',
+    // A literal rather than `palette.blue`, the way dark already does it. The brand
+    // constant stays #2f6fed and goes on carrying map pins, the OTP focus ring and
+    // the tonal washes; what moves is only blue AS TEXT on a light page, which was
+    // 4.29:1 and is every "See all" link at 12.5px. Now 4.65.
+    blue: '#2963d4',
+    // W4.7: was #b98600 (palette.goldDeep) at 3.06:1, and `Eyebrow` renders it at
+    // 12px bold uppercase, which is not large text. Darkened to 4.63. Deliberately
+    // NOT palette.goldDeep any more: that constant still tops the avatar gradient,
+    // where it sits under white initials and answers a different question.
+    eye: '#896300',
+    count: '#896300',
     btnBg: palette.navy,
     btnText: '#ffffff',
     mapSea: '#f4efe4',
@@ -247,9 +284,12 @@ export const color: Record<ThemeName, ColorTokens> = {
     alt: '#141d2a',
     text: '#eef2f8',
     sub: '#aab4c6',
-    muted: '#7c8698',
+    // W4.7: was #7c8698, which passes on the page (5.02) and fails on a CARD at
+    // 4.41, which is where most meta text actually sits. Lightened to 4.65 worst.
+    muted: '#808a9c',
     card: '#18212f',
     cardline: '#28323f',
+    controlline: '#646b74',
     raised: '#28323f',
     band: palette.ink,
     bandtext: '#ffffff',

@@ -82,7 +82,7 @@ export const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
         style={{
           backgroundColor: colors.card,
           borderWidth: 1,
-          borderColor: error ? palette.red : colors.cardline,
+          borderColor: error ? palette.red : colors.controlline,
           borderRadius: radius.cardTight,
           paddingVertical: dims.paddingVertical,
           paddingHorizontal: dims.paddingHorizontal,

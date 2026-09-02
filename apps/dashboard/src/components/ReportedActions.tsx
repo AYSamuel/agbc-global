@@ -38,7 +38,7 @@ export function ReportedActions({ item }: { item: ReportedItem }) {
           decision the database will refuse. */}
       {decided ? null : (
         <details className="group">
-          <summary className="inline-flex min-h-12 cursor-pointer list-none items-center rounded-button border border-cardline bg-card px-5 text-body font-semibold text-text">
+          <summary className="inline-flex min-h-12 cursor-pointer list-none items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text">
             {copy.reports.actions.reject}
           </summary>
           <form action={act} className="mt-3 flex max-w-prose flex-col gap-2">

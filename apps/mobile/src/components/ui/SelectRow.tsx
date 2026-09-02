@@ -59,7 +59,7 @@ export function SelectRow({
         borderRadius: radius.cardTight,
         backgroundColor: colors.card,
         borderWidth: selected ? 2 : 1,
-        borderColor: selected ? colors.btnBg : colors.cardline,
+        borderColor: selected ? colors.btnBg : colors.controlline,
         opacity: pressed ? 0.9 : 1,
       })}
     >
@@ -113,7 +113,7 @@ export function SelectRow({
           height: 24,
           borderRadius: radius.full,
           borderWidth: 2,
-          borderColor: selected ? colors.btnBg : colors.cardline,
+          borderColor: selected ? colors.btnBg : colors.controlline,
           backgroundColor: selected ? colors.btnBg : 'transparent',
           alignItems: 'center',
           justifyContent: 'center',

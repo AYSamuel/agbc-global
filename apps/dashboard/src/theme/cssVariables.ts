@@ -83,6 +83,7 @@ function themeBlock(theme: ThemeName): string {
     '--t-alt': t.alt,
     '--t-card': t.card,
     '--t-cardline': t.cardline,
+    '--t-controlline': t.controlline,
     '--t-raised': t.raised,
     '--t-text': t.text,
     '--t-sub': t.sub,

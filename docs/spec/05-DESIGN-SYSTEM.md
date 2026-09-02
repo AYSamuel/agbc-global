@@ -8,7 +8,7 @@ The app shares the church's brand with the website but is its own, more personal
 
 Define as theme objects (light + dark). Names mirror the web tokens (`Nav.dc.html`) so the two stay in sync.
 
-> **Values below = the mockup's `t-light` / `t-dark` CSS variables verbatim** (updated 2026-07-20; earlier tables lagged the final mockup CSS and the implemented tokens had followed them). `packages/shared/src/theme` mirrors these exactly. Naming map: mockup `--sub` → `sub`, `--border` → `cardline`, `--btnBg`/`--btnText` → `btnBg`/`btnText`.
+> **Values below = the mockup's `t-light` / `t-dark` CSS variables verbatim** (updated 2026-07-20; earlier tables lagged the final mockup CSS and the implemented tokens had followed them). `packages/shared/src/theme` mirrors these exactly. Naming map: mockup `--sub` → `sub`, `--border` → `cardline`, `--ctlline` → `controlline`, `--btnBg`/`--btnText` → `btnBg`/`btnText`.
 
 ### Brand constants (theme-independent, mockup `:root`)
 | Name | Value | Use |
@@ -31,9 +31,10 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `alt` | `#f0ece3` | alt surface: segmented tracks, icon circles, skeleton base |
 | `text` | `#14213d` | primary text (navy) |
 | `sub` | `#546077` | secondary text |
-| `muted` | `#8a7f6a` | tertiary/meta: steps, timestamps, city lines |
+| `muted` | `#716857` | tertiary/meta: steps, timestamps, city lines. **W4.7: was `#8a7f6a`, 3.35:1 on `alt` where 4.5 is the bar**, and it is rendered at 10-14px so no large-text allowance applies. Now 4.66 worst case |
 | `card` | `#ffffff` | card surface |
-| `cardline` | `#e8e0d0` | card border |
+| `cardline` | `#e8e0d0` | **decorative** card border and list separator. Stays at 1.31:1 deliberately: a card is identified by its content, so nothing depends on seeing this line (W4.7, with Ayo) |
+| `controlline` | `#8c877d` | **the boundary that IS the control, or its state**: text fields, OTP boxes, checkboxes, unselected radios and chips, outline buttons, and the OFF fill of a switch. Split out of `cardline` at W4.7 because one token was doing both jobs and only this one carries WCAG 1.4.11's 3:1. Measured against `bg`, `card` and `alt`: 3.03 worst |
 | `raised` | `#ffffff` | elevated chip on an alt track (segmented active state); same as card in light, where white-on-beige reads raised by itself |
 | `mapSea` | `#f4efe4` | Family map ocean (mockup `--mapsea`) |
 | `mapLand` | `rgba(20,33,61,0.10)` | Family map landmass, a translucent wash over the sea so it reads soft (mockup `--mapland`) |
@@ -41,8 +42,8 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `bandtext` | `#ffffff` | text on band |
 | `bandline` | `transparent` | a band's hairline. Nothing to do in light, where ink inverts against cream; see the dark table for why it exists |
 | `accent` | `#ffcf4a` | **gold**: highlights, key CTAs |
-| `blue` | `#2f6fed` | **hopeful blue**: links, active tabs |
-| `eye` / `count` | `#b98600` | eyebrows, counters (burnished gold on cream) |
+| `blue` | `#2963d4` | **hopeful blue**: links, active tabs. **W4.7: was the brand `#2f6fed`, 4.17:1 on `alt`** (a pressed row) and 4.29 on the page, and it is every "See all" at 12.5px. Now 4.65 worst. `palette.blue` keeps `#2f6fed` and goes on carrying map pins, the OTP focus ring and the tonal washes |
+| `eye` / `count` | `#896300` | eyebrows, counters (burnished gold on cream). **W4.7: was `#b98600`, 3.06:1**, and `Eyebrow` renders it at 12px bold uppercase, which is not large text. Now 4.63. No longer `palette.goldDeep`, which still tops the avatar gradient under white initials |
 | `btnBg` / `btnText` | `#14213d` / `#ffffff` | primary buttons, selected states |
 
 ### Dark
@@ -52,9 +53,10 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `alt` | `#141d2a` |
 | `text` | `#eef2f8` |
 | `sub` | `#aab4c6` |
-| `muted` | `#7c8698` |
+| `muted` | `#808a9c` (**W4.7: was `#7c8698`**, which passed on the page at 5.02 and failed on a CARD at 4.41, which is where most meta text sits. Now 4.65 worst) |
 | `card` | `#18212f` |
-| `cardline` | `#28323f` (solid; borders carry separation in dark). **Measured 2026-08-15: that separation is ~1.43:1 against `bg`**, under WCAG 1.4.11's 3:1 for a boundary that identifies a component. Applies to every dark surface edge, not one component, so it is W4.7's decision (`25`), not a per-feature fix |
+| `cardline` | `#28323f` (solid; borders carry separation in dark). **Measured 2026-08-15 at ~1.43:1 against `bg`, and DECIDED at W4.7 on 2026-09-02: it stays.** Computing every pair showed the boundary problem was never dark-only (light `cardline` is 1.24:1 on the page, worse), and that the token was doing two jobs. 1.4.11 asks 3:1 of what is REQUIRED to identify a component, and a card is identified by its content; raising this would turn a hairline into mid-grey and re-weight every card, band, sheet and toast. The boundaries that genuinely carry meaning moved to `controlline` instead. Asserted in `apps/mobile/src/theme/__tests__/contrast.test.ts`, which fails if this is ever raised, so the exemption stays a decision |
+| `controlline` | `#646b74` (the control-boundary token, see the light table. 3.00:1 worst, on `card`) |
 | `raised` | `#28323f` (elevated chip on an alt track: card-on-alt is a 3-point difference in dark and the raised shadow is invisible there, so the active segment gets a genuinely lighter surface; fixed 2026-07-21) |
 | `mapSea` | `#0b111b` (Family map ocean, mockup `--mapsea`) |
 | `mapLand` | `rgba(255,255,255,0.07)` (Family map landmass, mockup `--mapland`) |
@@ -66,6 +68,23 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `btnBg` / `btnText` | `#ffcf4a` / `#14213d` |
 
 > **Contrast rule learned during design:** in **light mode**, selected/active states and hero titles must **not** be gold-on-light (fails contrast). Use **navy or blue** for active nav/text in light; gold is for fills and accents on dark or navy surfaces. In dark mode, gold-on-navy is the accent.
+
+> **The contrast contract is now machine-checked** (W4.7, 2026-09-02).
+> `apps/mobile/src/theme/__tests__/contrast.test.ts` computes every token pair against
+> WCAG 2.2 and fails the build below 4.5:1 for text or 3:1 for a control boundary. It was
+> written because SIX values had shipped under the bar and none of them was visible to a
+> screenshot review: the four in the tables above, the missing `controlline`, and the
+> daily verse card's eyebrow at **2.68:1**, the worst in the app, on the surface Home
+> leads with (`verseCard.eyebrow`, `#b98600` to `#866100`). The rule above survived the
+> audit unchanged and was in fact confirmed by it: gold on cream is exactly what fails.
+>
+> Two things the test deliberately does NOT cover, and which W4.7's device sweep owes.
+> Avatar initials are 13px bold white on the branch gradient, whose lightest stop
+> (`palette.goldDeep`) gives 3.24:1; they repeat the author's name printed beside them,
+> so they are arguably decorative, but nothing has decided that on the record. And the
+> gold-tinted badges (`.pill.review`, `.quotemark`, `.tag2.global`, the NC glory disc)
+> put `#b98600` on a translucent wash, so their real background depends on the card
+> underneath and on the theme, which is a composited measurement rather than a token one.
 
 ## Typography
 
