@@ -32,7 +32,7 @@ import { useBlockedMembers } from '@/features/family/moderation';
 import { shutdownAnalytics, useAnalyticsConsentStore } from '@/lib/analytics';
 import { LANGUAGE_AUTONYMS, type SupportedLanguage } from '@/i18n';
 import { useAuthStore } from '@/state/auth';
-import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
+import { privacyUrl, termsUrl } from '@/lib/links';
 import { useTheme } from '@/theme';
 import { useThemePrefStore, type ThemePref } from '@/theme/store';
 
@@ -201,7 +201,7 @@ export default function Settings() {
             icon={LockIcon}
             label={t('settings:privacy')}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(PRIVACY_URL);
+              void WebBrowser.openBrowserAsync(privacyUrl(i18n.language));
             }}
           />
           {/* The frame's `.mrow.danger`, and members only: a guest has no account to delete,
@@ -239,7 +239,7 @@ export default function Settings() {
             icon={LegalIcon}
             label={t('settings:legal')}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(TERMS_URL);
+              void WebBrowser.openBrowserAsync(termsUrl(i18n.language));
             }}
           />
         </MenuCard>

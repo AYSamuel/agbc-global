@@ -21,7 +21,7 @@ import {
 
 import { Button, GradientFill } from '@/components/ui';
 import { HQ_BRANCH } from '@/features/onboarding/branches-snapshot';
-import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
+import { privacyUrl, termsUrl } from '@/lib/links';
 import { useBranchStore } from '@/state/branch';
 import { useLaunchStore } from '@/state/launch';
 
@@ -33,7 +33,7 @@ const HERO_IMAGE =
 // hatch: "I'm just looking" lands on Home as an HQ guest in one tap.
 export default function Welcome() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const setBranch = useBranchStore((s) => s.setBranch);
   const completeOnboarding = useLaunchStore((s) => s.completeOnboarding);
@@ -136,7 +136,7 @@ export default function Welcome() {
             accessibilityRole="link"
             style={{ color: onInk.link }}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(TERMS_URL);
+              void WebBrowser.openBrowserAsync(termsUrl(i18n.language));
             }}
           >
             {t('onboarding.terms')}
@@ -146,7 +146,7 @@ export default function Welcome() {
             accessibilityRole="link"
             style={{ color: onInk.link }}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(PRIVACY_URL);
+              void WebBrowser.openBrowserAsync(privacyUrl(i18n.language));
             }}
           >
             {t('onboarding.privacy')}
