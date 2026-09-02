@@ -254,7 +254,12 @@ export function PrayerCard({
             accessibilityRole="button"
             accessibilityLabel={t('family:undoCommitment')}
             onPress={onUndo}
-            hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            // A 12px icon beside 11.5px bold text is a ~15dp row, so 10 of
+            // slop left the target 35dp: under the 44 floor (`hitTarget.min`).
+            // 15 + 15 + 15 = 45. Same measurement pass as TestimonyCard's Share
+            // (W4.7 slice 5); this one is easy to miss because the control only
+            // exists during the 5s undo window.
+            hitSlop={{ top: 15, bottom: 15, left: 8, right: 8 }}
             style={({ pressed }) => ({
               flexDirection: 'row',
               alignItems: 'center',

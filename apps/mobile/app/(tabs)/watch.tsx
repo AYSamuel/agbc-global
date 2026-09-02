@@ -59,7 +59,10 @@ function SectionHeader({
         accessibilityRole="link"
         accessibilityLabel={`${seeAllLabel}: ${label}`}
         onPress={onSeeAll}
-        hitSlop={spacing.sm}
+        // 12.5px of bold text is a ~16dp line box, so `spacing.sm` left this
+        // 32dp tall: under the 44 floor (`hitTarget.min`). 16 + 14 + 14 = 44.
+        // Measured from the accessibility tree at W4.7 slice 5.
+        hitSlop={{ top: 14, bottom: 14, left: spacing.sm, right: spacing.sm }}
       >
         <Text
           style={{

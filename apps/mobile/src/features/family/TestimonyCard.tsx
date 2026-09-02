@@ -224,7 +224,13 @@ export function TestimonyCard({
           accessibilityRole="button"
           accessibilityLabel={t('family:share')}
           onPress={onShare}
-          hitSlop={spacing.sm}
+          // 13px of bold text is a ~17dp line box, so `spacing.sm` on every side
+          // left the TOUCH target 33dp tall: under this project's own 44 floor
+          // (`hitTarget.min`), on the most-tapped card in the app. Found by
+          // measuring the accessibility tree at W4.7 slice 5, not by looking.
+          // 17 + 14 + 14 = 45. Horizontal keeps the smaller inset: the row has
+          // the Glory pill beside it and there is nothing to gain by overlapping.
+          hitSlop={{ top: 14, bottom: 14, left: spacing.sm, right: spacing.sm }}
         >
           <Text
             style={{

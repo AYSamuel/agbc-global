@@ -129,7 +129,10 @@ function SectionHeader({
         accessibilityRole="link"
         accessibilityLabel={`${actionLabel}: ${label}`}
         onPress={onAction}
-        hitSlop={spacing.sm}
+        // 12.5px of bold text is a ~16dp line box, so `spacing.sm` left this
+        // 32dp tall: under the 44 floor (`hitTarget.min`). 16 + 14 + 14 = 44.
+        // Measured from the accessibility tree at W4.7 slice 5.
+        hitSlop={{ top: 14, bottom: 14, left: spacing.sm, right: spacing.sm }}
       >
         <Text
           style={{
@@ -388,6 +391,8 @@ export default function Home() {
             onPress={() => {
               setSwitcherOpen(true);
             }}
+            // The row is 32dp and had no slop: 32 + 6 + 6 = 44 (W4.7 slice 5).
+            hitSlop={{ top: 6, bottom: 6 }}
             style={({ pressed }) => ({
               flexDirection: 'row',
               alignItems: 'center',
@@ -758,6 +763,9 @@ export default function Home() {
                   onPress={() => {
                     router.push('/auth');
                   }}
+                  // 14px bold is a ~18dp line box with no slop at all:
+                  // 18 + 13 + 13 = 44 (W4.7 slice 5).
+                  hitSlop={{ top: 13, bottom: 13, left: 8, right: 8 }}
                 >
                   <Text
                     style={{

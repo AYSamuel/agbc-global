@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { hitTarget } from '@agbc/shared/theme';
+
 import { ToastProvider } from '@/components/ui';
 import i18n from '@/i18n';
 import { useFamilyViewStore } from '@/features/family/viewState';
@@ -304,6 +306,32 @@ describe('FAMILY tab · scope + navigation', () => {
     await renderScreen();
     expect(screen.getByRole('tab', { name: 'My branch' })).toBeDisabled();
     expect(screen.getByText(/God provided a job/)).toBeTruthy();
+  });
+
+  /**
+   * The 44dp floor, on the control that was missing it (W4.7 slice 5).
+   *
+   * WHY A TEST RATHER THAN A MEASUREMENT. The sweep that found this read the live
+   * accessibility tree over adb, which reports a node's VIEW bounds. `hitSlop`
+   * extends the touch area without changing those bounds, so the instrument that
+   * found the defect cannot see the repair: re-running it printed byte-identical
+   * output, and reading that as "the fix did not work" was one misstep away.
+   *
+   * `hitSlop={spacing.sm}` was 8 a side around a ~17dp line box, leaving 33dp on
+   * the most-tapped control in the wedge feature.
+   */
+  test('the Share affordance clears the 44dp floor once its slop is counted', async () => {
+    await renderScreen();
+    const [share] = screen.getAllByRole('button', { name: 'Share' });
+    const slop = share.props.hitSlop as
+      { top?: number; bottom?: number } | number | undefined;
+    // A bare number is the shape the bug had; an object is the shape that can
+    // carry enough vertical room.
+    expect(typeof slop).toBe('object');
+    const vertical =
+      typeof slop === 'object' ? (slop.top ?? 0) + (slop.bottom ?? 0) : 0;
+    // 13px bold is a ~17dp line box, which the call site's comment states.
+    expect(17 + vertical).toBeGreaterThanOrEqual(hitTarget.min);
   });
 
   test('a card taps through to its detail route', async () => {
