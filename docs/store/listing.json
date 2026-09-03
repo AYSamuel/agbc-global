@@ -1,0 +1,73 @@
+{
+  "$comment": [
+    "Store listing copy for AGBC Global, in the four languages the app ships.",
+    "",
+    "WHY THIS IS A FILE RATHER THAN TEXT TYPED INTO A CONSOLE. Three reasons, and",
+    "the third is the one that bites. It is reviewable in a PR beside the app it",
+    "describes; it is readable by the DE/NL/FR reviewers alongside everything else",
+    "they are asked to check (22 §4); and the store character limits are asserted",
+    "by scripts/check-store-listing.mjs rather than discovered by a console",
+    "refusing to save.",
+    "",
+    "IT DESCRIBES ONLY WHAT SHIPS. The MVP cut in 18 defers the bookstore, the",
+    "library and the paid devotional plan, and W4.7 hid their doors behind",
+    "src/lib/features.ts precisely because 'coming soon' is what App Store",
+    "guideline 2.1 rejects. Listing copy that promises them would put the promise",
+    "back on the one surface a reviewer definitely reads. When W4.2 and W4.4 delete",
+    "those flags, this file gains the sentences in the same change.",
+    "",
+    "Release notes come from 19: the app REPLACES Grace Portal on the existing",
+    "listings, so the first release note is written for somebody who installed a",
+    "different app and is about to see it change name, icon and sign-in overnight."
+  ],
+  "limits": {
+    "$comment": "Character limits per store field. The checker enforces these.",
+    "play": { "name": 30, "shortDescription": 80, "fullDescription": 4000, "releaseNotes": 500 },
+    "apple": {
+      "name": 30,
+      "subtitle": 30,
+      "keywords": 100,
+      "promotionalText": 170,
+      "description": 4000,
+      "releaseNotes": 4000
+    }
+  },
+  "locales": {
+    "en": {
+      "name": "AGBC Global",
+      "shortDescription": "One family, many nations. Messages, testimonies, prayer and your church.",
+      "subtitle": "One family, many nations",
+      "keywords": "church,sermons,testimony,prayer,bible,worship,christian,faith,agbc,devotion",
+      "promotionalText": "Browse freely, with no account needed. Watch and listen to every message, share what God has done, and see the family across four nations.",
+      "fullDescription": "Amazing Grace Bible Church is one family across many nations. AGBC Global is the app for that family: for members who gather every week, and for anyone who wants to look before they belong.\n\nBROWSE FREELY\nYou do not need an account to watch a message, find a branch, plan a visit or read the verse of the day. Sign in only when you want to join in.\n\nWHAT YOU CAN DO\n\n• Watch and listen. Every Sunday message, as video or audio only, so it keeps playing while you drive or walk. Save messages for later and keep your own notes on them.\n\n• Share what God has done. Post a testimony and the family answers with \"Glory to God\". Ask for prayer and see who is praying with you. When a prayer is answered, mark it, and turn it into a testimony.\n\n• See the family. A world map of the branches and the testimonies coming from them, so a Sunday in Emmen and a Sunday in Ogbomosho belong to the same day.\n\n• Keep your rhythm. Tap \"I'm here\" when you gather and the app keeps count gently. Grace covers the weeks you miss.\n\n• Give securely. By bank transfer or card, to the global mission or to your own branch.\n\n• Events and Academy. RSVP to what is coming up, and register for Grace Academy courses.\n\n• In your language. English, Deutsch, Nederlands and Français, switchable at any time.\n\nMODERATED, AND PRIVATE BY DEFAULT\nEvery testimony and prayer request is read by a leader before it is shared with anyone. You can report a post or block a member at any time. We ask for your email address to sign you in and never for a phone number, and you can delete your account and your data from inside the app.\n\nOUR BRANCHES\nGlasgow (Scotland), Berlin (Germany), Emmen (Netherlands) and Ogbomosho (Nigeria), with more being planted.",
+      "releaseNotes": "Grace Portal is now AGBC Global: a brand new app for the whole AGBC family. Browse freely, watch and listen to messages, share testimonies and prayers, and see the family across Glasgow, Berlin, Emmen and Ogbomosho. Sign in with your email to join in."
+    },
+    "de": {
+      "name": "AGBC Global",
+      "shortDescription": "Eine Familie, viele Nationen. Botschaften, Zeugnisse, Gebet und Gemeinde.",
+      "subtitle": "Eine Familie, viele Nationen",
+      "keywords": "gemeinde,predigten,zeugnis,gebet,bibel,lobpreis,christlich,glaube,agbc,andacht",
+      "promotionalText": "Schau dich frei um, ganz ohne Konto. Höre und sieh jede Botschaft, teile, was Gott getan hat, und sieh die Familie in vier Nationen.",
+      "fullDescription": "Amazing Grace Bible Church ist eine Familie über viele Nationen hinweg. AGBC Global ist die App für diese Familie: für Mitglieder, die sich jede Woche versammeln, und für alle, die erst einmal schauen möchten.\n\nSCHAU DICH FREI UM\nDu brauchst kein Konto, um eine Botschaft zu sehen, einen Standort zu finden, einen Besuch zu planen oder den Vers des Tages zu lesen. Melde dich erst an, wenn du mitmachen möchtest.\n\nWAS DU TUN KANNST\n\n• Sehen und hören. Jede Sonntagsbotschaft, als Video oder nur als Audio, sodass sie weiterläuft, während du fährst oder gehst. Speichere Botschaften für später und schreibe eigene Notizen dazu.\n\n• Teile, was Gott getan hat. Veröffentliche ein Zeugnis, und die Familie antwortet mit „Gloria Gott\". Bitte um Gebet und sieh, wer mit dir betet. Ist ein Gebet erhört, markiere es und mache ein Zeugnis daraus.\n\n• Sieh die Familie. Eine Weltkarte der Standorte und der Zeugnisse, die von dort kommen, sodass ein Sonntag in Emmen und ein Sonntag in Ogbomosho zum selben Tag gehören.\n\n• Halte deinen Rhythmus. Tippe auf „Ich bin da\", wenn ihr euch versammelt, und die App zählt behutsam mit. Gnade deckt die Wochen ab, die du verpasst.\n\n• Gib sicher. Per Überweisung oder Karte, für die weltweite Mission oder für deinen eigenen Standort.\n\n• Veranstaltungen und Academy. Sag zu, was ansteht, und melde dich für Kurse der Grace Academy an.\n\n• In deiner Sprache. English, Deutsch, Nederlands und Français, jederzeit umschaltbar.\n\nGEPRÜFT UND VON HAUS AUS PRIVAT\nJedes Zeugnis und jedes Gebetsanliegen wird von einer Leitung gelesen, bevor es geteilt wird. Du kannst einen Beitrag jederzeit melden oder ein Mitglied blockieren. Wir fragen nach deiner E-Mail-Adresse, um dich anzumelden, nie nach einer Telefonnummer, und du kannst dein Konto und deine Daten in der App löschen.\n\nUNSERE STANDORTE\nGlasgow (Schottland), Berlin (Deutschland), Emmen (Niederlande) und Ogbomosho (Nigeria), weitere entstehen.",
+      "releaseNotes": "Aus Grace Portal wird AGBC Global: eine ganz neue App für die ganze AGBC-Familie. Schau dich frei um, sieh und höre Botschaften, teile Zeugnisse und Gebete und sieh die Familie in Glasgow, Berlin, Emmen und Ogbomosho. Melde dich mit deiner E-Mail-Adresse an, um mitzumachen."
+    },
+    "nl": {
+      "name": "AGBC Global",
+      "shortDescription": "Eén familie, vele naties. Boodschappen, getuigenissen, gebed en je gemeente.",
+      "subtitle": "Eén familie, vele naties",
+      "keywords": "kerk,preken,getuigenis,gebed,bijbel,aanbidding,christelijk,geloof,agbc,overdenking",
+      "promotionalText": "Kijk vrij rond, zonder account. Bekijk en beluister elke boodschap, deel wat God heeft gedaan, en zie de familie in vier naties.",
+      "fullDescription": "Amazing Grace Bible Church is één familie verspreid over vele naties. AGBC Global is de app voor die familie: voor leden die elke week samenkomen, en voor iedereen die eerst wil kijken.\n\nKIJK VRIJ ROND\nJe hebt geen account nodig om een boodschap te bekijken, een locatie te vinden, een bezoek te plannen of de vers van de dag te lezen. Log pas in als je wilt meedoen.\n\nWAT JE KUNT DOEN\n\n• Kijken en luisteren. Elke zondagsboodschap, als video of alleen als audio, zodat hij doorloopt terwijl je rijdt of loopt. Bewaar boodschappen voor later en maak er je eigen notities bij.\n\n• Deel wat God heeft gedaan. Plaats een getuigenis en de familie antwoordt met \"Glorie aan God\". Vraag om gebed en zie wie er met je meebidt. Is een gebed verhoord, markeer het dan en maak er een getuigenis van.\n\n• Zie de familie. Een wereldkaart van de locaties en de getuigenissen die daarvandaan komen, zodat een zondag in Emmen en een zondag in Ogbomosho bij dezelfde dag horen.\n\n• Houd je ritme. Tik op \"Ik ben er\" als jullie samenkomen en de app telt zachtjes mee. Genade dekt de weken die je mist.\n\n• Geef veilig. Via overboeking of kaart, aan de wereldwijde missie of aan je eigen locatie.\n\n• Evenementen en Academy. Meld je aan voor wat eraan komt, en schrijf je in voor cursussen van de Grace Academy.\n\n• In jouw taal. English, Deutsch, Nederlands en Français, altijd om te schakelen.\n\nBEOORDEELD, EN STANDAARD PRIVÉ\nElk getuigenis en elk gebedspunt wordt door een leider gelezen voordat het gedeeld wordt. Je kunt een bericht melden of een lid blokkeren wanneer je wilt. We vragen je e-mailadres om je in te loggen en nooit een telefoonnummer, en je kunt je account en je gegevens in de app verwijderen.\n\nONZE LOCATIES\nGlasgow (Schotland), Berlijn (Duitsland), Emmen (Nederland) en Ogbomosho (Nigeria), en er komen er meer bij.",
+      "releaseNotes": "Grace Portal is nu AGBC Global: een gloednieuwe app voor de hele AGBC-familie. Kijk vrij rond, bekijk en beluister boodschappen, deel getuigenissen en gebeden, en zie de familie in Glasgow, Berlijn, Emmen en Ogbomosho. Log in met je e-mailadres om mee te doen."
+    },
+    "fr": {
+      "name": "AGBC Global",
+      "shortDescription": "Une famille, plusieurs nations. Messages, témoignages, prière et ton église.",
+      "subtitle": "Une famille, plusieurs nations",
+      "keywords": "église,prédications,témoignage,prière,bible,louange,chrétien,foi,agbc,méditation",
+      "promotionalText": "Explore librement, sans compte. Regarde et écoute chaque message, partage ce que Dieu a fait, et vois la famille dans quatre nations.",
+      "fullDescription": "Amazing Grace Bible Church est une seule famille répartie sur plusieurs nations. AGBC Global est l'application de cette famille : pour les membres qui se rassemblent chaque semaine, et pour tous ceux qui veulent d'abord regarder.\n\nEXPLORE LIBREMENT\nTu n'as pas besoin de compte pour regarder un message, trouver une branche, préparer une visite ou lire le verset du jour. Connecte-toi seulement quand tu veux participer.\n\nCE QUE TU PEUX FAIRE\n\n• Regarder et écouter. Chaque message du dimanche, en vidéo ou en audio seul, pour qu'il continue pendant que tu conduis ou que tu marches. Enregistre des messages pour plus tard et prends tes propres notes.\n\n• Partage ce que Dieu a fait. Publie un témoignage et la famille répond par « Gloire à Dieu ». Demande la prière et vois qui prie avec toi. Quand une prière est exaucée, marque-la, puis fais-en un témoignage.\n\n• Vois la famille. Une carte du monde des branches et des témoignages qui en viennent, pour qu'un dimanche à Emmen et un dimanche à Ogbomosho appartiennent au même jour.\n\n• Garde ton rythme. Appuie sur « Je suis là » quand vous vous rassemblez et l'application compte avec douceur. La grâce couvre les semaines manquées.\n\n• Donne en toute sécurité. Par virement ou par carte, à la mission mondiale ou à ta propre branche.\n\n• Événements et Academy. Réponds aux invitations, et inscris-toi aux cours de la Grace Academy.\n\n• Dans ta langue. English, Deutsch, Nederlands et Français, à changer quand tu veux.\n\nRELU, ET PRIVÉ PAR DÉFAUT\nChaque témoignage et chaque demande de prière est relu par un responsable avant d'être partagé. Tu peux signaler une publication ou bloquer un membre à tout moment. Nous demandons ton adresse e-mail pour te connecter et jamais de numéro de téléphone, et tu peux supprimer ton compte et tes données depuis l'application.\n\nNOS BRANCHES\nGlasgow (Écosse), Berlin (Allemagne), Emmen (Pays-Bas) et Ogbomosho (Nigeria), et d'autres sont implantées.",
+      "releaseNotes": "Grace Portal devient AGBC Global : une toute nouvelle application pour toute la famille AGBC. Explore librement, regarde et écoute les messages, partage témoignages et prières, et vois la famille à Glasgow, Berlin, Emmen et Ogbomosho. Connecte-toi avec ton e-mail pour participer."
+    }
+  }
+}
