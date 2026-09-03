@@ -96,6 +96,17 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
 - [ ] **Play Console `mediaPlayback` foreground-service declaration** (`08`, added W3.1 slice 3): the app now holds `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (expo-audio's config plugin) and uses it for background sermon audio, which the app-content form must declare or the release is rejected. Nothing to build; someone has to fill the form.
 - [ ] **Seed content, and the one gap here is live right now.** Audited against production 2026-08-31: branches **4**, courses **3**, sermons **100** synced, testimony categories **8**, consent versions **2**. **`daily_verses` is 0.** Home's daily verse card is a core Phase 1 surface (`07`) and verse CRUD shipped early in W2.7 precisely because verses could not wait. The devotional plan is legitimately Phase 4's. **The monitoring works and has been telling you:** `verse-monitor` has emailed a `verse_depth` alert to BOTH admins every morning since 2026-08-19, twelve days of them, which is exactly the job doing its job. This is a content-operations gap (Gate 2, issue #19), not an engineering one.
 - [ ] Legal: privacy policy + terms reachable in-app; DPAs on file; analytics consent implemented; web deletion page live (`20`, `16`): **the page is LIVE and proven end to end against production on 2026-09-02** (browser to route to function to OTP to erasure to the other device noticing); the rest of this line is what still holds the box open.
+  **Reachable in-app is DONE (W4.6, 2026-09-03) and it was two defects, not one.** The PRIVACY
+  screen `04` has listed since the navigation map was written did not exist: Settings had
+  quietly replaced it with a row that opened the website. And the link went to the ENGLISH
+  policy for everybody, while the site has served `/de/privacy`, `/nl/privacy` and
+  `/fr/privacy` all along, which matters most here because `20` wants the policy understood
+  rather than merely reachable. **What still holds this box open, and it is not app work:** the
+  website's legal pages are DRAFTS (`legalEntity.reviewed` is `false`, so privacy, terms and
+  Impressum all carry a draft banner), and the Impressum is incomplete under § 5 DDG, missing
+  the company number, registered office, representative, VAT number and responsible person.
+  Play asks for a privacy-policy URL at submission, so this is a W4.8 blocker as much as a
+  W4.6 one. The named data-protection contact `20` asks for is also still unnamed.
 - [ ] Launch-content checklist from `22-CONTENT-OPERATIONS.md` §2 complete (verses queued, devotional imported, seeded testimonies, trained moderators).
 - [ ] Restore drill executed (prod dump restored into a scratch project, `21` §7). **Never run** (audited 2026-08-31). Note the dependency the audit surfaced: `21` §7 asks the drill to "boot the dashboard against it", so this cannot be completed until the dashboard is deployable. Also note a restore needs a free ACTIVE project slot on the Free plan, and the old paused project currently holds the second one.
 - [x] ~~Shipping on Expo SDK 56+ (Play target API 36 requirement from 2026-08-31).~~ **Done, and verified on the deadline itself (2026-08-31).** `apps/mobile` is on `expo ~57.0.8`, and the build installed on the device reports `targetSdk=36`. The Play requirement took effect today and the app already satisfies it, so this needs watching rather than doing: the next SDK bump must not regress it.

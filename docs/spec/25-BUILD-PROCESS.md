@@ -350,6 +350,57 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - Build: full DE/NL/FR translation of all namespaces (port website strings where possible; FR is net-new), reviewer sign-off (Berlin/Emmen/the named FR reviewer); legal strings (consent wording, privacy summaries, deletion copy) reviewed in all four languages; pseudo-localization run in nightly; PRIVACY screen + policy links.
 - Done: no missing-key warnings in any locale; string freeze declared.
 
+**W4.6 IS COMPLETE (2026-09-03), five slices, and the translation pass it sounded like was
+not where the work was.** German and Dutch were already complete; French was short 26 plural
+forms and, far more seriously, addressed the same member two different ways. What shipped: a
+key checker with teeth, locale-aware legal links, the PRIVACY screen `04` has listed since the
+navigation map was written, the register and terminology pass, and a pseudo locale. The string
+freeze and everything it decided are recorded in `22` §4. **One thing is deliberately not
+done: the FR reviewer is still unnamed** (`22` §4), so 233 rewritten French strings have had no
+native reader. That blocks sign-off, not the work.
+
+**The lessons, and the first is the one that generalises furthest.**
+- **AN INSTRUMENT CAN BE WRONG IN BOTH DIRECTIONS AT ONCE.** The obvious locale-parity check
+  (does every English key exist in the other three?) reported 16 missing keys that must NOT
+  exist and hid 26 that genuinely were. English ordinals have four CLDR categories, German and
+  Dutch have one, French has two, and French alone has a `many` cardinal. Derive what each
+  language needs from ITS OWN categories rather than copying English, or you ship a check that
+  cries wolf 19 times and gets muted over the 26 it was for.
+- **A MISSING KEY IS SILENT, AND LOCALE PARITY CANNOT SEE IT.** W4.7 shipped `t('watch:title')`
+  to a device, where i18next drew the literal word "title" with 983 tests green. Parity would
+  never have caught it: the key was missing from all four languages equally. The call-site half
+  of the checker found a second live one on its first run, `t('common:loading')` on the
+  notification centre's "show older" button.
+- **A PRIVACY NOTICE IS A STATEMENT OF FACT, so check it against the schema rather than
+  transcribing the frame.** Three of the approved frame's claims were untrue of this app: no
+  profile photo is collected, no reading progress is, and the device push token was collected
+  and unmentioned. **Overstating collection is as wrong as understating it**, and nothing but
+  reading the sentences against the code can catch either.
+- **233 STRINGS CHANGED AND THE WHOLE SUITE STAYED GREEN.** Nothing in this repo asserted
+  French copy, and register is not something a screen test can see. Where a class of defect has
+  no instrument, leave one: the checker now fails on a French `vous` outside two allowlisted
+  keys. French only, because German `Sie` and Dutch `u` collide with ordinary words and a guard
+  with false positives is a guard somebody mutes.
+- **INIT IS NOT THE LAST WORD ON THE LANGUAGE; THE STORE IS.** The pseudo locale was handed to
+  `i18n.init` as `lng`, the bundle provably carried the flag, and every screen still read
+  English, because the persisted language preference rehydrated and called `changeLanguage`.
+  Found by driving a device after fetching the bundle off Metro and grepping it, which is the
+  W3.6 "ask the system what it holds" step earning its keep again.
+- **A MUTATION THAT SILENTLY FAILS TO APPLY LOOKS EXACTLY LIKE A CHECK THAT CAUGHT NOTHING.**
+  One mutation targeted `const { t } = useTranslation();` in a file reading `const { t, i18n }
+  = ...`, so the edit was a no-op and the check passed. Every mutation here now asserts it
+  changed the file before anything is read into the result.
+- **The rule that was never asked to cover the shared library.** `react/jsx-no-literals` was
+  scoped to `app/**` and `src/features/**`, so a literal added to a UI primitive would have
+  shipped in English to every language; and `AppHeader`'s `backLabel` defaulted to the English
+  word "Back". Both were latent rather than live, which is the cheapest moment to close them.
+- **Two things worth knowing about the ecosystem, both found the hard way.** `git checkout --`
+  restores a file to HEAD, so using it to undo a mutation on a file carrying uncommitted work
+  deletes that work (it cost two edits before the mutation scripts switched to copies). And in
+  Git Bash, `adb shell` paths like `/sdcard/ui.xml` are silently rewritten to Windows paths
+  unless `MSYS_NO_PATHCONV=1` is set, which turned a `uiautomator dump` into an empty file that
+  every subsequent `grep` then "passed".
+
 **W4.7 · Hardening audit: states, a11y, performance, tablet**
 - Refs: `18` Phase 4, `05` (matrix), `04`.
 - Build: sweep every screen: four states, hit targets, contrast, dynamic type 200%, VoiceOver + TalkBack pass, tablet layouts (master-detail per `05`), landscape player/reader; performance pass (startup, list virtualization, image caching); fix-list burned down.
