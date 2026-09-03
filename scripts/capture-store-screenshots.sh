@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+# Captures the Play store screenshot matrix from a REAL device (W4.8 slice 6).
+#
+# Play wants phone, 7" tablet and 10" tablet, per locale, and the app ships four
+# languages, so the matrix is 5 screens x 4 languages x however many devices are
+# to hand. Doing that by hand is forty-odd captures and the certainty that one
+# language ends up with an English screenshot nobody notices until a German
+# member sees it on the store page.
+#
+# THREE THINGS THIS SCRIPT KNOWS THAT COST TIME TO LEARN, all recorded because
+# each one produced a confident wrong answer first:
+#
+#   MSYS_NO_PATHCONV=1 IS NOT OPTIONAL. In Git Bash, `adb shell` arguments that
+#   look like paths (/sdcard/ui.xml, /dev/tty) are silently rewritten to Windows
+#   paths, so `uiautomator dump` writes nothing and every later grep "passes" by
+#   finding nothing in an empty file.
+#
+#   TAP WHAT THE TREE SAYS, NOT WHAT THE LAST RUN SAID. Bounds move between
+#   languages, because German is longer. Every tap re-dumps the tree first.
+#
+#   MenuLabel RENDERS UPPERCASE. `textTransform` is applied before uiautomator
+#   sees it, so a search for "What we collect" finds nothing while
+#   "WHAT WE COLLECT" is on screen.
+#
+# WHAT THIS PRODUCES IS A DRESS REHEARSAL, NOT THE STORE ASSETS, and saying so
+# here because the output looks finished. Run against a DEV CLIENT it captures
+# three things that must not reach a listing:
+#
+#   1. expo-dev-client's floating menu button, a grey gear that sits over the
+#      top-right of every screen. It does not exist in a release build, and it is
+#      the kind of thing that reaches a store page precisely because it looks
+#      like part of the app.
+#   2. Whatever the device's status bar happens to hold: a Gmail badge, the
+#      charging bolt, the real time.
+#   3. SEED CONTENT, because a dev build points at the local Supabase. The
+#      testimonies and names are fictional.
+#
+# The shippable set is captured from an EAS preview or production build pointed
+# at production, AFTER the launch content exists (`22` §2: verses queued in each
+# language; `22` §3: real testimonies from the Founding Members programme).
+# Until then this run is worth having: it proves the matrix and the layouts, and
+# it is how the sheet-covering-Nigeria bug was found.
+#
+# Usage:  bash scripts/capture-store-screenshots.sh [output-dir]
+# Needs:  one device attached, Metro running, the app installed.
+set -u
+
+ADB="${ADB:-/c/Users/AY/AppData/Local/Android/Sdk/platform-tools/adb.exe}"
+OUT="${1:-docs/store/screenshots}"
+PKG=com.oami.agbcapp
+SCHEME=agbcglobal
+export MSYS_NO_PATHCONV=1
+
+command -v "$ADB" >/dev/null 2>&1 || { echo "adb not found at $ADB"; exit 1; }
+DEVICES=$("$ADB" devices | awk 'NR>1 && $2=="device"{print $1}')
+[ -z "$DEVICES" ] && { echo "No device attached. Plug in the phone or the tablet."; exit 1; }
+DEVICE=$(echo "$DEVICES" | head -1)
+MODEL=$("$ADB" -s "$DEVICE" shell getprop ro.product.model | tr -d '\r')
+SIZE=$("$ADB" -s "$DEVICE" shell wm size | tr -d '\r' | awk '{print $NF}')
+echo "device: $MODEL ($SIZE)"
+
+# Smallest width decides the form factor, exactly as `sw600dp` does and as
+# src/lib/layout.ts does, so a tablet in portrait is still a tablet.
+DENSITY=$("$ADB" -s "$DEVICE" shell wm density | tr -d '\r' | awk '{print $NF}')
+W=${SIZE%x*}; H=${SIZE#*x}
+SMALLEST=$(( (W < H ? W : H) * 160 / DENSITY ))
+if [ "$SMALLEST" -ge 600 ]; then FORM=tablet; else FORM=phone; fi
+echo "smallest width: ${SMALLEST}dp -> $FORM"
+
+mkdir -p "$OUT/$FORM"
+
+dump() {
+  "$ADB" -s "$DEVICE" exec-out uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
+  "$ADB" -s "$DEVICE" shell cat /sdcard/ui.xml
+}
+
+# Tap a node by its text or content-desc. Re-reads the tree every time: bounds
+# move between languages and between form factors.
+tapText() {
+  local label="$1" tree b x1 y1 x2 y2
+  tree=$(dump)
+  b=$(printf '%s' "$tree" | tr '<' '\n' \
+      | grep -E "(text|content-desc)=\"[^\"]*${label}" \
+      | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1)
+  if [ -z "$b" ]; then echo "   ! '$label' not on screen"; return 1; fi
+  set -- $(printf '%s' "$b" | grep -oE '[0-9]+')
+  x1=$1; y1=$2; x2=$3; y2=$4
+  "$ADB" -s "$DEVICE" shell input tap $(( (x1+x2)/2 )) $(( (y1+y2)/2 ))
+  sleep 2
+}
+
+# Drag a node to the bottom of the screen, for the map's bottom sheet.
+swipeDown() {
+  local label="$1" tree b x1 y1 x2 y2 cx
+  tree=$(dump)
+  b=$(printf '%s' "$tree" | tr '<' '
+'       | grep -E "content-desc=\"[^\"]*${label}"       | grep -oE 'bounds="[[][0-9]+,[0-9]+[]][[][0-9]+,[0-9]+[]]"' | head -1)
+  if [ -z "$b" ]; then echo "   ! sheet handle not on screen"; return 1; fi
+  set -- $(printf '%s' "$b" | grep -oE '[0-9]+')
+  x1=$1; y1=$2; x2=$3; y2=$4
+  cx=$(( (x1+x2)/2 ))
+  "$ADB" -s "$DEVICE" shell input swipe $cx $(( (y1+y2)/2 )) $cx $(( H - 140 )) 500
+  sleep 2
+}
+
+open() {  # deep-link to a route and settle
+  "$ADB" -s "$DEVICE" shell am start -a android.intent.action.VIEW \
+    -d "$SCHEME://$1" "$PKG" >/dev/null 2>&1
+  sleep 3
+}
+
+shot() {  # shot <locale> <name>
+  local path="$OUT/$FORM/$1-$2.png"
+  "$ADB" -s "$DEVICE" exec-out screencap -p > "$path"
+  echo "   $path"
+}
+
+# The language picker's own list uses each language's AUTONYM (i18n/index.ts
+# LANGUAGE_AUTONYMS), which is the same word whatever the current language, so
+# these labels work no matter which language we are switching FROM.
+declare -A AUTONYM=( [en]=English [de]=Deutsch [nl]=Nederlands [fr]=Français )
+
+# The map's zoom control is an icon button, so its only handle is its accessible
+# name, and that IS translated (family:mapZoomOut). Tapping the English label
+# would silently do nothing in the other three languages and quietly produce the
+# Europe-only framing this zoom exists to avoid.
+# The map's bottom sheet, by its accessible name (family:mapSheetHandle), which is
+# translated like everything else. A distinctive fragment rather than the whole
+# sentence, so a moved comma does not break the match.
+declare -A SHEET=( [en]="swipe to expand" [de]="zum Auf- oder Zuklappen" [nl]="veeg om uit of in" [fr]="glissez pour ouvrir" )
+
+switchLanguage() {
+  local target="$1"
+  open "settings/language" || return 1
+  tapText "${AUTONYM[$target]}" || return 1
+  sleep 2
+}
+
+# The five screens that tell the story, in the order the listing tells it.
+capture_set() {
+  local loc="$1"
+  # Home between every screen. A deep link to a tab route does NOT navigate while
+  # a pushed screen is on top: reached from My Rhythm, `family?tab=map` left the
+  # app exactly where it was and the run photographed the wrong screen.
+  open "" ;            shot "$loc" 1-home
+  open "watch" ;       shot "$loc" 2-watch
+  open "" >/dev/null
+  open "family" ;      shot "$loc" 3-family
+  # COLLAPSE THE SHEET BEFORE PHOTOGRAPHING THE MAP. At rest it covers the lower
+  # third of the screen, which is exactly where Nigeria is, so the shot showed
+  # three European pins beside the words "many nations" (Ayo spotted it,
+  # 2026-09-03). Dragging it down reveals all four, Ogbomosho included and ringed
+  # as the member's own branch. Zooming out was tried first and is worse: the
+  # visible band sits north of Nigeria, so that pin stays hidden while the others
+  # shrink to specks.
+  open "" >/dev/null
+  open "family?tab=map"
+  swipeDown "${SHEET[$loc]}"
+  shot "$loc" 4-map
+  open "" >/dev/null
+  open "rhythm" ;      shot "$loc" 5-rhythm
+}
+
+for loc in en de nl fr; do
+  echo "-- $loc"
+  switchLanguage "$loc" || { echo "   ! could not switch to $loc, skipping"; continue; }
+  capture_set "$loc"
+done
+
+# Leave the device in English rather than wherever the loop ended.
+switchLanguage en >/dev/null 2>&1
+
+echo
+echo "done. $(ls "$OUT/$FORM" | wc -l) files in $OUT/$FORM"
+echo "Play wants phone, 7\" tablet and 10\" tablet: run this again on the other device."

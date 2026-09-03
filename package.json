@@ -19,6 +19,7 @@
     "db:convert-courses": "node scripts/convert-course-seeds.mjs",
     "jobs:arm-local": "node scripts/arm-local-jobs.mjs",
     "i18n:check": "node scripts/check-i18n-keys.mjs",
+    "store:check": "node scripts/check-store-listing.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --no-bail run typecheck"

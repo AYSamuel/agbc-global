@@ -40,13 +40,14 @@ const config = {
     // Universal links (docs/spec/15). The other half is an
     // apple-app-site-association file served by the church website at
     // /.well-known/, as JSON with no redirect, carrying the team id and this
-    // bundle id. That file is a PR against Desktop/agbc; until it exists iOS
-    // silently declines to open these links and the agbcglobal:// scheme still
-    // works, which is why this can land first.
-    associatedDomains: [
-      'applinks:agbcglobal.com',
-      'applinks:www.agbcglobal.com',
-    ],
+    // bundle id. It is NOT served yet: it needs the Apple Team ID, which only
+    // App Store Connect has, and a file with a placeholder appID is worse than
+    // no file because Apple caches it (Desktop/agbc docs/SPEC-app-links.md
+    // carries the template and the steps). Until then iOS silently declines to
+    // open these links and the agbcglobal:// scheme still works.
+    //
+    // ONE HOST, for the reason spelled out on the Android filter below.
+    associatedDomains: ['applinks:www.agbcglobal.com'],
   },
   android: {
     package: 'com.oami.agbcapp',
@@ -74,14 +75,23 @@ const config = {
     // THE UPLOAD KEY'S. Google re-signs the AAB, so the upload key's
     // fingerprint verifies against nothing and fails silently: links simply
     // keep opening in the browser with no error anywhere. The value is recorded
-    // in docs/spec/19. The file itself is served by the website, so it is a PR
-    // against Desktop/agbc.
+    // in docs/spec/19, and the file is served by the website (W4.8).
+    //
+    // ONLY `www`, AND THE APEX IS EXCLUDED DELIBERATELY (W4.8, 2026-09-03).
+    // `agbcglobal.com` answers 308 to everything, including /.well-known/, so it
+    // can never serve the association file directly. That is not a host quietly
+    // doing nothing: on Android 11 and lower the system makes the app a default
+    // handler "only if it finds a matching Digital Asset Links file for ALL
+    // hosts in the manifest", and this app supports Android 7 and up, so
+    // declaring the apex risks taking the working host down with it. The cost is
+    // that a link written to the bare host opens the browser instead of the app,
+    // which is why every link the app and the church generate uses `www` (the
+    // same rule W4.6 set for the legal links).
     intentFilters: [
       {
         action: 'VIEW',
         autoVerify: true,
         data: [
-          { scheme: 'https', host: 'agbcglobal.com', pathPrefix: '/app' },
           { scheme: 'https', host: 'www.agbcglobal.com', pathPrefix: '/app' },
         ],
         category: ['BROWSABLE', 'DEFAULT'],

@@ -16,6 +16,7 @@ on:
       # are not exercised by any job here, so a change to one of those should
       # still start nothing.
       - 'scripts/check-i18n-keys.mjs'
+      - 'scripts/check-store-listing.mjs'
 
 # Supersede older runs of the same PR (devops standard: CI cost hygiene).
 concurrency:
@@ -46,8 +47,10 @@ jobs:
               - 'pnpm-workspace.yaml'
               - '.github/workflows/pr.yml'
               # The i18n checker runs in this job, so an edit to the checker has
-              # to run this job. A guard that never executes guards nothing.
+              # to run this job. A guard that never executes guards nothing. The
+              # store-listing checker joined it at W4.8, for the same reason.
               - 'scripts/check-i18n-keys.mjs'
+              - 'scripts/check-store-listing.mjs'
             dashboard:
               - 'apps/dashboard/**'
               - 'packages/**'
@@ -76,6 +79,14 @@ jobs:
       # "title" printed on a device with every test green (W4.7). Runs before the
       # suite because it is a second of static analysis and the suite is minutes.
       - run: pnpm i18n:check
+      # Runs in the MOBILE job, and the reason is the coupling rather than the
+      # copy: the store listing must not promise a surface `features.ts` still
+      # hides, so the moment somebody deletes a flag this fails until the listing
+      # gains the sentence (W4.8). `docs/store/listing.json` is deliberately NOT
+      # in the paths filter, so editing the copy alone still starts nothing;
+      # `pnpm store:check` is the local command for that, and the submission
+      # runbook says so.
+      - run: pnpm store:check
       - run: pnpm --filter mobile test
       # Advisory, not a gate (decided 2026-07-23). expo-doctor's version-match
       # check fails whenever Expo ships a release, which is outside our control and
