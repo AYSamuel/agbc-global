@@ -1,14 +1,16 @@
 {
   "appName": "AGBC Global",
-  "tagline": "One family · many nations · one amazing grace",
+  "tagline": "Une famille · plusieurs nations · une grâce infinie",
   "languageName": "Français",
   "back": "Retour",
   "close": "Fermer",
   "signIn": "Se connecter",
   "notNow": "Pas maintenant",
+  "loading": "Chargement",
   "brand": {
     "line1": "Amazing Grace",
-    "line2": "Bible Church"
+    "line2": "Bible Church",
+    "monogram": "A"
   },
   "tabs": {
     "home": "Accueil",
@@ -23,26 +25,26 @@
     "welcomeTitle": "Une famille où l'on se sent chez soi, où que l'on soit.",
     "getStarted": "Commencer",
     "justLooking": "Je regarde seulement",
-    "legalPrefix": "En continuant, vous acceptez nos",
+    "legalPrefix": "En continuant, tu acceptes nos",
     "terms": "Conditions",
     "legalAnd": "et notre",
     "privacy": "Politique de confidentialité",
     "step": "Étape {{current}} sur {{total}}",
-    "branchTitle": "De quelle famille faites-vous partie ?",
-    "branchSubtitle": "Vous pouvez modifier ce choix à tout moment.",
+    "branchTitle": "De quelle famille fais-tu partie ?",
+    "branchSubtitle": "Tu peux modifier ce choix à tout moment.",
     "hqBadge": "HQ",
     "continue": "Continuer",
     "notSure": "Pas encore sûr",
-    "languageTitle": "Choisissez votre langue",
+    "languageTitle": "Choisis ta langue",
     "languageSubtitle": "Modifiable dans les Réglages.",
-    "offlineBranches": "Églises enregistrées affichées. Connectez-vous pour actualiser."
+    "offlineBranches": "Églises enregistrées affichées. Connecte-toi pour actualiser."
   },
   "more": {
     "signinEyebrow": "Rejoignez la famille",
-    "signinTitle": "Publiez, priez et suivez votre rythme",
-    "signinBody": "Connectez-vous pour réagir, partager des témoignages, répondre aux invitations et garder votre élan.",
+    "signinTitle": "Publie, prie et suis ton rythme",
+    "signinBody": "Connecte-toi pour réagir, partager des témoignages, répondre aux invitations et garder ton élan.",
     "signin": "Se connecter",
-    "openProfile": "Ouvrir votre profil, {{name}}",
+    "openProfile": "Ouvrir ton profil, {{name}}",
     "rhythmWeeks_one": "Rythme de {{count}} semaine",
     "rhythmWeeks_many": "Rythme de {{count}} semaines",
     "rhythmWeeks_other": "Rythme de {{count}} semaines",

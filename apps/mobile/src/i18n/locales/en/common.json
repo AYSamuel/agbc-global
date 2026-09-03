@@ -6,9 +6,11 @@
   "close": "Close",
   "signIn": "Sign in",
   "notNow": "Not now",
+  "loading": "Loading",
   "brand": {
     "line1": "Amazing Grace",
-    "line2": "Bible Church"
+    "line2": "Bible Church",
+    "monogram": "A"
   },
   "tabs": {
     "home": "Home",

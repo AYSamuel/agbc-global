@@ -2,27 +2,27 @@
   "channels": {
     "ministry": {
       "name": "Annonces du ministère",
-      "description": "Nouvelles pour toute la famille, dans toutes les Églises locales"
+      "description": "Nouvelles pour toute la famille, dans toutes les branches"
     },
     "branch": {
-      "name": "Nouvelles de votre Église",
-      "description": "Nouvelles et changements de votre Église locale"
+      "name": "Nouvelles de ta branche",
+      "description": "Nouvelles et changements de ta branche"
     },
     "serviceReminders": {
       "name": "Rappels de culte",
-      "description": "Un rappel avant le début de votre culte"
+      "description": "Un rappel avant le début de ton culte"
     },
     "prayer": {
       "name": "Activité de prière",
-      "description": "Quand quelqu’un prie avec vous, et les rappels de prière"
+      "description": "Quand quelqu’un prie avec toi, et les rappels de prière"
     },
     "testimony": {
       "name": "Activité des témoignages (Gloire)",
-      "description": "Quand des personnes célèbrent votre témoignage"
+      "description": "Quand des personnes célèbrent ton témoignage"
     },
     "transactional": {
       "name": "Confirmations",
-      "description": "Réponses à vos actions, comme une validation ou une inscription"
+      "description": "Réponses à tes actions, comme une validation ou une inscription"
     }
   },
   "title": "Notifications",
@@ -30,50 +30,51 @@
   "rowUnread": "{{title}}, non lue",
   "showOlder": "Afficher les plus anciennes",
   "retentionFooter": "Les notifications de plus de 12 mois sont supprimées.",
-  "emptyTitle": "Vous êtes à jour",
+  "emptyTitle": "Tu es à jour",
   "emptyBody": "Les nouvelles notifications apparaîtront ici.",
-  "guestTitle": "Vos notifications vivent ici",
-  "guestBody": "Connectez-vous pour voir les prières, les Gloire et les confirmations qui vous sont adressées.",
+  "guestTitle": "Tes notifications vivent ici",
+  "guestBody": "Connecte-toi pour voir les prières, les Gloire et les confirmations qui te sont adressées.",
   "generic": {
     "title": "AGBC Global",
-    "body": "Vous avez une nouvelle notification"
+    "body": "Tu as une nouvelle notification"
   },
   "prefsTitle": "Notifications",
   "prefsSection": "Notifications push",
   "branchBody": "Nouvelles et changements de {{branch}}",
   "osOffBody": "Les notifications push sont désactivées pour AGBC sur cet appareil. Activez-les dans les réglages pour recevoir les rappels.",
   "osOffAction": "Ouvrir les réglages du système",
-  "alwaysOn": "Les confirmations de vos actions (inscriptions, achats, validations) sont toujours envoyées.",
+  "alwaysOn": "Les confirmations de tes actions (inscriptions, achats, validations) sont toujours envoyées.",
   "templates": {
     "prayer": {
       "someone_prayed": {
-        "title": "Quelqu’un a prié avec vous",
+        "title": "Quelqu’un a prié avec toi",
         "body": "Touchez pour voir la prière"
       },
       "reminder": {
-        "title": "Vous vouliez prier pour une demande",
+        "title": "Tu voulais prier pour une demande",
         "body": "Prenez un moment maintenant"
       }
     },
     "testimony": {
       "glory_batch": {
         "title_one": "{{count}} personne a dit Gloire",
+        "title_many": "{{count}} personnes ont dit Gloire",
         "title_other": "{{count}} personnes ont dit Gloire",
-        "body": "À propos de votre témoignage"
+        "body": "À propos de ton témoignage"
       }
     },
     "moderation": {
       "approved": {
-        "title": "Votre publication est en ligne",
+        "title": "Ta publication est en ligne",
         "body": "La famille peut la voir maintenant"
       },
       "changes_needed": {
-        "title": "Votre publication demande une petite modification",
+        "title": "Ta publication demande une petite modification",
         "body": "Touchez pour voir la suite"
       },
       "removed": {
-        "title": "Votre publication a été retirée",
-        "body": "Le responsable de votre branche peut en parler avec vous"
+        "title": "Ta publication a été retirée",
+        "body": "Le responsable de ta branche peut en parler avec toi"
       }
     },
     "service": {
@@ -85,7 +86,7 @@
     "event": {
       "posted": {
         "title": "Nouveau : {{event}}",
-        "body": "{{when}} dans votre branche"
+        "body": "{{when}} dans ta branche"
       },
       "posted_ministry": {
         "title": "Toute la famille : {{event}}",
@@ -107,18 +108,18 @@
     "rsvp": {
       "reminder": {
         "title": "{{event}} approche",
-        "body": "Vous avez dit que vous venez"
+        "body": "Tu as dit que tu viens"
       }
     },
     "registration": {
       "confirmed": {
-        "title": "Votre inscription est confirmée",
+        "title": "Ton inscription est confirmée",
         "body": "{{course}}"
       }
     },
     "purchase": {
       "added": {
-        "title": "Ajouté à votre bibliothèque",
+        "title": "Ajouté à ta bibliothèque",
         "body": "{{title}} est prêt à lire"
       }
     }

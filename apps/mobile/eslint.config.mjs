@@ -20,8 +20,13 @@ export default defineConfig([
     // Keys-only rule (docs/spec/16): product surfaces never carry literal UI strings;
     // everything goes through i18n. The two dev-only screens (token demo, gallery)
     // are exempt until they are replaced at W1.1/W1.2.
-    files: ['app/**/*.tsx', 'src/features/**/*.tsx'],
-    ignores: ['app/dev-tokens.tsx', 'app/gallery.tsx'],
+    // `src/components/**` joined this list at W4.6: the rule had never covered the
+    // shared UI library, so a literal string added to a primitive would have shipped
+    // in English to every language while lint stayed green. The library was clean
+    // when the gap was found, which is the cheapest moment to close it.
+    files: ['app/**/*.tsx', 'src/features/**/*.tsx', 'src/components/**/*.tsx'],
+    // Tests are excluded because a literal there is the FIXTURE, not copy.
+    ignores: ['app/dev-tokens.tsx', 'app/gallery.tsx', '**/__tests__/**'],
     rules: {
       'react/jsx-no-literals': [
         'error',

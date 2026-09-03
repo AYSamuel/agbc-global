@@ -45,6 +45,44 @@ The software can pass every acceptance criterion and still die in month 3 if the
 - **Broadcasts:** composer writes the primary language; optional `body_de`/`body_nl`/`body_fr` fields; dashboard warns "sent as written to all recipients" when locale bodies are empty. Automated notifications are template-key based and render per recipient language (`02`/`15`).
 - **Multilingual UGC:** posts carry a language tag; the Everywhere feed labels non-UI-language posts; stale pending items in a language the escalation admin cannot read are escalated to the named reviewer for that language (DE: Berlin, NL: Emmen, FR: named reviewer TBC, Yoruba: Ogbomosho leads); nobody approves content they cannot read (`17`).
 
+### The state W4.6 froze (2026-09-03)
+
+**922 keys across 13 namespaces, complete in all four languages.** "Complete" is asserted
+rather than eyeballed: `scripts/check-i18n-keys.mjs` runs in the PR gate and fails on a key a
+call site names but nothing defines, on a key missing from a locale, and on a key a locale
+carries that it cannot select. It derives what each language needs from that language's own
+CLDR categories, because a direct key-set comparison is wrong in both directions here (it
+reports 16 phantom gaps and hides 26 real ones; see the file's own header).
+
+**Decisions this pass made, so nobody re-litigates them from scratch:**
+
+- **All four languages address the member informally.** DE `du`, NL `je`, FR `tu` (Ayo,
+  2026-09-03). French had been split 233/44 by namespace, so one member consented to sharing a
+  testimony as `tu` and read the privacy screen as `vous`. The checker now fails on a French
+  `vous` outside two allowlisted keys, both of which are genuine second-person PLURAL and
+  carry their reasons in the code.
+- **One word per concept.** French had four for `branch`; it is `branche` now, which is what
+  the website uses 48 times against one `assemblée`.
+- **Identical to English is usually correct.** 44 keys hold a value byte-identical to English
+  in at least one language, and nearly all should: proper nouns (`AGBC Global`, `Grace
+  Academy`, `PayPal`), interpolation-only templates (`{{greeting}}, {{name}}`, `{{value}}x`),
+  and true cognates (`Format` in DE/FR, `Contact` in NL/FR, `Pause`, `Audio`, `Privacy` in NL).
+  A reviewer should not spend the pass re-deriving that. The one that was genuinely untranslated
+  was `common:tagline`, now ported from the website's own `nav.tagline`.
+
+**What the freeze means from here:** a new string lands with all four languages in the same
+change, or it does not land (the process rule above, now enforced). Changing an EXISTING
+string's wording after this point is a decision, not a tidy-up: it invalidates the reviewer
+sign-off for that string in three languages.
+
+**Still open, and it is the one thing blocking sign-off rather than the work:** the FR reviewer
+is still "name TBC" above. No francophone branch exists, so there is no default person, and the
+233 French strings this pass rewrote have had no native reader.
+
+**To see every screen under maximum text**, set `EXPO_PUBLIC_PSEUDO_LOCALE=1` and restart Metro
+with `--clear` (`apps/mobile/.env.example` explains what it does and why it cannot reach a
+release build).
+
 ## 5. Analytics: the wedge baseline (instrument in Phase 2, not Phase 4)
 
 Tool: PostHog EU cloud, consent-gated (`20`). Event names snake_case; standard properties: branch_id, scope, locale, role, **environment**.

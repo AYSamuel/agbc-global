@@ -32,7 +32,7 @@ import { useBlockedMembers } from '@/features/family/moderation';
 import { shutdownAnalytics, useAnalyticsConsentStore } from '@/lib/analytics';
 import { LANGUAGE_AUTONYMS, type SupportedLanguage } from '@/i18n';
 import { useAuthStore } from '@/state/auth';
-import { PRIVACY_URL, TERMS_URL } from '@/lib/links';
+import { termsUrl } from '@/lib/links';
 import { useTheme } from '@/theme';
 import { useThemePrefStore, type ThemePref } from '@/theme/store';
 
@@ -201,7 +201,11 @@ export default function Settings() {
             icon={LockIcon}
             label={t('settings:privacy')}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(PRIVACY_URL);
+              // The in-app summary, not the website. `04` line 137 has listed
+              // PRIVACY as a screen since the navigation map was written; this
+              // row had been standing in for it with a browser link, and the
+              // full policy is now one row further in (W4.6 slice 3).
+              router.push('/settings/privacy');
             }}
           />
           {/* The frame's `.mrow.danger`, and members only: a guest has no account to delete,
@@ -239,7 +243,7 @@ export default function Settings() {
             icon={LegalIcon}
             label={t('settings:legal')}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(TERMS_URL);
+              void WebBrowser.openBrowserAsync(termsUrl(i18n.language));
             }}
           />
         </MenuCard>

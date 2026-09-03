@@ -1,14 +1,16 @@
 {
   "appName": "AGBC Global",
-  "tagline": "One family · many nations · one amazing grace",
+  "tagline": "Eine Familie · viele Nationen · eine erstaunliche Gnade",
   "languageName": "Deutsch",
   "back": "Zurück",
   "close": "Schließen",
   "signIn": "Anmelden",
   "notNow": "Jetzt nicht",
+  "loading": "Lädt",
   "brand": {
     "line1": "Amazing Grace",
-    "line2": "Bible Church"
+    "line2": "Bible Church",
+    "monogram": "A"
   },
   "tabs": {
     "home": "Start",

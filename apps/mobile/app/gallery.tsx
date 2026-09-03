@@ -161,6 +161,10 @@ function PrimitiveSet({ theme }: { theme: ThemeName }) {
         onBack={() => {
           // gallery: press feedback only
         }}
+        // The dev gallery is exempt from the keys-only rule, but the label is no
+        // longer optional: W4.6 made an unnamed back button a compile error
+        // rather than a silent English default.
+        backLabel="Back"
         trailing={<BellIcon color={colors.text} />}
       />
       <TabBar

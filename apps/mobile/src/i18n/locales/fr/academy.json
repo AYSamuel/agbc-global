@@ -42,7 +42,7 @@
   "contactAction": "Nous écrire au sujet de cette inscription",
   "contactTitle": "Au sujet de ton inscription",
   "contactBody": "Envoyé à l'équipe AGBC, avec ton inscription à {{course}} jointe. Nous répondrons par e-mail, y compris si tu souhaites annuler.",
-  "contactPrefill": "Je souhaite annuler mon inscription, s'il vous plaît.",
+  "contactPrefill": "Je souhaite annuler mon inscription, merci.",
   "contactSend": "Envoyer",
   "contactSent": "Envoyé. Nous répondrons par e-mail.",
   "contactEmpty": "Écris d'abord un court message.",

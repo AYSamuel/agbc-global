@@ -42,12 +42,37 @@ describe('namespaces and live switching', () => {
     expect(i18n.t('settings:language')).toBe('Language');
   });
 
-  test('unknown keys fall back to English', async () => {
-    await i18n.changeLanguage('de');
-    // tagline is deliberately EN-only until the W4.6 translation pass.
+  /**
+   * This test used to assert the OPPOSITE, with `tagline` as its vehicle,
+   * because the line was deliberately English-only "until the W4.6 translation
+   * pass". This is that pass, and the wording is ported from the website's own
+   * `nav.tagline`, which has carried all four languages since it was written
+   * (`22` §4: port website strings where possible).
+   *
+   * The English-fallback behaviour it was demonstrating can no longer be
+   * demonstrated with a real key, and that is the point: after W4.6 slice 1 no
+   * key is missing from any locale, and `scripts/check-i18n-keys.mjs` fails the
+   * build if one ever is. The fallback stays configured as the net under a
+   * mistake, rather than as a thing any string relies on.
+   */
+  test('the tagline reads in the language it is being read in', async () => {
+    await i18n.changeLanguage('en');
     expect(i18n.t('tagline')).toBe(
       'One family · many nations · one amazing grace',
     );
+    await i18n.changeLanguage('de');
+    expect(i18n.t('tagline')).toBe(
+      'Eine Familie · viele Nationen · eine erstaunliche Gnade',
+    );
+    await i18n.changeLanguage('nl');
+    expect(i18n.t('tagline')).toBe(
+      'Eén familie · vele naties · één verbazingwekkende genade',
+    );
+    await i18n.changeLanguage('fr');
+    expect(i18n.t('tagline')).toBe(
+      'Une famille · plusieurs nations · une grâce infinie',
+    );
+    await i18n.changeLanguage('en');
   });
 });
 

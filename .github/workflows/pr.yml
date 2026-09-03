@@ -12,6 +12,10 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/**'
+      # Named one by one rather than `scripts/**`: the seeding scripts beside it
+      # are not exercised by any job here, so a change to one of those should
+      # still start nothing.
+      - 'scripts/check-i18n-keys.mjs'
 
 # Supersede older runs of the same PR (devops standard: CI cost hygiene).
 concurrency:
@@ -41,6 +45,9 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/pr.yml'
+              # The i18n checker runs in this job, so an edit to the checker has
+              # to run this job. A guard that never executes guards nothing.
+              - 'scripts/check-i18n-keys.mjs'
             dashboard:
               - 'apps/dashboard/**'
               - 'packages/**'
@@ -65,6 +72,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter mobile typecheck
       - run: pnpm --filter mobile lint
+      # A key nobody translated is a warning; a key nobody DEFINED is the word
+      # "title" printed on a device with every test green (W4.7). Runs before the
+      # suite because it is a second of static analysis and the suite is minutes.
+      - run: pnpm i18n:check
       - run: pnpm --filter mobile test
       # Advisory, not a gate (decided 2026-07-23). expo-doctor's version-match
       # check fails whenever Expo ships a release, which is outside our control and

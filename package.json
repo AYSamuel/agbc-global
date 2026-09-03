@@ -18,6 +18,7 @@
     "db:seed-artwork": "node scripts/seed-local-artwork.mjs",
     "db:convert-courses": "node scripts/convert-course-seeds.mjs",
     "jobs:arm-local": "node scripts/arm-local-jobs.mjs",
+    "i18n:check": "node scripts/check-i18n-keys.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --no-bail run typecheck"

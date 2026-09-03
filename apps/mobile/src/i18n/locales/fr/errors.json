@@ -1,7 +1,7 @@
 {
   "somethingWrong": "Un problème est survenu",
-  "couldntLoad": "Impossible de charger pour le moment. Vérifiez votre connexion et réessayez.",
+  "couldntLoad": "Impossible de charger pour le moment. Vérifie ta connexion et réessaie.",
   "tryAgain": "Réessayer",
-  "offlineTitle": "Vous êtes hors ligne",
+  "offlineTitle": "Tu es hors ligne",
   "offlineBody": "Voici ce que nous avons enregistré. Certains éléments se mettront à jour une fois en ligne."
 }

@@ -22,14 +22,29 @@ import { ChevronLeftIcon, CloseIcon } from './icons';
 // component, different glyph: `leading`.
 const CONTROL_SIZE = 40;
 
-export interface AppHeaderProps {
+/**
+ * A BACK BUTTON MUST BE NAMED, and the type is what enforces it (W4.6 slice 5).
+ *
+ * `backLabel` used to be optional with `'Back'` as its default, so a screen that
+ * forgot it announced the English word to a German member's screen reader while
+ * every test passed and every visible string was translated. No live screen was
+ * doing it, which is the cheapest moment to make it impossible: the pairing is a
+ * union now, so an `onBack` without a `backLabel` is a compile error rather than
+ * a silent fallback to English.
+ */
+type LeadingControl =
+  | {
+      /** Renders the back affordance. */
+      onBack: () => void;
+      /** Accessible label for it, resolved from i18n at the call site. */
+      backLabel: string;
+      /** Glyph: a chevron to go back, an X to leave. */
+      leading?: 'back' | 'close';
+    }
+  | { onBack?: never; backLabel?: never; leading?: never };
+
+export type AppHeaderProps = LeadingControl & {
   title: string;
-  /** Renders the back affordance when provided. */
-  onBack?: () => void;
-  /** Accessible label for the back control (i18n key resolution at call sites). */
-  backLabel?: string;
-  /** Glyph in the leading control: a chevron to go back, an X to leave. */
-  leading?: 'back' | 'close';
   /** Right-side slot: bell, branch chip, overflow menu. */
   trailing?: ReactNode;
   /**
@@ -40,12 +55,12 @@ export interface AppHeaderProps {
    * player had been wearing the settings header since W1.3).
    */
   titleStyle?: 'title' | 'eyebrow';
-}
+};
 
 export function AppHeader({
   title,
   onBack,
-  backLabel = 'Back',
+  backLabel,
   leading = 'back',
   trailing,
   titleStyle = 'title',
