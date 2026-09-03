@@ -42,3 +42,11 @@ coverage/
 # nearly wrote the EAS project id into a directory with no app in it (W3.3, 2026-08-16).
 # Deleted twice, recreated twice; ignored now so it can never be committed.
 /app.json
+
+# Generated review packets and store screenshots (W4.8). Both are DERIVED: the
+# packets come from the locale files (`node scripts/build-review-packet.mjs de`)
+# and the screenshots from a real device. Committing either would create a file
+# that drifts from the app in silence, which is the one thing a reviewer packet
+# must not do. Generate them fresh when you send them.
+docs/store/review-packet-*.md
+docs/store/screenshots/

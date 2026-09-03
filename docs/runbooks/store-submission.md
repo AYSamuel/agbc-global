@@ -24,6 +24,34 @@ Copy to paste: `docs/store/listing.json`. Form answers: `docs/store/data-safety.
       ```
       Expect `200`, `content-type: application/json`, no redirect.
 
+### The three things that need a name or a signature, not code
+
+Each of these is short, and each is genuinely blocked on a person. They are listed together
+because they are the only things standing between the work being finished and the app being
+submittable.
+
+1. **The French reviewer** (`22` §4 still says "name TBC"). No francophone branch exists, so
+   there is no default person, and W4.6 rewrote 233 French strings that no native speaker has
+   read. **What they receive is already prepared:** `docs/store/review-packet-fr.md`, generated
+   from the app itself, with all 918 strings beside their English and the 72 legal and consent
+   lines in the first table. German and Dutch packets exist too, for the readers `22` already
+   names. Regenerate any of them with `node scripts/build-review-packet.mjs <de|nl|fr>`.
+
+2. **The named data-protection contact** (`20` line 93: record the name in the project
+   CLAUDE.md and in the privacy policy). **The route already exists and works**: the app's
+   PRIVACY screen has "Contact us about my data", which opens the contact form, and the
+   website's legal pages print the general inbox for data requests. What is missing is a
+   person who owns answering them, which GDPR asks for and a store reviewer does not. Naming
+   them is the whole task; nothing needs building.
+
+3. **A solicitor reading the legal wording.** `legalEntity.reviewed` in `Desktop/agbc` is
+   `false`, so privacy, terms and Impressum all carry a draft banner, and Play asks for a
+   privacy-policy URL at submission. W4.8 filled the three facts that were public record
+   (company number, registered office, directors, all from Companies House SC812955) and left
+   this one alone, because it is a judgement about wording rather than a fact to look up. The
+   fourth blank, whether the company is VAT registered, is also still open and is on no
+   register.
+
 ---
 
 ## 1. The review account, and the window it lives in
