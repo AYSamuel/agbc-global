@@ -163,12 +163,18 @@ describe('SETTINGS, guest level (docs/spec/16)', () => {
     expect(mockPush).toHaveBeenCalledWith('/settings/language');
   });
 
-  test('legal links open in the browser, never dead-end', async () => {
+  // Privacy stopped being a browser link at W4.6 slice 3: `04` line 137 lists
+  // PRIVACY as a SCREEN, and this row had been standing in for it. The full
+  // policy is still one row further in, from the screen's own link.
+  test('Privacy opens the in-app summary rather than the website', async () => {
     await inTheme(<Settings />);
     await fireEvent.press(screen.getByRole('button', { name: 'Privacy' }));
-    expect(mockOpenBrowser).toHaveBeenCalledWith(
-      expect.stringContaining('privacy'),
-    );
+    expect(mockPush).toHaveBeenCalledWith('/settings/privacy');
+    expect(mockOpenBrowser).not.toHaveBeenCalled();
+  });
+
+  test('Legal opens in the browser, never dead-ends', async () => {
+    await inTheme(<Settings />);
     await fireEvent.press(screen.getByRole('button', { name: 'Legal' }));
     expect(mockOpenBrowser).toHaveBeenCalledWith(
       expect.stringContaining('terms'),

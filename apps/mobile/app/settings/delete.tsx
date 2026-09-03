@@ -8,6 +8,7 @@ import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
 
 import {
   AppHeader,
+  Bullets,
   Button,
   Checkbox,
   MenuLabel,
@@ -163,50 +164,17 @@ export default function DeleteAccount() {
 
             <MenuLabel label={t('settings:delete.removedLabel')} />
             {/* `.bullets`: four lines, specific on purpose. "Your data" would tell somebody
-          nothing they could weigh. */}
-            {/* `.bullets` is 20 in the frame against the cards' 16, so it takes the extra 4
-          itself rather than the wrapper widening for everything. */}
-            <View style={{ paddingHorizontal: spacing.xs }}>
-              {(
-                [
-                  'removedProfile',
-                  'removedRhythm',
-                  'removedPurchases',
-                  'removedPending',
-                ] as const
-              ).map((key) => (
-                <View
-                  key={key}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'flex-start',
-                    gap: 11,
-                    paddingVertical: 6,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 3,
-                      backgroundColor: palette.red,
-                      marginTop: 8,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      flex: 1,
-                      fontFamily: fontFamily.body.regular,
-                      fontSize: 14,
-                      lineHeight: 21,
-                      color: colors.sub,
-                    }}
-                  >
-                    {t(`settings:delete.${key}`)}
-                  </Text>
-                </View>
-              ))}
-            </View>
+          nothing they could weigh. The geometry moved into the `Bullets` primitive at
+          W4.6, when PRIVACY needed the same block with a different dot colour. */}
+            <Bullets
+              tone="danger"
+              items={[
+                t('settings:delete.removedProfile'),
+                t('settings:delete.removedRhythm'),
+                t('settings:delete.removedPurchases'),
+                t('settings:delete.removedPending'),
+              ]}
+            />
 
             <MenuLabel label={t('settings:delete.postsLabel')} />
             {/* `.radiolist`. Remove is selected first, per the frame and `16`'s "default: remove":

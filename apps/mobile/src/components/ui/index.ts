@@ -4,6 +4,7 @@ export {
   type ActionPillTone,
 } from './ActionPill';
 export { AppHeader, type AppHeaderProps } from './AppHeader';
+export { Bullets, type BulletsProps, type BulletTone } from './Bullets';
 export { Burst, type BurstProps } from './Burst';
 export { Celebration, type CelebrationProps } from './Celebration';
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
@@ -46,11 +47,7 @@ export {
 export { OtpInput, type OtpInputProps } from './OtpInput';
 export { RadioRow, type RadioRowProps } from './RadioRow';
 export { SelectRow, type SelectRowProps } from './SelectRow';
-export {
-  ListScreen,
-  ListRow,
-  type ListScreenProps,
-} from './ListScreen';
+export { ListScreen, ListRow, type ListScreenProps } from './ListScreen';
 export { NavRail, type NavRailProps } from './NavRail';
 export { TwoPane, PANE_LIST_WIDTH, type TwoPaneProps } from './TwoPane';
 export { Screen, type ScreenProps } from './Screen';
