@@ -87,7 +87,9 @@ than to rediscover it at W4.8.
 
 **When it legitimately returns: app-store review (W4.8).** That window rotates the code
 afresh and closes at approval + 7 days. Write it up here **before** switching it on, which is
-what this section was for and remains for.
+what this section was for and remains for. The procedure that goes with it, including the
+commands, the proof that the alert fires, and the off switch with its deadline, is
+[`store-submission.md`](./store-submission.md) §1.
 
 ## In-app admin identities (ADR 0015, 2026-07-30)
 
