@@ -253,6 +253,51 @@ if (opaque !== OPAQUE_CALL_SITES) {
   );
 }
 
+// ------------------------------------------------------- French register (W4.6)
+
+/**
+ * THE APP ADDRESSES ITS FAMILY INFORMALLY, IN EVERY LANGUAGE. German uses `du`,
+ * Dutch uses `je`, and French now uses `tu` (Ayo's decision, W4.6 slice 4). It
+ * had been split: 233 strings said `vous` and 44 said `tu`, so a member consented
+ * to sharing a testimony as `tu` and read the privacy screen as `vous`.
+ *
+ * A guard rather than a note, because 233 strings changed and the whole suite
+ * stayed green: nothing in this repo asserts French copy, and register is not
+ * something a screen test would ever catch.
+ *
+ * FRENCH ONLY, deliberately. The formal forms in German (`Sie`) and Dutch (`u`)
+ * collide with ordinary words: "Sie wurde entfernt" means "it was removed", and
+ * "48 u" is 48 hours. A guard with false positives is a guard somebody mutes,
+ * which is the same lesson the plural-category comparison above is built on.
+ */
+const FRENCH_FORMAL = /(^|[^\p{L}])(vous|votre|vos)([^\p{L}]|$)/iu;
+
+/**
+ * The two places French second-person PLURAL is correct, and neither is formal
+ * address. Both were read before being listed.
+ */
+const FRENCH_PLURAL_YOU = new Set([
+  // "Carry one another in prayer": addressed to the congregation, exactly as the
+  // German "Tragt einander" and the Dutch "Draag elkaar" are.
+  'family:subheadPrayer',
+  // "Ces membres et toi ne voyez pas vos publications respectives": the subject
+  // is compound, so French takes the second-person plural. Changing it would be
+  // a grammar error, not a register change.
+  'settings:blocked.subhead',
+]);
+
+for (const [namespace, bag] of Object.entries(resources.fr)) {
+  for (const [key, value] of Object.entries(bag)) {
+    const id = `${namespace}:${key}`;
+    if (FRENCH_PLURAL_YOU.has(id)) continue;
+    if (FRENCH_FORMAL.test(value)) {
+      fail(
+        `fr ${id} addresses the reader as "vous"; this app says "tu" (W4.6). If it is a true PLURAL you, add it to FRENCH_PLURAL_YOU with the reason.`,
+      );
+    }
+  }
+}
+
 // ------------------------------------------------------------------- verdict
 
 if (problems.length > 0) {

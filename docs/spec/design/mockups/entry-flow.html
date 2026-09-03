@@ -4303,7 +4303,13 @@
           <div class="mlabel">Your posts</div>
           <div class="radiolist">
             <div class="radiorow on"><span class="rc"></span><div class="rg"><div class="rt">Remove all my posts</div></div></div>
-            <div class="radiorow"><span class="rc"></span><div class="rg"><div class="rt">Keep my approved posts</div><div class="rd">Credited to "A former member"</div></div></div>
+            <!-- "A former member" until W4.5, corrected here at W4.6. Copy never signals
+                 attrition: a kept post credited to a FORMER member tells the whole
+                 congregation that people leave, which Ayo caught on the device. It is the
+                 same "A member" an anonymous post already wears, so a reader cannot tell
+                 the two apart, which is the point. The app has said this since W4.5
+                 (`settings:delete.keepDesc` in all four languages); the frame had not. -->
+            <div class="radiorow"><span class="rc"></span><div class="rg"><div class="rt">Keep my approved posts</div><div class="rd">Credited to "A member", like an anonymous post</div></div></div>
           </div>
           <p class="alwayson">For safety, some records (like reports) are kept for a limited time as required. We don't keep your name on them.</p>
           <div class="gatecfm"><span class="gl">Type DELETE to confirm</span><div class="confirminp">DELETE</div></div>

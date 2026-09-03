@@ -27,10 +27,10 @@
   "latestMessage": "Dernier message",
   "fromTheFamily": "De la famille",
   "familySoonTitle": "Les témoignages arrivent",
-  "familySoonBody": "Bientôt, vous verrez ici ce que Dieu fait dans chaque église.",
+  "familySoonBody": "Bientôt, tu verras ici ce que Dieu fait dans chaque église.",
   "joinTitle": "Rejoignez la famille",
-  "joinBody": "Connectez-vous pour réagir, partager des témoignages, répondre aux invitations et garder votre rythme.",
+  "joinBody": "Connecte-toi pour réagir, partager des témoignages, répondre aux invitations et garder ton rythme.",
   "greetingNamed": "{{greeting}}, {{name}}",
-  "openProfile": "Votre profil, {{name}}",
+  "openProfile": "Ton profil, {{name}}",
   "notificationsUnread": "Notifications, non lues"
 }
