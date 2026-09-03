@@ -70,6 +70,20 @@ tapText() {
   sleep 2
 }
 
+# Drag a node to the bottom of the screen, for the map's bottom sheet.
+swipeDown() {
+  local label="$1" tree b x1 y1 x2 y2 cx
+  tree=$(dump)
+  b=$(printf '%s' "$tree" | tr '<' '
+'       | grep -E "content-desc=\"[^\"]*${label}"       | grep -oE 'bounds="[[][0-9]+,[0-9]+[]][[][0-9]+,[0-9]+[]]"' | head -1)
+  if [ -z "$b" ]; then echo "   ! sheet handle not on screen"; return 1; fi
+  set -- $(printf '%s' "$b" | grep -oE '[0-9]+')
+  x1=$1; y1=$2; x2=$3; y2=$4
+  cx=$(( (x1+x2)/2 ))
+  "$ADB" -s "$DEVICE" shell input swipe $cx $(( (y1+y2)/2 )) $cx $(( H - 140 )) 500
+  sleep 2
+}
+
 open() {  # deep-link to a route and settle
   "$ADB" -s "$DEVICE" shell am start -a android.intent.action.VIEW \
     -d "$SCHEME://$1" "$PKG" >/dev/null 2>&1
@@ -87,6 +101,15 @@ shot() {  # shot <locale> <name>
 # these labels work no matter which language we are switching FROM.
 declare -A AUTONYM=( [en]=English [de]=Deutsch [nl]=Nederlands [fr]=Français )
 
+# The map's zoom control is an icon button, so its only handle is its accessible
+# name, and that IS translated (family:mapZoomOut). Tapping the English label
+# would silently do nothing in the other three languages and quietly produce the
+# Europe-only framing this zoom exists to avoid.
+# The map's bottom sheet, by its accessible name (family:mapSheetHandle), which is
+# translated like everything else. A distinctive fragment rather than the whole
+# sentence, so a moved comma does not break the match.
+declare -A SHEET=( [en]="swipe to expand" [de]="zum Auf- oder Zuklappen" [nl]="veeg om uit of in" [fr]="glissez pour ouvrir" )
+
 switchLanguage() {
   local target="$1"
   open "settings/language" || return 1
@@ -97,10 +120,25 @@ switchLanguage() {
 # The five screens that tell the story, in the order the listing tells it.
 capture_set() {
   local loc="$1"
+  # Home between every screen. A deep link to a tab route does NOT navigate while
+  # a pushed screen is on top: reached from My Rhythm, `family?tab=map` left the
+  # app exactly where it was and the run photographed the wrong screen.
   open "" ;            shot "$loc" 1-home
   open "watch" ;       shot "$loc" 2-watch
+  open "" >/dev/null
   open "family" ;      shot "$loc" 3-family
-  open "family?tab=map" ; shot "$loc" 4-map
+  # COLLAPSE THE SHEET BEFORE PHOTOGRAPHING THE MAP. At rest it covers the lower
+  # third of the screen, which is exactly where Nigeria is, so the shot showed
+  # three European pins beside the words "many nations" (Ayo spotted it,
+  # 2026-09-03). Dragging it down reveals all four, Ogbomosho included and ringed
+  # as the member's own branch. Zooming out was tried first and is worse: the
+  # visible band sits north of Nigeria, so that pin stays hidden while the others
+  # shrink to specks.
+  open "" >/dev/null
+  open "family?tab=map"
+  swipeDown "${SHEET[$loc]}"
+  shot "$loc" 4-map
+  open "" >/dev/null
   open "rhythm" ;      shot "$loc" 5-rhythm
 }
 
