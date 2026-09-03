@@ -177,6 +177,12 @@ it out of logs for the opposite reason: it belongs to a real person).
 - [ ] Age rating questionnaire from the same sheet.
 - [ ] App content: declare the **media playback foreground service** (`18` already carries this).
 - [ ] Screenshots per locale: phone, 7" tablet, 10" tablet.
+      **From an EAS preview or production build, never the dev client.** A dev
+      build wears expo-dev-client's floating gear over every screen and points at
+      the local database, so its content is seed data. `bash
+      scripts/capture-store-screenshots.sh` does the matrix either way; run it
+      against the release build once the launch content exists, because a Family
+      feed captured against production today is empty (`22` §2 and §3).
 - [ ] Release notes: the Grace Portal transition copy from `listing.json`, not "bug fixes".
 - [ ] **Pre-launch report is a release gate** (`21` §8). Read it before promoting.
 

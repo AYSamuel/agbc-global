@@ -22,6 +22,25 @@
 #   sees it, so a search for "What we collect" finds nothing while
 #   "WHAT WE COLLECT" is on screen.
 #
+# WHAT THIS PRODUCES IS A DRESS REHEARSAL, NOT THE STORE ASSETS, and saying so
+# here because the output looks finished. Run against a DEV CLIENT it captures
+# three things that must not reach a listing:
+#
+#   1. expo-dev-client's floating menu button, a grey gear that sits over the
+#      top-right of every screen. It does not exist in a release build, and it is
+#      the kind of thing that reaches a store page precisely because it looks
+#      like part of the app.
+#   2. Whatever the device's status bar happens to hold: a Gmail badge, the
+#      charging bolt, the real time.
+#   3. SEED CONTENT, because a dev build points at the local Supabase. The
+#      testimonies and names are fictional.
+#
+# The shippable set is captured from an EAS preview or production build pointed
+# at production, AFTER the launch content exists (`22` §2: verses queued in each
+# language; `22` §3: real testimonies from the Founding Members programme).
+# Until then this run is worth having: it proves the matrix and the layouts, and
+# it is how the sheet-covering-Nigeria bug was found.
+#
 # Usage:  bash scripts/capture-store-screenshots.sh [output-dir]
 # Needs:  one device attached, Metro running, the app installed.
 set -u
