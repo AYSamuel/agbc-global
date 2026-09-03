@@ -4,6 +4,8 @@ import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
+import { pseudoBundle, pseudoEnabled } from './pseudo';
+
 import deCommon from './locales/de/common.json';
 import deSettings from './locales/de/settings.json';
 import enCommon from './locales/en/common.json';
@@ -158,12 +160,30 @@ export function useFormattingLocale(): string {
   return formattingLocale(instance.language);
 }
 
+/**
+ * The pseudo locale (W4.6 slice 5, `22` §4). DEV ONLY and never a fifth entry in
+ * the language picker: it is derived from English at import when
+ * `EXPO_PUBLIC_PSEUDO_LOCALE=1`, and in a release build `pseudoEnabled()` is
+ * false so none of this is reachable. See `pseudo.ts` for what it is actually
+ * for here, which is narrower than the usual claim.
+ */
+const usePseudo = pseudoEnabled();
+if (usePseudo) {
+  (resources as Record<string, Record<string, object>>).pseudo =
+    Object.fromEntries(
+      Object.entries(resources.en).map(([namespace, bundle]) => [
+        namespace,
+        pseudoBundle(bundle as Parameters<typeof pseudoBundle>[0]),
+      ]),
+    );
+}
+
 // Initialized synchronously at import (bundled resources, no async loading); the root
 // layout imports this module before anything renders.
 // eslint-disable-next-line import/no-named-as-default-member -- i18next's documented fluent API
 void i18n.use(initReactI18next).init({
   resources,
-  lng: deviceLanguage(),
+  lng: usePseudo ? 'pseudo' : deviceLanguage(),
   fallbackLng: 'en',
   ns: NAMESPACES,
   defaultNS: 'common',

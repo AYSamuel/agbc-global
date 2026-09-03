@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -48,6 +49,7 @@ export function NavRail<K extends string>({
   avatar,
   accessibilityLabel,
 }: NavRailProps<K>) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -91,7 +93,11 @@ export function NavRail<K extends string>({
             color: palette.navy,
           }}
         >
-          A
+          {/* The AGBC monogram. Keyed rather than literal, exactly as
+              `brand.line1` and `brand.line2` are: identical in all four
+              languages, but the no-literal-strings rule should not need an
+              exception carved for it (W4.6 slice 5). */}
+          {t('brand.monogram')}
         </Text>
       </View>
 
