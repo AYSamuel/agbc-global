@@ -36,7 +36,16 @@ const config = {
   runtimeVersion: { policy: 'fingerprint' },
   ios: {
     bundleIdentifier: 'com.olayinkaademiluka.grace-portal',
-    icon: './assets/expo.icon',
+    // NO `icon` OVERRIDE, deliberately: iOS falls back to the top-level
+    // `icon` above, which is the app's own mark. It used to point at
+    // './assets/expo.icon', the Icon Composer bundle `create-expo-app`
+    // generates, whose art is Expo's blue chevron on a blue gradient. That
+    // was never noticed because iOS has not been built once (docs/spec/18
+    // defers it: there is no iPhone in the project), so the placeholder sat
+    // in config with nothing to render it. Android shipped the same
+    // placeholder through `icon.png` and the three adaptive layers until
+    // 2026-09-04, when entering the Play listing put the icon on screen
+    // beside the church's own logo and the mismatch became obvious.
     // Universal links (docs/spec/15). The other half is an
     // apple-app-site-association file served by the church website at
     // /.well-known/, as JSON with no redirect, carrying the team id and this
@@ -61,7 +70,11 @@ const config = {
     googleServicesFile:
       process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      // The mockup's --gold, matching backgroundImage. It is the FALLBACK
+      // Android paints when the background layer cannot be used, so leaving
+      // `create-expo-app`'s pale blue here would have shown a blue ring behind
+      // a gold icon on exactly the devices least able to render it.
+      backgroundColor: '#ffcf4a',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',

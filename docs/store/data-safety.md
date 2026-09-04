@@ -56,7 +56,7 @@ Play treats as processing rather than sharing. So every row below is **collected
 
 | Play category | Type | Collected | Required? | Purpose | Notes |
 |---|---|---|---|---|---|
-| Personal info | Name | Yes | Optional | App functionality | On the profile; a member chooses it at sign-up |
+| Personal info | Name | Yes | **Required** | App functionality | On the profile. REQUIRED, not optional: `authProfileSchema` in `packages/shared/src/contracts/auth.ts` is `displayName: z.string().trim().min(1)`, so sign-up cannot complete without one. This row said "Optional" until 2026-09-04, when entering the declaration forced the question and the schema settled it |
 | Personal info | Email address | Yes | Required | App functionality, Account management | The only sign-in credential (`03`, email OTP) |
 | Personal info | User IDs | Yes | Required | App functionality | The Supabase auth id |
 | Personal info | **Political or religious beliefs** | **Yes** | Optional | App functionality | See the first judgement call below |
@@ -178,3 +178,33 @@ declaration.
       thing that makes these answers evidence rather than recollection.
 - [ ] The deletion URL is reachable and the flow works (last proven 2026-09-02).
 - [ ] `20`'s processor list matches what the app actually talks to.
+
+## What the console held before this sheet was entered (2026-09-04)
+
+The answers above were entered into Play for the first time on 2026-09-04, replacing Grace
+Portal's from Jan 2026. Six of them were not merely stale but **untrue of this app**, and they
+are recorded here because the shape of the error is the lesson, not the individual values:
+
+| Declared | Reality |
+|---|---|
+| Approximate location collected | No location code exists in the app at all |
+| Phone number collected | ADR 0014 removed the only thing that ever wanted one |
+| Account creation by username and password | Email OTP; there is no password anywhere |
+| Delete-account URL `agbc-web.vercel.app/data-deletion` | Dead host; ours is `www.agbcglobal.com/delete-account` |
+| Privacy policy `agbc-web.vercel.app/privacy-policy` | Same dead host |
+| "User data is automatically deleted within 90 days" | Nothing auto-deletes at 90 days |
+
+**The one that could not be seen from the listing** is the sharpest. Name, Email address and
+Device IDs were each declared "processed ephemerally", and Play does not show ephemeral data on
+the public listing. So the store page told users the app collected neither their name nor their
+email, while both are stored indefinitely. An answer that HIDES a disclosure is worse than one
+that states it wrongly, because the store page looks clean and there is nothing to notice.
+
+**And the app was declared as targeting children** (age groups 9-12 and 13-15 ticked), which put
+it under the Play Families Policy and printed a "Committed to follow the Play Families Policy"
+badge on a listing for an app whose sign-up refuses to submit without an "I am 16 or over" tick.
+Corrected to 16-17 plus 18-and-over, at which point Play dropped the extra Families steps by
+itself.
+
+**The check that would have caught all of this** is the enumeration at the top of this file, run
+against the console rather than against memory. None of it was visible from inside the repo.
