@@ -8,6 +8,85 @@ Copy to paste: `docs/store/listing.json`. Form answers: `docs/store/data-safety.
 
 ---
 
+## SUBMISSION RECORD: Android, versionCode 22, sent for review 2026-09-05
+
+**Status: in review.** Five changes are with Google (production release 22 at full rollout,
+content rating, target audience, privacy policy, data safety). Reviews are typically under
+seven days. The store listing itself is ALREADY LIVE: listing copy and graphics on an app
+that is already published do not go through review, so they went out the moment they were
+saved, hours before the release did.
+
+What shipped, so a later reader does not have to reconstruct it:
+
+| | |
+|---|---|
+| Bundle | versionCode 22, 1.0.0, 84 MB, EAS build 2026-09-04 21:07 UTC |
+| Rollout | Full, 100%, 177 countries. Staged rollout was considered and rejected: 5 installs makes a fraction meaningless |
+| Listing | Name, both descriptions, icon, 5 phone and 5+5 tablet screenshots, all from `docs/store/listing.json` and `docs/store/screenshots/` |
+| Feature graphic | LEFT AS THE OLD ONE, deliberately. It is dated but it is genuinely the church's logo, so replacing it is a brand decision rather than a correctness one |
+| Review bypass | ARMED on production 2026-09-04 11:21 UTC, proven end to end on the device the same day |
+
+**versionCode 21 does not exist on Play and never did.** It was built, converted to an APK,
+installed over USB and tested, and then superseded when the placeholder icon was found. EAS
+keeps its own counter (`appVersionSource: 'remote'`), so the numbering jumped 20 to 22 on
+Play. Gaps are fine; Play only requires the number to increase.
+
+### The follow-ups this submission created, in the order they come due
+
+1. **TURN OFF THE REVIEW BYPASS AT APPROVAL + 7 DAYS.** Not at approval: Google re-checks
+   apps without warning, and a reviewer meeting a dead sign-in is a flag. The procedure is
+   section 1 of this runbook. It is a working key into a member account until it is done,
+   which is why it is first on this list and why the runbook already calls it the step nobody
+   remembers.
+
+2. **Purge the review account's posts** at the same time. `03` keeps them out of every
+   moderation queue so they can never reach the feed, but they should not sit in the table.
+   The account is `Play Review`, `graceportalad@gmail.com`, profile created 2026-09-04 11:31
+   UTC, role `member`.
+
+3. **Prove the bypass is off** by attempting the old pair and being refused. An untested
+   "off" is a belief, and this is the same discipline that caught the W4.5 erasure bug: every
+   layer passed alone and the live path had never been driven.
+
+### Known gaps, deliberately carried past launch
+
+- **No OTA updates.** `expo-updates` is not installed, so every fix is a full store release
+  with a review cycle, and `21` §8's "rollback = republish the previous update" cannot work as
+  written. The `eas build` prompt offered to install it mid-build and was declined, correctly:
+  it adds native code and would have invalidated the artefact already tested. **Decide this
+  deliberately after launch rather than inside a build prompt.**
+- **`eas submit` is not configured.** `eas.json` has `submit.production: {}` and there is no
+  Google service-account key, so the 84 MB bundle was uploaded by hand through the browser.
+  Every future release repeats that until a service account exists.
+- **Content Ayo deferred until after release** (2026-09-04): Founding Members testimonies, the
+  `daily_verses` queue, and sermon audio. The verse queue matters most: the app repeats the
+  most recent verse rather than showing nothing, so a thin queue is invisible in review and
+  obvious to a member three days later.
+- **The store listing exists in en-US only.** `listing.json` carries reviewed DE, NL and FR
+  copy that no Play listing uses yet, so a German member sees English on the store page and
+  German in the app.
+- **`apps/mobile/assets/expo.icon/`** is referenced by nothing since the iOS icon override was
+  removed. Harmless, but worth deleting so nobody wonders why Expo's chevron is in the repo.
+
+### Three warnings Play raised on the bundle, and why none was acted on
+
+Recorded because they will appear again on the next release and the reasoning should not have
+to be redone.
+
+- **"No longer supports 26 devices."** They are Android TV and Car models. The install base was
+  checked device by device before submitting: Pixel 10, Galaxy S22 Ultra, and unidentified
+  phones. No TV, no car, nobody stranded.
+- **"Significantly increases the size of APKs."** True and accepted. 84 MB against Grace
+  Portal's much smaller build, and the direct consequence of the point below.
+- **"No deobfuscation file."** Does not apply. `android/app/build.gradle:69` leaves
+  `enableMinifyInReleaseBuilds` at false, and the AAB contains zero
+  `com.android.tools.build.obfuscation` entries, so nothing is obfuscated and there is nothing
+  to map. Play emits this warning whenever no mapping is attached and cannot tell the two cases
+  apart. The 56 native debug-symbol files ARE present, which covers the crashes that would
+  otherwise be unreadable.
+
+---
+
 ## 0. Before anything is uploaded
 
 - [ ] `pnpm store:check` passes (listing copy within every store's limits, and promising nothing
