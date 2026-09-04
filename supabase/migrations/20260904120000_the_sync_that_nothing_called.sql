@@ -1,0 +1,66 @@
+-- The YouTube sync gets a caller (W4.8, docs/spec/08, `21` §5, ADR 0016).
+--
+-- `youtube-sync` has existed since W1.3. It is deployed, it has its
+-- `[functions.youtube-sync]` block in config.toml, its own header calls it the
+-- "Nightly YouTube sync" and cites `21` §5, and it has been type-checked and
+-- deno-tested in CI on every push since. NOTHING HAS EVER INVOKED IT ON A
+-- SCHEDULE. `grep cron.schedule` over this folder returns thirteen jobs and it
+-- is not one of them.
+--
+-- The evidence, read off production on 2026-09-04:
+--
+--     newest sermon published   2026-08-18
+--     every one of 100 rows created at  2026-08-19T00:05
+--
+-- One minute, sixteen days ago: the single manual invocation during Track P
+-- Phase 4. Every message the church has published since is invisible in the app
+-- and would have stayed invisible, on the tab a member opens second.
+--
+-- THIS IS W3.6's LESSON WEARING NEW CLOTHES, and worth naming so the next
+-- version of it is caught sooner. That item found three notification kinds `09`
+-- promised with no producer at all, and the check it left behind was
+-- `configBlocks_test.ts`: every function must have a config block, because one
+-- without a block no-ops silently in both environments. `youtube-sync` HAS a
+-- block. It passes that test. What it lacked was the other half, a caller, and
+-- nothing asserted that. A function can be deployed, declared, tested and
+-- described as nightly while being dead.
+--
+-- EVERY SIX HOURS RATHER THAN NIGHTLY (Ayo, 2026-09-04). `08` and `21` §5 both
+-- say nightly, written when the only cost considered was quota. Quota is not the
+-- binding constraint: the sync uses `playlistItems.list` at 1 unit per page and
+-- one `videos.list` batch, never `search.list` at 100, so a run costs roughly ten
+-- units against a daily allowance of 10,000. Four runs a day is about 0.5% of it.
+-- What nightly actually costs is a Sunday message that does not appear until the
+-- small hours of Monday, on a tab whose whole promise is "the message you just
+-- heard". Six-hourly bounds that at a quarter of a day.
+--
+-- :41 rather than :00 for the same reason the other jobs sit off the hour: the
+-- top of the hour is where every cron on every host piles up, and this one is
+-- talking to somebody else's API.
+select cron.schedule(
+  'youtube-sync',
+  '41 */6 * * *',
+  $cron$select jobs.invoke_edge_function('youtube-sync')$cron$
+);
+
+-- cron.schedule() upserts by name (see 20260806130000), so re-running this on a
+-- database that already has the job re-points it rather than duplicating it.
+--
+-- The lease this job now takes lives in the FUNCTION, and it arrived in the same
+-- change as this schedule on purpose: `youtube-sync` was the only one of the
+-- fourteen without one, which is exactly what you would expect of the only one
+-- nothing ever invoked. Overlap could not happen while a human ran it by hand.
+-- A cron entry is what makes it possible, so the guard belongs here beside the
+-- trigger rather than in a later tidy-up.
+--
+-- ROLLBACK (~/.claude/standards/database.md: every migration ships one, and it
+-- rolls FORWARD). This takes no lock, alters no schema and moves no data, so
+-- undoing it is one statement in a compensating migration:
+--
+--     select cron.unschedule('youtube-sync');
+--
+-- The consequence of that is the state this migration found: the sync stops
+-- being called and Watch quietly stops gaining new messages, which is exactly
+-- why the dead-man ping matters more than the schedule. `21` §5's healthchecks
+-- entry for this job is what turns "stopped" into an alert rather than into
+-- sixteen days of nobody noticing.
