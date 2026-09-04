@@ -1,14 +1,15 @@
-// Nightly YouTube sync (docs/spec/08, 21 §5): pulls the HQ uploads playlist
+// The YouTube sync (docs/spec/08, 21 §5): pulls the HQ uploads playlist
 // (Data API when a key is configured, keyless RSS fallback otherwise), upserts
 // idempotently on youtube_id, marks vanished videos unavailable (API mode only),
 // restores reappeared ones, clears stale live flags, and ends with its
 // dead-man ping. Thin handler: all decisions live in core.ts (deno-tested).
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
+import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import {
   planSync,
@@ -16,6 +17,14 @@ import {
   type SyncMode,
 } from './core.ts';
 import { fetchApiVideos, fetchRssVideos } from './youtube.ts';
+
+const JOB = 'youtube-sync';
+/**
+ * Comfortably longer than a run (seconds) and shorter than the gap between ticks
+ * (six hours), which is the shape every job in `21` §5 uses: the expiry is the
+ * net under a run that died, never the thing that ends a healthy one.
+ */
+const LEASE = '10 minutes';
 
 Deno.serve(async (req) => {
   if (!(await isServiceRoleRequest(req))) return unauthorized();
@@ -27,6 +36,40 @@ Deno.serve(async (req) => {
       requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
     );
 
+    // THE LEASE ARRIVES WITH THE SCHEDULE, and the two belong to one change.
+    // This was the only one of fourteen jobs without it, which is exactly what
+    // you would expect of the only one that nothing ever invoked: it predates
+    // ADR 0016 (W1.3) and was never brought into the fold. Overlap could not
+    // happen while a human ran it by hand; a cron entry is what makes it
+    // possible, so the guard lands in the same breath as the trigger.
+    //
+    // Overlap would not corrupt anything, since the upsert is idempotent on
+    // `youtube_id`. It would waste quota and, worse, let a run holding a STALE
+    // playlist snapshot mark a video unavailable that the other run has just
+    // restored, which is a visible wrong answer on a member's Watch tab.
+    if (!(await claimJobLease(supabase, JOB, LEASE))) {
+      await pingDeadMan(healthcheckUrl, true);
+      return Response.json({ skipped: 'lease held' });
+    }
+
+    try {
+      return await run(supabase, healthcheckUrl);
+    } finally {
+      await releaseJobLease(supabase, JOB);
+    }
+  } catch (error) {
+    console.error('youtube-sync failed:', error);
+    await captureEdgeError('youtube-sync', error);
+    await pingDeadMan(healthcheckUrl, false);
+    return Response.json({ error: 'sync run failed' }, { status: 500 });
+  }
+});
+
+async function run(
+  supabase: SupabaseClient,
+  healthcheckUrl: string | null,
+): Promise<Response> {
+  {
     const { data: hq, error: hqError } = await supabase
       .from('branches')
       .select('youtube_channel_id')
@@ -87,11 +130,5 @@ Deno.serve(async (req) => {
 
     await pingDeadMan(healthcheckUrl, true);
     return Response.json(summary);
-  } catch (error) {
-    console.error('youtube-sync failed:', error);
-    await captureEdgeError('youtube-sync', error);
-    await pingDeadMan(healthcheckUrl, false);
-    // Generic outward error; detail stays in the function logs (no PII here).
-    return Response.json({ error: 'sync run failed' }, { status: 500 });
   }
-});
+}
