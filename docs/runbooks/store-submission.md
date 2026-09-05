@@ -10,11 +10,15 @@ Copy to paste: `docs/store/listing.json`. Form answers: `docs/store/data-safety.
 
 ## SUBMISSION RECORD: Android, versionCode 22, sent for review 2026-09-05
 
-**Status: in review.** Five changes are with Google (production release 22 at full rollout,
-content rating, target audience, privacy policy, data safety). Reviews are typically under
-seven days. The store listing itself is ALREADY LIVE: listing copy and graphics on an app
-that is already published do not go through review, so they went out the moment they were
-saved, hours before the release did.
+**Status: in review, restarted on 2026-09-05 in the evening.** Six changes are with Google:
+production release 22 at full rollout, content rating, target audience, privacy policy, data
+safety, and the Foreground service permissions declaration. That sixth one was MISSED at
+upload; Play flagged it overdue the next day, and sending it restarted the review that had
+begun that morning, by decision (a rejection for an undeclared permission costs more than a
+day of queue). Reviews are typically under seven days. Follow-up 1 below records what filing
+it took, because it took an evening. The store listing itself is ALREADY LIVE: listing copy and graphics
+on an app that is already published do not go through review, so they went out the moment
+they were saved, hours before the release did.
 
 What shipped, so a later reader does not have to reconstruct it:
 
@@ -33,18 +37,45 @@ Play. Gaps are fine; Play only requires the number to increase.
 
 ### The follow-ups this submission created, in the order they come due
 
-1. **TURN OFF THE REVIEW BYPASS AT APPROVAL + 7 DAYS.** Not at approval: Google re-checks
+1. ~~**FILE THE FOREGROUND SERVICE DECLARATION, and it needs a video first.**~~ **FILED
+   2026-09-05, 23:40 CEST, with the video below; the review restarted.** The bundle holds
+   `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (expo-audio's background player, `08`), and Play will
+   not accept a release that uses it undeclared. The form is one checkbox ("Media playback")
+   plus a REQUIRED link to a video of the feature in use; Save is disabled without the link.
+   The checklist in section 3 carried this step, and `18` has carried it since W3.1 slice 3,
+   and it was still skipped at upload, because nothing in the upload flow itself asks for it:
+   the console only surfaces it AFTER the bundle is processed, under App content. **What the
+   video must show** (Google: "the steps the user needs to take in your app in order to
+   trigger the feature"): open a message, tap Listen, playback starts, lock the phone or press
+   Home, the lock-screen controls appear and audio keeps playing, reopen the app and it is
+   still playing. Under a minute, unlisted on YouTube is enough. **Production had no sermon
+   audio**, so the store build had nothing to film until one was uploaded through the
+   dashboard; a dev-client recording against the local stack would carry the dev-menu
+   overlay, the same objection as for screenshots. **What it took, for the next release:**
+   one audio-only message went up ("Multiple streams of income", Pastor Olayinka Ademiluka,
+   preached 2026-09-04, 96 min), which is the one exception to the traffic fence's "no
+   sermon audio on production", by Ayo's decision. The 57 MB m4a export was REFUSED by the
+   Free plan's 50 MB storage cap (see known gaps) and went up as 64 kbps mono MP3, 44 MB,
+   transcoded with `ffmpeg -ac 1 -c:a libmp3lame -b:a 64k`. The clip was recorded over adb
+   (`screenrecord --size 720x1544`, 35 s) on the store build, driven by `input tap` and
+   `keyevent` so the sequence is repeatable; it took three takes, because the first two
+   carried personal wallpapers on the Home and lock screens, which a reviewer would see.
+   Uploaded unlisted: https://www.youtube.com/shorts/QL4lxpd3gJ0. Saving the declaration
+   is not sending it: Publishing overview holds it until "Send for review", which then
+   warns that it restarts the review in progress.
+
+2. **TURN OFF THE REVIEW BYPASS AT APPROVAL + 7 DAYS.** Not at approval: Google re-checks
    apps without warning, and a reviewer meeting a dead sign-in is a flag. The procedure is
    section 1 of this runbook. It is a working key into a member account until it is done,
-   which is why it is first on this list and why the runbook already calls it the step nobody
-   remembers.
+   which is why it sits right behind the declaration on this list, and why the runbook already
+   calls it the step nobody remembers.
 
-2. **Purge the review account's posts** at the same time. `03` keeps them out of every
+3. **Purge the review account's posts** at the same time. `03` keeps them out of every
    moderation queue so they can never reach the feed, but they should not sit in the table.
    The account is `Play Review`, `graceportalad@gmail.com`, profile created 2026-09-04 11:31
    UTC, role `member`.
 
-3. **Prove the bypass is off** by attempting the old pair and being refused. An untested
+4. **Prove the bypass is off** by attempting the old pair and being refused. An untested
    "off" is a belief, and this is the same discipline that caught the W4.5 erasure bug: every
    layer passed alone and the live path had never been driven.
 
@@ -58,8 +89,21 @@ Play. Gaps are fine; Play only requires the number to increase.
 - **`eas submit` is not configured.** `eas.json` has `submit.production: {}` and there is no
   Google service-account key, so the 84 MB bundle was uploaded by hand through the browser.
   Every future release repeats that until a service account exists.
+- **Sermon audio uploads over 50 MB fail on production, and the dashboard says 150.** The
+  Supabase Free plan fixes the per-file upload limit at 50 MB (Storage > Settings, not
+  configurable below Pro). `MAX_AUDIO_BYTES`, the bucket's `file_size_limit` and every line
+  of copy say 150 MB, and a refused upload is reported as "check your connection". Found
+  2026-09-05 with the first real file. Planned as W4.9 slice 1
+  (`docs/spec/plans/W4.9-audio-shelf-and-player.md`).
+- **The dashboard's manage screen crashed for any message with audio**, which production
+  had never held until 2026-09-05: a Server Component handed a copy bundle with functions to
+  a Client Component (Sentry AGBC-DASHBOARD-2). Fixed on `fix/dashboard-manage-artwork-
+  boundary` the same night; the lesson is that jsdom cannot see a server-boundary error,
+  only a production build can, so a dashboard screen is not verified until it has rendered
+  under `next start`.
 - **Content Ayo deferred until after release** (2026-09-04): Founding Members testimonies, the
-  `daily_verses` queue, and sermon audio. The verse queue matters most: the app repeats the
+  `daily_verses` queue, and sermon audio (one message since 2026-09-05, above; the weekly
+  upload is still nobody's named job, `18`). The verse queue matters most: the app repeats the
   most recent verse rather than showing nothing, so a thin queue is invisible in review and
   obvious to a member three days later.
 - **The store listing exists in en-US only.** `listing.json` carries reviewed DE, NL and FR
@@ -255,6 +299,10 @@ it out of logs for the opposite reason: it belongs to a real person).
 - [ ] Data safety form from `docs/store/data-safety.md`, including the deletion URL.
 - [ ] Age rating questionnaire from the same sheet.
 - [ ] App content: declare the **media playback foreground service** (`18` already carries this).
+      **The form demands a link to a video of the feature in use and will not save without one**,
+      so record it BEFORE this step, from a build that has audio to play (the store build
+      against production, once a sermon MP3 exists there). Missed at the 2026-09-05 submission
+      and flagged overdue by Play the next day; see §SUBMISSION RECORD, follow-up 1.
 - [ ] Screenshots per locale: phone, 7" tablet, 10" tablet.
       **From an EAS preview or production build, never the dev client.** A dev
       build wears expo-dev-client's floating gear over every screen and points at
