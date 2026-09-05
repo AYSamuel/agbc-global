@@ -11,7 +11,7 @@ import { MAX_AUDIO_BYTES } from '@/server/sermonAudio';
 
 import { wholeMb, wholeMinutes } from './format';
 import type { MintAction } from './state';
-import { uploadViaXhr } from './upload';
+import { UploadRefused, uploadViaXhr } from './upload';
 
 /**
  * The file half of both shelf forms (frames: `SERMON-AUDIO-ATTACH`, approved 2026-08-14):
@@ -62,13 +62,13 @@ type UploadPhase =
       fileName: string;
     };
 
-const ACCEPT = '.mp3,.m4a,.aac,audio/mpeg,audio/mp4,audio/aac';
+// MP3 only (W4.9 slice 1): the same rule the mint, the byte check and the bucket apply,
+// so the picker's refusal is the first of four identical answers rather than a different one.
+const ACCEPT = '.mp3,audio/mpeg';
 
 /** Declared upload types, from OUR mapping: a picked file's own `type` is often empty. */
 const MIME: Record<string, string> = {
   mp3: 'audio/mpeg',
-  m4a: 'audio/mp4',
-  aac: 'audio/aac',
 };
 
 export function AudioUploader({
@@ -143,8 +143,15 @@ export function AudioUploader({
             : previous,
         );
       });
-    } catch {
-      setState({ phase: 'idle', problem: text.uploadFailed });
+    } catch (error) {
+      // Which "no" it was decides what the uploader should do next (see the copy).
+      const problem =
+        error instanceof UploadRefused
+          ? error.status === 413
+            ? text.pickTooBig(wholeMb(file.size))
+            : text.uploadRefused
+          : text.uploadFailed;
+      setState({ phase: 'idle', problem });
       return;
     }
 

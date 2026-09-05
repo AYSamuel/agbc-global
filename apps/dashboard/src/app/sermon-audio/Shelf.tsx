@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { Alert } from '@/components/ui/Alert';
-import { Notice } from '@/components/ui/Notice';
 import { Pill } from '@/components/ui/Pill';
 import { Stat } from '@/components/ui/Stat';
 import { copy } from '@/copy/en';
@@ -15,22 +14,26 @@ import { preachedOn, wholeMinutes } from './format';
 import { OUTCOMES } from './outcomes';
 
 /**
- * The shelf itself (frame: `SERMON-AUDIO · the shelf`, approved 2026-08-14): the banner
- * carries the one urgent fact, the stats say how the shelf stands, the guide teaches the
- * format once, and the list is for scanning: ONE affordance per row, the VERSES lesson,
- * with the destructive pair living on the screen "Manage" opens.
+ * The shelf itself (frame: `SERMON-AUDIO · the shelf`, approved 2026-08-14, redrawn and
+ * approved again 2026-09-06 for W4.9 slice 1): the guide leads with the format rule, the
+ * stats say how the shelf stands, and the list is for scanning: ONE affordance per row,
+ * the VERSES lesson, with the destructive pair living on the screen "Manage" opens.
+ *
+ * The red "X has no audio yet" banner that used to lead is gone. It said the one thing the
+ * uploader already knew (the message is on YouTube) while the thing they did not know,
+ * that the shelf takes MP3 only and refuses anything over 50 MB, sat halfway down the
+ * page in a soft note. The missing message is still first in the list, wearing "No audio"
+ * and "Add audio", and the counters say how many are missing.
  *
  * Pure rendering over what the page loaded, so it can be tested without a database.
  */
 export function Shelf({
   shelf,
   filter,
-  missing,
   outcome,
 }: {
   shelf: ShelfData;
   filter: ShelfFilter;
-  missing: ShelfRow | null;
   outcome?: string;
 }) {
   const text = copy.sermonAudio;
@@ -44,22 +47,17 @@ export function Shelf({
         </div>
       ) : null}
 
-      {missing ? (
-        <Notice
-          tone="bad"
-          title={text.missingTitle(missing.title)}
-          action={
-            <Link
-              href={`/sermon-audio/${missing.id}`}
-              className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold whitespace-nowrap text-text hover:bg-alt"
-            >
-              {text.missingAction}
-            </Link>
-          }
+      <div className="mt-4 flex items-start gap-3 rounded-card border border-[rgba(185,134,0,0.34)] bg-[rgba(255,207,74,0.14)] px-4 py-3">
+        <span
+          aria-hidden="true"
+          className="mt-px text-gold-deep dark:text-accent"
         >
-          {text.missingBody}
-        </Notice>
-      ) : null}
+          ♪
+        </span>
+        <p className="text-body leading-relaxed text-text">
+          <b className="font-extrabold">{text.guideTitle}</b> {text.guide}
+        </p>
+      </div>
 
       <h2 className="pt-5 pb-2.5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
         {text.statsLabel}
@@ -73,18 +71,6 @@ export function Shelf({
         />
         <Stat label={text.stats.audioOnly} value={shelf.audioOnly} />
       </dl>
-
-      <div className="mt-4 flex items-start gap-3 rounded-card border border-[rgba(185,134,0,0.34)] bg-[rgba(255,207,74,0.14)] px-4 py-3">
-        <span
-          aria-hidden="true"
-          className="mt-px text-gold-deep dark:text-accent"
-        >
-          ♪
-        </span>
-        <p className="text-body leading-relaxed text-text">
-          <b className="font-extrabold">{text.guideTitle}</b> {text.guide}
-        </p>
-      </div>
 
       <div className="mt-4">
         <Link

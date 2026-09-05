@@ -7,6 +7,7 @@ import { expectNoA11yViolations } from '@/test/a11y';
 
 import { AudioUploader } from './AudioUploader';
 import type { MintResult } from './state';
+import { UploadRefused } from './upload';
 
 /**
  * The uploader's state machine, with its two effectful seams faked: jsdom has neither
@@ -141,6 +142,52 @@ describe('early refusals, before any upload', () => {
     expect(mint).not.toHaveBeenCalled();
   });
 
+  // W4.9 slice 1: MP3 only. An m4a was the first real upload and the picker took it;
+  // now the drop zone is the first of four layers to say the same thing.
+  test('an m4a is refused as not an MP3, without a mint', async () => {
+    const mint = vi.fn(mintOk);
+    renderUploader({ mint });
+
+    fireEvent.change(fileInput(), {
+      target: {
+        files: [
+          new File([new Uint8Array(1024)], 'midweek-13-08.m4a', {
+            type: 'audio/mp4',
+          }),
+        ],
+      },
+    });
+
+    expect(
+      await screen.findByText(copy.sermonAudio.attach.pickNotAudio),
+    ).toBeInTheDocument();
+    expect(copy.sermonAudio.attach.pickNotAudio).toMatch(/MP3/);
+    expect(mint).not.toHaveBeenCalled();
+    expect(fileInput()).toHaveAttribute('accept', '.mp3,audio/mpeg');
+  });
+
+  test('a file over the cap is refused with the cap named, without a mint', async () => {
+    const mint = vi.fn(mintOk);
+    renderUploader({ mint });
+
+    fireEvent.change(fileInput(), {
+      target: {
+        files: [
+          new File([new Uint8Array(57 * 1048576)], 'full-service.mp3', {
+            type: 'audio/mpeg',
+          }),
+        ],
+      },
+    });
+
+    const refusal = await screen.findByText(
+      copy.sermonAudio.attach.pickTooBig(57),
+    );
+    expect(refusal).toBeInTheDocument();
+    expect(refusal.textContent).toMatch(/50 MB/);
+    expect(mint).not.toHaveBeenCalled();
+  });
+
   test('an unreadable file is refused before the upload, not after it', async () => {
     const upload = vi.fn(() => Promise.resolve());
     renderUploader({
@@ -158,6 +205,39 @@ describe('early refusals, before any upload', () => {
 });
 
 describe('an upload that dies', () => {
+  // W4.9 slice 1: which "no" it was decides the sentence. Storage's 413 is the file, any
+  // other refusal is storage, and only a network error reads as the connection. Before
+  // this, all three said "check your connection", and the first real uploader spent the
+  // evening on their Wi-Fi over a file that was too big.
+  test('a 413 from storage names the file and the cap, not the connection', async () => {
+    const user = userEvent.setup();
+    renderUploader({
+      upload: () => Promise.reject(new UploadRefused(413)),
+    });
+
+    await user.upload(fileInput(), mp3File());
+
+    expect(
+      await screen.findByText(copy.sermonAudio.attach.pickTooBig(2)),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(copy.sermonAudio.attach.uploadFailed),
+    ).not.toBeInTheDocument();
+  });
+
+  test('any other refusal from storage says storage refused it', async () => {
+    const user = userEvent.setup();
+    renderUploader({
+      upload: () => Promise.reject(new UploadRefused(400)),
+    });
+
+    await user.upload(fileInput(), mp3File());
+
+    expect(
+      await screen.findByText(copy.sermonAudio.attach.uploadRefused),
+    ).toBeInTheDocument();
+  });
+
   test('says so, keeps nothing, and offers the drop zone again', async () => {
     const user = userEvent.setup();
     renderUploader({

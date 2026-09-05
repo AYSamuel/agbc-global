@@ -9,6 +9,18 @@
  * uploaders sending bytes two slightly different ways is exactly the drift the shared
  * library rule exists to prevent.
  */
+/**
+ * Storage answered, and said no. Carries the status so the uploader can say which no:
+ * 413 is the file (too big for the plan's cap), anything else is storage refusing it.
+ * A network failure is a plain Error, as before, and reads as the connection.
+ */
+export class UploadRefused extends Error {
+  constructor(public readonly status: number) {
+    super(`upload refused with ${String(status)}`);
+    this.name = 'UploadRefused';
+  }
+}
+
 export function uploadViaXhr(
   signedUrl: string,
   file: File,
@@ -25,7 +37,7 @@ export function uploadViaXhr(
     };
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`upload refused with ${String(xhr.status)}`));
+      else reject(new UploadRefused(xhr.status));
     };
     xhr.onerror = () => {
       reject(new Error('the upload did not reach storage'));

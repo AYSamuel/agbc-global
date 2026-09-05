@@ -1061,13 +1061,23 @@
   <div class="gallery" id="w31aLight">
 
     <div class="device">
-      <p class="name"><b>SERMON-AUDIO</b> &middot; the shelf &middot; Sunday's message is missing its audio and the screen says so</p>
-      <!-- Modeled on VERSES: the banner carries the one urgent fact (the weekly task not yet
-           done), the stats say how the shelf stands, the guide teaches the format once, and
-           the list is for scanning, one affordance per row. The rail: Sermon audio is the
-           first row from a later phase to light up, so the "Phase A" section title retires
-           (a phase name over a mixed list would be false); lit rows are simply the
-           dashboard, and "Later" keeps the dimmed tail. -->
+      <p class="name"><b>SERMON-AUDIO</b> &middot; the shelf &middot; the format rule is the first thing on the page</p>
+      <!-- Modeled on VERSES: the stats say how the shelf stands, the guide teaches the format
+           once, and the list is for scanning, one affordance per row. The rail: Sermon audio
+           is the first row from a later phase to light up, so the "Phase A" section title
+           retires (a phase name over a mixed list would be false); lit rows are simply the
+           dashboard, and "Later" keeps the dimmed tail.
+
+           W4.9 slice 1 (2026-09-06, Ayo): the red "Sunday's message has no audio yet" banner
+           is GONE, and the guide moved to the top in its place. The banner said the one thing
+           the uploader already knew (the message is on YouTube), while the thing they did not
+           know, that the shelf takes MP3 only and refuses anything over 50 MB, sat halfway
+           down in a soft yellow note. The first real upload (2026-09-05) was a 57 MB m4a,
+           refused at 22 MB with "check your connection". So the guide now leads, states the
+           format as a rule rather than advice, says in plain words how to get an MP3 (Ayo,
+           2026-09-06: no command lines, the uploader is not technical), and says the TRUE cap: the Supabase Free plan fixes uploads at 50 MB, not the 150 the copy used
+           to claim. The missing message is not lost: its row is first, wears "No audio" and
+           "Add audio", and the counters say how many are missing. -->
       <div class="win">
         <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio</span></div>
         <div class="app">
@@ -1095,15 +1105,13 @@
               <button class="btn ghost">Sign out</button>
             </div>
 
-            <div class="banner bad">
-              <span class="bi">&#9888;</span>
-              <div>
-                <h4>Sunday's message has no audio yet</h4>
-                <p>The Grace That Finds You is on YouTube, so members can watch it. Listening in
-                  the background, the thing members actually asked for, only exists once its MP3
-                  is on the shelf.</p>
-              </div>
-              <span class="act"><button class="btn outline" style="white-space:nowrap">Add audio</button></span>
+            <div class="guide">
+              <span class="gi">&#9834;</span>
+              <p><b>MP3 only, exported at speech quality.</b> 64&#8211;96 kbps mono MP3 sounds
+                identical for a preached message and halves both storage and every member's data;
+                a full service lands near 25 MB, and the shelf takes files up to 50 MB. If your
+                recording is not an MP3 (m4a, aac or wav), save it as MP3 first: your editing app
+                can export one, and any free online converter can too.</p>
             </div>
 
             <div class="mlabel">The shelf today</div>
@@ -1111,13 +1119,6 @@
               <div class="ps"><div class="n">31</div><div class="l">With audio</div></div>
               <div class="ps low"><div class="n">3</div><div class="l">Without audio</div></div>
               <div class="ps"><div class="n">2</div><div class="l">Audio only</div></div>
-            </div>
-
-            <div class="guide">
-              <span class="gi">&#9834;</span>
-              <p><b>Export speech quality, not music quality.</b> 64&#8211;96 kbps mono MP3 sounds
-                identical for a preached message and halves both storage and every member's data.
-                A full service lands near 25 MB; the shelf takes up to 150 MB.</p>
             </div>
 
             <div class="actions" style="border:none;padding-top:18px">
@@ -1228,11 +1229,11 @@
               <div class="drop">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
                 <b>Drop the MP3 here, or browse</b>
-                <span class="sub">MP3 or M4A &middot; up to 150 MB</span>
+                <span class="sub">MP3 only &middot; up to 50 MB</span>
               </div>
-              <div class="hint">Straight from your editing export. Speech quality (64&#8211;96 kbps
-                mono) is plenty; there is no need to re-encode a bigger file if that is what you
-                have.</div>
+              <div class="hint">Straight from your editing export, as MP3. Speech quality
+                (64&#8211;96 kbps mono) is plenty; if the recording is m4a, aac or wav, save it
+                as MP3 first, from your editing app or a free converter.</div>
             </div>
             <div class="field" style="max-width:640px">
               <span class="lab">The artwork &middot; optional</span>
@@ -1316,9 +1317,24 @@
               <div class="banner bad" style="margin-top:0">
                 <span class="bi">&#9888;</span>
                 <div>
-                  <h4>That file is not an MP3 or M4A</h4>
+                  <h4>That file is not an MP3</h4>
                   <p>The file's contents were checked, not its name. Nothing was saved and the
-                    upload was discarded; export the audio again and retry.</p>
+                    upload was discarded; convert it to MP3 and try again.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- W4.9 slice 1: the size refusal, which the browser gives BEFORE a byte is sent
+                 and storage would otherwise give at 50 MB with no true word. Both refusals
+                 name the fix, not just the fault. -->
+            <div class="field" style="max-width:640px">
+              <span class="lab">If the file is too big</span>
+              <div class="banner bad" style="margin-top:0">
+                <span class="bi">&#9888;</span>
+                <div>
+                  <h4>That file is 57 MB, and the shelf takes up to 50 MB</h4>
+                  <p>Nothing was sent. Export it at speech quality (64&#8211;96 kbps mono MP3),
+                    which lands a full service near 25 MB, and try again.</p>
                 </div>
               </div>
             </div>
@@ -1405,6 +1421,99 @@
     </div>
 
     <div class="device">
+      <p class="name"><b>SERMON-AUDIO-MANAGE</b> &middot; audio only &middot; the facts can be edited, the audio can be replaced, never removed</p>
+      <!-- W4.9 slice 1 (2026-09-06, Ayo). The manage screen for a message that was never on
+           YouTube. Two things differ from the frame above. There is no Remove: with no video
+           half, removing the audio would leave a message that is nothing at all, and the copy
+           says so instead of hiding a button. And the facts are editable here, because a
+           synced message's title, speaker, series and date belong to the nightly sync, which
+           would put them back, while an audio-only message's facts were typed by hand and a
+           typo currently lives until somebody opens the database. The edit block sits between
+           the file and the artwork: it is about the message, the other two are about objects.
+           Save is always present because the form is always actionable (its values are real,
+           and saving them unchanged is harmless), which is the one case the hidden-Save rule
+           does not cover. Saving redirects to this same screen with an outcome line at the
+           top, the way the artwork actions already do. -->
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio/manage</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="phead">
+              <div>
+                <h2>The audio on the shelf</h2>
+                <p class="scope">Midweek: Prayer That Holds &middot; Wednesday 6 August</p>
+              </div>
+            </div>
+            <div class="banner tell" style="max-width:640px">
+              <span class="bi">&#10003;</span>
+              <div><p>The facts are saved. Members see the new title the next time a list loads.</p></div>
+            </div>
+            <div class="item" style="max-width:640px">
+              <div class="top">
+                <span class="pill good">Audio &middot; 38 min</span>
+                <span class="spacer"></span>
+                <span class="time">shelved 7 August</span>
+              </div>
+              <div class="meta" style="margin-top:6px">
+                <span>19 MB</span><span class="dot"></span><span>MP3</span><span class="dot"></span><span>by Pastor AY Samuel</span>
+              </div>
+            </div>
+            <div class="hint" style="max-width:60ch">This message exists only as audio, so removing it
+              would leave nothing at all. The audio can be replaced, never removed.</div>
+            <div class="actions">
+              <button class="btn outline">Replace the file</button>
+            </div>
+
+            <div class="mlabel" style="padding-top:26px">The facts</div>
+            <div class="field" style="margin-top:0">
+              <span class="lab">Title</span>
+              <div class="inp">Midweek: Prayer That Holds</div>
+            </div>
+            <div class="field">
+              <span class="lab">Speaker</span>
+              <div class="inp">Pastor Olayinka</div>
+            </div>
+            <div class="field">
+              <span class="lab">Series</span>
+              <div class="inp ph">None</div>
+            </div>
+            <div class="field">
+              <span class="lab">Date preached</span>
+              <div class="inp">2026-08-06</div>
+              <div class="hint">Decides where it sits in the app's rails. Only a message that was
+                never on YouTube can be edited here: a synced message's facts belong to the sync,
+                which would put them back.</div>
+            </div>
+            <div class="actions" style="max-width:640px">
+              <button class="btn primary">Save the facts</button>
+            </div>
+
+            <div class="mlabel" style="padding-top:26px">The artwork</div>
+            <div class="artrow" style="max-width:640px;margin-top:0">
+              <div class="artprev own"><span class="cp">On cards</span></div>
+              <div class="rt">
+                <div class="hint" style="max-width:52ch">412 KB, added 7 August. Members see it on
+                  every list, on the player and on their lock screen. Removing it puts the plain
+                  navy cover back; nothing else changes.</div>
+                <div style="margin-top:12px"><button class="btn outline">Remove the picture</button></div>
+              </div>
+            </div>
+            <div class="field" style="max-width:640px">
+              <div class="drop" style="padding:16px 14px">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <b>Drop a picture here, or browse</b>
+                <span class="sub">JPG, PNG or WebP &middot; up to 5 MB</span>
+              </div>
+              <div class="hint">Choosing a picture replaces the one above; the old one is retired
+                as soon as the new one is saved. A wide picture, 1280&#215;720 or larger, is
+                cropped square on a lock screen.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
       <p class="name"><b>SERMON-AUDIO-NEW</b> &middot; an audio-only message &middot; it was never on YouTube</p>
       <!-- The second flow: a message that exists only as our own recording (a midweek word, a
            prayer meeting). It appears in Watch like any other message, with an audio cover in
@@ -1453,7 +1562,7 @@
                 <span class="bi" style="color:var(--green)">&#10003;</span>
                 <div>
                   <h4>38 minutes of audio, 19 MB</h4>
-                  <p>midweek-13-08.m4a &middot; read from the file itself.</p>
+                  <p>midweek-13-08.mp3 &middot; read from the file itself.</p>
                 </div>
               </div>
             </div>
