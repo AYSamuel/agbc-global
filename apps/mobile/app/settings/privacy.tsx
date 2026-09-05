@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
@@ -23,6 +22,7 @@ import {
 import { privacyUrl } from '@/lib/links';
 import { useAuthStore } from '@/state/auth';
 import { useTheme } from '@/theme';
+import { useOpenExternal } from '@/lib/openExternal';
 
 /**
  * PRIVACY (frame `PRIVACY · plain-language`; docs/spec/16 §PRIVACY, `20`, `04`
@@ -57,6 +57,7 @@ import { useTheme } from '@/theme';
 export default function Privacy() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const openLink = useOpenExternal();
   const { colors } = useTheme();
   const isMember = useAuthStore((s) => s.status === 'member');
 
@@ -138,7 +139,7 @@ export default function Privacy() {
           accessibilityRole="link"
           accessibilityLabel={t('settings:privacyScreen.fullPolicy')}
           onPress={() => {
-            void WebBrowser.openBrowserAsync(privacyUrl(i18n.language));
+            openLink(privacyUrl(i18n.language));
           }}
           style={({ pressed }) => ({
             flexDirection: 'row',

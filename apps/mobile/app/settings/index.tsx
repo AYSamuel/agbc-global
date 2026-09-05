@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 
 import { fontFamily, spacing } from '@agbc/shared/theme';
 
@@ -35,6 +34,7 @@ import { useAuthStore } from '@/state/auth';
 import { termsUrl } from '@/lib/links';
 import { useTheme } from '@/theme';
 import { useThemePrefStore, type ThemePref } from '@/theme/store';
+import { useOpenExternal } from '@/lib/openExternal';
 
 const THEME_SEGMENTS: readonly { key: ThemePref; labelKey: string }[] = [
   { key: 'system', labelKey: 'settings:themeSystem' },
@@ -48,6 +48,7 @@ const THEME_SEGMENTS: readonly { key: ThemePref; labelKey: string }[] = [
 export default function Settings() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const openLink = useOpenExternal();
   const { colors } = useTheme();
   const themePref = useThemePrefStore((s) => s.pref);
   // The member rows this hub was always going to grow (docs/spec/16). Profile is the
@@ -243,7 +244,7 @@ export default function Settings() {
             icon={LegalIcon}
             label={t('settings:legal')}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(termsUrl(i18n.language));
+              openLink(termsUrl(i18n.language));
             }}
           />
         </MenuCard>

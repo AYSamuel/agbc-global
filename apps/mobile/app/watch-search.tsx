@@ -2,14 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 
-import {
-  fontFamily,
-  icon,
-  radius,
-  spacing,
-} from '@agbc/shared/theme';
+import { fontFamily, icon, radius, spacing } from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -29,6 +23,7 @@ import {
 import { useSearchHistoryStore } from '@/features/watch/searchHistory';
 import { SermonRow } from '@/features/watch/SermonRow';
 import { useTheme } from '@/theme';
+import { useOpenExternal } from '@/lib/openExternal';
 
 // The three-row placeholder shared by search results and the see-all list while
 // their query loads (mockup STATE loading): a thumb + two text lines per row.
@@ -55,6 +50,7 @@ function SermonRowSkeletons() {
 export default function WatchSearch() {
   const router = useRouter();
   const { t } = useTranslation();
+  const openLink = useOpenExternal();
   const { colors } = useTheme();
   const params = useLocalSearchParams<{ q?: string; list?: string }>();
   const [term, setTerm] = useState(params.q ?? '');
@@ -195,7 +191,7 @@ export default function WatchSearch() {
                   ? {
                       actionLabel: t('watch:seeMoreOnYoutube'),
                       onAction: () => {
-                        void WebBrowser.openBrowserAsync(channelTabUrl);
+                        openLink(channelTabUrl);
                       },
                     }
                   : {})}
@@ -220,7 +216,7 @@ export default function WatchSearch() {
                       variant="outline"
                       fullWidth
                       onPress={() => {
-                        void WebBrowser.openBrowserAsync(channelTabUrl);
+                        openLink(channelTabUrl);
                       }}
                     />
                   </View>

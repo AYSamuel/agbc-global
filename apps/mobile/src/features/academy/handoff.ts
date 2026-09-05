@@ -1,9 +1,8 @@
-import * as WebBrowser from 'expo-web-browser';
-
 import type { CourseHandoffError, CourseHandoffResponse } from '@agbc/shared';
 
 import { supabase } from '@/lib/supabase';
 import { localizedWebsiteUrl } from '@/lib/websiteUrl';
+import { openExternal } from '@/lib/openExternal';
 
 // Register (docs/spec/13, ADR 0017 decision 7): the app registers nobody. The
 // button opens the WEBSITE's course page in the in-app browser exactly as GIVE
@@ -43,7 +42,13 @@ export type RegisterOutcome =
   /** The browser opened (with or without a token). */
   | 'opened'
   /** The mint refused: this member already holds a live registration. */
-  | 'already_registered';
+  | 'already_registered'
+  /**
+   * Nothing on the device would take the URL. Added 2026-09-05: this used to
+   * be indistinguishable from 'opened', because the open was a floating
+   * `void` that reported its rejection to Sentry and the member not at all.
+   */
+  | 'could_not_open';
 
 /**
  * The member's Register tap: mint, then open. EVERY failure of the mint
@@ -77,8 +82,8 @@ export async function openCourseRegistration(
   } catch {
     // No network reaches the same honest place: the browser's own error page.
   }
-  void WebBrowser.openBrowserAsync(courseRegisterUrl(slug, language, token));
-  return 'opened';
+  const opened = await openExternal(courseRegisterUrl(slug, language, token));
+  return opened ? 'opened' : 'could_not_open';
 }
 
 /** supabase-js hangs the raw Response off the error as `context` (photo.ts). */

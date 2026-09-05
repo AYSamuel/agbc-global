@@ -9,7 +9,6 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import YoutubePlayer, {
   type YoutubeIframeRef,
 } from 'react-native-youtube-iframe';
@@ -79,6 +78,7 @@ import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
+import { useOpenExternal } from '@/lib/openExternal';
 
 function youtubeUrl(youtubeId: string): string {
   return `https://www.youtube.com/watch?v=${youtubeId}`;
@@ -186,6 +186,7 @@ export default function Sermon() {
 
   const router = useRouter();
   const { t } = useTranslation();
+  const openLink = useOpenExternal();
   const locale = useFormattingLocale();
   const { colors } = useTheme();
   const toast = useToast();
@@ -587,9 +588,7 @@ export default function Sermon() {
               <Pressable
                 accessibilityRole="link"
                 onPress={() => {
-                  void WebBrowser.openBrowserAsync(
-                    youtubeUrl(sermon.youtube_id ?? ''),
-                  );
+                  openLink(youtubeUrl(sermon.youtube_id ?? ''));
                 }}
                 style={({ pressed }) => ({
                   marginTop: spacing.lg,
@@ -621,9 +620,7 @@ export default function Sermon() {
                 <YouTubeCredit
                   label={t('watch:watchOnYoutube')}
                   onPress={() => {
-                    void WebBrowser.openBrowserAsync(
-                      youtubeUrl(sermon.youtube_id ?? ''),
-                    );
+                    openLink(youtubeUrl(sermon.youtube_id ?? ''));
                   }}
                 />
               </View>
