@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
 import { useAuthStore } from '@/state/auth';
+import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
 import Privacy from '../../../../app/settings/privacy';
@@ -52,9 +53,14 @@ jest.mock('expo-localization', () => ({
 }));
 
 function draw() {
+  // ToastProvider because the screen now reports a link it could not open
+  // (src/lib/openExternal.ts). app/_layout.tsx wraps the whole app in one, so
+  // this makes the test render the screen the way the app actually does.
   return render(
     <ThemeScope name="light">
-      <Privacy />
+      <ToastProvider>
+        <Privacy />
+      </ToastProvider>
     </ThemeScope>,
   );
 }

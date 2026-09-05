@@ -162,7 +162,9 @@ export default function CourseDetail() {
     setOpening(true);
     const outcome = await openCourseRegistration(course.slug, i18n.language);
     setOpening(false);
-    if (outcome === 'already_registered') {
+    if (outcome === 'could_not_open') {
+      toast.show(t('errors:somethingWrong'));
+    } else if (outcome === 'already_registered') {
       // The mint refused because a live registration exists that this screen
       // did not know about (usually a website one): refetch and say so.
       invalidateRegistrations();

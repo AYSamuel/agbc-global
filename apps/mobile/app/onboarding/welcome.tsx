@@ -8,7 +8,6 @@ import {
   type ImageSourcePropType,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as WebBrowser from 'expo-web-browser';
 
 import {
   fontFamily,
@@ -24,6 +23,7 @@ import { HQ_BRANCH } from '@/features/onboarding/branches-snapshot';
 import { privacyUrl, termsUrl } from '@/lib/links';
 import { useBranchStore } from '@/state/branch';
 import { useLaunchStore } from '@/state/launch';
+import { useOpenExternal } from '@/lib/openExternal';
 
 // Metro's require() of an asset is untyped; the assertion is the RN-standard shape.
 const HERO_IMAGE =
@@ -34,6 +34,7 @@ const HERO_IMAGE =
 export default function Welcome() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const openLink = useOpenExternal();
   const insets = useSafeAreaInsets();
   const setBranch = useBranchStore((s) => s.setBranch);
   const completeOnboarding = useLaunchStore((s) => s.completeOnboarding);
@@ -136,7 +137,7 @@ export default function Welcome() {
             accessibilityRole="link"
             style={{ color: onInk.link }}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(termsUrl(i18n.language));
+              openLink(termsUrl(i18n.language));
             }}
           >
             {t('onboarding.terms')}
@@ -146,7 +147,7 @@ export default function Welcome() {
             accessibilityRole="link"
             style={{ color: onInk.link }}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(privacyUrl(i18n.language));
+              openLink(privacyUrl(i18n.language));
             }}
           >
             {t('onboarding.privacy')}

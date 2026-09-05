@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
@@ -21,6 +20,7 @@ import { track } from '@/lib/analytics';
 import { localizedWebsiteUrl } from '@/lib/websiteUrl';
 import { StubIcon } from '@/features/shell/StubIcon';
 import { useTheme } from '@/theme';
+import { useOpenExternal } from '@/lib/openExternal';
 
 // GIVE tab (docs/spec/12): link out to the church's web giving (in-app browser),
 // PayPal, and copyable bank details. No account needed. No Apple IAP: a donation
@@ -31,6 +31,7 @@ import { useTheme } from '@/theme';
 export default function Give() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const openLink = useOpenExternal();
   const { colors } = useTheme();
   const query = useGivingConfigQuery();
   const config = query.data;
@@ -124,7 +125,7 @@ export default function Give() {
                     // Outbound taps have no mutation layer: the handler IS the
                     // act, so the three `give_tapped` calls live on it.
                     track('give_tapped', { method: 'website' });
-                    void WebBrowser.openBrowserAsync(
+                    openLink(
                       localizedWebsiteUrl(config.giveUrl ?? '', i18n.language),
                     );
                   }}
@@ -169,7 +170,7 @@ export default function Give() {
                   accessibilityLabel={t('give:paypalTitle')}
                   onPress={() => {
                     track('give_tapped', { method: 'paypal' });
-                    void WebBrowser.openBrowserAsync(config.paypalUrl ?? '');
+                    openLink(config.paypalUrl ?? '');
                   }}
                 />
               ) : null}
