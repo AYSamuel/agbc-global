@@ -27,7 +27,7 @@ import {
   setArtworkAction,
 } from '../actions';
 import { ImagePreview, type ImageSubject } from '@/components/ImagePreview';
-import { ImageField } from '@/components/ImageField';
+import { ArtworkPanel } from '../ArtworkPanel';
 import { AttachPanel } from '../AttachPanel';
 import {
   preachedOn,
@@ -250,21 +250,14 @@ function Manage({
         </div>
       ) : null}
 
-      {/* Replace and set are one control, the way Replace IS attach for the audio: a new
-          object goes up, the row moves its reference, the old one retires. */}
-      <form action={setArtworkAction} className="mt-4">
-        <input type="hidden" name="sermonId" value={sermon.id} />
-        <ImageField
-          subject={artwork}
-          words={copy.sermonAudio.artwork}
-          fieldName="artworkPath"
-          mint={mintArtworkUploadAction}
-          // The block above already shows what is on the cards, with its size and date.
-          showSubject={artwork.kind !== 'own'}
-          submitLabel={artwork.kind === 'own' ? picture.replace : picture.save}
-          submittingLabel={picture.saving}
-        />
-      </form>
+      {/* A client wrapper rather than the field itself, because this page is a Server
+          Component and the field's copy carries functions: see ArtworkPanel. */}
+      <ArtworkPanel
+        sermonId={sermon.id}
+        subject={artwork}
+        mint={mintArtworkUploadAction}
+        action={setArtworkAction}
+      />
     </>
   );
 }
