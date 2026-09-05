@@ -451,6 +451,11 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
 - Build: store assets EN/DE/NL/FR + screenshot matrix (incl. iPad/tablet), privacy labels + data-safety form (web deletion link), age-rating answer sheet, review notes (fixed-code review email, prod bypass window on), release-note copy for Grace Portal installs; TestFlight + Play internal; staged-rollout plan with written halt criteria; submit.
 - Done: both stores in review; `18` launch checklist items all checked or explicitly waived by Ayo.
 
+**W4.9 · Audio shelf and player** (planned 2026-09-06, nothing built; the plan is `docs/spec/plans/W4.9-audio-shelf-and-player.md` and is deleted when its last slice lands)
+- Refs: `08`, `02` §Storage, `05` (`.pl-scrub`, `.seg`), `17` §4, `21` §4, the runbook's submission record (what the first real audio found).
+- Build: five slices, each its own PR, every screen change framed in the mockup and approved before code. (1) The shelf tells the truth: MP3 only at picker, mint, byte check and bucket; the cap becomes the plan's 50 MB with a refusal that says so; the speech-quality guide moves to the top with the conversion recipe; audio-only messages get editable title, speaker, series and date (no delete). (2) The player seeks by drag and tap, with a knob, and reaches 2x (expo-audio clamps Android at 2.0, so not 3x). (3) Listening survives navigation: one player owned by a root provider, a now-playing bar docked above the tab bar, video stops audio. (4) Watch gains a Video / Audio segment with its empty state. (5) Docs land and the plan file goes.
+- Done: every box in the plan ticked, the plan deleted, `08` and `05` carrying what it decided, the device matrix run for slices 2-4.
+
 ### Track P · Production (parallel, gated; interleave after Phase 1)
 
 **Rewritten 2026-08-17 by ADR 0023: production is a NEW Supabase project and the church website moves onto it.** The authoritative document is `docs/spec/plans/track-p-fresh-prod-project.md`, phase by phase; this is the index.
@@ -458,7 +463,7 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
 - **P1 · DONE (2026-08-10).** Nightly off-provider `db dump` pipeline + one verified restore, covering the live website's data too (ADR 0018, `docs/runbooks/restore-from-backup.md`). Unaffected by the reversal, except that it has to FOLLOW the website onto the new project at Phase 3.
 - ~~**P2-P6**~~ **superseded.** They described auditing, rehearsing and then executing a destructive cleanup of the shared project so it could become ours. There is no cleanup: our whole migration history applies to an empty project, which CI proves on every PR. P2's audit was done and stands as the record of what the old project holds (`docs/runbooks/prod-audit-2026-07-30.md`); it is also what priced the reuse plan and so caused the reversal.
 - The plan's phases, in order: **0** decide and prepare (creates nothing: the ADR, the `donations` migration and its contract test, a final archived dump, the rotated review code) · **1** create the project and apply · **2** edge functions, secrets, vault · **3** move the website (the ONLY step that touches agbcglobal.com) · **4** point the app at production and close W3.3 · **5** retire the old project.
-- **The traffic fence is lifted, deliberately** (ADR 0023): app builds point at production on Free, mitigated by uploading NO sermon audio to production storage, 80% usage alerts, and a written trigger to upgrade to Pro past 50% egress in any month. `24` §1's fence line is annotated accordingly.
+- **The traffic fence is lifted, deliberately** (ADR 0023): app builds point at production on Free, mitigated by uploading NO sermon audio to production storage (one 44 MB file since 2026-09-05, by decision, to film the Play foreground-service declaration), 80% usage alerts, and a written trigger to upgrade to Pro past 50% egress in any month. `24` §1's fence line is annotated accordingly.
 
 ---
 
