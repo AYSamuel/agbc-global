@@ -5,6 +5,7 @@ import { AppState } from 'react-native';
 
 import { SKIP_SEC, skipTarget } from './audio';
 import { configureAudioSession } from './audioSession';
+import { activateLockScreen, releaseLockScreen } from './lockScreen';
 import { shouldSave, usePlaybackStore } from './playback';
 import { saveServerPosition } from './serverPosition';
 
@@ -106,8 +107,8 @@ export function useSermonAudio({
       // Mandatory on Android before sustained background playback, not a nicety
       // (docs/spec/08). The seek controls are the same ±15s pair the screen
       // draws, so the lock screen and the app agree on what the buttons do.
-      player.setActiveForLockScreen(
-        true,
+      activateLockScreen(
+        player,
         {
           title,
           artist,
@@ -122,6 +123,23 @@ export function useSermonAudio({
       run.cancelled = true;
     };
   }, [status.isLoaded, player, title, artist, artworkUrl]);
+
+  // Hand the lock screen back when this player goes away. Nothing did until
+  // 2026-09-06, and a second player activating while the first was still active
+  // killed the app outright: `lockScreen.ts` carries the race in full, and the
+  // short version is that expo-audio builds the lock-screen media3 session with
+  // no id, so two live ones collide on the empty one and throw where no JS
+  // try/catch can reach.
+  //
+  // Keyed on the PLAYER alone, deliberately. Hanging this off the effect above
+  // would give it that effect's metadata deps, and the lock screen would then be
+  // torn down and rebuilt every time a title or a piece of artwork changed,
+  // which is the very churn this is here to stop.
+  useEffect(() => {
+    return () => {
+      releaseLockScreen(player);
+    };
+  }, [player]);
 
   // Speed is applied wherever it comes from: the tile changing it mid-listen,
   // and a fresh player inheriting the member's standing choice.
