@@ -81,6 +81,9 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "setupFiles": [
+      "react-native-gesture-handler/jestSetup"
+    ],
     "moduleNameMapper": {
       "^@formatjs/(intl-locale|intl-pluralrules)/.*$": "<rootDir>/src/test/empty-module.js",
       "^lucide-react-native/icons/(.*)$": "<rootDir>/node_modules/lucide-react-native/dist/cjs/icons/$1.js"

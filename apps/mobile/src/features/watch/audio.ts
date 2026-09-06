@@ -4,8 +4,17 @@
 // lives next door in `audioSession.ts`, so these stay testable, and importable
 // from the playback store, without a player attached.
 
-/** 08's speed choices. A cycle, not a menu: three values do not earn a sheet. */
-export const SPEEDS = [1, 1.25, 1.5] as const;
+/**
+ * 08's speed choices. A cycle, not a menu: four values do not earn a sheet.
+ *
+ * 2x is the ceiling, and the reason is native (W4.9 slice 2, decided with Ayo
+ * 2026-09-06): the installed expo-audio clamps the rate on Android,
+ * `AudioPlayer.kt:184`, `rate.coerceIn(0.1f, 2.0f)`, while iOS hands it to
+ * AVPlayer unclamped. 3x would need a patched native module and a rebuild for a
+ * control that would then behave differently per platform. Revisit if expo-audio
+ * lifts the clamp; check that line, not the changelog.
+ */
+export const SPEEDS = [1, 1.25, 1.5, 2] as const;
 export type PlaybackSpeed = (typeof SPEEDS)[number];
 
 /** 08's ±15s pair. */
@@ -17,7 +26,7 @@ export const AUDIO_URL_TTL_SEC = 60 * 60 * 24;
 export function nextSpeed(current: PlaybackSpeed): PlaybackSpeed {
   const index = SPEEDS.indexOf(current);
   // A stored value from a future build that no longer exists in SPEEDS lands at
-  // -1, and (-1 + 1) % 3 = 0, so an unknown speed falls back to 1x rather than
+  // -1, and (-1 + 1) % 4 = 0, so an unknown speed falls back to 1x rather than
   // to undefined.
   return SPEEDS[(index + 1) % SPEEDS.length] ?? 1;
 }
@@ -51,13 +60,12 @@ export function formatRemaining(
   return `-${formatClock(left)}`;
 }
 
-/** Where a ±15s tap lands, clamped so neither end can overshoot. */
-export function skipTarget(
-  currentSec: number,
-  deltaSec: number,
-  durationSec: number,
-): number {
-  const target = (Number.isFinite(currentSec) ? currentSec : 0) + deltaSec;
+/**
+ * Where an absolute seek lands (W4.9 slice 2: the bar is a seek control), clamped
+ * so neither end can overshoot. The ±15s pair below is this with a delta.
+ */
+export function seekTarget(sec: number, durationSec: number): number {
+  const target = Number.isFinite(sec) ? sec : 0;
   const ceiling =
     Number.isFinite(durationSec) && durationSec > 0 ? durationSec : target;
   // Ceiling first, THEN zero. The other order seeks to a negative time when the
@@ -65,6 +73,31 @@ export function skipTarget(
   // itself: a back-15 in the opening seconds of a stream that has not reported
   // its length yet.
   return Math.max(0, Math.min(target, ceiling));
+}
+
+/** Where a ±15s tap lands, clamped so neither end can overshoot. */
+export function skipTarget(
+  currentSec: number,
+  deltaSec: number,
+  durationSec: number,
+): number {
+  return seekTarget(
+    (Number.isFinite(currentSec) ? currentSec : 0) + deltaSec,
+    durationSec,
+  );
+}
+
+/**
+ * Where a finger on the bar lands, in seconds: the inverse of `scrubFraction`.
+ * Whole seconds, because that is what the clock shows and what the player is
+ * asked for; 0 while the duration is unknown, when there is nothing to land in.
+ */
+export function secondsAtFraction(
+  fraction: number,
+  durationSec: number,
+): number {
+  if (!Number.isFinite(durationSec) || durationSec <= 0) return 0;
+  return Math.round(Math.min(1, Math.max(0, fraction)) * durationSec);
 }
 
 /**
@@ -82,6 +115,32 @@ export function scrubFraction(currentSec: number, durationSec: number): number {
   if (!Number.isFinite(durationSec) || durationSec <= 0) return 0;
   return Math.min(1, Math.max(0, currentSec / durationSec));
 }
+
+/**
+ * Whether a finger leaving the seek bar should seek at all (W4.9 slice 2).
+ *
+ * Yes for a tap (a pan that never activated and did not move), a finished drag,
+ * and a drag the system took away (a call, the shade): that last one is what
+ * Android's own seek bar does on cancel, because a member who dragged to the
+ * 30th minute meant the 30th minute. No for the one case that was never a seek:
+ * a pan that never activated because the finger moved VERTICALLY, which is a
+ * scroll that happened to start on the bar, and a seek to wherever it first
+ * touched would be a surprise.
+ */
+export function shouldSeekAfterTouch(touch: {
+  /** The pan reached its active state, so the finger moved along the bar. */
+  activated: boolean;
+  /** The gesture ended normally rather than failing or being cancelled. */
+  success: boolean;
+  /** How far the finger travelled vertically, in points. */
+  translationY: number;
+}): boolean {
+  if (touch.success || touch.activated) return true;
+  return Math.abs(touch.translationY) <= SCROLL_INTENT_POINTS;
+}
+
+/** A finger that moved this far vertically without activating was scrolling. */
+export const SCROLL_INTENT_POINTS = 8;
 
 export interface PositionSample {
   positionSec: number;

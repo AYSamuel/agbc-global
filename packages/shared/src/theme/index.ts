@@ -179,6 +179,9 @@ export const media = {
   artScrim: 'rgba(14,20,32,0.45)',
   /** `.pl-art .tag`: the pill behind the "Listening" label. */
   tagBg: 'rgba(14,20,32,0.72)',
+  /** `.pl-scrub .bar i::after` (W4.9 slice 2): the shadow under the seek knob,
+   * so a gold dot reads on cream and on near-black alike. */
+  knobShadow: 'rgba(0,0,0,0.28)',
 } as const;
 
 // The scripture card is a CONSTANT cream/gold surface in both themes: the
