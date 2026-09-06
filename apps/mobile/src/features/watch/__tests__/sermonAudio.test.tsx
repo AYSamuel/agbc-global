@@ -1,4 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { type PanGesture, State } from 'react-native-gesture-handler';
+import {
+  fireGestureHandler,
+  getByGestureTestId,
+} from 'react-native-gesture-handler/jest-utils';
 
 import { ToastProvider } from '@/components/ui';
 import { audioPlayer, resetAudioMock, setAudioStatus } from '@/test/expoAudio';
@@ -376,6 +381,125 @@ describe('the transport', () => {
     expect(screen.getByText('14:20')).toBeOnTheScreen();
     expect(screen.getByText('-23:40')).toBeOnTheScreen();
   });
+
+  // W4.9 slice 2 (frame approved 2026-09-06): the bar is a seek control, a pan
+  // gesture claimed natively so the screen's scroll view cannot take a drag
+  // whose finger drifts (the tablet, 2026-09-06). A drag follows the finger and
+  // seeks ONCE when the finger leaves; a tap is a pan that never activated. The
+  // bar's width comes from onLayout, which the renderer never fires, so each
+  // test lays the bar out by hand at 300 wide. The gesture is driven through
+  // gesture-handler's own test helper, which fills in the BEGAN, ACTIVE and END
+  // states around the points given.
+  async function layOutBar() {
+    const bar = screen.getByRole('adjustable', { name: 'Playback position' });
+    await fireEvent(bar, 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 44 } },
+    });
+    return bar;
+  }
+
+  function seekBar() {
+    return getByGestureTestId('seek-bar') as PanGesture;
+  }
+
+  test('a drag follows the finger and seeks once, where it let go', async () => {
+    await renderScreen();
+    await enterAudio();
+    await act(() => {
+      setAudioStatus({ currentTime: 860 });
+    });
+    await layOutBar();
+
+    // The finger goes down at 10% and travels to 50%: the clock follows it and
+    // the player is asked exactly once, for where it let go.
+    await act(() => {
+      fireGestureHandler<PanGesture>(seekBar(), [
+        { state: State.BEGAN, x: 30, translationY: 0 },
+        { state: State.ACTIVE, x: 30, translationY: 0 },
+        { x: 90, translationY: 0 },
+        { x: 150, translationY: 0 },
+        { state: State.END, x: 150, translationY: 0 },
+      ]);
+    });
+    expect(audioPlayer.seekTo).toHaveBeenCalledTimes(1);
+    expect(audioPlayer.seekTo).toHaveBeenLastCalledWith(1140);
+    // Off the finger, the clock is the player's again.
+    expect(screen.getByText('14:20')).toBeOnTheScreen();
+  });
+
+  test('a tap seeks to where it landed, and past the end lands on the end', async () => {
+    await renderScreen();
+    await enterAudio();
+    await layOutBar();
+
+    // A tap: the pan never activates and the finger did not move vertically,
+    // so it lands where it touched.
+    await act(() => {
+      fireGestureHandler<PanGesture>(seekBar(), [
+        { state: State.BEGAN, x: 75, translationY: 0 },
+        { state: State.FAILED, x: 75, translationY: 0 },
+      ]);
+    });
+    expect(audioPlayer.seekTo).toHaveBeenLastCalledWith(570);
+
+    // A finger that slides off the right edge reports x past the width.
+    await act(() => {
+      fireGestureHandler<PanGesture>(seekBar(), [
+        { state: State.BEGAN, x: 290, translationY: 0 },
+        { state: State.ACTIVE, x: 290, translationY: 0 },
+        { state: State.END, x: 340, translationY: 0 },
+      ]);
+    });
+    expect(audioPlayer.seekTo).toHaveBeenLastCalledWith(2280);
+  });
+
+  test('a drag the system takes away lands where the finger last was', async () => {
+    await renderScreen();
+    await enterAudio();
+    await layOutBar();
+
+    // A cancel commits, the way Android's own seek bar does: the member dragged
+    // to the 11th minute and meant it, whatever interrupted the finger.
+    await act(() => {
+      fireGestureHandler<PanGesture>(seekBar(), [
+        { state: State.BEGAN, x: 30, translationY: 0 },
+        { state: State.ACTIVE, x: 30, translationY: 0 },
+        { x: 90, translationY: 0 },
+        { state: State.CANCELLED, x: 90, translationY: 0 },
+      ]);
+    });
+    expect(audioPlayer.seekTo).toHaveBeenCalledTimes(1);
+    expect(audioPlayer.seekTo).toHaveBeenLastCalledWith(684);
+  });
+
+  // The one case that seeks nothing, a scroll that happened to start on the
+  // bar, is decided by `shouldSeekAfterTouch` and tested in audio.test.ts: the
+  // gesture helper cannot express a pan that failed without also ending it.
+
+  test('the screen scrolls again once the finger has left the bar', async () => {
+    await renderScreen();
+    await enterAudio();
+    await layOutBar();
+    expect(screen.getByTestId('sermon-screen')).toHaveProp(
+      'scrollEnabled',
+      true,
+    );
+
+    // Belt to the gesture's braces: the screen stops scrolling from touch-down
+    // and scrolls again once the finger leaves. The helper fires the whole
+    // sequence at once, so only the "again" half is observable here.
+    await act(() => {
+      fireGestureHandler<PanGesture>(seekBar(), [
+        { state: State.BEGAN, x: 30, translationY: 0 },
+        { state: State.ACTIVE, x: 30, translationY: 0 },
+        { state: State.END, x: 30, translationY: 0 },
+      ]);
+    });
+    expect(screen.getByTestId('sermon-screen')).toHaveProp(
+      'scrollEnabled',
+      true,
+    );
+  });
 });
 
 describe('speed', () => {
@@ -401,6 +525,13 @@ describe('speed', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Speed, 1.25x' }));
     expect(audioPlayer.setPlaybackRate).toHaveBeenLastCalledWith(1.5);
+
+    // W4.9 slice 2: 2x is the ceiling (expo-audio clamps Android at 2.0), and
+    // the cycle wraps to 1x after it.
+    await fireEvent.press(screen.getByRole('button', { name: 'Speed, 1.5x' }));
+    expect(audioPlayer.setPlaybackRate).toHaveBeenLastCalledWith(2);
+    await fireEvent.press(screen.getByRole('button', { name: 'Speed, 2x' }));
+    expect(audioPlayer.setPlaybackRate).toHaveBeenLastCalledWith(1);
   });
 
   test('the choice is sticky, so a new listen inherits it', async () => {

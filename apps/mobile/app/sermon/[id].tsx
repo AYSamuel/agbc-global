@@ -199,6 +199,10 @@ export default function Sermon() {
   // action (docs/spec/03: "Sign in to save this message" vs "... to take notes").
   const [gate, setGate] = useState<'save' | 'notes' | null>(null);
   const [audioRequested, setAudioRequested] = useState(false);
+  // A finger on the seek bar (W4.9 slice 2). While it is down the screen must
+  // not scroll, or Android's scroll view takes a drag that drifts a few points
+  // up or down and the bar snaps back (seen on the tablet, 2026-09-06).
+  const [scrubbing, setScrubbing] = useState(false);
 
   const sermon = query.data ?? null;
   const isMember = useAuthStore((s) => s.status === 'member');
@@ -276,7 +280,12 @@ export default function Sermon() {
   }, [refetchAudioUrl]);
 
   return (
-    <Screen padded={false} widthClass="capped">
+    <Screen
+      padded={false}
+      widthClass="capped"
+      scrollEnabled={!scrubbing}
+      testID="sermon-screen"
+    >
       <AppHeader
         title={t('watch:nowPlaying')}
         // The frame's `.pl-top .lbl`, not `.chead`: the message's own title is the
@@ -399,6 +408,7 @@ export default function Sermon() {
                   isMember={isMember}
                   artHeight={artHeight}
                   onRemint={remintAudioUrl}
+                  onScrubbing={setScrubbing}
                 />
               )
             ) : (

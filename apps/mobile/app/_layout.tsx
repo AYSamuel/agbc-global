@@ -3,6 +3,7 @@ import i18n from '@/i18n';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ToastProvider } from '@/components/ui';
 import { TabletShell } from '@/features/shell/TabletShell';
@@ -72,34 +73,39 @@ export default function RootLayout() {
   }, []);
 
   return (
+    // GestureHandlerRootView is what lets a gesture claim a touch natively, ahead
+    // of a scroll view (W4.9 slice 2: the player's seek bar). It has to sit at
+    // the root, above every screen, or the gestures inside are inert on Android.
     // PersistQueryClientProvider hydrates the on-disk cache before mounting the tree
     // (docs/spec/04 offline state): flagged public reads paint from the last session
     // on a cold, offline launch instead of a retry card. See lib/queryPersist.
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={persistOptions}
-    >
-      <ThemeProvider>
-        <ToastProvider>
-          <SignedOutToast />
-          <PushRuntime />
-          {/* Both arrive over whatever screen the member is on, so they are
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={persistOptions}
+      >
+        <ThemeProvider>
+          <ToastProvider>
+            <SignedOutToast />
+            <PushRuntime />
+            {/* Both arrive over whatever screen the member is on, so they are
               mounted here rather than on one: a milestone can be awarded by a
               moderator approving a testimony while the app is closed, and the
               check-in that earns one is a queued write that lands whenever the
               signal comes back. The ask waits for the celebration (W2.8). */}
-          <MilestoneCelebration />
-          <NotificationAsk />
-          {/* The analytics opt-in (W2.10), last of the three overlays and deliberately
+            <MilestoneCelebration />
+            <NotificationAsk />
+            {/* The analytics opt-in (W2.10), last of the three overlays and deliberately
               lowest priority: it is due on the first Home after onboarding, which for an
               upgrading install can be the same moment as a milestone and a check-in. */}
-          <AnalyticsAsk />
-          {/* Below-minimum binaries block before any navigation (docs/spec/21 §8). */}
-          <ForcedUpdateGate>
-            <ThemedStack />
-          </ForcedUpdateGate>
-        </ToastProvider>
-      </ThemeProvider>
-    </PersistQueryClientProvider>
+            <AnalyticsAsk />
+            {/* Below-minimum binaries block before any navigation (docs/spec/21 §8). */}
+            <ForcedUpdateGate>
+              <ThemedStack />
+            </ForcedUpdateGate>
+          </ToastProvider>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

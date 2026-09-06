@@ -31,6 +31,8 @@ export interface AudioModeProps {
   isMember: boolean;
   artHeight: number;
   onRemint: () => void;
+  /** A finger is on the seek bar; the screen stops scrolling while it is. */
+  onScrubbing?: (active: boolean) => void;
 }
 
 export function AudioMode({
@@ -42,6 +44,7 @@ export function AudioMode({
   isMember,
   artHeight,
   onRemint,
+  onScrubbing,
 }: AudioModeProps) {
   const { t } = useTranslation();
   // Resolved once and handed to both consumers, so the lock screen and the screen
@@ -115,6 +118,8 @@ export function AudioMode({
           skipSec={SKIP_SEC}
           onToggle={audio.toggle}
           onSkip={audio.skip}
+          onSeek={audio.seekTo}
+          onScrubbing={onScrubbing}
           labels={{
             play: t('watch:play'),
             pause: t('watch:pause'),

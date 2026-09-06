@@ -60,6 +60,14 @@ export interface ScreenProps extends PropsWithChildren {
    * keyboard dismiss).
    */
   keyboardPersistTaps?: boolean;
+  /**
+   * Momentarily hand the vertical gesture to a child (W4.9 slice 2). The
+   * player's seek bar sets this false while a finger is on it: a native scroll
+   * view otherwise intercepts a drag that drifts a few points up or down and
+   * the child receives a terminate, whatever its own termination request said.
+   * Defaults on; `scroll={false}` screens ignore it.
+   */
+  scrollEnabled?: boolean;
   testID?: string;
 }
 
@@ -72,6 +80,7 @@ export function Screen({
   refreshing,
   onRefresh,
   keyboardPersistTaps = false,
+  scrollEnabled = true,
   testID,
 }: ScreenProps) {
   const { colors } = useTheme();
@@ -125,6 +134,7 @@ export function Screen({
     <ScrollView
       testID={testID}
       keyboardShouldPersistTaps={keyboardPersistTaps ? 'handled' : undefined}
+      scrollEnabled={scrollEnabled}
       style={{ flex: 1, backgroundColor: colors.bg }}
       contentContainerStyle={{
         paddingTop: topPadding,

@@ -3,7 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { SKIP_SEC, skipTarget } from './audio';
+import { SKIP_SEC, seekTarget, skipTarget } from './audio';
 import { configureAudioSession } from './audioSession';
 import { activateLockScreen, releaseLockScreen } from './lockScreen';
 import { shouldSave, usePlaybackStore } from './playback';
@@ -26,6 +26,8 @@ export interface SermonAudioControls {
   durationSec: number;
   toggle: () => void;
   skip: (deltaSec: number) => void;
+  /** An absolute seek in seconds, clamped to the message (W4.9 slice 2). */
+  seekTo: (sec: number) => void;
   retry: () => void;
 }
 
@@ -231,6 +233,20 @@ export function useSermonAudio({
     [player, status.currentTime, status.duration],
   );
 
+  // W4.9 slice 2: the bar is a seek control. An absolute seek is a skip without
+  // the delta: the same clamp, the same position ref (so the throttled write and
+  // the resume rule see the new place at once), the same call into the player.
+  // Nothing lock-screen related follows it: media3 reads position from the
+  // player itself.
+  const seekTo = useCallback(
+    (sec: number) => {
+      const target = seekTarget(sec, status.duration);
+      positionRef.current = target;
+      void player.seekTo(target);
+    },
+    [player, status.duration],
+  );
+
   const retry = useCallback(() => {
     setFailed(false);
     remintedRef.current = false;
@@ -245,6 +261,7 @@ export function useSermonAudio({
     durationSec: status.duration,
     toggle,
     skip,
+    seekTo,
     retry,
   };
 }
