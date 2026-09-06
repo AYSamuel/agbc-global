@@ -21,6 +21,7 @@ import {
   type SermonSummary,
 } from '@/features/watch/queries';
 import { useSearchHistoryStore } from '@/features/watch/searchHistory';
+import { isAudioOnly } from '@/features/watch/segment';
 import { SermonRow } from '@/features/watch/SermonRow';
 import { useTheme } from '@/theme';
 import { useOpenExternal } from '@/lib/openExternal';
@@ -60,23 +61,37 @@ export default function WatchSearch() {
   const active = term.trim().length >= 2;
   const results = query.data ?? [];
 
+  // Which See all arrived: the Video half, the live streams, or the Audio half
+  // (W4.9 slice 4). The route stays routable with any value or none (`04`: no
+  // dead ends); an unknown value is search mode.
+  const listMode =
+    params.list === 'live' ||
+    params.list === 'videos' ||
+    params.list === 'audio'
+      ? params.list
+      : null;
   const listKind =
-    params.list === 'live'
-      ? ('live_replay' as const)
-      : params.list === 'videos'
-        ? ('video' as const)
-        : null;
+    listMode === 'live' ? ('live_replay' as const) : ('video' as const);
   // Only fetch the list in list mode; in search mode the result is discarded.
-  const listQuery = useSermonKindQuery(listKind ?? 'video', listKind !== null);
-  const listRows = listKind === null ? [] : (listQuery.data ?? []);
+  // Audio-only messages share the `video` kind (it is the sync's default and
+  // they were never synced), so both halves read that list and split it here,
+  // the same filter the tab applies to its feed.
+  const listQuery = useSermonKindQuery(listKind, listMode !== null);
+  const listRows =
+    listMode === null
+      ? []
+      : (listQuery.data ?? []).filter((sermon) =>
+          listMode === 'audio' ? isAudioOnly(sermon) : !isAudioOnly(sermon),
+        );
 
   // Deeper history lives on the channel itself (decision 2026-07-20): the list
   // ends with a link to the matching channel tab.
   const branches = useBranchesQuery();
   const hqChannelId =
     branches.data?.find((b) => b.is_hq)?.youtube_channel_id ?? null;
+  // No channel link under the Audio list: nothing there came from YouTube.
   const channelTabUrl =
-    hqChannelId === null
+    hqChannelId === null || listMode === 'audio'
       ? null
       : `https://www.youtube.com/channel/${hqChannelId}/${
           listKind === 'live_replay' ? 'streams' : 'videos'
@@ -153,7 +168,7 @@ export default function WatchSearch() {
           ) : null}
         </View>
 
-        {!active && listKind !== null ? (
+        {!active && listMode !== null ? (
           // See-all list mode: the full section rail with its own four states, so
           // a cold-offline open shows a skeleton then a retry, never a bare header.
           <>
@@ -168,9 +183,11 @@ export default function WatchSearch() {
                 paddingBottom: spacing.sm,
               }}
             >
-              {listKind === 'video'
-                ? t('watch:allMessages')
-                : t('watch:allLiveStreams')}
+              {listMode === 'audio'
+                ? t('watch:allAudio')
+                : listMode === 'live'
+                  ? t('watch:allLiveStreams')
+                  : t('watch:allMessages')}
             </Text>
             {listQuery.data === undefined && !listQuery.isError ? (
               <SermonRowSkeletons />
@@ -182,6 +199,11 @@ export default function WatchSearch() {
                 onAction={() => {
                   void listQuery.refetch();
                 }}
+              />
+            ) : listRows.length === 0 && listMode === 'audio' ? (
+              <EmptyState
+                title={t('watch:audioEmptyTitle')}
+                body={t('watch:audioEmptyBody')}
               />
             ) : listRows.length === 0 ? (
               <EmptyState

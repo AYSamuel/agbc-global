@@ -216,6 +216,12 @@
   .rrow{display:flex;gap:12px;align-items:center;padding:10px 16px}
   .rthumb{width:120px;height:72px;border-radius:12px;background:linear-gradient(135deg,#14213d,#2f6fed);flex:none;position:relative;overflow:hidden}
   .rthumb .play{position:absolute;top:calc(50% - 14px);left:calc(50% - 14px);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center}
+  /* W4.9 slice 4 (composed 2026-09-06): the LISTEN glyphs. A message that was never on
+     YouTube has nothing to play, only something to hear, so its hero and its row say so
+     with the waveform the player and the now-playing bar already use, in the same disc
+     the play glyph sits in. Same size and position as .playc and .rthumb .play. */
+  .mediahero .wavec{position:absolute;top:calc(50% - 30px);left:calc(50% - 30px);width:60px;height:60px;border-radius:50%;background:var(--gold);display:grid;place-items:center;z-index:2;color:#14213d}
+  .rthumb .wave{position:absolute;top:calc(50% - 14px);left:calc(50% - 14px);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center;color:#14213d}
   .rthumb .play::after{content:"";border-left:8px solid #14213d;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px}
   .rrow .t{font-size:14.5px;font-weight:700;line-height:1.25}
   .rrow .m{font-size:12px;color:var(--muted);margin-top:4px}
@@ -2352,12 +2358,18 @@
 
     <!-- WATCH -->
     <div class="device">
-      <p class="name"><b>Watch</b> · guest</p>
+      <p class="name"><b>Watch</b> · guest · Video segment</p>
+      <!-- W4.9 slice 4 (composed 2026-09-06): the Video / Audio segment under the title, the
+           .seg control Family already uses. Chosen with Ayo over a third rail and over a badge
+           inside Recent messages: an audio-only message had no home here (the hero while it
+           was newest, then nothing). Video is the default and what Home's "Watch" button
+           lands on; the two frames beside this one are the Audio half and its empty state. -->
       <div class="phone">
         <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
         <div class="screen">
           <div class="stitle"><h1>Watch</h1><button class="ic-btn" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></button></div>
-          <div class="mediahero">
+          <div class="seg"><button class="on">Video</button><button>Audio</button></div>
+          <div class="mediahero" style="margin-top:12px">
             <div class="bg"></div>
             <!-- The red LIVE badge and a "342 watching" meta line stood here until
                  2026-08-15 and went with ADR 0021: the app carries no live state, so the
@@ -2370,6 +2382,70 @@
           <div class="rrow"><div class="rthumb"><span class="play"></span></div><div><div class="t">Rooted &amp; Rising</div><div class="m">Pastor AY Samuel &middot; 41 min</div></div></div>
           <div class="rrow"><div class="rthumb"><span class="play"></span></div><div><div class="t">The Father&#39;s Heart</div><div class="m">Pastor Blossom Anukposi &middot; 35 min</div></div></div>
           <div style="height:14px"></div>
+        </div>
+        <div class="tabbar">
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+          <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>WATCH</b> &middot; Audio &middot; messages recorded, never on YouTube</p>
+      <!-- W4.9 slice 4 (composed 2026-09-06). The Audio segment lists the messages that exist
+           only as audio (`youtube_id` null, `audio_path` set), newest first: the newest is the
+           hero, the rest one list with "See all", the shape the Video half already has. The
+           hero and each row wear the LISTEN glyph rather than play, because there is no video
+           to play; the picture is the message's own artwork when it has one and the branded
+           gradient when it does not (artwork.ts decides, as everywhere). No "via YouTube" line
+           under this segment: nothing here came from YouTube, the same rule as the audio-only
+           player (attribution follows the title). Search is unchanged in shape. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="stitle"><h1>Watch</h1><button class="ic-btn" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></button></div>
+          <div class="seg"><button>Video</button><button class="on">Audio</button></div>
+          <div class="mediahero" style="margin-top:12px">
+            <div class="bg"></div>
+            <span class="wavec"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></span>
+            <div class="in"><span class="goldeye">Latest message</span><h2>Multiple streams of income</h2><div class="m">Pastor Olayinka Ademiluka &middot; 58 min</div></div>
+          </div>
+          <div class="sectitle">Recent messages <a>See all</a></div>
+          <div class="rrow"><div class="rthumb" style="background:linear-gradient(135deg,#22375f,#0e1420)"><span class="wave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></span></div><div><div class="t">The Table He Sets</div><div class="m">Pastor Olayinka Ademiluka &middot; 41 min</div></div></div>
+          <div class="rrow"><div class="rthumb" style="background:linear-gradient(135deg,#b98600,#5a3d00)"><span class="wave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></span></div><div><div class="t">Grace That Keeps</div><div class="m">Pastor Esther Olayinka &middot; 36 min</div></div></div>
+          <div class="rrow"><div class="rthumb" style="background:linear-gradient(135deg,#22375f,#0e1420)"><span class="wave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></span></div><div><div class="t">Faith for the Week</div><div class="m">Pastor AY Samuel &middot; 29 min</div></div></div>
+          <div style="height:14px"></div>
+        </div>
+        <div class="tabbar">
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+          <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>WATCH</b> &middot; Audio &middot; nothing recorded yet</p>
+      <!-- W4.9 slice 4 (composed 2026-09-06). A surface is a state: every branch opens this
+           segment before its first audio-only message exists, which today is every branch
+           but one. Grace-framed and without a dead button (there is nothing to do here yet;
+           the Video half is one tap up, and the copy says so rather than drawing a button
+           to it). The segment stays: the member chose it and can leave it. -->
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="stitle"><h1>Watch</h1><button class="ic-btn" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></button></div>
+          <div class="seg"><button>Video</button><button class="on">Audio</button></div>
+          <div class="empty">
+            <div class="ei"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3z"/><path d="M21 14h-3a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h3z"/><path d="M3 14v-2a9 9 0 0 1 18 0v2"/></svg></div>
+            <h3>Nothing to listen to yet</h3>
+            <p>Messages recorded as audio will be waiting here. Every message is still there under Video.</p>
+          </div>
         </div>
         <div class="tabbar">
           <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
@@ -4784,7 +4860,10 @@
             <div class="twopane">
               <div class="pane-list">
                 <div class="thead"><h1>Messages</h1></div>
-                <div class="seg" style="margin-top:0"><button class="on">Latest</button><button>Series</button><button>Live</button></div>
+                <!-- W4.9 slice 4 (composed 2026-09-06): the same Video / Audio segment as the phone.
+                     The Latest / Series / Live control drawn here since W4.7 was never built
+                     (WatchListPane has no segment), so it goes rather than gaining a fourth half. -->
+                <div class="seg" style="margin-top:0"><button class="on">Video</button><button>Audio</button></div>
                 <div class="rrow" style="background:rgba(47,111,237,.07);border-radius:12px;margin:8px 12px"><span class="rthumb"><span class="play"></span></span><div><div class="t">The Grace That Finds You</div><div class="m">Pastor Olayinka &middot; 42 min</div></div></div>
                 <div class="rrow"><span class="rthumb"><span class="play"></span></span><div><div class="t">Rooted and Unshakeable</div><div class="m">Pastor Grace &middot; 38 min</div></div></div>
                 <div class="rrow"><span class="rthumb"><span class="play"></span></span><div><div class="t">When Heaven Feels Silent</div><div class="m">Pastor Sam &middot; 45 min</div></div></div>

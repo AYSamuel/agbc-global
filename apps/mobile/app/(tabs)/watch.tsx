@@ -5,9 +5,11 @@ import { Pressable, Text, View } from 'react-native';
 import { fontFamily, radius, spacing } from '@agbc/shared/theme';
 
 import {
+  AudioIcon,
   EmptyState,
   Screen,
   SearchIcon,
+  SegmentedControl,
   Skeleton,
   WatchTabIcon,
   useManualRefresh,
@@ -16,6 +18,7 @@ import { sermonArtworkUrl } from '@/features/watch/artwork';
 import { durationMinutes, joinMeta } from '@/features/watch/format';
 import { MediaHero } from '@/features/watch/MediaHero';
 import { useSermonsQuery, type SermonSummary } from '@/features/watch/queries';
+import { splitBySegment, useWatchSegmentStore } from '@/features/watch/segment';
 import { SermonRow } from '@/features/watch/SermonRow';
 import { StubIcon } from '@/features/shell/StubIcon';
 import { useTheme } from '@/theme';
@@ -94,18 +97,31 @@ export default function Watch() {
     router.push({ pathname: '/sermon/[id]', params: { id: sermon.id } });
   };
 
+  // Video or Audio (W4.9 slice 4): one feed, split three ways. `live_replay` is
+  // the channel TAB those were synced from, not a live state: they are recorded
+  // messages, and that rail survives the LIVE cut untouched (ADR 0021). A
+  // message that exists only as audio is in neither channel tab, and it is the
+  // whole of the Audio half. The chosen half lives for the session in the
+  // store, so leaving the tab and coming back keeps it.
+  const segment = useWatchSegmentStore((s) => s.segment);
+  const setSegment = useWatchSegmentStore((s) => s.setSegment);
   const sermons = query.data ?? [];
-  const videos = sermons.filter((s) => s.kind === 'video');
-  // `live_replay` is the channel TAB these were synced from, not a live state: they are
-  // recorded messages, and this rail survives the LIVE cut untouched (ADR 0021).
-  const liveReplays = sermons.filter((s) => s.kind === 'live_replay');
+  const { videos, liveReplays, audio } = splitBySegment(sermons);
+  const shelf = segment === 'audio' ? audio : videos;
   // Explicit length check: without noUncheckedIndexedAccess, [0] types non-null.
-  const featured = videos.length > 0 ? videos[0] : null;
-  // The hero is simply the newest message now. It used to be led by a running broadcast
-  // when one was detected; the app carries no live state at all any more.
-  const hero = featured;
-  const rail = videos.filter((s) => s.id !== hero?.id).slice(0, SECTION_LIMIT);
-  const liveRail = liveReplays.slice(0, SECTION_LIMIT);
+  // The hero is simply the newest message of the half. It used to be led by a
+  // running broadcast when one was detected; the app carries no live state at
+  // all any more.
+  const hero = shelf.length > 0 ? shelf[0] : null;
+  const rail = shelf.filter((s) => s.id !== hero?.id).slice(0, SECTION_LIMIT);
+  const liveRail =
+    segment === 'audio' ? [] : liveReplays.slice(0, SECTION_LIMIT);
+  // The loaded feed has nothing for this half. For Video that is the tab's own
+  // "on their way"; for Audio it is `WATCH · Audio · nothing recorded yet`,
+  // grace-framed and without a dead button (the Video half is one tap up, and
+  // the copy says so).
+  const halfEmpty =
+    query.data !== undefined && !query.isError && shelf.length === 0;
 
   return (
     <Screen
@@ -157,6 +173,19 @@ export default function Watch() {
       </View>
 
       <View style={{ paddingHorizontal: spacing.lg }}>
+        {/* Mockup .seg under the title (frame `Watch · guest · Video segment`):
+            the same control Family draws, 12 below the title bar. */}
+        <View style={{ marginTop: spacing.md }}>
+          <SegmentedControl
+            accessibilityLabel={t('watch:segmentLabel')}
+            value={segment}
+            onChange={setSegment}
+            segments={[
+              { key: 'video', label: t('watch:video') },
+              { key: 'audio', label: t('watch:audio') },
+            ]}
+          />
+        </View>
         {query.data === undefined && !query.isError ? (
           // STATE loading frame: hero skeleton + three row skeletons.
           <View style={{ gap: spacing.lg, marginTop: spacing.lg }}>
@@ -180,7 +209,13 @@ export default function Watch() {
               void query.refetch();
             }}
           />
-        ) : sermons.length === 0 ? (
+        ) : halfEmpty && segment === 'audio' ? (
+          <EmptyState
+            title={t('watch:audioEmptyTitle')}
+            body={t('watch:audioEmptyBody')}
+            icon={<StubIcon Icon={AudioIcon} />}
+          />
+        ) : halfEmpty ? (
           <EmptyState
             title={t('watch:emptyTitle')}
             body={t('watch:emptyBody')}
@@ -202,6 +237,7 @@ export default function Watch() {
                         }),
                   ])}
                   artworkUrl={sermonArtworkUrl(hero)}
+                  glyph={segment === 'audio' ? 'listen' : 'play'}
                   onPress={() => {
                     openSermon(hero);
                   }}
@@ -218,7 +254,9 @@ export default function Watch() {
                   onSeeAll={() => {
                     router.push({
                       pathname: '/watch-search',
-                      params: { list: 'videos' },
+                      params: {
+                        list: segment === 'audio' ? 'audio' : 'videos',
+                      },
                     });
                   }}
                 />
@@ -258,18 +296,22 @@ export default function Watch() {
               </>
             ) : null}
 
-            {/* YouTube attribution on the rails (ToS box, docs/spec/08). */}
-            <Text
-              style={{
-                fontFamily: fontFamily.body.regular,
-                fontSize: 11.5,
-                color: colors.muted,
-                textAlign: 'center',
-                marginTop: spacing.x2l,
-              }}
-            >
-              {t('watch:viaYoutube')}
-            </Text>
+            {/* YouTube attribution on the rails (ToS box, docs/spec/08). Not
+                under the Audio half: nothing there came from YouTube, the same
+                rule as the audio-only player (attribution follows the title). */}
+            {segment === 'audio' ? null : (
+              <Text
+                style={{
+                  fontFamily: fontFamily.body.regular,
+                  fontSize: 11.5,
+                  color: colors.muted,
+                  textAlign: 'center',
+                  marginTop: spacing.x2l,
+                }}
+              >
+                {t('watch:viaYoutube')}
+              </Text>
+            )}
           </>
         )}
       </View>

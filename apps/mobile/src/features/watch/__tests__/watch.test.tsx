@@ -7,6 +7,7 @@ import { ThemeScope } from '@/theme';
 import { durationMinutes, formatPublishedDate, joinMeta } from '../format';
 import { NowPlayingProvider } from '../nowPlaying';
 import { usePlaybackStore } from '../playback';
+import { useWatchSegmentStore } from '../segment';
 import type { SermonSummary } from '../queries';
 import { useSearchHistoryStore } from '../searchHistory';
 
@@ -191,6 +192,8 @@ beforeEach(() => {
   // Deterministic empty-input state (zustand persists across tests in a file).
   useSearchHistoryStore.setState({ terms: [] });
   usePlaybackStore.setState({ positions: {} });
+  // The segment lives for the session (W4.9 slice 4): every test starts on Video.
+  useWatchSegmentStore.setState({ segment: 'video' });
 });
 
 // `resolveLiveSermon` and its stale-bound tests lived here until 2026-08-15 and went
@@ -327,6 +330,113 @@ describe('WATCH tab four states (docs/spec/04)', () => {
   });
 });
 
+describe('WATCH Video / Audio segment (W4.9 slice 4)', () => {
+  const feed = () => [
+    sermon({
+      id: 'a-new',
+      title: 'Multiple streams of income',
+      youtube_id: null,
+      audio_path: 'new.mp3',
+      published_at: '2026-09-04T10:00:00Z',
+    }),
+    sermon({ id: 'v1', title: 'Video One' }),
+    sermon({
+      id: 'a-old',
+      title: 'The Table He Sets',
+      youtube_id: null,
+      audio_path: 'old.mp3',
+      published_at: '2026-08-01T10:00:00Z',
+    }),
+    sermon({ id: 'l1', title: 'Stream One', kind: 'live_replay' }),
+  ];
+
+  test('Video is the default, and an audio-only message is not on it', async () => {
+    mockSermons.mockReturnValue({
+      data: feed(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Watch />);
+    // The newest VIDEO leads, not the newest row: the audio-only message used
+    // to take the hero through its default `video` kind.
+    expect(screen.getByRole('button', { name: 'Video One' })).toBeOnTheScreen();
+    expect(
+      screen.getByTestId('hero-glyph-play', { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.queryByRole('button', { name: /Multiple streams of income/ }),
+    ).toBeNull();
+    expect(screen.getByText('Videos play via YouTube')).toBeOnTheScreen();
+  });
+
+  test('the Audio half: newest audio-only message as hero, the rest listed, See all to the audio list, no YouTube line', async () => {
+    mockSermons.mockReturnValue({
+      data: feed(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Watch />);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Multiple streams of income' }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByTestId('hero-glyph-listen', { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole('button', { name: /The Table He Sets/ }),
+    ).toBeOnTheScreen();
+    expect(screen.getByTestId('row-glyph-listen')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: /Video One/ })).toBeNull();
+    expect(screen.queryByText('Recent live streams')).toBeNull();
+    expect(screen.queryByText('Videos play via YouTube')).toBeNull();
+
+    await fireEvent.press(
+      screen.getByRole('link', { name: 'See all: Recent messages' }),
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/watch-search',
+      params: { list: 'audio' },
+    });
+  });
+
+  test('the Audio half with nothing recorded is grace-framed, with no button', async () => {
+    mockSermons.mockReturnValue({
+      data: [sermon({ id: 'v1', title: 'Video One' })],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Watch />);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
+    expect(screen.getByText('Nothing to listen to yet')).toBeOnTheScreen();
+    expect(
+      screen.getByText(/Every message is still there under Video/),
+    ).toBeOnTheScreen();
+    // No dead button: the only buttons left are the search control and the tabs.
+    expect(screen.queryByRole('button', { name: /Browse/ })).toBeNull();
+    // The segment stays, so the member can leave.
+    expect(screen.getByRole('tab', { name: 'Video' })).toBeOnTheScreen();
+  });
+
+  test('the chosen half survives leaving the tab and coming back', async () => {
+    mockSermons.mockReturnValue({
+      data: feed(),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Watch />);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Audio' }));
+    await screen.unmount();
+
+    await renderScreen(<Watch />);
+    expect(
+      screen.getByTestId('hero-glyph-listen', { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+    expect(useWatchSegmentStore.getState().segment).toBe('audio');
+  });
+});
+
 describe('WATCH-SEARCH', () => {
   test('short input shows the hint, not results', async () => {
     mockSearch.mockReturnValue({
@@ -414,6 +524,74 @@ describe('WATCH-SEARCH', () => {
     });
     await renderScreen(<WatchSearch />);
     expect(screen.getByText('Messages are on their way')).toBeOnTheScreen();
+  });
+
+  test('see-all audio list: only audio-only rows, its own header, no channel link (W4.9 slice 4)', async () => {
+    mockParams = { list: 'audio' };
+    mockKindList.mockReturnValue({
+      data: [
+        sermon({ id: 'v1', title: 'Video One' }),
+        sermon({
+          id: 'a1',
+          title: 'Multiple streams of income',
+          youtube_id: null,
+          audio_path: 'one.mp3',
+        }),
+      ],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<WatchSearch />);
+    expect(screen.getByText('All audio messages')).toBeOnTheScreen();
+    expect(
+      screen.getByRole('button', { name: /Multiple streams of income/ }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: /Video One/ })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'See more on YouTube' }),
+    ).toBeNull();
+  });
+
+  test('see-all videos list leaves audio-only rows to the audio list', async () => {
+    mockParams = { list: 'videos' };
+    mockKindList.mockReturnValue({
+      data: [
+        sermon({ id: 'v1', title: 'Video One' }),
+        sermon({
+          id: 'a1',
+          title: 'Multiple streams of income',
+          youtube_id: null,
+          audio_path: 'one.mp3',
+        }),
+      ],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<WatchSearch />);
+    expect(screen.getByRole('button', { name: /Video One/ })).toBeOnTheScreen();
+    expect(
+      screen.queryByRole('button', { name: /Multiple streams of income/ }),
+    ).toBeNull();
+  });
+
+  test('an audio-only search result wears the listen glyph and its duration', async () => {
+    mockParams = { q: 'income' };
+    mockSearch.mockReturnValue({
+      data: [
+        sermon({
+          id: 'a1',
+          title: 'Multiple streams of income',
+          youtube_id: null,
+          audio_path: 'one.mp3',
+          duration_sec: 3480,
+        }),
+      ],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<WatchSearch />);
+    expect(screen.getByTestId('row-glyph-listen')).toBeOnTheScreen();
+    expect(screen.getByText(/58 min/)).toBeOnTheScreen();
   });
 
   test('no results offers a clear path back', async () => {

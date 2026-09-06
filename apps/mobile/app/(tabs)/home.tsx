@@ -51,6 +51,7 @@ import { VerseCard } from '@/features/home/VerseCard';
 import { resolveBranchList } from '@/features/onboarding/branchList';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
 import { useUnreadCount } from '@/features/notifications/nc';
+import { landOnVideo } from '@/features/watch/segment';
 import { ClosedBranchNote } from '@/features/rehome/ClosedBranchNote';
 import { useRehomePromptStore } from '@/features/rehome/prompted';
 import { useBranchClosed, useBranchHasClosed } from '@/features/rehome/queries';
@@ -567,6 +568,7 @@ export default function Home() {
                   }
                 }}
                 onWatchLive={() => {
+                  landOnVideo();
                   router.push('/watch');
                 }}
                 imHere={
@@ -696,6 +698,7 @@ export default function Home() {
                   label={t('home:latestMessage')}
                   actionLabel={t('watch:seeAll')}
                   onAction={() => {
+                    landOnVideo();
                     router.push('/watch');
                   }}
                 />
@@ -707,6 +710,7 @@ export default function Home() {
                   label={t('home:latestMessage')}
                   actionLabel={t('watch:seeAll')}
                   onAction={() => {
+                    landOnVideo();
                     router.push('/watch');
                   }}
                 />

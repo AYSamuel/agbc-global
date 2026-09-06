@@ -5,12 +5,13 @@ import { Pressable, Text, View } from 'react-native';
 
 import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
 
-import { GradientFill } from '@/components/ui';
+import { AudioIcon, GradientFill } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 import { sermonArtworkUrl } from './artwork';
 import { durationMinutes, joinMeta } from './format';
 import type { SermonSummary } from './queries';
+import { isAudioOnly } from './segment';
 
 // Mockup .rrow: 120x72 thumbnail (>= the 120x70 YouTube ToS floor, docs/spec/08)
 // with a play chip, title at 14.5/700, muted meta line. 'featured' is the
@@ -52,6 +53,10 @@ export function SermonRow({
   // the gradient below (W3.1 slice 5; the precedence lives in `artwork.ts`).
   const artwork = sermonArtworkUrl(sermon);
   const minutes = durationMinutes(sermon.duration_sec);
+  // A message that exists only as audio wears the listen glyph, wherever the
+  // row is drawn (the Audio segment, search, MY-LIST): there is nothing to
+  // play (W4.9 slice 4, frame `WATCH · Audio`, `.rthumb .wave`).
+  const listen = isAudioOnly(sermon);
   const meta = gone
     ? t('watch:noLongerAvailable')
     : joinMeta([
@@ -101,6 +106,7 @@ export function SermonRow({
         {/* No play chip on a gone row: there is nothing left to play. */}
         {!gone ? (
           <View
+            testID={listen ? 'row-glyph-listen' : 'row-glyph-play'}
             style={{
               width: 28,
               height: 28,
@@ -110,18 +116,22 @@ export function SermonRow({
               justifyContent: 'center',
             }}
           >
-            {/* Mockup .play: a CSS triangle; borders draw it identically in RN. */}
-            <View
-              style={{
-                marginLeft: 2,
-                borderLeftWidth: 8,
-                borderTopWidth: 5,
-                borderBottomWidth: 5,
-                borderLeftColor: palette.navy,
-                borderTopColor: 'transparent',
-                borderBottomColor: 'transparent',
-              }}
-            />
+            {listen ? (
+              <AudioIcon size={14} color={palette.navy} strokeWidth={2.2} />
+            ) : (
+              /* Mockup .play: a CSS triangle; borders draw it identically in RN. */
+              <View
+                style={{
+                  marginLeft: 2,
+                  borderLeftWidth: 8,
+                  borderTopWidth: 5,
+                  borderBottomWidth: 5,
+                  borderLeftColor: palette.navy,
+                  borderTopColor: 'transparent',
+                  borderBottomColor: 'transparent',
+                }}
+              />
+            )}
           </View>
         ) : null}
       </View>

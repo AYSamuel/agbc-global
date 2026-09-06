@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { fontFamily, onInk, palette, typeScale } from '@agbc/shared/theme';
 
-import { GradientFill } from '@/components/ui';
+import { AudioIcon, GradientFill } from '@/components/ui';
 
 // Mockup .mediahero: 20-radius ink card, gradient + heavy bottom scrim over the
 // picture, optional LIVE badge, gold play circle, eyebrow + title + meta.
@@ -20,6 +20,13 @@ export interface MediaHeroProps {
   artworkUrl: string | null;
   onPress: () => void;
   accessibilityLabel: string;
+  /**
+   * The disc's glyph: `play` for a video, `listen` (the waveform the player and
+   * the now-playing bar wear) for a message that exists only as audio, because
+   * there is nothing to play, only something to hear (W4.9 slice 4, frame
+   * `WATCH · Audio`, `.mediahero .wavec`).
+   */
+  glyph?: 'play' | 'listen';
 }
 
 export function MediaHero({
@@ -29,6 +36,7 @@ export function MediaHero({
   artworkUrl,
   onPress,
   accessibilityLabel,
+  glyph = 'play',
 }: MediaHeroProps) {
   return (
     <Pressable
@@ -69,6 +77,7 @@ export function MediaHero({
       {/* The red LIVE badge lived here until 2026-08-15 and went with ADR 0021: the app
           carries no live state, so there is nothing for it to announce. */}
       <View
+        testID={`hero-glyph-${glyph}`}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         style={{
@@ -84,17 +93,21 @@ export function MediaHero({
           justifyContent: 'center',
         }}
       >
-        <View
-          style={{
-            marginLeft: 4,
-            borderLeftWidth: 16,
-            borderTopWidth: 10,
-            borderBottomWidth: 10,
-            borderLeftColor: palette.navy,
-            borderTopColor: 'transparent',
-            borderBottomColor: 'transparent',
-          }}
-        />
+        {glyph === 'listen' ? (
+          <AudioIcon size={26} color={palette.navy} strokeWidth={2.2} />
+        ) : (
+          <View
+            style={{
+              marginLeft: 4,
+              borderLeftWidth: 16,
+              borderTopWidth: 10,
+              borderBottomWidth: 10,
+              borderLeftColor: palette.navy,
+              borderTopColor: 'transparent',
+              borderBottomColor: 'transparent',
+            }}
+          />
+        )}
       </View>
       <View style={{ paddingHorizontal: 18, paddingVertical: 16 }}>
         <Text
