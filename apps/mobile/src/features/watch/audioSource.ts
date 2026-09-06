@@ -12,6 +12,20 @@ import { AUDIO_URL_TTL_SEC } from './audio';
 export const SERMON_AUDIO_BUCKET = 'sermon-audio';
 
 /**
+ * Mint one playback URL. The screen's query wraps this; the now-playing
+ * provider calls it directly for the silent re-mint after a playback error
+ * (W4.9 slice 3), because by then the screen that minted the first one may be
+ * long unmounted and the listening must not depend on it.
+ */
+export async function mintSermonAudioUrl(audioPath: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(SERMON_AUDIO_BUCKET)
+    .createSignedUrl(audioPath, AUDIO_URL_TTL_SEC);
+  if (error) throw new Error(error.message);
+  return data.signedUrl;
+}
+
+/**
  * Deliberately NOT tagged with `PERSIST_META`. Every other read on this screen is
  * mirrored to disk so a cold offline launch still paints, but a signed URL is a
  * bearer credential with an expiry: writing it into AsyncStorage would leave a
@@ -25,13 +39,7 @@ export function useSermonAudioUrlQuery(
 ) {
   return useQuery({
     queryKey: ['sermonAudioUrl', sermonId] as const,
-    queryFn: async (): Promise<string> => {
-      const { data, error } = await supabase.storage
-        .from(SERMON_AUDIO_BUCKET)
-        .createSignedUrl(audioPath ?? '', AUDIO_URL_TTL_SEC);
-      if (error) throw new Error(error.message);
-      return data.signedUrl;
-    },
+    queryFn: () => mintSermonAudioUrl(audioPath ?? ''),
     enabled: audioPath !== null,
     // An hour short of the TTL, so a long listen re-mints before the URL it is
     // holding can die rather than after.

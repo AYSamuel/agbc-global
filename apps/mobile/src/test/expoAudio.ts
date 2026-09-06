@@ -67,10 +67,40 @@ export const audioPlayer = {
     return Promise.resolve();
   }),
   setPlaybackRate: jest.fn(refuseIfReleased),
-  setActiveForLockScreen: jest.fn(refuseIfReleased),
+  // Typed with its arguments so a test can read the ORDER of activations and
+  // stand-downs (`true`, `false`) off `mock.calls`.
+  setActiveForLockScreen: jest.fn(
+    (_active: boolean, _metadata?: unknown, _options?: unknown): void => {
+      refuseIfReleased();
+    },
+  ),
+  updateLockScreenMetadata: jest.fn(refuseIfReleased),
   clearLockScreenControls: jest.fn(refuseIfReleased),
-  remove: jest.fn(),
+  // `remove()` is how a player created with `createAudioPlayer` is released
+  // (W4.9 slice 3): after it, every call throws, exactly as after the hook's
+  // own release. Every player shares these spies, so a test sees one stream
+  // of calls: the handoff's ORDER (stand down, remove, then activate the next)
+  // is what they record.
+  remove: jest.fn(() => {
+    released = true;
+  }),
 };
+
+/** How many players `createAudioPlayer` has minted since the last reset. */
+export let createdPlayers = 0;
+
+export function createAudioPlayer(): typeof audioPlayer {
+  released = false;
+  createdPlayers += 1;
+  // A DISTINCT object per player, sharing the spies through its prototype.
+  // The provider keys its handoff effects on the player's identity, exactly
+  // as the real module hands back a new object each time; a fake that
+  // returned the same object re-armed would keep those effects from running
+  // and hide a missing re-activation.
+  const player = Object.create(audioPlayer) as typeof audioPlayer;
+  player.id = `fake-player-${String(createdPlayers)}`;
+  return player;
+}
 
 export const setAudioModeAsync = jest.fn((): Promise<void> =>
   Promise.resolve(),
@@ -90,6 +120,7 @@ export function setAudioStatus(next: Partial<FakeAudioStatus>): void {
 export function resetAudioMock(): void {
   status = { ...INITIAL };
   released = false;
+  createdPlayers = 0;
   audioPlayer.currentTime = 0;
   audioPlayer.id = 'fake-player';
   [
@@ -98,6 +129,7 @@ export function resetAudioMock(): void {
     audioPlayer.seekTo,
     audioPlayer.setPlaybackRate,
     audioPlayer.setActiveForLockScreen,
+    audioPlayer.updateLockScreenMetadata,
     audioPlayer.clearLockScreenControls,
     audioPlayer.remove,
     setAudioModeAsync,

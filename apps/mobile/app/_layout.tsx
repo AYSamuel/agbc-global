@@ -1,11 +1,15 @@
 import i18n from '@/i18n';
 
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Stack } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ToastProvider } from '@/components/ui';
+import { NowPlayingBar } from '@/features/watch/NowPlayingBar';
+import { NowPlayingProvider } from '@/features/watch/nowPlaying';
+import { useLayout } from '@/lib/layout';
 import { TabletShell } from '@/features/shell/TabletShell';
 import { AnalyticsAsk } from '@/features/analytics/AnalyticsAsk';
 import { prefetchHome } from '@/features/home/queries';
@@ -40,17 +44,27 @@ function PushRuntime() {
 
 function ThemedStack() {
   const { colors } = useTheme();
+  const { isTablet } = useLayout();
+  const segments = useSegments() as string[];
+  // A phone's STACK screens have no tab bar to dock the now-playing bar above,
+  // so it docks at the bottom edge here, under the whole stack (frame
+  // `NOW-PLAYING-BAR · over a screen without tabs`). Tab screens draw it in the
+  // tab bar host and a tablet in the shell, so this host stands aside for both.
+  const hostsBar = !isTablet && segments[0] !== '(tabs)';
   return (
     // The rail is a SIBLING of the whole stack on a tablet, so it survives a
     // pushed route the way every tablet frame draws it (W4.7 slice 4). On a
     // phone TabletShell renders its children and nothing else.
     <TabletShell>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.bg },
-        }}
-      />
+      <View style={{ flex: 1 }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.bg },
+          }}
+        />
+        {hostsBar ? <NowPlayingBar where="bottom-edge" /> : null}
+      </View>
     </TabletShell>
   );
 }
@@ -101,7 +115,13 @@ export default function RootLayout() {
             <AnalyticsAsk />
             {/* Below-minimum binaries block before any navigation (docs/spec/21 §8). */}
             <ForcedUpdateGate>
-              <ThemedStack />
+              {/* One player for the app's life, above every screen (W4.9 slice 3):
+                  inside the gate, because a blocked binary has no business
+                  playing anything, and inside the providers it needs (auth for
+                  sign-out, the query client for the re-mint). */}
+              <NowPlayingProvider>
+                <ThemedStack />
+              </NowPlayingProvider>
             </ForcedUpdateGate>
           </ToastProvider>
         </ThemeProvider>

@@ -1,6 +1,8 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 
+import { NowPlayingBar } from '@/features/watch/NowPlayingBar';
 import {
   FamilyTabIcon,
   GiveTabIcon,
@@ -75,10 +77,17 @@ function AppTabBar({ state, navigation }: TabBarSlice) {
   // `05` (2026-07-12): above ~600dp the bottom bar becomes a rail, and the rail
   // is drawn by `TabletShell` OUTSIDE this navigator so it survives a pushed
   // route. A bar slot cannot do that, because it belongs to the five roots.
-  // Here that leaves nothing to draw.
+  // Here that leaves nothing to draw; the shell draws the now-playing bar too.
   if (isTablet) return null;
 
-  return <TabBar items={items} activeKey={activeKey} onPress={onPress} />;
+  // The now-playing bar sits BETWEEN the content and the tabs (frame
+  // `NOW-PLAYING-BAR · over Home`), so the tabs never move (W4.9 slice 3).
+  return (
+    <View>
+      <NowPlayingBar where="above-tabs" />
+      <TabBar items={items} activeKey={activeKey} onPress={onPress} />
+    </View>
+  );
 }
 
 export default function TabsLayout() {

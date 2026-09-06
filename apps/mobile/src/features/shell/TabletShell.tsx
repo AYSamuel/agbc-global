@@ -19,6 +19,7 @@ import {
   type TabItem,
 } from '@/components/ui';
 import { FamilyListPane } from '@/features/family/FamilyListPane';
+import { NowPlayingBar } from '@/features/watch/NowPlayingBar';
 import { WatchListPane } from '@/features/watch/WatchListPane';
 import { useLayout } from '@/lib/layout';
 import { useTheme } from '@/theme';
@@ -199,6 +200,10 @@ export function TabletShell({ children }: PropsWithChildren) {
           />
           <View style={{ flex: 1, minWidth: 0 }}>
             {twoPane ? <TwoPane list={paneFor} detail={children} /> : children}
+            {/* The now-playing bar spans the content column, list and detail
+                together, never under the rail (frame `WATCH · tablet landscape`
+                with the bar, W4.9 slice 3). */}
+            <NowPlayingBar where="bottom-edge" />
           </View>
         </View>
       </SafeAreaInsetsContext.Provider>

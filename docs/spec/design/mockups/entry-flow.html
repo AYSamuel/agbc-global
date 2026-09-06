@@ -185,6 +185,19 @@
   .tabbar button{border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font);font-size:10.5px;font-weight:700}
   .tabbar button.on{color:var(--blue)}
   .tabbar svg{width:22px;height:22px}
+  /* NOW-PLAYING-BAR (W4.9 slice 3, composed 2026-09-06): the way back to the player while browsing.
+     Docked above the tab bar, above the home indicator on a screen without one, across the content
+     column on a tablet. Card surface and hairline like the tab bar it sits on; the 2px gold line on
+     its top edge is the progress, the same gold as the scrub bar's fill. */
+  .npbar{flex:none;position:relative;display:flex;align-items:center;gap:12px;height:56px;padding:0 10px 0 14px;background:var(--card);border-top:1px solid var(--border)}
+  .npbar .npprog{position:absolute;left:0;top:-1px;height:2px;background:var(--gold)}
+  .npbar .npart{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#22375f,#0e1420);flex:none;display:grid;place-items:center;color:var(--gold)}
+  .npbar .npt{flex:1;min-width:0}
+  .npbar .t{font-size:13.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .npbar .m{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .npbar .nppp{width:40px;height:40px;border-radius:50%;background:var(--gold);color:#14213d;border:none;display:grid;place-items:center;cursor:pointer;flex:none}
+  .npbar .npx{width:40px;height:40px;border:none;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none}
+  .npbar.nofoot{height:80px;padding-bottom:24px}
 
   .stitle{display:flex;align-items:center;justify-content:space-between;padding:52px 20px 10px}
   .stitle h1{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.02em;margin:0}
@@ -1877,6 +1890,100 @@
       </div>
     </div>
 
+
+      <div class="device">
+        <!-- W4.9 slice 3. Leaving the player used to stop the listening: the player was the
+             sermon screen's own, paused on blur. Now one player lives above every screen and
+             this bar is its handle. Everything above the bar is HOME as already approved; the
+             only new element is the bar, and it sits BETWEEN the content and the tabs so the
+             tabs never move. Title and speaker truncate on one line each at any text size;
+             the bar never grows. -->
+        <p class="name"><b>NOW-PLAYING-BAR</b> &middot; over Home, docked above the tabs &middot; listening while browsing</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg><span class="dot"></span></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Saved &#10003;</span></div>
+            </div>
+            <div class="sectitle">From the family <a>See all</a></div>
+            <div class="testi">
+              <div class="who"><span class="av">S</span><div><div class="nm">Sarah O.</div><div class="mt">AGBC Glasgow &middot; 2h</div></div></div>
+              <div class="body">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+              <div class="acts"><span class="glory on"><span class="st">&#10022;</span> Glory to God &middot; 15</span><span class="shr">Share</span></div>
+            </div>
+
+            <div class="sectitle">Latest message <a>See all</a></div>
+            <div class="sermon">
+              <div class="thumb"><span class="play"></span></div>
+              <div><div class="t">Grace for the Journey</div><div class="s">Pastor Esther Olayinka &middot; 38 min</div></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <!-- NOW-PLAYING-BAR (W4.9 slice 3, composed 2026-09-06): the way back to the player while
+               browsing. 56px, docked above the tabs on every tab screen while audio is loaded (above
+               the home indicator on a screen without tabs, across the content column on a tablet).
+               Tap the bar to open the player; play/pause is the player's; the cross stops and
+               unloads. The 2px gold line on its top edge is the progress. -->
+          <div class="npbar" role="button" aria-label="Now playing: Multiple streams of income, Pastor Olayinka Ademiluka">
+            <i class="npprog" style="width:38%"></i>
+            <div class="npart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></div>
+            <div class="npt"><div class="t">Multiple streams of income</div><div class="m">Pastor Olayinka Ademiluka</div></div>
+            <button class="nppp" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
+            <button class="npx" aria-label="Stop listening"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
+
+    <div class="device">
+      <!-- W4.9 slice 3. A stack screen has no tab bar, so the bar docks at the bottom edge with
+           the home indicator's inset under it, the same height and content as over a tab screen.
+           Paused here, to show the play glyph: the bar carries whatever the player is doing. -->
+      <p class="name"><b>NOW-PLAYING-BAR</b> &middot; over a screen without tabs (MY-LIST) &middot; it sits where the tabs would</p>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+        <div class="screen">
+          <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My List</span><span style="width:40px"></span></div>
+          <div class="mlabel">12 saved</div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">Grace for the Journey</div><div class="m">Pastor Esther Olayinka &middot; 38 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">The Father&#39;s Heart</div><div class="m">Pastor Blossom Anukposi &middot; 35 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div class="rrow"><div class="rthumb"><span class="play"></span></div><div class="rgrow"><div class="t">Rooted &amp; Rising</div><div class="m">Pastor AY Samuel &middot; 41 min</div></div><span class="rsave" aria-label="Remove from My List"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg></span></div>
+          <div style="height:14px"></div>
+        </div>
+        <!-- NOW-PLAYING-BAR (W4.9 slice 3, composed 2026-09-06): the way back to the player while
+             browsing. 56px, docked above the tabs on every tab screen while audio is loaded (above
+             the home indicator on a screen without tabs, across the content column on a tablet).
+             Tap the bar to open the player; play/pause is the player's; the cross stops and
+             unloads. The 2px gold line on its top edge is the progress. -->
+        <div class="npbar nofoot" role="button" aria-label="Now playing: Multiple streams of income, Pastor Olayinka Ademiluka">
+          <i class="npprog" style="width:38%"></i>
+          <div class="npart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></div>
+          <div class="npt"><div class="t">Multiple streams of income</div><div class="m">Pastor Olayinka Ademiluka</div></div>
+          <button class="nppp" aria-label="Play"><svg width="18" height="18" viewBox="0 0 24 24" fill="#14213d" stroke="none"><path d="M8 5v14l11-7z"/></svg></button>
+          <button class="npx" aria-label="Stop listening"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+    </div>
   </div>
   <p class="note" style="max-width:1400px"><b>No frames, on purpose.</b> The three tile refusals are toasts (the app&#39;s <code>Toast</code> primitive, announced through a live region, no frame by the same precedent as the check-in toasts): tapping <b>Audio only</b> on a message whose MP3 is not up yet says &#8220;Audio for this message isn&#39;t up yet.&#8221;; tapping it on a message that was never on YouTube says &#8220;This message is audio only.&#8221;; tapping <b>Speed</b> while the video is up says &#8220;Switch to Audio only to change speed.&#8221; <b>Loading, error and offline</b> keep their app-wide <code>STATE &middot;</code> frames. <b>Audio-only sermons carry no YouTube attribution line</b> and no &#8220;Open on YouTube&#8221; button, because nothing on that screen came from YouTube. <b>Slice 5 does not move that line</b>, and the reason is worth stating so it is not re-litigated: attribution follows the TITLE, which the nightly sync owns on every synced row (<code>20260720190000</code>), not the picture. Giving a synced message our own artwork removes their thumbnail from the screen but not their title, so the badge stays; a message that was never on YouTube has neither, which is what makes it the one screen that owes nothing.</p>
 
@@ -4697,6 +4804,18 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <!-- NOW-PLAYING-BAR (W4.9 slice 3, composed 2026-09-06): the way back to the player while
+                 browsing. 56px, docked above the tabs on every tab screen while audio is loaded (above
+                 the home indicator on a screen without tabs, across the content column on a tablet).
+                 Tap the bar to open the player; play/pause is the player's; the cross stops and
+                 unloads. The 2px gold line on its top edge is the progress. -->
+            <div class="npbar" role="button" aria-label="Now playing: Multiple streams of income, Pastor Olayinka Ademiluka">
+              <i class="npprog" style="width:38%"></i>
+              <div class="npart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2"/></svg></div>
+              <div class="npt"><div class="t">Multiple streams of income</div><div class="m">Pastor Olayinka Ademiluka</div></div>
+              <button class="nppp" aria-label="Pause"><svg width="18" height="18" viewBox="0 0 24 24" fill="#14213d" stroke="none"><rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/></svg></button>
+              <button class="npx" aria-label="Stop listening"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
           </div>
         </div>
