@@ -79,5 +79,8 @@
   "notesKeptOnPhone": "Kept on this phone. We will save it when you are back online.",
   "notesGuestTitle": "Sign in to keep your notes",
   "notesGuestBody": "Your notes are private to you, and they stay with your account so they are there on any phone.",
-  "paneTitle": "Messages"
+  "paneTitle": "Messages",
+  "nowPlayingOpen": "Now playing: {{title}}, {{artist}}",
+  "nowPlayingOpenTitle": "Now playing: {{title}}",
+  "stopListening": "Stop listening"
 }

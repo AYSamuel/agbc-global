@@ -116,6 +116,7 @@ And the `media` group for the SERMON player (added W3.1 slice 3, mockup `.pl-scr
 | `Screen` | Safe-area wrapper, themed bg, scroll + refresh control |
 | `AppHeader` | Title, back, optional bell/branch chip |
 | `TabBar` | 5 tabs, active = blue(light)/gold(dark) icon + label |
+| `NowPlayingBar` | W4.9 slice 3 (frames approved 2026-09-06): 56 px, docked above the tab bar on tab screens, at the bottom edge above the home-indicator inset on stack screens, across the content column (never under the rail) on a tablet. Card surface and hairline like the tab bar; a 2 px gold progress line on its top edge; 40 px artwork tile; title over speaker, one line each, truncating and never growing the bar; gold play/pause disc; muted dismiss cross. Tapping the bar opens the player; the bar is absent on the player itself and whenever nothing is loaded |
 | `Button` | variants: `primary` (blue fill), `accent` (gold fill, navy text), `outline`, `ghost`; ≥44px |
 | `Card` | surface + cardline; pressable variant with hover/press lift |
 | `Eyebrow` | uppercase label + short rule (color = `eye`) |

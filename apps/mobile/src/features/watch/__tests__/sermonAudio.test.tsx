@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import type React from 'react';
 import { type PanGesture, State } from 'react-native-gesture-handler';
 import {
   fireGestureHandler,
@@ -6,9 +7,15 @@ import {
 } from 'react-native-gesture-handler/jest-utils';
 
 import { ToastProvider } from '@/components/ui';
-import { audioPlayer, resetAudioMock, setAudioStatus } from '@/test/expoAudio';
+import {
+  audioPlayer,
+  createdPlayers,
+  resetAudioMock,
+  setAudioStatus,
+} from '@/test/expoAudio';
 import { ThemeScope } from '@/theme';
 
+import { NowPlayingProvider } from '../nowPlaying';
 import { usePlaybackStore } from '../playback';
 import type { SermonSummary } from '../queries';
 
@@ -29,16 +36,21 @@ jest.mock('expo-audio', () => require('@/test/expoAudio'));
 
 const mockBack = jest.fn();
 let mockParams: Record<string, string> = {};
+// Whether the screen under test is the one the member is looking at. The real
+// `useFocusEffect` runs its effect on focus and its cleanup on blur; here it
+// runs while this flag is up, so a test can render the screen as one sitting
+// in the history behind another (the tablet's stack remount, W4.9 slice 3).
+let mockFocused = true;
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: mockBack }),
   useLocalSearchParams: () => mockParams,
-  // The real one runs the effect on focus and its cleanup on blur. A screen
-  // under test is focused for its whole life, so a plain useEffect IS the
-  // contract here: body on mount, cleanup on unmount.
   useFocusEffect: (effect: () => (() => void) | undefined) => {
     jest
       .requireActual<typeof import('react')>('react')
-      .useEffect(effect, [effect]);
+      .useEffect(
+        () => (mockFocused ? effect() : undefined),
+        [effect, mockFocused],
+      );
   },
 }));
 
@@ -88,8 +100,14 @@ const mockAudioUrl = jest.fn<
   isError: false,
   refetch: mockRefetchUrl,
 }));
+// The provider's own re-mint (W4.9 slice 3): a fresh URL for the same object,
+// minted without the screen, because the screen may be gone by then.
+const mockMintUrl = jest.fn((_audioPath: string): Promise<string> =>
+  Promise.resolve('https://storage.test/sermon-audio/one.mp3?token=fresh'),
+);
 jest.mock('../audioSource', () => ({
   useSermonAudioUrlQuery: () => mockAudioUrl(),
+  mintSermonAudioUrl: (audioPath: string) => mockMintUrl(audioPath),
 }));
 
 const mockSaveServerPosition = jest.fn(
@@ -142,14 +160,33 @@ function sermon(overrides: Partial<SermonSummary> = {}): SermonSummary {
   };
 }
 
-function renderScreen() {
-  return render(
+// The app's one player lives above the screen since W4.9 slice 3, so the
+// harness carries it, exactly as the root layout does.
+function tree(child: React.ReactNode) {
+  return (
     <ThemeScope name="light">
       <ToastProvider>
-        <Sermon />
+        <NowPlayingProvider>{child}</NowPlayingProvider>
       </ToastProvider>
-    </ThemeScope>,
+    </ThemeScope>
   );
+}
+
+function renderScreen() {
+  return render(tree(<Sermon />));
+}
+
+/** Navigate away: the screen unmounts, the provider above it stays. */
+function leaveScreen() {
+  return screen.rerender(tree(null));
+}
+
+/** Let a chain of awaited promises settle: the re-mint, then the audio session
+ * configured, then the lock screen activated. */
+function settle() {
+  return act(async () => {
+    for (let i = 0; i < 6; i += 1) await Promise.resolve();
+  });
 }
 
 /** Enter audio mode the way a member does, then report a loaded source.
@@ -174,6 +211,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   resetAudioMock();
   mockParams = { id: 'aaa' };
+  mockFocused = true;
   mockAuthState.mockReturnValue({ status: 'guest' });
   mockServerPosition.mockReturnValue({ data: null, isPending: false });
   mockAudioUrl.mockReturnValue({
@@ -659,63 +697,182 @@ describe('writing the position back', () => {
 });
 
 describe('leaving the screen', () => {
-  test('stops the audio, because nothing in the app could stop it after', async () => {
-    // Found on the device: a deep link to a second message pushes a new screen
-    // and leaves this one mounted, so its sermon kept playing under a player
-    // showing something else. Blur is navigation only; backgrounding the app
-    // does not blur, so this does not touch the background promise.
+  test('keeps the audio playing: the bar is where it lives now', async () => {
+    // W4.9 slice 3 reverses W3.1's blur-stop. Then, nothing in the app could
+    // stop a message once its screen was gone, so the screen stopped it. Now
+    // the player belongs to the provider above every screen and the bar can
+    // stop it, so a member browsing elsewhere keeps listening.
     await renderScreen();
     await enterAudio();
+
+    await leaveScreen();
+
     expect(audioPlayer.pause).not.toHaveBeenCalled();
+    expect(audioPlayer.remove).not.toHaveBeenCalled();
+  });
+
+  test('coming back to the playing message shows it, without reloading or stopping', async () => {
+    // The tap on the now-playing bar (and the tablet remounting its stack on
+    // the way out of two-pane): the screen mounts fresh on a message the app
+    // is already playing. It must open in audio mode on that player, not in
+    // video mode, where its own rule would stop the audio it came back for.
+    await renderScreen();
+    await enterAudio();
+    await leaveScreen();
+    expect(createdPlayers).toBe(1);
+
+    await screen.rerender(tree(<Sermon />));
+
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeOnTheScreen();
+    expect(audioPlayer.remove).not.toHaveBeenCalled();
+    expect(createdPlayers).toBe(1);
+  });
+
+  test('the app closing writes the position and lets the player go', async () => {
+    // The provider's own unmount is the app going away: the last position is
+    // written and the native object released, so nothing plays into a dead
+    // tree.
+    await renderScreen();
+    await enterAudio();
+    await act(() => {
+      setAudioStatus({ currentTime: 300 });
+    });
 
     await screen.unmount();
 
-    expect(audioPlayer.pause).toHaveBeenCalled();
+    expect(audioPlayer.remove).toHaveBeenCalledTimes(1);
+    expect(usePlaybackStore.getState().positions['aaa'].positionSec).toBe(300);
+  });
+
+  test('opening a VIDEO message stops the audio, because one thing plays', async () => {
+    // Two sound sources at once is the one thing a media app must never do
+    // (docs/spec/08). Entering audio on one screen and video on the next
+    // hands the audio to the bar, then the video takes it away.
+    await renderScreen();
+    await enterAudio();
+    expect(audioPlayer.remove).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByRole('tab', { name: 'Video' }));
+
+    expect(audioPlayer.remove).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('the member signing out', () => {
+  test('unloads the listening with the rest of their state', async () => {
+    // Sign-out and deletion both land on guest (`03`, `16`); a message left
+    // playing would be a member's choice still sounding after they left.
+    mockAuthState.mockReturnValue({ status: 'member' });
+    await renderScreen();
+    await enterAudio();
+    expect(audioPlayer.remove).not.toHaveBeenCalled();
+
+    mockAuthState.mockReturnValue({ status: 'guest' });
+    await screen.rerender(tree(<Sermon />));
+
+    expect(audioPlayer.remove).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('the facts changing under a loaded message', () => {
+  test('refresh the lock screen in place, never through a second activation', async () => {
+    // The lock-screen invariant (PR #252): a second `setActiveForLockScreen`
+    // on the same player crashes the media session, so a corrected title
+    // goes through `updateLockScreenMetadata` and nothing else.
+    await renderScreen();
+    await enterAudio();
+    await settle();
+    const activations = audioPlayer.setActiveForLockScreen.mock.calls.length;
+
+    mockSermon.mockReturnValue({
+      data: sermon({ title: 'Corrected on the dashboard' }),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await screen.rerender(tree(<Sermon />));
+
+    expect(audioPlayer.updateLockScreenMetadata).toHaveBeenLastCalledWith(
+      expect.objectContaining({ title: 'Corrected on the dashboard' }),
+    );
+    expect(audioPlayer.setActiveForLockScreen).toHaveBeenCalledTimes(
+      activations,
+    );
+  });
+});
+
+describe("a different message's screen behind the one in view", () => {
+  test('stops the audio only once it is the screen in view', async () => {
+    // The tablet remounts its whole stack on a layout change, rendering every
+    // sermon screen in the history at once, each in video mode by default.
+    // One that is not focused must keep its hands off the player.
+    await renderScreen();
+    await enterAudio();
+
+    // A fresh mount of ANOTHER message's screen, out of focus: video mode by
+    // default, since the player holds a different message.
+    await leaveScreen();
+    mockFocused = false;
+    mockParams = { id: 'bbb' };
+    mockSermon.mockReturnValue({
+      data: sermon({ id: 'bbb', title: 'Another message' }),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await screen.rerender(tree(<Sermon />));
+    expect(audioPlayer.remove).not.toHaveBeenCalled();
+
+    // The member arrives on it: now the rule applies.
+    mockFocused = true;
+    await screen.rerender(tree(<Sermon />));
+    expect(audioPlayer.remove).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('when the source fails', () => {
-  test('the first error re-mints the URL silently', async () => {
+  // The re-mint moved from the screen to the provider (W4.9 slice 3), because
+  // by the time a token expires the screen may be gone: it now mints through
+  // `mintSermonAudioUrl` and hands the position to a FRESH player.
+  test('the first error re-mints the URL silently, into a fresh player', async () => {
     await renderScreen();
     await enterAudio();
+    expect(createdPlayers).toBe(1);
     await act(() => {
       setAudioStatus({ error: 'Source error' });
     });
-    expect(mockRefetchUrl).toHaveBeenCalledTimes(1);
+    expect(mockMintUrl).toHaveBeenCalledTimes(1);
+    expect(mockMintUrl).toHaveBeenCalledWith('one.mp3');
+    // The screen's own query is not what re-mints any more.
+    expect(mockRefetchUrl).not.toHaveBeenCalled();
+    await settle();
+    expect(createdPlayers).toBe(2);
     // Still the player, not an error screen: the member should not see a
     // stumble we can fix ourselves.
-    expect(screen.getByRole('button', { name: 'Pause' })).toBeOnTheScreen();
+    expect(screen.queryByText("The audio couldn't play")).not.toBeOnTheScreen();
   });
 
-  test('the fresh URL arriving does not spend the silence', async () => {
+  test('the handoff to the fresh player stands the old one down first', async () => {
+    // The lock-screen invariant (PR #252): two activations without a release
+    // between them crash the media session. The spies record the ORDER.
     await renderScreen();
     await enterAudio();
+    const activations = audioPlayer.setActiveForLockScreen.mock.calls.length;
     await act(() => {
       setAudioStatus({ error: 'Source error' });
     });
-    expect(mockRefetchUrl).toHaveBeenCalledTimes(1);
-
-    // React Query hands the screen a NEW result object on every fetch-state
-    // move, and the refetch resolving with a fresh token is exactly that. The
-    // status is still the OLD player's error until the new one reports, so a
-    // re-mint callback keyed on the object's identity re-runs the error effect,
-    // counts the silent re-mint as spent, and shows the failure over a source
-    // that is about to play.
-    mockAudioUrl.mockReturnValue({
-      data: 'https://storage.test/sermon-audio/one.mp3?token=def',
-      isError: false,
-      refetch: mockRefetchUrl,
-    });
-    await screen.rerender(
-      <ThemeScope name="light">
-        <ToastProvider>
-          <Sermon />
-        </ToastProvider>
-      </ThemeScope>,
+    await settle();
+    // The fake hands back the SAME object as the fresh player, so the order
+    // is the whole proof: active, stood down, removed, active again.
+    expect(
+      audioPlayer.setActiveForLockScreen.mock.calls.map((call) => call[0]),
+    ).toEqual([true, false, true]);
+    expect(audioPlayer.setActiveForLockScreen).toHaveBeenCalledTimes(
+      activations + 2,
     );
-
-    expect(screen.queryByText("The audio couldn't play")).not.toBeOnTheScreen();
-    expect(mockRefetchUrl).toHaveBeenCalledTimes(1);
+    const [, stoodDown, reactivated] =
+      audioPlayer.setActiveForLockScreen.mock.invocationCallOrder;
+    const [removed] = audioPlayer.remove.mock.invocationCallOrder;
+    expect(stoodDown).toBeLessThan(removed);
+    expect(removed).toBeLessThan(reactivated);
   });
 
   test('a second error is the member’s to know about', async () => {
@@ -724,13 +881,25 @@ describe('when the source fails', () => {
     await act(() => {
       setAudioStatus({ error: 'Source error' });
     });
+    await settle();
     await act(() => {
       setAudioStatus({ error: null });
       setAudioStatus({ error: 'Source error again' });
     });
     expect(screen.getByText("The audio couldn't play")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
-    expect(mockRefetchUrl).toHaveBeenCalledTimes(2);
+    expect(mockMintUrl).toHaveBeenCalledTimes(2);
+  });
+
+  test('a re-mint that is refused shows the retry, not a dead player', async () => {
+    mockMintUrl.mockRejectedValueOnce(new Error('refused'));
+    await renderScreen();
+    await enterAudio();
+    await act(() => {
+      setAudioStatus({ error: 'Source error' });
+    });
+    await settle();
+    expect(screen.getByText("The audio couldn't play")).toBeOnTheScreen();
   });
 
   test('a mint that never lands shows the retry, not a dead player', async () => {

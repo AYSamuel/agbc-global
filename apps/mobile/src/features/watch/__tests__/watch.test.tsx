@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
 import { durationMinutes, formatPublishedDate, joinMeta } from '../format';
+import { NowPlayingProvider } from '../nowPlaying';
 import { usePlaybackStore } from '../playback';
 import type { SermonSummary } from '../queries';
 import { useSearchHistoryStore } from '../searchHistory';
@@ -51,6 +52,7 @@ jest.mock('@/features/watch/audioSource', () => ({
     isError: false,
     refetch: jest.fn(),
   }),
+  mintSermonAudioUrl: jest.fn(() => Promise.resolve('')),
 }));
 jest.mock('@/features/watch/serverPosition', () => ({
   useServerPositionQuery: () => ({ data: null, isPending: false }),
@@ -173,7 +175,11 @@ function sermon(overrides: Partial<SermonSummary> = {}): SermonSummary {
 function renderScreen(ui: React.ReactElement) {
   return render(
     <ThemeScope name="light">
-      <ToastProvider>{ui}</ToastProvider>
+      <ToastProvider>
+        {/* SERMON reads the app-wide player (W4.9 slice 3) even in video mode,
+            where it only has to stop it. Nothing here loads audio. */}
+        <NowPlayingProvider>{ui}</NowPlayingProvider>
+      </ToastProvider>
     </ThemeScope>,
   );
 }

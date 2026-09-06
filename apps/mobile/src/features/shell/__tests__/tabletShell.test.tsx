@@ -34,7 +34,11 @@ const mockNavigate = jest.fn();
 let mockSegments: string[] = ['(tabs)', 'home'];
 let mockPathname = '/';
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ navigate: mockNavigate, push: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({
+    navigate: mockNavigate,
+    push: jest.fn(),
+    back: jest.fn(),
+  }),
   useSegments: () => mockSegments,
   usePathname: () => mockPathname,
 }));
@@ -51,6 +55,13 @@ jest.mock('@/features/family/FamilyListPane', () => {
     },
   };
 });
+
+// The now-playing bar is the shell's tenant, not its subject: it needs the
+// app-wide player above it, which this suite does not mount. Its own suite is
+// nowPlayingBar.test.tsx (W4.9 slice 3).
+jest.mock('@/features/watch/NowPlayingBar', () => ({
+  NowPlayingBar: () => null,
+}));
 
 jest.mock('@/features/watch/WatchListPane', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

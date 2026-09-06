@@ -81,5 +81,8 @@
   "notesKeptOnPhone": "Gardé sur ce téléphone. Nous l'enregistrerons dès que tu seras de nouveau en ligne.",
   "notesGuestTitle": "Connecte-toi pour garder tes notes",
   "notesGuestBody": "Tes notes sont privées et restent liées à ton compte, pour les retrouver sur n'importe quel téléphone.",
-  "paneTitle": "Messages"
+  "paneTitle": "Messages",
+  "nowPlayingOpen": "En cours : {{title}}, {{artist}}",
+  "nowPlayingOpenTitle": "En cours : {{title}}",
+  "stopListening": "Arrêter l’écoute"
 }

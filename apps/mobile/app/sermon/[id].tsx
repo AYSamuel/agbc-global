@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -51,6 +51,7 @@ import {
   preferredPosition,
 } from '@/features/watch/audio';
 import { useSermonAudioUrlQuery } from '@/features/watch/audioSource';
+import { useNowPlaying } from '@/features/watch/nowPlaying';
 import {
   durationMinutes,
   formatPublishedDate,
@@ -198,7 +199,17 @@ export default function Sermon() {
   // Which gate is up: Save and Notes gate separately because each names its own
   // action (docs/spec/03: "Sign in to save this message" vs "... to take notes").
   const [gate, setGate] = useState<'save' | 'notes' | null>(null);
-  const [audioRequested, setAudioRequested] = useState(false);
+  // The app's one player (W4.9 slice 3), read BEFORE the mode state because
+  // the mode's initial value comes from it: a screen opened on the message the
+  // app is already playing starts in audio mode and shows it, rather than
+  // mounting in video mode and stopping it. That is the tap on the now-playing
+  // bar, and it is also the tablet leaving its two-pane layout, which remounts
+  // the whole stack and hands this screen fresh state on the way out (found on
+  // the device, 2026-09-06: every exit from the player stopped the audio).
+  const { item: nowPlayingItem, stop: stopNowPlaying } = useNowPlaying();
+  const [audioRequested, setAudioRequested] = useState(
+    () => nowPlayingItem?.sermonId === id,
+  );
   // A finger on the seek bar (W4.9 slice 2). While it is down the screen must
   // not scroll, or Android's scroll view takes a drag that drifts a few points
   // up or down and the bar snaps back (seen on the tablet, 2026-09-06).
@@ -228,6 +239,25 @@ export default function Sermon() {
     sermon !== null &&
     (sermon.youtube_id === null || sermon.status === 'unavailable');
   const audioMode = audioPath !== null && (audioRequested || noVideo);
+
+  // Video and audio never play together (`08`: background YouTube is a Premium
+  // feature we must not imitate, and two voices is not a feature). Whenever this
+  // screen shows its VIDEO branch, whatever the app's one player holds is
+  // stopped first, whether it is this message in the other mode or a different
+  // message listened to on the way here (W4.9 slice 3).
+  //
+  // A FOCUS effect, not a plain one, because the rule is about the screen the
+  // member is looking at. The tablet remounts its whole stack on every change
+  // of layout (TabletShell), and the remount renders every sermon screen still
+  // in the history at once, each in video mode: as a plain effect, a message
+  // visited an hour ago stopped the one playing now (found on the device,
+  // 2026-09-06, with the second message's audio dying on the way to Home).
+  const stopIfVideo = useCallback(() => {
+    if (sermon !== null && !audioMode && nowPlayingItem !== null) {
+      stopNowPlaying();
+    }
+  }, [sermon, audioMode, nowPlayingItem, stopNowPlaying]);
+  useFocusEffect(stopIfVideo);
 
   // Screen gutter (20) each side, capped like the mockup player column.
   const videoWidth = Math.min(width - spacing.gutter * 2, 640);
@@ -405,9 +435,7 @@ export default function Sermon() {
                   eyebrow={eyebrow}
                   meta={meta}
                   startAtSec={startAtSec}
-                  isMember={isMember}
                   artHeight={artHeight}
-                  onRemint={remintAudioUrl}
                   onScrubbing={setScrubbing}
                 />
               )
