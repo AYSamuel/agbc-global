@@ -93,8 +93,8 @@ Play. Gaps are fine; Play only requires the number to increase.
   Supabase Free plan fixes the per-file upload limit at 50 MB (Storage > Settings, not
   configurable below Pro). `MAX_AUDIO_BYTES`, the bucket's `file_size_limit` and every line
   of copy say 150 MB, and a refused upload is reported as "check your connection". Found
-  2026-09-05 with the first real file. Planned as W4.9 slice 1
-  (`docs/spec/plans/W4.9-audio-shelf-and-player.md`).
+  2026-09-05 with the first real file. Fixed as W4.9 slice 1 on 2026-09-06 (migration
+  `20260906120000`; the item's record is `25`'s W4.9 entry).
 - **The dashboard's manage screen crashed for any message with audio**, which production
   had never held until 2026-09-05: a Server Component handed a copy bundle with functions to
   a Client Component (Sentry AGBC-DASHBOARD-2). Fixed on `fix/dashboard-manage-artwork-
