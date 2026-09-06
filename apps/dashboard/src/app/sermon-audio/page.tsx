@@ -2,11 +2,7 @@ import { DashboardShell } from '@/components/DashboardShell';
 import { PageHeader } from '@/components/PageHeader';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
-import {
-  loadNewestMissing,
-  loadShelf,
-  type ShelfFilter,
-} from '@/server/sermonAudio';
+import { loadShelf, type ShelfFilter } from '@/server/sermonAudio';
 
 import { shelfAccess } from './guard';
 import { ShelfRefusal } from './Refusal';
@@ -37,7 +33,6 @@ export default async function SermonAudioPage({
   // (sermons are public content), just what keeps a refusal from being a screen that
   // fetched everything and then decided not to show it.
   const shelf = admin ? await loadShelf(supabase, filter) : null;
-  const missing = admin ? await loadNewestMissing(supabase) : null;
 
   return (
     <DashboardShell caller={caller} current="sermonAudio">
@@ -49,7 +44,6 @@ export default async function SermonAudioPage({
         <Shelf
           shelf={shelf}
           filter={filter}
-          missing={missing}
           outcome={readParam(params.outcome)}
         />
       ) : (

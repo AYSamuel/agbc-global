@@ -710,21 +710,18 @@ export const copy = {
   sermonAudio: {
     title: 'Sermon audio',
     scope: 'Every branch · one shelf',
-    // The frame's banner reads "Sunday's message has no audio yet", which is true only on
-    // a Sunday; the real screen names the message, which is true every day. The body
-    // carries the frame's argument for why the upload matters at all.
-    missingTitle: (title: string) => `${title} has no audio yet`,
-    missingBody:
-      'It is on YouTube, so members can watch it. Listening in the background, the thing members actually asked for, only exists once its MP3 is on the shelf.',
-    missingAction: 'Add audio',
     stats: {
       withAudio: 'With audio',
       withoutAudio: 'Without audio',
       audioOnly: 'Audio only',
     },
-    guideTitle: 'Export speech quality, not music quality.',
+    // W4.9 slice 1 (frame approved 2026-09-06): the guide leads the page and states the
+    // format as a rule, in plain words. No command line here: the uploader is not
+    // technical, and the conversion recipe lives in the runbook for whoever helps them.
+    // 50 MB is the Free plan's fixed cap, the number storage actually enforces.
+    guideTitle: 'MP3 only, exported at speech quality.',
     guide:
-      '64–96 kbps mono MP3 sounds identical for a preached message and halves both storage and every member’s data. A full service lands near 25 MB; the shelf takes up to 150 MB.',
+      '64–96 kbps mono MP3 sounds identical for a preached message and halves both storage and every member’s data; a full service lands near 25 MB, and the shelf takes files up to 50 MB. If your recording is not an MP3 (m4a, aac or wav), save it as MP3 first: your editing app can export one, and any free online converter can too.',
     addAudioOnly: 'Add an audio-only message',
     statsLabel: 'The shelf today',
     filters: {
@@ -765,10 +762,10 @@ export const copy = {
       title: 'Add the audio',
       fileLabel: 'The file',
       dropTitle: 'Drop the MP3 here, or browse',
-      dropSub: 'MP3 or M4A · up to 150 MB',
+      dropSub: 'MP3 only · up to 50 MB',
       browse: 'Choose a file',
       dropHint:
-        'Straight from your editing export. Speech quality (64–96 kbps mono) is plenty; there is no need to re-encode a bigger file if that is what you have.',
+        'Straight from your editing export, as MP3. Speech quality (64–96 kbps mono) is plenty; if the recording is m4a, aac or wav, save it as MP3 first, from your editing app or a free converter.',
       speakerLabel: 'Speaker',
       seriesLabel: 'Series',
       seriesPlaceholder: 'None',
@@ -791,16 +788,22 @@ export const copy = {
       // Client-side early refusals: cheap, honest, and never the real check (the server
       // reads the object's own bytes at save).
       pickNotAudio:
-        'That does not look like an audio file. Export an MP3 or M4A and try again.',
+        'That does not look like an MP3. Save it as MP3 first, from your editing app or a free converter, and try again.',
       pickTooBig: (mb: number) =>
-        `That file is ${String(mb)} MB and the shelf takes up to 150 MB. Export it at speech quality (64–96 kbps mono) and try again.`,
+        `That file is ${String(mb)} MB, and the shelf takes up to 50 MB. Export it at speech quality (64–96 kbps mono MP3), which lands a full service near 25 MB, and try again.`,
       unreadable:
         'That file could not be read as audio. Export it again and retry.',
+      // Three different endings for a dead upload, because they need three different
+      // fixes: a network error is the connection, a 413 is the file, any other refusal is
+      // storage saying no. Before W4.9 all three read "check your connection", which sent
+      // the first real uploader debugging their Wi-Fi over a file that was too big.
       uploadFailed:
         'The upload did not finish. Check your connection and try again; nothing half-sent is ever shown to members.',
-      wrongKindTitle: 'That file is not an MP3 or M4A',
+      uploadRefused:
+        'Storage refused that file. Nothing was saved; check that it is an MP3 under 50 MB and try again.',
+      wrongKindTitle: 'That file is not an MP3',
       wrongKindBody:
-        'The file’s contents were checked, not its name. Nothing was saved and the upload was discarded; export the audio again and retry.',
+        'The file’s contents were checked, not its name. Nothing was saved and the upload was discarded; save it as MP3 and try again.',
       speakerRequired: 'Name the speaker: it lands on the card members see.',
       goneBody:
         'That message is no longer there. Go back to the shelf and pick again.',
@@ -824,6 +827,16 @@ export const copy = {
       // reports `flagged` rule: it is a rule, and rules are better stated than inferred.
       audioOnlyNoRemove:
         'This message exists only as audio, so removing it would leave nothing at all. The audio can be replaced, never removed.',
+      // W4.9 slice 1 (frame `SERMON-AUDIO-MANAGE · audio only`, approved 2026-09-06): the
+      // facts of a hand-typed message can be corrected here. Field labels come from the
+      // attach form, which already names speaker and series the same way.
+      factsLabel: 'The facts',
+      titleLabel: 'Title',
+      dateLabel: 'Date preached',
+      dateHint:
+        'Decides where it sits in the app’s rails. Only a message that was never on YouTube can be edited here: a synced message’s facts belong to the sync, which would put them back.',
+      saveFacts: 'Save the facts',
+      savingFacts: 'Saving…',
     },
 
     // W3.1 slice 5 (frames: the artwork field on `SERMON-AUDIO-ATTACH` and
@@ -907,6 +920,12 @@ export const copy = {
         'The new picture is up and the old one is retired. Devices holding the old one see it until they next load the card.',
       artworkRemoved:
         'The picture is gone and the plain navy cover is back. Nothing else changed.',
+      edited:
+        'The facts are saved. Members see the new title the next time a list loads.',
+      synced:
+        'This message came from YouTube, so its facts belong to the sync and cannot be edited here.',
+      invalid:
+        'Those facts could not be saved. The title needs 1 to 200 characters, the speaker cannot be empty, and the date must be YYYY-MM-DD.',
       // Its own line rather than reusing the forms' `wrongKindBody`. That body reads under
       // a Notice whose TITLE names the problem; the manage screen refuses through a
       // redirect, where an alert saying only "the contents were checked, not the name"

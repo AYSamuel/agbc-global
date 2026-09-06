@@ -8,10 +8,10 @@ import { expectNoA11yViolations } from '@/test/a11y';
 import { Shelf } from './Shelf';
 
 /**
- * The shelf's rendering decisions (frame: `SERMON-AUDIO · the shelf`): the banner names
- * the missing message, every row carries exactly one affordance with an accessible name
- * that says WHICH message it opens, and empty means two different things depending on
- * whether a filter is hiding rows.
+ * The shelf's rendering decisions (frame: `SERMON-AUDIO · the shelf`, redrawn for W4.9
+ * slice 1): the format rule leads the page, every row carries exactly one affordance with
+ * an accessible name that says WHICH message it opens, and empty means two different
+ * things depending on whether a filter is hiding rows.
  */
 
 function row(overrides: Partial<ShelfRow> = {}): ShelfRow {
@@ -35,26 +35,31 @@ function shelf(rows: ShelfRow[], counts?: Partial<ShelfData>): ShelfData {
   return { rows, withAudio: 31, withoutAudio: 3, audioOnly: 2, ...counts };
 }
 
-test('the banner names the missing message and links straight at it', async () => {
-  const missing = row();
-  const { container } = render(
-    <Shelf shelf={shelf([missing])} filter="all" missing={missing} />,
-  );
+test('the format rule leads the page, before the counts, and says MP3 and 50 MB', async () => {
+  const { container } = render(<Shelf shelf={shelf([row()])} filter="all" />);
 
+  const guide = screen.getByText(copy.sermonAudio.guideTitle);
+  const counts = screen.getByText(copy.sermonAudio.statsLabel);
+  // Order is the decision (frame approved 2026-09-06): the rule is the first thing an
+  // uploader reads, not a note halfway down under the numbers.
   expect(
-    screen.getByText(copy.sermonAudio.missingTitle('The Grace That Finds You')),
-  ).toBeInTheDocument();
-  const action = screen.getByRole('link', {
-    name: copy.sermonAudio.missingAction,
-  });
-  expect(action).toHaveAttribute('href', '/sermon-audio/row-1');
+    guide.compareDocumentPosition(counts) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(copy.sermonAudio.guide).toMatch(/MP3/);
+  expect(copy.sermonAudio.guide).toMatch(/50 MB/);
+  expect(copy.sermonAudio.guide).not.toMatch(/150 MB/);
+  // No command line for a non-technical uploader (Ayo, at frame approval).
+  expect(copy.sermonAudio.guide).not.toMatch(/ffmpeg/);
+
+  // The old red banner is gone: the missing message is a row, not a headline.
+  expect(screen.queryByText(/has no audio yet/)).not.toBeInTheDocument();
 
   await expectNoA11yViolations(container);
 });
 
 describe('one affordance per row, named for its message', () => {
   test('a message without audio offers Add audio', () => {
-    render(<Shelf shelf={shelf([row()])} filter="all" missing={null} />);
+    render(<Shelf shelf={shelf([row()])} filter="all" />);
 
     expect(screen.getByText(copy.sermonAudio.noAudioPill)).toBeInTheDocument();
     const link = screen.getByRole('link', {
@@ -74,7 +79,6 @@ describe('one affordance per row, named for its message', () => {
           row({ id: 'row-2', audioPath: 'aaaa.mp3', durationSec: 2520 }),
         ])}
         filter="all"
-        missing={null}
       />,
     );
 
@@ -95,12 +99,11 @@ describe('one affordance per row, named for its message', () => {
           row({
             id: 'row-3',
             youtubeId: null,
-            audioPath: 'bbbb.m4a',
+            audioPath: 'bbbb.mp3',
             durationSec: 2280,
           }),
         ])}
         filter="all"
-        missing={null}
       />,
     );
 
@@ -117,9 +120,7 @@ describe('one affordance per row, named for its message', () => {
 
 describe('empty is two different facts', () => {
   test('an unfiltered empty shelf is the pre-sync state, door open', async () => {
-    const { container } = render(
-      <Shelf shelf={shelf([])} filter="all" missing={null} />,
-    );
+    const { container } = render(<Shelf shelf={shelf([])} filter="all" />);
 
     expect(screen.getByText(copy.sermonAudio.emptyTitle)).toBeInTheDocument();
     // Two doors to the same place: the page-level action and the empty state's own.
@@ -131,7 +132,7 @@ describe('empty is two different facts', () => {
   });
 
   test('a filtered empty view just says the filter is why', () => {
-    render(<Shelf shelf={shelf([])} filter="with" missing={null} />);
+    render(<Shelf shelf={shelf([])} filter="with" />);
 
     expect(screen.getByText(copy.sermonAudio.filterEmpty)).toBeInTheDocument();
     expect(
@@ -141,14 +142,7 @@ describe('empty is two different facts', () => {
 });
 
 test('an outcome in the URL is announced, not just printed', () => {
-  render(
-    <Shelf
-      shelf={shelf([row()])}
-      filter="all"
-      missing={null}
-      outcome="saved"
-    />,
-  );
+  render(<Shelf shelf={shelf([row()])} filter="all" outcome="saved" />);
 
   const status = screen.getByRole('status');
   expect(status).toHaveTextContent(copy.sermonAudio.outcome.saved);

@@ -18,8 +18,8 @@ import { retireArtwork, verifyArtworkObject } from './sermonArtwork';
  * The upload itself never passes through here: the browser sends the bytes straight to
  * storage under a signed upload URL this module mints (a 30 MB file must not ride
  * through a server action). What the browser DID upload is then treated as untrusted:
- * `attachAudio` reads the object's own first bytes and refuses anything that is not
- * MPEG audio or an MP4 container, whatever the file was named or declared as
+ * `attachAudio` reads the object's own first bytes and refuses anything that is not an
+ * MP3, whatever the file was named or declared as
  * (~/.claude/standards/security.md §File uploads: never trust the client's Content-Type).
  */
 
@@ -27,8 +27,13 @@ type Client = SupabaseClient<Database>;
 
 export const SERMON_AUDIO_BUCKET = 'sermon-audio';
 
-/** Mirrors the bucket row's file_size_limit (150 MiB), for the client-side early refusal. */
-export const MAX_AUDIO_BYTES = 157286400;
+/**
+ * The plan's cap, for the client-side early refusal: the Supabase Free plan fixes uploads at
+ * 50 MB at the storage layer, whatever a bucket row says (found 2026-09-05 when a 57 MB file
+ * died at 22 MB with "check your connection"). The bucket row now says the same number
+ * (`20260906120000`) and pgTAP 034 pins both, so moving to Pro is a two-line change.
+ */
+export const MAX_AUDIO_BYTES = 52428800;
 
 /**
  * Mirrors the storage INSERT policy's name rule: machine-minted `<uuid>.<ext>`, nothing
@@ -36,9 +41,15 @@ export const MAX_AUDIO_BYTES = 157286400;
  * refused before any storage round trip.
  */
 const OBJECT_NAME =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(mp3|m4a|aac)$/;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.mp3$/;
 
-export const AUDIO_EXTENSIONS = ['mp3', 'm4a', 'aac'] as const;
+/**
+ * MP3 only (W4.9 slice 1, decided 2026-09-06). `08` always asked for 64-96 kbps mono MP3;
+ * accepting m4a and aac as well made that advice, and the first real upload was a 57 MB
+ * m4a. One format at every layer (picker, this list, the byte check, the bucket) means the
+ * refusal is the same true sentence everywhere.
+ */
+export const AUDIO_EXTENSIONS = ['mp3'] as const;
 export type AudioExtension = (typeof AUDIO_EXTENSIONS)[number];
 
 /** Ceiling for a believable sermon: 10 hours, in seconds. Display metadata, not authority. */
@@ -123,28 +134,6 @@ export async function loadShelf(
     withoutAudio: withoutAudio.count ?? 0,
     audioOnly: audioOnly.count ?? 0,
   };
-}
-
-/**
- * The banner's subject: the newest watchable message with no audio yet. Filter-blind on
- * purpose (the banner must not vanish because the reader is looking at another tab), and
- * never an audio-only row, which cannot be missing its audio.
- */
-export async function loadNewestMissing(
-  supabase: Client,
-): Promise<ShelfRow | null> {
-  const { data, error } = await supabase
-    .from('sermons')
-    .select(SERMON_FIELDS)
-    .eq('status', 'available')
-    .is('audio_path', null)
-    .not('youtube_id', 'is', null)
-    .order('published_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-  return toShelfRow(data);
 }
 
 export async function loadSermon(
@@ -250,13 +239,18 @@ export async function mintUpload(
 }
 
 /**
- * Are these first bytes actually audio we can serve?
+ * Are these first bytes actually an MP3 we can serve?
  *
- * Accepted shapes: an ID3-tagged or bare MPEG audio stream (MP3, and ADTS AAC shares the
- * frame-sync form), or an MP4 container (`ftyp` at offset 4: M4A). Exported so the
- * refusal is unit-testable byte by byte without a storage round trip.
+ * Two shapes, both MP3: an ID3v2 tag (`ID3` at offset 0, the way every editing app
+ * exports), or a bare MPEG audio frame whose header says Layer III (eleven sync bits, a
+ * version that is not the reserved one, layer bits `01`). The layer bits are what keep
+ * ADTS AAC out: it shares the sync form and carries layer `00`, so the earlier
+ * "anything with frame sync" check would have let an `.aac` renamed `.mp3` through. The
+ * MP4 container (`ftyp` at offset 4) that M4A ships in is not accepted at all any more
+ * (W4.9 slice 1: MP3 only). Exported so the refusal is unit-testable byte by byte without
+ * a storage round trip.
  */
-export function isAudioMagic(bytes: Uint8Array): boolean {
+export function isMp3Magic(bytes: Uint8Array): boolean {
   if (
     bytes.length >= 3 &&
     bytes[0] === 0x49 &&
@@ -265,19 +259,11 @@ export function isAudioMagic(bytes: Uint8Array): boolean {
   ) {
     return true;
   }
-  if (bytes.length >= 2 && bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0) {
-    return true;
-  }
-  if (
-    bytes.length >= 8 &&
-    bytes[4] === 0x66 &&
-    bytes[5] === 0x74 &&
-    bytes[6] === 0x79 &&
-    bytes[7] === 0x70
-  ) {
-    return true;
-  }
-  return false;
+  if (bytes.length < 2 || bytes[0] !== 0xff) return false;
+  const sync = (bytes[1] & 0xe0) === 0xe0;
+  const versionIsReserved = (bytes[1] & 0x18) === 0x08;
+  const layerIII = (bytes[1] & 0x06) === 0x02;
+  return sync && !versionIsReserved && layerIII;
 }
 
 type Verification = 'audio' | 'missing' | 'not_audio';
@@ -305,7 +291,7 @@ async function verifyAudioObject(
   if (!response.ok) return 'missing';
 
   const bytes = new Uint8Array(await response.arrayBuffer());
-  return isAudioMagic(bytes) ? 'audio' : 'not_audio';
+  return isMp3Magic(bytes) ? 'audio' : 'not_audio';
 }
 
 export interface AttachInput {
@@ -531,9 +517,8 @@ export async function createAudioOnlySermon(
 }
 
 function validateCreate(input: CreateAudioOnlyInput): string | null {
-  if (input.title.length === 0 || input.title.length > 200) return 'title';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.publishedOn)) return 'date';
-  if (Number.isNaN(Date.parse(`${input.publishedOn}T12:00:00Z`))) return 'date';
+  const facts = validateFacts(input);
+  if (facts) return facts;
   return validateAttach({
     sermonId: 'unused',
     path: input.path,
@@ -543,6 +528,83 @@ function validateCreate(input: CreateAudioOnlyInput): string | null {
     // The picture's own name rule is checked by verifyArtworkObject, which owns it.
     artworkPath: null,
   });
+}
+
+/**
+ * The facts a message typed by hand can be wrong about: what the create form takes minus
+ * the file, checked with the create form's limits. Shared by create and edit so a fact
+ * that is fine to create with is fine to correct to.
+ */
+function validateFacts(input: {
+  title: string;
+  speaker: string;
+  series: string | null;
+  publishedOn: string;
+}): string | null {
+  if (input.title.length === 0 || input.title.length > 200) return 'title';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.publishedOn)) return 'date';
+  if (Number.isNaN(Date.parse(`${input.publishedOn}T12:00:00Z`))) return 'date';
+  if (input.speaker.length === 0 || input.speaker.length > 120)
+    return 'speaker';
+  if (input.series !== null && input.series.length > 120) return 'series';
+  return null;
+}
+
+export interface EditAudioOnlyInput {
+  sermonId: string;
+  title: string;
+  speaker: string;
+  series: string | null;
+  /** The date preached (YYYY-MM-DD), the same field the create form takes. */
+  publishedOn: string;
+}
+
+export type EditOutcome =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: 'invalid' | 'gone' | 'synced' | 'refused' | 'failed';
+    };
+
+/**
+ * Corrects the facts of an audio-only message: title, speaker, series, date preached
+ * (W4.9 slice 1; frame `SERMON-AUDIO-MANAGE · audio only`, approved 2026-09-06).
+ *
+ * ONLY a message that was never on YouTube. A synced message's facts belong to the nightly
+ * sync, which writes them from the channel and would put an edit straight back; an
+ * audio-only message's facts were typed by hand in the dashboard, and until now a typo
+ * lived until somebody opened the database. The rule is in the UPDATE's own WHERE
+ * (`youtube_id is null`), not only in the read before it, so a crafted request against a
+ * synced id changes nothing even if the two disagree.
+ *
+ * Zero rows from the UPDATE means RLS filtered it (the `attachAudio` reading: a refused
+ * update arrives as no rows, not as an error), because the read above already settled
+ * gone and synced for the same caller.
+ */
+export async function updateAudioOnlySermon(
+  supabase: Client,
+  input: EditAudioOnlyInput,
+): Promise<EditOutcome> {
+  if (validateFacts(input)) return { ok: false, reason: 'invalid' };
+
+  const current = await loadSermon(supabase, input.sermonId);
+  if (!current) return { ok: false, reason: 'gone' };
+  if (current.youtubeId !== null) return { ok: false, reason: 'synced' };
+
+  const { data, error } = await supabase
+    .from('sermons')
+    .update({
+      title: input.title,
+      speaker: input.speaker,
+      series: input.series,
+      published_at: `${input.publishedOn}T12:00:00Z`,
+    })
+    .eq('id', input.sermonId)
+    .is('youtube_id', null)
+    .select('id');
+  if (error) return { ok: false, reason: 'failed' };
+  if (data.length === 0) return { ok: false, reason: 'refused' };
+  return { ok: true };
 }
 
 export type RemoveOutcome =

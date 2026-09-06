@@ -16,7 +16,7 @@
 -- pairs it with `set local request.jwt.claims to '{}'`.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(23);
 
 -- Cast: an admin, a leader, a member. Roles are written by the trusted setup path
 -- (actor null), the same way the bootstrap migration does it.
@@ -47,14 +47,17 @@ select is(
   (select public from storage.buckets where id = 'sermon-audio'),
   false,
   'sermon-audio is a private bucket: playback URLs are signed, 24h TTL');
+-- 50 MB is the Free plan's fixed upload limit (W4.9 slice 1, 20260906120000): the bucket
+-- row and the dashboard's MAX_AUDIO_BYTES both say it, so the browser refuses before a
+-- byte is sent and the words are true. Moving to Pro changes both, together.
 select is(
   (select file_size_limit from storage.buckets where id = 'sermon-audio'),
-  157286400::bigint,
-  'sermon-audio caps uploads at 150 MiB');
+  52428800::bigint,
+  'sermon-audio caps uploads at 50 MB, the number the plan enforces');
 select is(
   (select allowed_mime_types from storage.buckets where id = 'sermon-audio'),
-  array['audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/x-m4a'],
-  'sermon-audio accepts only audio mime types');
+  array['audio/mpeg'],
+  'sermon-audio accepts MP3 and nothing else');
 
 select has_column('public', 'sermons', 'audio_path',
   'sermons carries audio_path (a bucket object path)');
@@ -93,6 +96,12 @@ select throws_ok(
     values ('sermon-audio', 'sunday-service-glasgow.mp3', 'v-shelf-x')$$,
   '42501', null,
   'a human-written filename is refused: names are machine-minted uuids');
+
+select throws_ok(
+  $$insert into storage.objects (bucket_id, name, version)
+    values ('sermon-audio', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab.m4a', 'v-shelf-m4a')$$,
+  '42501', null,
+  'a well-minted name with any extension but .mp3 is refused (MP3 only since W4.9)');
 
 -- The same admin, in a session that never cleared the second factor.
 set local request.jwt.claims to
@@ -161,12 +170,13 @@ select is(
 set local request.jwt.claims to
   '{"sub":"95000000-0000-4000-8000-00000000000a","role":"authenticated","user_role":"admin","branch_id":"00000000-0000-4000-8000-000000000001","aal":"aal2"}';
 
--- A second object, and the m4a extension the name rule also admits.
+-- A second object. MP3 is the only extension the name rule admits since W4.9 slice 1
+-- (20260906120000); the m4a refusal is asserted in section 2.
 select lives_ok(
   $$insert into storage.objects (bucket_id, name, version)
-    values ('sermon-audio', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc.m4a',
+    values ('sermon-audio', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc.mp3',
             'v-shelf-2')$$,
-  'the name rule admits m4a as well as mp3');
+  'a second well-minted mp3 is shelved');
 
 select lives_ok(
   $$update public.sermons
@@ -186,7 +196,7 @@ select throws_ok(
 select lives_ok(
   $$insert into public.sermons (id, title, speaker, audio_path)
     values ('85000000-0000-4000-8000-00000000000b', 'Shelf Audio Only',
-            'Pastor Test', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc.m4a')$$,
+            'Pastor Test', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc.mp3')$$,
   'an admin can create an audio-only sermon with no YouTube half');
 
 select lives_ok(

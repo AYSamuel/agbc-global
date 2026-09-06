@@ -20,12 +20,15 @@ import {
 
 import {
   attachAudioAction,
+  editAudioOnlyAction,
   mintArtworkUploadAction,
   mintUploadAction,
   removeArtworkAction,
   removeAudioAction,
   setArtworkAction,
 } from '../actions';
+import { SubmitButton } from '@/components/ui/SubmitButton';
+import { CONTROL, FIELD, HINT, LABEL } from '../../people/fields';
 import { ImagePreview, type ImageSubject } from '@/components/ImagePreview';
 import { ArtworkPanel } from '../ArtworkPanel';
 import { AttachPanel } from '../AttachPanel';
@@ -207,6 +210,85 @@ function Manage({
           </form>
         )}
       </div>
+
+      {/* W4.9 slice 1 (frame `SERMON-AUDIO-MANAGE · audio only`, approved 2026-09-06).
+          The facts of a hand-typed message can be corrected here; a synced message's
+          belong to the nightly sync, which would put them back, so the block exists only
+          when there is no YouTube half. It sits between the file and the picture because
+          it is about the message and the other two are about objects. Save is always
+          present: the values are real and saving them unchanged is harmless, which is the
+          one case the hidden-Save rule does not cover. */}
+      {audioOnly ? (
+        <form action={editAudioOnlyAction}>
+          <input type="hidden" name="sermonId" value={sermon.id} />
+          <h3 className="mt-8 mb-2 text-[0.69rem] font-extrabold tracking-[0.14em] text-muted uppercase">
+            {text.factsLabel}
+          </h3>
+          <div className={`${FIELD} mt-0`}>
+            <label htmlFor="facts-title" className={LABEL}>
+              {text.titleLabel}
+            </label>
+            <input
+              id="facts-title"
+              name="title"
+              required
+              maxLength={200}
+              defaultValue={sermon.title}
+              className={CONTROL}
+            />
+          </div>
+          <div className={FIELD}>
+            <label htmlFor="facts-speaker" className={LABEL}>
+              {copy.sermonAudio.attach.speakerLabel}
+            </label>
+            <input
+              id="facts-speaker"
+              name="speaker"
+              required
+              maxLength={120}
+              defaultValue={sermon.speaker}
+              className={CONTROL}
+            />
+          </div>
+          <div className={FIELD}>
+            <label htmlFor="facts-series" className={LABEL}>
+              {copy.sermonAudio.attach.seriesLabel}
+            </label>
+            <input
+              id="facts-series"
+              name="series"
+              maxLength={120}
+              defaultValue={sermon.series ?? ''}
+              placeholder={copy.sermonAudio.attach.seriesPlaceholder}
+              className={CONTROL}
+            />
+          </div>
+          <div className={FIELD}>
+            <label htmlFor="facts-date" className={LABEL}>
+              {text.dateLabel}
+            </label>
+            <input
+              id="facts-date"
+              name="publishedOn"
+              required
+              pattern="\d{4}-\d{2}-\d{2}"
+              placeholder={copy.sermonAudio.create.datePlaceholder}
+              defaultValue={sermon.publishedAt.slice(0, 10)}
+              aria-describedby="facts-date-hint"
+              className={CONTROL}
+            />
+            <p id="facts-date-hint" className={HINT}>
+              {text.dateHint}
+            </p>
+          </div>
+          <div className="mt-4 flex max-w-[40rem] items-center gap-2.5 border-t border-cardline pt-3.5">
+            <SubmitButton
+              label={text.saveFacts}
+              pendingLabel={text.savingFacts}
+            />
+          </div>
+        </form>
+      ) : null}
 
       {/* The picture gets its own block rather than a third button in the row above,
           because it is a different object with a different consequence: removing the audio

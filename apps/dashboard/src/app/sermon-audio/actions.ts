@@ -10,6 +10,7 @@ import {
   createAudioOnlySermon,
   mintUpload,
   removeAudio,
+  updateAudioOnlySermon,
 } from '@/server/sermonAudio';
 import {
   ARTWORK_EXTENSIONS,
@@ -169,6 +170,35 @@ export async function setArtworkAction(formData: FormData): Promise<void> {
   };
   redirect(
     `/sermon-audio/${sermonId}?outcome=${codes[outcome.reason] ?? 'failed'}`,
+  );
+}
+
+/**
+ * The facts of an audio-only message, corrected (W4.9 slice 1). A redirect on every path,
+ * like the artwork actions: the manage screen shows the row's current facts, so there is
+ * nothing typed to preserve that the screen does not already hold, and the browser's own
+ * `required` and `pattern` catch a bad field before it is ever sent.
+ */
+export async function editAudioOnlyAction(formData: FormData): Promise<void> {
+  const sermonId = readString(formData.get('sermonId'));
+  if (!sermonId) redirect(back('failed'));
+
+  const supabase = await createServerComponentClient();
+  const verdict = await authorize(supabase, { action: 'manage_sermon_audio' });
+  if (!verdict.ok) redirect(`/sermon-audio/${sermonId}?outcome=refused`);
+
+  // readString trims and turns an empty field into undefined: an empty title or date
+  // becomes '' and fails validation as invalid, an empty series becomes null, which is
+  // what "None" means on the row.
+  const outcome = await updateAudioOnlySermon(supabase, {
+    sermonId,
+    title: readString(formData.get('title')) ?? '',
+    speaker: readString(formData.get('speaker')) ?? '',
+    series: readString(formData.get('series')) ?? null,
+    publishedOn: readString(formData.get('publishedOn')) ?? '',
+  });
+  redirect(
+    `/sermon-audio/${sermonId}?outcome=${outcome.ok ? 'edited' : outcome.reason}`,
   );
 }
 
