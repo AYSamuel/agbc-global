@@ -41,6 +41,12 @@ appId: com.oami.agbcapp
 # WATCH: the messages surface. The search control's label is unique to Watch.
 - tapOn: 'Watch'
 - assertVisible: 'Search messages'
+# The Audio segment (W4.9 slice 4). A reset stack has no audio-only message (sermons
+# are synced, and the sync never produces one), so the deterministic surface is the
+# empty state, which is also the one that must never be a bare screen.
+- tapOn: 'Audio'
+- assertVisible: 'Nothing to listen to yet'
+- tapOn: 'Video'
 
 # FAMILY (the wedge): the scope toggle's "Everywhere" is unique to Family.
 - tapOn: 'Family'

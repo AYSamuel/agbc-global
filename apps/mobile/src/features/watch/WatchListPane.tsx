@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fontFamily, radius, spacing, tonal } from '@agbc/shared/theme';
 
-import { EmptyState, Skeleton } from '@/components/ui';
+import { EmptyState, SegmentedControl, Skeleton } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 import { useSermonsQuery, type SermonSummary } from './queries';
+import { splitBySegment, useWatchSegmentStore } from './segment';
 import { SermonRow } from './SermonRow';
 
 /**
@@ -35,8 +36,15 @@ export function WatchListPane({ selectedId }: WatchListPaneProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const query = useSermonsQuery();
+  // The same Video / Audio segment the phone tab draws, from the same store, so
+  // the two layouts cannot disagree about which half is open (W4.9 slice 4,
+  // frame `WATCH · tablet landscape`).
+  const segment = useWatchSegmentStore((s) => s.segment);
+  const setSegment = useWatchSegmentStore((s) => s.setSegment);
 
-  const rows = query.data ?? [];
+  const split = splitBySegment(query.data ?? []);
+  const rows =
+    segment === 'audio' ? split.audio : [...split.videos, ...split.liveReplays];
 
   const open = (sermon: SermonSummary) => {
     // `navigate`, not `push`: moving between messages in a two-pane replaces
@@ -55,7 +63,9 @@ export function WatchListPane({ selectedId }: WatchListPaneProps) {
       }}
       ListHeaderComponent={
         // `.thead`: 24/22/12 padding, 26px display title.
-        <View style={{ paddingHorizontal: 22, paddingTop: 24, paddingBottom: 12 }}>
+        <View
+          style={{ paddingHorizontal: 22, paddingTop: 24, paddingBottom: 12 }}
+        >
           <Text
             accessibilityRole="header"
             style={{
@@ -67,6 +77,17 @@ export function WatchListPane({ selectedId }: WatchListPaneProps) {
           >
             {t('watch:paneTitle')}
           </Text>
+          <View style={{ marginTop: spacing.md }}>
+            <SegmentedControl
+              accessibilityLabel={t('watch:segmentLabel')}
+              value={segment}
+              onChange={setSegment}
+              segments={[
+                { key: 'video', label: t('watch:video') },
+                { key: 'audio', label: t('watch:audio') },
+              ]}
+            />
+          </View>
         </View>
       }
       ListEmptyComponent={
@@ -85,6 +106,13 @@ export function WatchListPane({ selectedId }: WatchListPaneProps) {
               onAction={() => {
                 void query.refetch();
               }}
+            />
+          </View>
+        ) : segment === 'audio' ? (
+          <View style={{ paddingHorizontal: spacing.md }}>
+            <EmptyState
+              title={t('watch:audioEmptyTitle')}
+              body={t('watch:audioEmptyBody')}
             />
           </View>
         ) : (
