@@ -17,6 +17,7 @@ import { prefetchBranches } from '@/features/onboarding/useBranches';
 import { NotificationAsk } from '@/features/notifications/NotificationAsk';
 import { useNotifications } from '@/features/notifications/useNotifications';
 import { MilestoneCelebration } from '@/features/rhythm/MilestoneCelebration';
+import { VisitConfirm } from '@/features/rhythm/VisitConfirm';
 import { SignedOutToast } from '@/features/shell/SignedOutToast';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
 import { persistOptions, queryClient } from '@/lib/queryPersist';
@@ -109,6 +110,12 @@ export default function RootLayout() {
               signal comes back. The ask waits for the celebration (W2.8). */}
             <MilestoneCelebration />
             <NotificationAsk />
+            {/* And the question that comes BEFORE a check-in rather than after
+              one: "are you actually at the branch you are browsing?". Here for
+              the same reason as the two above, plus one of its own: the
+              gate-return replay raises it after AUTH-4 has already moved the
+              member, so no single screen can be relied on to be looking. */}
+            <VisitConfirm />
             {/* The analytics opt-in (W2.10), last of the three overlays and deliberately
               lowest priority: it is due on the first Home after onboarding, which for an
               upgrading install can be the same moment as a milestone and a check-in. */}

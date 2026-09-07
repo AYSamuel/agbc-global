@@ -23,8 +23,12 @@ export type GateAction =
    * where the member was standing when they tapped (docs/spec/07), and after
    * AUTH-4 returns them the chip could read anything. In memory only, like every
    * action here, so no link can mint a check-in at a branch of its choosing.
+   *
+   * The NAME rides along for the same reason the id does: on the way back the
+   * replay may have to ask the visiting question, and the sheet that asks it is
+   * not on the screen that took the tap.
    */
-  | { kind: 'im_here'; branchId: string }
+  | { kind: 'im_here'; branchId: string; branchName: string }
   /**
    * Reaching MY-POSTS (W2.6). The only NAVIGATION-shaped gate so far: the others complete
    * something the member tapped, this one opens the screen they were trying to reach, which

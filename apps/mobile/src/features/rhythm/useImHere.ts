@@ -6,6 +6,7 @@ import { useAuthStore } from '@/state/auth';
 
 import { announceCheckIn } from './announce';
 import { applyCheckedInToCache } from './rhythmCache';
+import { isVisiting, useVisitConfirmStore } from './visiting';
 
 // "I'm here" (docs/spec/10): what the control shows, and what a tap does.
 //
@@ -50,21 +51,44 @@ export function queueCheckIn(branchId: string): void {
   const homeBranchId = useAuthStore.getState().profile?.branchId ?? null;
   track('attendance_marked', {
     source: 'here_button',
-    visiting: homeBranchId !== null && homeBranchId !== branchId,
+    visiting: isVisiting(homeBranchId, branchId),
   });
+}
+
+/**
+ * The tap, once identity is settled: ask when this is a visit, write when it is
+ * not. Shared by the hook below and by the gate-return executor, so the question
+ * cannot exist on one road and not the other (docs/spec/03 rule 9).
+ */
+export function checkInOrAsk(branchId: string, branchName: string): void {
+  const homeBranchId = useAuthStore.getState().profile?.branchId ?? null;
+  if (isVisiting(homeBranchId, branchId)) {
+    useVisitConfirmStore.getState().ask({ branchId, branchName });
+    return;
+  }
+  queueCheckIn(branchId);
 }
 
 /**
  * @param branchId the BROWSED branch. Attendance records where the member is
  * standing, not where they belong (docs/spec/07): a diaspora member visiting
  * Glasgow checks in at Glasgow, and their rhythm counts it just the same.
+ * @param branchName that branch's name, for the visiting question: the screen
+ * asking always has it, and the sheet that asks is mounted somewhere else.
  * @param serverCheckedIn `checked_in` from `rhythm_state`, which is the server's
  * answer for its own idea of today. The app never decides this.
  * @param onGateNeeded opens the screen's gate sheet; the sheet belongs to the
  * screen that owns its visibility.
+ *
+ * A tap on a branch that is NOT the member's home branch does not write: it
+ * raises the visiting question instead, and the write waits on the answer (see
+ * `visiting.ts`). That sheet lives at the root rather than on this screen,
+ * because the gate-return replay raises the same question and the member may
+ * land somewhere else entirely by the time it does.
  */
 export function useImHerePress(
   branchId: string | null,
+  branchName: string,
   serverCheckedIn: boolean,
   onGateNeeded: () => void,
 ): ImHereControl {
@@ -82,7 +106,7 @@ export function useImHerePress(
         return;
       }
       if (branchId === null || serverCheckedIn) return;
-      queueCheckIn(branchId);
+      checkInOrAsk(branchId, branchName);
     },
   };
 }

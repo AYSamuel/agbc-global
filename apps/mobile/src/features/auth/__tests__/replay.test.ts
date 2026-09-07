@@ -1,4 +1,6 @@
+import { useVisitConfirmStore } from '@/features/rhythm/visiting';
 import { useWriteQueueStore } from '@/lib/writeQueue';
+import { useAuthStore } from '@/state/auth';
 
 import { replayGateAction } from '../replay';
 
@@ -39,6 +41,22 @@ jest.mock('@/lib/supabase', () => ({
   },
 }));
 
+// Every replay here runs AFTER sign-in, so the member exists and has a home
+// branch. It decides one thing for `im_here`: whether the check-in is an
+// ordinary one or a visit that has to be asked about first.
+function signedInAt(branchId: string) {
+  useAuthStore.setState({
+    status: 'member',
+    email: 'grace@example.test',
+    profile: {
+      displayName: 'Grace Bello',
+      branchId,
+      language: 'en',
+      role: 'member',
+    },
+  });
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   useWriteQueueStore.setState({
@@ -47,6 +65,8 @@ beforeEach(() => {
     draining: false,
     failures: 0,
   });
+  useAuthStore.setState({ status: 'guest', email: null, profile: null });
+  useVisitConfirmStore.setState({ pending: null });
 });
 
 // The gate-return contract (docs/spec/03, 04 rule 9): whatever the guest reached
@@ -90,8 +110,13 @@ describe('replayGateAction: rsvp', () => {
 // RECORDED, and the queue owns delivering it.
 describe('replayGateAction: im_here', () => {
   it('records the check-in as a queued wish, at the branch the action named', async () => {
+    signedInAt('b1');
     await expect(
-      replayGateAction({ kind: 'im_here', branchId: 'b1' }),
+      replayGateAction({
+        kind: 'im_here',
+        branchId: 'b1',
+        branchName: 'AGBC Glasgow',
+      }),
     ).resolves.toBe('done');
     const queued = Object.values(useWriteQueueStore.getState().queue);
     expect(queued).toHaveLength(1);
@@ -101,9 +126,33 @@ describe('replayGateAction: im_here', () => {
   it('records the branch from the action, never the browsing chip', async () => {
     // A member can switch the chip during sign-in; the tap they made was at the
     // branch they were standing in, and that is what must be recorded.
-    await replayGateAction({ kind: 'im_here', branchId: 'b2' });
+    signedInAt('b2');
+    await replayGateAction({
+      kind: 'im_here',
+      branchId: 'b2',
+      branchName: 'AGBC Lighthouse Berlin',
+    });
     const queued = Object.values(useWriteQueueStore.getState().queue);
     expect(queued[0]?.state).toBe('b2');
+  });
+
+  // The gate-return is the third road to the visiting question, and the one that
+  // cannot ask on the screen that took the tap: by the time this runs, AUTH-3
+  // has given the member a home branch and AUTH-4 has moved them.
+  it('asks instead of writing when the branch is not the one they just made home', async () => {
+    signedInAt('b1');
+    await expect(
+      replayGateAction({
+        kind: 'im_here',
+        branchId: 'b2',
+        branchName: 'AGBC Glasgow',
+      }),
+    ).resolves.toBe('done');
+    expect(Object.keys(useWriteQueueStore.getState().queue)).toHaveLength(0);
+    expect(useVisitConfirmStore.getState().pending).toEqual({
+      branchId: 'b2',
+      branchName: 'AGBC Glasgow',
+    });
   });
 });
 

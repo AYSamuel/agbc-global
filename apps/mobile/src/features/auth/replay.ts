@@ -8,7 +8,7 @@ import { invalidateRegistrations } from '@/features/academy/queries';
 import { applyGloryToCaches } from '@/features/family/gloryCache';
 import { applyIntercessionToCaches } from '@/features/family/prayerCache';
 import { queueRsvp } from '@/features/events/rsvp';
-import { queueCheckIn } from '@/features/rhythm/useImHere';
+import { checkInOrAsk } from '@/features/rhythm/useImHere';
 import { queueSave } from '@/features/watch/saved';
 import { track } from '@/lib/analytics';
 import { pushWrite } from '@/lib/writeQueue';
@@ -82,7 +82,18 @@ function performReplay(action: GateAction): Promise<ReplayOutcome> {
       // action rather than being read from the chip now, because the member is
       // being returned to the card they tapped and that is the branch they were
       // standing in (docs/spec/07).
-      queueCheckIn(action.branchId);
+      //
+      // Same path INCLUDES the visiting question: a guest who tapped on another
+      // branch's card has a home branch by the time they land back here, chosen
+      // seconds ago at AUTH-3, and it may not be the branch under the tap. The
+      // root's sheet is what asks, and what writes if they say yes: no screen
+      // can be relied on here, because AUTH-4 has just moved them.
+      //
+      // 'done' either way: the gate carried the action all the way to the point
+      // where it needs the member, which is exactly where an ordinary tap
+      // arrives. Whether attendance is actually recorded is `attendance_marked`,
+      // a different event that only a real write fires.
+      checkInOrAsk(action.branchId, action.branchName);
       return Promise.resolve('done');
     }
     case 'my_posts': {
