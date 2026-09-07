@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import '@/i18n';
 import { ToastProvider } from '@/components/ui';
+import { useVisitConfirmStore } from '@/features/rhythm/visiting';
 import { useWriteQueueStore } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
@@ -165,6 +166,7 @@ beforeEach(() => {
   });
   useAuthStore.setState({ status: 'guest', email: null, profile: null });
   useGateStore.setState({ pending: null, dismissedKinds: [] });
+  useVisitConfirmStore.setState({ pending: null });
   useWriteQueueStore.setState({ queue: {}, handlers: null, draining: false });
   mockServices.mockReturnValue({
     data: [
@@ -284,9 +286,12 @@ describe('"I\'m here" (docs/spec/10)', () => {
     // sheet's. The sheet renders over Home, so it is the last one.
     const signIn = screen.getAllByRole('button', { name: 'Sign in' });
     await fireEvent.press(signIn[signIn.length - 1]);
+    // The NAME rides along with the id: on the way back the replay may have to
+    // raise the visiting question, and by then no screen holds either.
     expect(useGateStore.getState().pending).toEqual({
       kind: 'im_here',
       branchId: GLASGOW,
+      branchName: 'AGBC Glasgow',
     });
     expect(mockPush).toHaveBeenCalledWith('/auth');
   });
@@ -354,6 +359,46 @@ describe('"I\'m here" (docs/spec/10)', () => {
     signIn(GLASGOW);
     await renderHome();
     expect(screen.queryByText(/Visiting/)).toBeNull();
+  });
+
+  // The confirm (mockup "HOME · visiting · the confirm"). The note above tells
+  // them where the tap lands; this says the tap does not land until they answer.
+  // The SHEET is mounted at the root and tested in features/rhythm, so what Home
+  // owes is raising the question instead of writing.
+  test('the tap asks first when the branch is not their own', async () => {
+    signIn(BERLIN);
+    await renderHome();
+    await fireEvent.press(screen.getByRole('button', { name: "I'm here" }));
+    expect(useVisitConfirmStore.getState().pending).toEqual({
+      branchId: GLASGOW,
+      branchName: 'AGBC Glasgow',
+    });
+    // The whole point of asking: nothing is recorded on the way to the question.
+    expect(Object.keys(useWriteQueueStore.getState().queue)).toHaveLength(0);
+  });
+
+  // The test that makes the one above mean something: asking ALWAYS would pass
+  // it, and this is what it would break.
+  test('at their own branch the tap still writes, unasked', async () => {
+    signIn(GLASGOW);
+    await renderHome();
+    await fireEvent.press(screen.getByRole('button', { name: "I'm here" }));
+    expect(useVisitConfirmStore.getState().pending).toBeNull();
+    expect(Object.values(useWriteQueueStore.getState().queue)).toHaveLength(1);
+  });
+
+  test('once the answer is in, the note stops asking', async () => {
+    signIn(BERLIN);
+    mockRhythm.mockReturnValue({
+      data: rhythmRow({ checkedIn: true }),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderHome();
+    expect(
+      screen.getByText(/You're checked in at AGBC Glasgow today/),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(/Visiting AGBC Glasgow today/)).toBeNull();
   });
 });
 

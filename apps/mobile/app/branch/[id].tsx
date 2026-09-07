@@ -76,8 +76,15 @@ export default function BranchInfo() {
   // screen from the map or the branch list without Home ever being involved.
   const isMember = useAuthStore((s) => s.status === 'member');
   const rhythmQuery = useRhythmQuery(branchId, isMember);
+  const branch = query.data;
+  // A tap here on a branch that is not the member's own raises the visiting
+  // question rather than writing (features/rhythm/visiting), and the sheet
+  // that answers it is mounted at the root. This screen is where that matters
+  // most: a member can reach ANY branch's check-in from the map or the list,
+  // with the browsing chip pointing somewhere else entirely.
   const imHere = useImHerePress(
     branchId,
+    branch?.name ?? '',
     rhythmQuery.data?.checkedIn ?? false,
     () => {
       track('gate_shown', { action_type: 'im_here' });
@@ -85,7 +92,6 @@ export default function BranchInfo() {
     },
   );
 
-  const branch = query.data;
   const loading = query.data === undefined && !query.isError;
 
   const back = () => {
@@ -528,9 +534,11 @@ export default function BranchInfo() {
           // signing in records the check-in HERE and not wherever the browsing
           // chip happens to point afterwards.
           if (branchId) {
-            useGateStore
-              .getState()
-              .beginGateSignIn({ kind: 'im_here', branchId });
+            useGateStore.getState().beginGateSignIn({
+              kind: 'im_here',
+              branchId,
+              branchName: branch.name,
+            });
           }
           setGateVisible(false);
           router.push('/auth');

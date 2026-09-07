@@ -1165,7 +1165,7 @@
   <script>(function(){var l=document.getElementById('w27Light'),d=document.getElementById('w27Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
   <h2 class="ghead" id="w28">&#128337; W2.8 &middot; Member Home + Rhythm &middot; light</h2>
-  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Home</b> &#8594; <b>I'm here</b> &#8594; <b>checked in</b> &#8594; <b>celebration</b> (only on a milestone) &#8594; <b>reminder sheet</b> (only the first time) &nbsp;|&nbsp; <b>RHYTHM</b> renders the four states of <code>rhythm_state()</code>, and the app never works out which one it is.</p>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Home</b> &#8594; <b>I'm here</b> &#8594; <b>the visit confirm</b> (only while browsing another branch) &#8594; <b>checked in</b> &#8594; <b>celebration</b> (only on a milestone) &#8594; <b>reminder sheet</b> (only the first time) &nbsp;|&nbsp; <b>RHYTHM</b> renders the four states of <code>rhythm_state()</code>, and the app never works out which one it is.</p>
   <p class="alwayson" style="padding:0 20px 10px">The streak sentence reads <b>&#8220;5 weeks of showing up&#8221;</b>, not &#8220;Five weeks&#8221;: the count is interpolated, and no <code>Intl</code> API spells a number out in EN/DE/NL/FR. Corrected here when RHYTHM was built (2026-08-08) so the reference matches what ships.</p>
   <div class="gallery t-light" id="w28Light">
 
@@ -1251,6 +1251,95 @@
         </div>
       </div>
 
+      <!-- HOME · visiting · THE CONFIRM (composed 2026-09-06, after a member checked in at a
+           branch he was only browsing). The visit note one frame up DISCLOSES where the tap
+           lands; it never asks, and one tap on the gold button then writes an irreversible
+           fact about a place. `attendance` is unique on (profile_id, service_date) and members
+           hold insert only (no update, no delete), so a stray tap credits the wrong branch AND
+           spends that member's one check-in for the day: they reach their own service to find
+           the badge already showing, and their own branch never gets the row. So the tap
+           becomes a question, and ONLY when the browsed branch is not the member's home
+           branch. A member standing in their own branch is never asked, and a real visitor
+           pays one extra tap on a Sunday that is already unusual.
+           Drawn as ActionSheet renders it: `.btn.primary`, not the `.btn.gold` some older
+           confirm frames draw, because the component owns its button and takes
+           'primary' | 'danger' (RE-HOME's confirm shipped that way from a gold frame).
+           The secondary is a REAL ACTION rather than a dismiss: "no" otherwise leaves the
+           member browsing the wrong branch with their own service hidden behind the chip, and
+           `04` forbids dead ends. It switches the browse chip home and writes nothing, so the
+           check-in there is still their own tap. The scrim and the back button stay the way
+           out for a member who is at neither. -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; visiting &middot; the confirm (asked only when the browsed branch is not home)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Glasgow <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 12:00 PM</h2><div class="where">AGBC Glasgow &middot; Summerlee Museum, Coatbridge</div><div class="btns"><button class="btn gold" style="width:auto">I'm here</button><button class="btn glass" style="width:auto">Plan a visit</button></div><div class="visitnote"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span>Visiting <b>AGBC Glasgow</b> today? &#8220;I'm here&#8221; counts right here, and your rhythm carries on the same.</span></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">4-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring"><i>4</i></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet">
+            <div class="grab"></div>
+            <div class="gi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <h3>Are you at AGBC Glasgow?</h3>
+            <p>A check-in counts at the branch you are standing in, so this one goes to AGBC Glasgow. You have one a day, and it stays where you put it.</p>
+            <button class="btn primary">Yes, I'm here</button>
+            <button class="btn ghost">No, I'm at Berlin</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · visiting · checked in (composed 2026-09-06 with the confirm above, because a
+           confirm has to land somewhere). Two things change from the visiting frame, and the
+           second is the one that matters: the note STOPS ASKING. It reads "Visiting AGBC
+           Glasgow today?" in `rhythm:visiting`, which is a question the member has now
+           answered, and leaving it under a button that says "You're here" asks it twice. A
+           second key (`rhythm:visitingCheckedIn`) states it instead, keeping the reassurance
+           the first one ends on, because a member who travels should not have to wonder
+           whether their rhythm survived the trip. -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; visiting &middot; checked in (the note stops asking and says it)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Glasgow <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 12:00 PM</h2><div class="where">AGBC Glasgow &middot; Summerlee Museum, Coatbridge</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div><div class="visitnote"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span>You're checked in at <b>AGBC Glasgow</b> today, and your rhythm carries on the same.</span></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Save</span></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
       <!-- NOTIFICATIONS · pre-permission sheet -->
       <div class="device">
         <p class="name"><b>NOTIF-ASK</b> &middot; pre-permission sheet, after the first &#8220;I'm here&#8221;</p>

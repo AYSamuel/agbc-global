@@ -223,7 +223,17 @@ export function NextServiceCard({
                   sentence that changes what the tap means. */}
               <Trans
                 t={t}
-                i18nKey="rhythm:visiting"
+                /* Once the tap has landed the note STOPS ASKING: "Visiting
+                   Glasgow today?" under a button reading "You're here" asks a
+                   question the member has already answered (mockup "HOME ·
+                   visiting · checked in"). The reassurance carries over, because
+                   a member who travels should not have to wonder whether their
+                   rhythm survived the trip. */
+                i18nKey={
+                  imHere.checkedIn
+                    ? 'rhythm:visitingCheckedIn'
+                    : 'rhythm:visiting'
+                }
                 values={{ branch: visitingBranchName }}
                 components={{
                   1: (

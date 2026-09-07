@@ -295,11 +295,21 @@ export default function Home() {
     branch?.timezone ?? 'UTC',
     now,
   );
+  // A tap on a branch that is not their own raises the visiting question rather
+  // than writing (features/rhythm/visiting). The sheet that answers it is
+  // mounted at the root, so Home has nothing to render for it.
   const imHere = useImHerePress(
     branch?.id ?? null,
+    branch?.name ?? '',
     rhythm?.checkedIn ?? false,
     () => {
-      if (branch) openGate({ kind: 'im_here', branchId: branch.id });
+      if (branch) {
+        openGate({
+          kind: 'im_here',
+          branchId: branch.id,
+          branchName: branch.name,
+        });
+      }
     },
   );
   // Browsing a branch that is not where they belong (docs/spec/07): the card
