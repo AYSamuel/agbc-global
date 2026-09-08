@@ -89,6 +89,13 @@
     "body": "Diese Version der App wird nicht mehr unterstützt. Aktualisiere jetzt, um mit der Familie verbunden zu bleiben.",
     "cta": "Jetzt aktualisieren"
   },
+  "updateNotice": {
+    "title": "Eine neue Version ist da",
+    "body": "Sie bringt die neuesten Verbesserungen mit. Es dauert nur einen Moment, und alles, was du hier aufbewahrst, bleibt genau da, wo es ist.",
+    "cta": "Aktualisieren",
+    "footnote": "Wir fragen heute nicht noch einmal.",
+    "dismissed": "Update-Hinweis geschlossen. Die neue Version wartet, wann immer du bereit bist."
+  },
   "languages": {
     "en": "Englisch",
     "de": "Deutsch",

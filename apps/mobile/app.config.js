@@ -3,8 +3,16 @@
 //
 // App identity is FROZEN (docs/spec/19, ADR 0002): this app replaces Grace Portal on
 // the existing store listings. Never change package/bundleIdentifier, never let
-// tooling regenerate credentials, never create new store records. versionCode floor
-// is 20 (highest Grace Portal upload is 19).
+// tooling regenerate credentials, never create new store records.
+//
+// `version` IS THE RELEASE and is the only version number kept here. The BUILD number
+// lives on EAS, not in this file: `eas.json` sets `appVersionSource: "remote"` and the
+// production profile auto-increments, so an `android.versionCode` here is read by nobody
+// and was removed at 1.0.1 while it still said 20 and the real one was 22. The floor that
+// mattered is history now: Grace Portal's highest upload was 19, this app started at 20,
+// and Play will not accept anything lower ever again. Read the live number with
+// `eas build:version:get --platform android`; the release table is in
+// docs/runbooks/releases.md.
 
 // Sourcemap upload needs an org and a project, and the plugin fails a build when it has
 // neither. Conditional so a local prebuild and anyone else's checkout still work: the
@@ -28,7 +36,7 @@ const sentryPlugin =
 const config = {
   name: 'AGBC Global',
   slug: 'agbc-global',
-  version: '1.0.0',
+  version: '1.0.1',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'agbcglobal',
@@ -36,6 +44,14 @@ const config = {
   runtimeVersion: { policy: 'fingerprint' },
   ios: {
     bundleIdentifier: 'com.olayinkaademiluka.grace-portal',
+    // NO `infoPlist.AppStoreID` YET, and that is what keeps W4.10's update
+    // notice inert on iOS rather than wrong. `expo-in-app-updates` reads that key
+    // to look the app up in the iTunes Search API; with no id the lookup matches
+    // nothing and resolves "no update available", which is the safe answer. The
+    // numeric id lives only in App Store Connect (same blocker as the store link
+    // in src/lib/links.ts); adding it here turns the iOS half on with no code
+    // change.
+    //
     // NO `icon` OVERRIDE, deliberately: iOS falls back to the top-level
     // `icon` above, which is the app's own mark. It used to point at
     // './assets/expo.icon', the Icon Composer bundle `create-expo-app`
@@ -60,7 +76,6 @@ const config = {
   },
   android: {
     package: 'com.oami.agbcapp',
-    versionCode: 20,
     // Firebase client config. The file ships inside the app binary, so its API key
     // is public by design (Google: safe to include), but it is kept OUT of git so
     // secret-scanning stops flagging it (decision 2026-07-25, reversing the earlier

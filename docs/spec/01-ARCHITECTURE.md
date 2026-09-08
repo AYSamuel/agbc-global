@@ -9,7 +9,7 @@
 - **One codebase, both stores.** iOS + Android from the same TypeScript. A church team cannot maintain two native codebases.
 - **You already ship RN-friendly.** You have an Apple Developer account (non-profit, fee waived) and an app already on the App Store: the hardest account/logistics hurdles are cleared.
 - **Windows-friendly dev + cloud iOS builds.** This is the key one: see §2. Expo's **EAS Build** compiles iOS in the cloud, so you do **not** need a Mac to produce an installable iOS build. (This is precisely the Flutter pain point you hit: Flutter still expects local Xcode/macOS for iOS.)
-- **OTA updates.** Expo Updates lets you push JS-only fixes without a full store review: valuable for copy/verse/typo fixes.
+- ~~**OTA updates.**~~ Expo Updates can push JS-only fixes without a full store review, and this was one of the reasons for choosing Expo. **It is not being built (Ayo, 2026-09-08, W4.10):** `expo-updates` is not installed and every fix rides the store train. It stayed an argument for Expo long enough to be worth recording that it was dropped on purpose rather than forgotten, and the reasoning, including what the choice costs in an incident, is in `21` §8.
 - **Batteries included.** Expo modules cover almost everything we need: `expo-audio` (playback + background + lock-screen controls; `expo-av` was removed in SDK 55, never reference it), `expo-notifications` (push), `expo-secure-store` (auth key), `expo-localization` (language), `expo-image`, `expo-web-browser` (link-out giving), deep linking, etc.
 - **SDK floor:** target **Expo SDK 56+** at kickoff (Play requires target API 36 for all updates from 2026-08-31; SDK 56 also forked Expo Router from React Navigation). Track SDK upgrades per the release calendar in `21-OPERATIONS.md`.
 
@@ -125,7 +125,7 @@ If a fully custom backend is preferred, here's what it takes and roughly what it
 
 - **dev** (local dev builds + `supabase start` as the daily loop; a fresh free-tier hosted Supabase project for integration/preview), **production** (store builds + the existing shared Supabase project on Pro, see `19`). Staging exists only as the short-lived cleanup-rehearsal project (`19`/`21` §2).
 - Secrets in EAS secrets / Supabase env; never in the client bundle.
-- OTA channel per environment.
+- ~~OTA channel per environment.~~ The channels exist in `eas.json` (development/preview/production) and serve nothing: OTA is not built (`21` §8). They cost nothing and are what an `expo-updates` install would need on the day that changes.
 
 ## 7. Analytics & observability
 

@@ -20,6 +20,7 @@ import { MilestoneCelebration } from '@/features/rhythm/MilestoneCelebration';
 import { VisitConfirm } from '@/features/rhythm/VisitConfirm';
 import { SignedOutToast } from '@/features/shell/SignedOutToast';
 import { ForcedUpdateGate } from '@/features/update-gate/ForcedUpdateGate';
+import { UpdateNotice } from '@/features/update-gate/UpdateNotice';
 import { persistOptions, queryClient } from '@/lib/queryPersist';
 import { initSentry } from '@/lib/sentry';
 import { startWriteQueue } from '@/lib/writeQueue';
@@ -122,6 +123,11 @@ export default function RootLayout() {
             <AnalyticsAsk />
             {/* Below-minimum binaries block before any navigation (docs/spec/21 §8). */}
             <ForcedUpdateGate>
+              {/* The OPTIONAL update, and inside the gate on purpose (W4.10): a
+                binary already stopped by the floor has no business being offered
+                a choice about updating. Last of the five overlays and the only
+                one nothing is waiting on. */}
+              <UpdateNotice />
               {/* One player for the app's life, above every screen (W4.9 slice 3):
                   inside the gate, because a blocked binary has no business
                   playing anything, and inside the providers it needs (auth for
