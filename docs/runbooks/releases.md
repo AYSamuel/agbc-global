@@ -40,7 +40,7 @@ escalates a release immediately.
 
 | Version | Build | Tag | Commit | Fingerprint | Built | Store | Rollout | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 1.0.1 | 23 | `v1.0.1` | (this release) | (filled from the build) | 2026-09-08 | Play | TBC | **The first in-app-update release.** W4.10: the once-a-day update notice, Play's flexible install behind it, escalation at 28 days stale, and the forced-update wall's button installing rather than linking out. Also the first release whose artefact is tagged, and the first row in this table |
+| 1.0.1 | 23 | `v1.0.1` | `54c54af` | `c2d9d19e` | 2026-09-08 (15 min) | Play, **sent for review 2026-09-08** | full (100%) | **The first in-app-update release**, and the first release members ever get told about from inside the app. W4.10: the once-a-day notice, Play's flexible install behind its button, escalation at 28 days stale, the wall's button installing rather than linking out. **It also carries the whole of W4.9, which had never reached a user**: build 22 was cut on 2026-09-04 and the now-playing bar, the seek, 2x speed and Watch's Video / Audio segment all landed on the 6th, which is why the release notes lead with listening. Plus the visiting check-in confirm, the check-in that no longer outlives its gathering, the notification ask reaching everyone, and the branch page showing its pastor alone. First release to be tagged, and the first row in this table |
 | 1.0.0 | 22 | none | `178d1a0` | `7f58dee6` | 2026-09-04 (32 min) | Play, submitted 2026-09-05, **live 2026-09-06** | full (100%) at submission | The launch release, and the one that replaced Grace Portal on the existing listing. Recorded here after the fact, from the console and the EAS build record. **The store listing did not go out with it**: it was typed into the console and never saved, so Play served Grace Portal's name, icon and screenshots for three days until it was saved and sent for review on 2026-09-08 |
 | 1.0.0 | 21 | none | `1d1faeb` | `f9409204` | 2026-09-04 (20 min) | never uploaded | n/a | Superseded by 22 the same day. Kept in the table because it is the reason `versionCode` cannot be read as a release count: 21 and 22 are two builds of ONE release, which is exactly why W4.10's escalation is measured in Play's staleness days instead |
 
@@ -65,5 +65,17 @@ if it does and read the real number from the usage page on expo.dev.
 **Staged rollout and the halt criteria** live in `21` §8 and are restated in
 `store-submission.md` §4, next to the button that does it: Play 10 > 25 > 50 > 100% over
 about seven days, halted for crash-free below 99.5%, ANR above 0.5%, an OTP success
-collapse, or any moderation or data-integrity bug. 1.0.0 went out at full rollout because it
-was the rebrand release replacing an app that already had installs.
+collapse, or any moderation or data-integrity bug.
+
+**Both releases so far departed from the staged plan, deliberately, and the reason is
+arithmetic.** 1.0.0 went out at 100% because it was the rebrand replacing an app that
+already had installs. 1.0.1 went out at 100% because the install base is **5 devices**: 10%
+of five is zero people, so a staged rollout would delay everyone and measure nothing, and
+the halt criteria it exists to serve (crash-free rate, ANR rate) need a population before
+they can say anything at all. Staging becomes real the first release after the congregation
+is actually on the app, and this note is here so that is a decision rather than a habit.
+
+**Every release also carries one Play warning that is expected**: "There is no
+deobfuscation file associated with this App Bundle." That is the other face of the
+"App optimization is below our threshold" item (obfuscation at 1%, deadline Feb 2027), which
+is W4.11's. Both go away together when R8 is turned on.

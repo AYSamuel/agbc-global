@@ -214,6 +214,25 @@ Every feature's acceptance criteria include the verification matrix: small phone
   "spend 396dp on a list".
 - v1 ships real tablet layouts, not just a capped column. Direction: above ~600dp width, list-heavy tabs (Watch, Family, Events, Store) move to master-detail or multi-column grids; Home caps content width (~680px) and splits its sections into a two-column dashboard grid (see the tablet HOME frames); player and reader support landscape on all devices.
 - Android 16+ ignores orientation/resizability locks on large screens, so tablet rendering is not optional; iPad support is claimed on the App Store (adds iPad screenshots to the store matrix, see `19`).
+- **AND THE APP CONTRADICTED THAT LINE FOR ITS WHOLE LIFE, until W4.11 (2026-09-08).**
+  `app.config.js` carried `orientation: 'portrait'`, which Expo turns into
+  `android:screenOrientation="PORTRAIT"` on MainActivity and applies to every device on
+  every Android version. So a tablet on **Android 15 or below was held in portrait and
+  could never reach any of the layouts W4.7 built**: the rail, Watch's two-pane, Home's
+  dashboard grid. Those layouts existed for exactly one Android version, which is also
+  the only reason the tablet work was testable at all. Found by Google, not by us: it is
+  a "recommended action" on the Play release dashboard, which quoted our own manifest
+  back at us. **The rule now lives in the app** (`lib/orientation.ts`), where it can be
+  conditional: portrait on a phone, untouched on a tablet, and the player may still
+  rotate anywhere (`useLandscapeAllowed`, whose restore is now conditional too, since
+  re-locking a tablet on the way out of the player would reintroduce the same bug one
+  screen at a time). What did NOT change is the decision above it: a phone still does
+  not rotate outside the player, because a phone in landscape is over 1000dp wide and is
+  still a phone, and freeing it would put every screen at roughly 400dp of height with a
+  keyboard at large font scales. Two costs accepted, both recorded on the module: a
+  phone launched sideways can show one landscape frame before the lock lands, and a
+  missing `expo-screen-orientation` now fails OPEN (free rotation) where the manifest
+  used to fail safe.
 - Each feature doc's screens are designed at phone AND tablet widths during the design phase; the frontend-bootstrap component library builds responsive primitives first (`Screen` handles width classes).
 
 ## Voice & tone
