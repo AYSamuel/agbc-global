@@ -37,7 +37,17 @@ const config = {
   name: 'AGBC Global',
   slug: 'agbc-global',
   version: '1.0.1',
-  orientation: 'portrait',
+  // NO ORIENTATION LOCK IN THE MANIFEST (W4.11). This was 'portrait',
+  // which Expo turns into android:screenOrientation="PORTRAIT" on MainActivity and
+  // applies to every device on every Android version. That held TABLETS in portrait on
+  // Android 15 and below, so the tablet layouts W4.7 built (the rail, Watch's two-pane,
+  // Home's dashboard grid) could only ever be reached on Android 16, which ignores the
+  // lock. `05` §Tablet has said tablet rendering is not optional since 2026-07-12.
+  //
+  // The rule now lives in the app, where it can be conditional: portrait on a phone,
+  // free on a tablet, and the player may rotate anywhere. See src/lib/orientation.ts,
+  // which carries the two costs this trade accepts.
+  orientation: 'default',
   icon: './assets/images/icon.png',
   scheme: 'agbcglobal',
   userInterfaceStyle: 'automatic',
@@ -210,6 +220,35 @@ const config = {
       // for Ayo rather than guessed at.
       'expo-notifications',
       { color: '#ffcf4a' },
+    ],
+    [
+      // R8 (W4.11 slice 2). Play's release dashboard carries "App optimization is
+      // below our threshold", obfuscation at 1%, with a Feb 2027 deadline, and every
+      // upload warns "There is no deobfuscation file associated with this App Bundle".
+      // Both are the same fact: nothing was being minified. Option name verified
+      // against the installed expo-build-properties 57.0.17 plugin types, not from
+      // memory (it used to be `enableProguardInReleaseBuilds`).
+      //
+      // MINIFY ONLY, NOT `enableShrinkResourcesInReleaseBuilds`. The flagged category
+      // is obfuscation, which minification alone answers; resource shrinking removes
+      // assets it cannot see referenced, which is a second and unrelated way to break
+      // a release for no gain against the thing Play is asking for. It is available
+      // the day app size actually matters.
+      //
+      // NOTHING HAS TO BE UPLOADED FOR THE DEOBFUSCATION WARNING. With minification on,
+      // the Android Gradle plugin writes the mapping into the bundle itself
+      // (BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map) and Play
+      // reads it from there, so crash reports stay readable without a manual step.
+      //
+      // THE RISK, stated where it will be read: R8 removes classes it cannot see being
+      // used, and React Native, Hermes and every Expo module find things by REFLECTION.
+      // A stripped class fails at runtime, on the screen that needed it, while the
+      // build, the typecheck, the lint and all 1128 tests stay green. The acceptance
+      // test is therefore an installed release artifact walked by hand, and no suite
+      // can stand in for it. If the walk finds a hole, `extraProguardRules` is where
+      // the keep rule goes.
+      'expo-build-properties',
+      { android: { enableMinifyInReleaseBuilds: true } },
     ],
     ...sentryPlugin,
   ],

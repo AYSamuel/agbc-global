@@ -10,6 +10,7 @@ import { ToastProvider } from '@/components/ui';
 import { NowPlayingBar } from '@/features/watch/NowPlayingBar';
 import { NowPlayingProvider } from '@/features/watch/nowPlaying';
 import { useLayout } from '@/lib/layout';
+import { usePortraitOnPhone } from '@/lib/orientation';
 import { TabletShell } from '@/features/shell/TabletShell';
 import { AnalyticsAsk } from '@/features/analytics/AnalyticsAsk';
 import { prefetchHome } from '@/features/home/queries';
@@ -72,6 +73,12 @@ function ThemedStack() {
 }
 
 export default function RootLayout() {
+  // Portrait on a phone, free on a tablet (W4.11). This replaces the manifest's
+  // blanket lock, which held tablets in portrait on every Android below 16 and so
+  // put W4.7's tablet layouts out of reach. Here rather than in the effect below
+  // because it is a hook: it reads the window to know which kind of device this is.
+  usePortraitOnPhone();
+
   useEffect(() => {
     // Launch warm-up (docs/spec/01 §9): the branch list for onboarding, plus
     // Home's date-anchored reads so the first tab paints from cache. Session
