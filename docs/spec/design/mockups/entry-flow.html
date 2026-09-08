@@ -1340,6 +1340,160 @@
           </div>
         </div>
       </div>
+      <!-- HOME · THE GATHERING HAS ENDED (composed 2026-09-07, from a state seen on the phone
+           the same morning). Two clocks run on this screen and they part company every week.
+           The HERO shows the NEXT service and hands over the moment the current one ENDS
+           (`resolveNextService`: a service holds the card while it is running, start through
+           start + duration_min), so an 11:00 service of two hours gives the card to Wednesday
+           at 13:00. The CHECK-IN stays open until the end of the branch-local DAY, on purpose:
+           `checkInOpen`'s far edge is the grace half of "around service time", for the member
+           who taps on the way home or once the children are in bed, and `rhythm_state` answers
+           "checked in today" for that same day.
+           So for the eleven hours between them, the control rode a card advertising a
+           different meeting: "THIS WEDNESDAY · Midweek Prayer" with "I'm here" underneath, and
+           for a member who had tapped, "You're here" against a gathering they were never at.
+           The offer is the worse half, because it invites a tap for the wrong meeting.
+           THE FIX IS THAT THE CONTROL LEAVES THE HERO WHEN THE HERO LEAVES THE SERVICE, and
+           moves into the gold `.linkbanner` that already carries "an informational line you
+           can ignore" (2026-08-01) with one action on its right. The banner NAMES the
+           gathering, which the hero no longer can, and the hero goes back to its ordinary
+           pair. Nothing about the window changes: same far edge, same 72-hour clamp, and
+           while the service is actually running the check-in stays in the hero exactly as the
+           W2.8 frames draw it.
+           ABOVE the hero, not below (Ayo on the device, 2026-09-07): the hero is about what
+           happens NEXT, so a line about what already happened reads as an afterthought
+           beneath it and as context on top of it. Same 16px side margins as the hero and the
+           rhythm strip, because a line inset from the cards it sits between looks like a
+           different kind of thing; the first build drew it at 32 by adding a margin inside a
+           column that already pads, and it showed. -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; the gathering has ended, not yet checked in (the offer names it)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good afternoon, Ayo</div><div class="brand">AGBC Lighthouse Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <!-- The check-in, where it can name what it is for. `.dismiss` is the banner's own
+                 action slot (W3.5's "Choose" uses it the same way, as an action rather than a
+                 dismissal), so this needs no new control. -->
+            <div class="linkbanner gold" style="margin:8px 16px 12px">
+              <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+              <span class="lt"><b>Sunday Worship, earlier today.</b> You can still say you were there.</span>
+              <button class="dismiss">I'm here</button>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">This Wednesday</span><h2>Midweek Prayer &middot; 7:00 PM</h2><div class="where">Oudenarder Str. 16, 13347 Berlin</div><div class="btns"><button class="btn gold" style="width:auto">Plan a visit</button><button class="btn glass" style="width:auto">Watch</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">4-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring"><i>4</i></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Save</span></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · ended, and the tap has landed. The same banner with nothing left to do: the
+           receipt says WHICH gathering it counted for, which "You're here" in the hero could
+           not once the hero had moved on. The rhythm strip carries the week; this line carries
+           the day. -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; the gathering has ended, checked in (the receipt names it too)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good afternoon, Ayo</div><div class="brand">AGBC Lighthouse Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="linkbanner gold" style="margin:8px 16px 12px">
+              <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              <span class="lt"><b>You're here.</b> Counted at Sunday Worship, earlier today.</span>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">This Wednesday</span><h2>Midweek Prayer &middot; 7:00 PM</h2><div class="where">Oudenarder Str. 16, 13347 Berlin</div><div class="btns"><button class="btn gold" style="width:auto">Plan a visit</button><button class="btn glass" style="width:auto">Watch</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Saved &#10003;</span></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · ended, while browsing another branch. THE ONE THAT IS EASY TO FORGET, and the
+           reason it gets its own frame: the hero's `.visitnote` leaves WITH the hero, so
+           without this the single surface that says where a tap counts would disappear at
+           exactly the hour the answer is least obvious. The banner takes the branch name into
+           its own sentence instead. The tap still raises the visiting confirm (frames above),
+           so the safety net is unchanged; this is the disclosure that precedes it. -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; ended, browsing another branch (the banner keeps the branch name)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good afternoon, Ayo</div><div class="brand">AGBC Glasgow <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="linkbanner gold" style="margin:8px 16px 12px">
+              <span class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span>
+              <span class="lt"><b>Sunday Worship at AGBC Glasgow, earlier today.</b> You can still say you were there, and it counts at Glasgow.</span>
+              <button class="dismiss">I'm here</button>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">This Wednesday</span><h2>Midweek Prayer &middot; 6:00 PM</h2><div class="where">Summerlee Museum, Heritage Way, Coatbridge</div><div class="btns"><button class="btn gold" style="width:auto">Plan a visit</button><button class="btn glass" style="width:auto">Watch</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">4-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring"><i>4</i></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Save</span></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
       <!-- NOTIFICATIONS · pre-permission sheet -->
       <div class="device">
         <p class="name"><b>NOTIF-ASK</b> &middot; pre-permission sheet, after the first &#8220;I'm here&#8221;</p>
@@ -3470,6 +3624,11 @@
             <div class="where">Prinzenstr. 84, 10969 Berlin</div>
             <div class="svcbtns"><button class="btn gold">I&#39;m here</button><button class="btn outline">Directions</button></div>
           </div>
+          <!-- ONE PERSON, and that is the whole card (confirmed by Ayo, 2026-09-08). The
+               branch row carries other leaders too and the code had grown into printing
+               them as a roster; a visitor opening a branch page is being introduced to
+               the person who leads it, not handed a staff list. The rest stay in the data
+               and on the dashboard, where a leader has a reason to look them up. -->
           <div class="leadcard"><div class="leadrow"><span class="lav">AY</span><div><div class="nm">Pastor AY Samuel</div><div class="rl">Lead Pastor &middot; Berlin</div></div></div></div>
           <div class="welcomecard"><div class="eye">Welcome</div><div class="q">&#8220;Willkommen. You belong here in Berlin.&#8221;</div></div>
           <div style="padding:14px 16px 0"><button class="btn outline">Watch this branch</button></div>

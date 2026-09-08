@@ -249,6 +249,18 @@ describe('the notification ask (docs/spec/06)', () => {
     expect(screen.getByText(/You're checked in either way/)).toBeOnTheScreen();
   });
 
+  test('after sign-in it reassures about the account, not an act', async () => {
+    // `06`'s third trigger has no deed behind it, so the two older sentences
+    // would both be untrue: nothing was checked into and nothing was RSVPd.
+    signIn();
+    useNotificationAskStore.setState({ pending: 'signed_in' });
+    await renderMoments();
+
+    expect(screen.getByText(/You're in either way/)).toBeOnTheScreen();
+    expect(screen.queryByText(/You're checked in either way/)).toBeNull();
+    expect(screen.queryByText(/Your RSVP stands either way/)).toBeNull();
+  });
+
   test('a member who already answered the OS is not interrupted at all', async () => {
     signIn();
     mockState.mockResolvedValue('granted');

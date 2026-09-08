@@ -36,6 +36,14 @@ export type GateAction =
    */
   | { kind: 'my_posts' }
   /**
+   * Reaching NOTIF-PREFS (2026-09-08). Navigation-shaped like `my_posts`, and
+   * reachable signed-out only by a session that ENDED underneath the member:
+   * Settings hides the row for guests and the route is not deep-linkable. Even
+   * so, the screen owes them a way back to the switches they were looking at
+   * rather than three skeletons that never resolve.
+   */
+  | { kind: 'notification_prefs' }
+  /**
    * Reaching MY-LIST (W3.1 slice 4). Navigation-shaped like `my_posts`, and
    * reachable only by deep link: the PROFILE row that leads here exists only
    * for a member, and the Save control gates before anything is listed. A list

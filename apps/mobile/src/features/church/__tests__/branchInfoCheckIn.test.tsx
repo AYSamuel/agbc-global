@@ -59,8 +59,11 @@ jest.mock('@/features/church/queries', () => ({
       lng: 13.36,
       service_times: { sunday: 'Sundays 11:00' },
       address: { line1: 'Oudenarder Str. 16', line2: '13347 Berlin' },
-      lead: null,
-      leaders: [],
+      lead: { name: 'Pastor AY Samuel', role: 'Lead Pastor' },
+      leaders: [
+        { name: 'Sister Folake', role: 'Youth' },
+        { name: 'Brother Tunde', role: 'Music' },
+      ],
       welcome: 'You are welcome here.',
     },
     isError: false,
@@ -141,6 +144,19 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers();
+});
+
+// The card names the PERSON WHO LEADS the branch and stops there (Ayo,
+// 2026-09-08). The mockup's `.leadcard` has only ever drawn one; the code had
+// drifted into a roster, and the other leaders stay in the data for the
+// dashboard.
+describe("BRANCH-INFO's leadership card", () => {
+  test('shows the pastor, and only the pastor', async () => {
+    await renderScreen();
+    expect(screen.getByText('Pastor AY Samuel')).toBeOnTheScreen();
+    expect(screen.queryByText('Sister Folake')).toBeNull();
+    expect(screen.queryByText('Brother Tunde')).toBeNull();
+  });
 });
 
 describe('BRANCH-INFO\'s "I\'m here"', () => {

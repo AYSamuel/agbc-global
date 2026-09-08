@@ -154,7 +154,33 @@ export function resolveNextService(
 }
 
 /**
- * Is "I'm here" open, on this branch's own wall clock?
+ * The gathering's name: its own label, or the generic name for its kind.
+ *
+ * Here rather than in the card, because two surfaces name a service now (the
+ * hero's title, and the note that carries the check-in once the hero has moved
+ * on) and a service named twice is a service named differently.
+ */
+export function serviceName(
+  service: ServiceRow,
+  t: (key: string) => string,
+): string {
+  return service.label || t(`home:serviceKind.${service.kind}`);
+}
+
+/** The gathering an open check-in belongs to. */
+export interface OpenCheckIn {
+  service: ServiceRow;
+  /**
+   * The gathering is OVER, and the hero has already handed its card to the next
+   * service. The control cannot ride the card any more, so whatever draws it has
+   * to name this gathering itself (mockup "HOME · the gathering has ended").
+   */
+  ended: boolean;
+}
+
+/**
+ * Which gathering "I'm here" is open for, on this branch's own wall clock, and
+ * whether it has finished.
  *
  * `10` and `04` both say attendance is offered "around service time", and this
  * is that phrase made exact: from the same 30-minute lead the card already uses,
@@ -167,22 +193,32 @@ export function resolveNextService(
  * still records the right day (docs/spec/02). Ending the offer when the service
  * ends would take the control away from exactly those people.
  *
- * A branch with no rows answers false, which is `07`'s zero-rows rule: display
+ * WHICH gathering, and not merely whether, because the two clocks on Home part
+ * company every week. The hero hands over at the END of a service while the
+ * offer runs to midnight, so for the hours between them the control was riding a
+ * card advertising a different meeting (seen on the device, 2026-09-07). A
+ * RUNNING gathering therefore wins outright, since that is the one the hero is
+ * showing; only when nothing is running does the last one to have finished today
+ * answer, and it answers `ended`.
+ *
+ * A branch with no rows answers null, which is `07`'s zero-rows rule: display
  * strings, no countdown, and no check-in.
  */
-export function checkInOpen(
+export function openCheckIn(
   services: ServiceRow[],
   timeZone: string,
   now: Date,
-): boolean {
+): OpenCheckIn | null {
   const nowMin = localMinuteOfWeek(now, timeZone);
   // Unknown zone: the card is already falling back to display strings, and a
   // check-in must never be offered on a guess.
-  if (nowMin < 0) return false;
+  if (nowMin < 0) return null;
 
-  return services.some((service) => {
+  let latestEnded: { service: ServiceRow; start: number } | null = null;
+
+  for (const service of services) {
     const start = startMinute(service);
-    if (start === null) return false;
+    if (start === null) continue;
     const untilStart = (start - nowMin + WEEK_MIN) % WEEK_MIN;
     const sinceStart = (nowMin - start + WEEK_MIN) % WEEK_MIN;
 
@@ -193,17 +229,39 @@ export function checkInOpen(
     // people sitting in the room, is exactly the bug that shipped to a device
     // and got caught there (2026-08-08).
     if (untilStart <= WINDOW_LEAD_MIN || sinceStart <= service.duration_min) {
-      return true;
+      return { service, ended: false };
     }
 
     // Otherwise it stays open for the rest of the branch-local day it started
     // in, which is the grace half of "around service time": a member who taps
     // on the way home was still there, and the 72-hour clamp records the right
-    // day for them (docs/spec/02).
-    return (
-      Math.floor(start / 1440) === Math.floor(nowMin / 1440) && nowMin >= start
-    );
-  });
+    // day for them (docs/spec/02). The LATEST such gathering is the one to name:
+    // on a day with a morning and an evening service, the evening one is what
+    // "earlier today" means by the time both are over.
+    if (
+      Math.floor(start / 1440) === Math.floor(nowMin / 1440) &&
+      nowMin >= start &&
+      (latestEnded === null || start > latestEnded.start)
+    ) {
+      latestEnded = { service, start };
+    }
+  }
+
+  return latestEnded === null
+    ? null
+    : { service: latestEnded.service, ended: true };
+}
+
+/**
+ * Is "I'm here" open at all? The question `openCheckIn` answers, for the callers
+ * that only need a yes (BRANCH-INFO, which draws no card to lose).
+ */
+export function checkInOpen(
+  services: ServiceRow[],
+  timeZone: string,
+  now: Date,
+): boolean {
+  return openCheckIn(services, timeZone, now) !== null;
 }
 
 /**

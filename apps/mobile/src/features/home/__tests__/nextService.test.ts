@@ -1,5 +1,6 @@
 import {
   checkInOpen,
+  openCheckIn,
   dayBucket,
   formatServiceDay,
   formatServiceTime,
@@ -260,5 +261,75 @@ describe('checkInOpen', () => {
     expect(
       checkInOpen([sunday], 'Not/AZone', new Date('2026-07-19T12:00:00Z')),
     ).toBe(false);
+  });
+});
+
+// WHICH gathering the offer belongs to, and whether the hero still has it. The
+// hero hands its card over when a service ENDS while the offer runs to midnight,
+// so between them the control has to be told what it is for (mockup "HOME · the
+// gathering has ended", seen on a device 2026-09-07).
+describe('openCheckIn', () => {
+  const sunday = service({
+    weekday: 0,
+    start_time: '12:00:00',
+    label: 'Sunday Worship',
+  });
+
+  test('while it runs, the gathering is the hero and has not ended', () => {
+    const open = openCheckIn([sunday], 'UTC', new Date('2026-07-19T12:45:00Z'));
+    expect(open?.service.label).toBe('Sunday Worship');
+    expect(open?.ended).toBe(false);
+  });
+
+  test('inside the lead it has not ended either: nobody has gathered yet', () => {
+    expect(
+      openCheckIn([sunday], 'UTC', new Date('2026-07-19T11:40:00Z'))?.ended,
+    ).toBe(false);
+  });
+
+  test('once it is over, the same gathering answers as ENDED', () => {
+    // 15:00: the noon service finished at 14:00 and the hero has moved on, but
+    // the offer stands until midnight.
+    const open = openCheckIn([sunday], 'UTC', new Date('2026-07-19T15:00:00Z'));
+    expect(open?.service.label).toBe('Sunday Worship');
+    expect(open?.ended).toBe(true);
+  });
+
+  test('a service running now wins over one that finished this morning', () => {
+    // Both are open, and the hero is showing the evening one: the control
+    // belongs in the hero, not in a note about breakfast.
+    const evening = service({
+      weekday: 0,
+      start_time: '18:00:00',
+      label: 'Evening Service',
+    });
+    const open = openCheckIn(
+      [sunday, evening],
+      'UTC',
+      new Date('2026-07-19T18:30:00Z'),
+    );
+    expect(open?.service.label).toBe('Evening Service');
+    expect(open?.ended).toBe(false);
+  });
+
+  test('with both over, the LATEST one is what "earlier today" means', () => {
+    const evening = service({
+      weekday: 0,
+      start_time: '18:00:00',
+      label: 'Evening Service',
+    });
+    const open = openCheckIn(
+      [sunday, evening],
+      'UTC',
+      new Date('2026-07-19T22:00:00Z'),
+    );
+    expect(open?.service.label).toBe('Evening Service');
+    expect(open?.ended).toBe(true);
+  });
+
+  test('nothing open answers null, and closed days stay closed', () => {
+    expect(openCheckIn([sunday], 'UTC', new Date('2026-07-20T09:00:00Z'))).toBe(
+      null,
+    );
   });
 });

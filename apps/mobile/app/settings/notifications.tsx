@@ -8,8 +8,10 @@ import { fontFamily, radius, spacing } from '@agbc/shared/theme';
 import {
   AppHeader,
   Button,
+  EmptyGlyph,
   EmptyState,
   MenuLabel,
+  PersonIcon,
   Screen,
   Skeleton,
   ToggleList,
@@ -18,11 +20,18 @@ import {
 import { useNotificationAskStore } from '@/features/notifications/ask';
 import {
   permissionState,
+  requestPermission,
   type PermissionState,
 } from '@/features/notifications/permission';
-import { usePrefs, useSetPref } from '@/features/notifications/prefs';
+import {
+  usePrefs,
+  useSetPref,
+  type PrefToggle,
+} from '@/features/notifications/prefs';
 import { useBranchNames } from '@/features/family/useBranchNames';
+import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
+import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
 /**
@@ -60,6 +69,7 @@ export default function NotificationPrefsScreen() {
   const prefs = usePrefs(signedIn);
   const setPref = useSetPref();
   const asked = useNotificationAskStore((state) => state.asked);
+  const markAsked = useNotificationAskStore((state) => state.markAsked);
   const [permission, setPermission] = useState<PermissionState>('granted');
 
   useFocusEffect(
@@ -73,6 +83,29 @@ export default function NotificationPrefsScreen() {
       };
     }, []),
   );
+
+  /**
+   * Turning any switch ON is the SECOND of `06`'s three triggers for the OS
+   * prompt, and it was never built: the toggles wrote the preference and stopped
+   * there, so a member could switch everything on, be told nothing, and still
+   * receive no push at all because the OS had never been asked (found with Ayo,
+   * 2026-09-07).
+   *
+   * No pre-permission sheet here, unlike the value moment: flipping a switch
+   * that says "service reminders" IS the explanation, and a sheet explaining it
+   * again would be asking the same question twice. The ask flag is marked either
+   * way, because `15`'s OS banner exists for exactly the state a refusal leaves
+   * behind, and it waits on that flag.
+   */
+  const writePref = (toggle: PrefToggle, next: boolean) => {
+    setPref.mutate({ toggle, next });
+    if (!next) return;
+    void permissionState().then((state) => {
+      if (state !== 'undetermined') return;
+      markAsked();
+      void requestPermission();
+    });
+  };
 
   const osOff =
     asked && permission !== 'granted' && permission !== 'unavailable';
@@ -126,7 +159,29 @@ export default function NotificationPrefsScreen() {
 
         <MenuLabel label={t('notifications:prefsSection')} />
 
-        {!signedIn || prefs.isPending ? (
+        {!signedIn ? (
+          // A SIGNED-OUT VISITOR IS NOT LOADING ANYTHING, and until 2026-09-08
+          // this branch drew skeletons that could never resolve: the query is
+          // disabled without a session, so the bars simply stayed. Nobody can
+          // arrive here as a guest on purpose (Settings hides the row, and the
+          // route is not deep-linkable), but a session that ENDS underneath a
+          // member leaves them exactly here. The same full-screen gate the
+          // notification centre wears, and the gate remembers the screen so
+          // signing in returns them to the switches (docs/spec/04 rule 9).
+          <EmptyState
+            icon={<EmptyGlyph Icon={PersonIcon} />}
+            title={t('notifications:prefsGuestTitle')}
+            body={t('notifications:prefsGuestBody')}
+            actionLabel={t('common:signIn')}
+            onAction={() => {
+              track('gate_shown', { action_type: 'notification_prefs' });
+              useGateStore.getState().beginGateSignIn({
+                kind: 'notification_prefs',
+              });
+              router.push('/auth');
+            }}
+          />
+        ) : prefs.isPending ? (
           <View style={{ gap: spacing.sm }}>
             <Skeleton height={64} />
             <Skeleton height={64} />
@@ -152,7 +207,7 @@ export default function NotificationPrefsScreen() {
               body={t('notifications:channels.ministry.description')}
               value={prefs.data.ministryAnnouncements}
               onValueChange={(next) => {
-                setPref.mutate({ toggle: 'ministry_announcements', next });
+                writePref('ministry_announcements', next);
               }}
             />
             <ToggleRow
@@ -164,7 +219,7 @@ export default function NotificationPrefsScreen() {
               }
               value={prefs.data.branchUpdates}
               onValueChange={(next) => {
-                setPref.mutate({ toggle: 'branch_updates', next });
+                writePref('branch_updates', next);
               }}
             />
             <ToggleRow
@@ -172,7 +227,7 @@ export default function NotificationPrefsScreen() {
               body={t('notifications:channels.serviceReminders.description')}
               value={prefs.data.serviceReminders}
               onValueChange={(next) => {
-                setPref.mutate({ toggle: 'service_reminders', next });
+                writePref('service_reminders', next);
               }}
             />
             <ToggleRow
@@ -180,7 +235,7 @@ export default function NotificationPrefsScreen() {
               body={t('notifications:channels.prayer.description')}
               value={prefs.data.prayerActivity}
               onValueChange={(next) => {
-                setPref.mutate({ toggle: 'prayer_activity', next });
+                writePref('prayer_activity', next);
               }}
             />
             <ToggleRow
@@ -188,7 +243,7 @@ export default function NotificationPrefsScreen() {
               body={t('notifications:channels.testimony.description')}
               value={prefs.data.testimonyActivity}
               onValueChange={(next) => {
-                setPref.mutate({ toggle: 'testimony_activity', next });
+                writePref('testimony_activity', next);
               }}
             />
           </ToggleList>

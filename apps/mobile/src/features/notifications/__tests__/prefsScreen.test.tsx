@@ -5,6 +5,8 @@ import i18n from '@/i18n';
 import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
+import { useGateStore } from '@/state/gate';
+
 import { useNotificationAskStore } from '../ask';
 import { columnsForToggle, type NotificationPrefs } from '../prefs';
 import type { PermissionState } from '../permission';
@@ -201,4 +203,33 @@ test('before the one ask, no banner even with push off: the value moment owns th
   expect(
     screen.queryByRole('button', { name: 'Open system settings' }),
   ).not.toBeOnTheScreen();
+});
+
+// A SIGNED-OUT VISITOR IS NOT LOADING ANYTHING. This branch drew skeletons that
+// could never resolve, because the prefs query is disabled without a session:
+// the bars just stayed. Nobody reaches this as a guest on purpose (Settings
+// hides the row, and the route is not deep-linkable), but a session that ends
+// underneath a member leaves them exactly here.
+describe('signed out', () => {
+  test('the switches give way to a gate, never to endless skeletons', async () => {
+    mockAuthState.mockReturnValue({ status: 'guest', profile: null });
+    await renderScreen();
+
+    expect(
+      screen.getByText('These switches belong to your account'),
+    ).toBeOnTheScreen();
+    expect(
+      screen.queryAllByTestId('skeleton', { includeHiddenElements: true }),
+    ).toHaveLength(0);
+  });
+
+  test('and signing in from here remembers the screen (docs/spec/04 rule 9)', async () => {
+    mockAuthState.mockReturnValue({ status: 'guest', profile: null });
+    await renderScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
+
+    expect(useGateStore.getState().pending).toEqual({
+      kind: 'notification_prefs',
+    });
+  });
 });

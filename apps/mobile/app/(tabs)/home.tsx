@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
@@ -41,7 +41,12 @@ import { PendingBranchNote } from '@/features/branch-change/PendingBranchNote';
 import { useMyBranchRequests } from '@/features/branch-change/queries';
 import { useBranchOutcomeStore } from '@/features/branch-change/seen';
 import { NextServiceCard } from '@/features/home/NextServiceCard';
-import { checkInOpen, resolveNextService } from '@/features/home/nextService';
+import {
+  openCheckIn,
+  resolveNextService,
+  serviceName,
+} from '@/features/home/nextService';
+import { EndedGatheringNote } from '@/features/rhythm/EndedGatheringNote';
 import {
   useBranchServicesQuery,
   useDailyVerseQuery,
@@ -50,6 +55,7 @@ import { useLocalDate } from '@/features/home/useLocalDate';
 import { VerseCard } from '@/features/home/VerseCard';
 import { resolveBranchList } from '@/features/onboarding/branchList';
 import { useBranchesQuery } from '@/features/onboarding/useBranches';
+import { useNotificationAskStore } from '@/features/notifications/ask';
 import { useUnreadCount } from '@/features/notifications/nc';
 import { landOnVideo } from '@/features/watch/segment';
 import { ClosedBranchNote } from '@/features/rehome/ClosedBranchNote';
@@ -163,6 +169,9 @@ export default function Home() {
   // lives on MORE's row. One source: the same query MORE reads.
   const unreadQuery = useUnreadCount(isMember);
   const unreadCount = unreadQuery.data ?? 0;
+  const reachedValueMoment = useNotificationAskStore(
+    (s) => s.reachedValueMoment,
+  );
   const [switcherOpen, setSwitcherOpen] = useState(false);
   // The gate carries the action that needs an account, so one sheet serves both
   // of Home's gated taps (Glory on the highlight, and "I'm here") with its own
@@ -223,6 +232,28 @@ export default function Home() {
     markPrompted();
     router.push('/rehome');
   }, [homeBranchClosed.closed, prompted, markPrompted, router]);
+
+  // The third of `06`'s three triggers for the notification ask, and the last to
+  // be built (2026-09-07): "right after first sign-in, framed around member
+  // activity". Until now only the first was, so a member who never checked in
+  // and never RSVPd was never asked, the OS was therefore never asked either,
+  // and push simply never arrived while the notification centre filled up.
+  //
+  // Raised HERE rather than at sign-in itself because `06` puts the ask after
+  // the app has shown something, and Home is the first thing a new member sees.
+  // The store's persisted `asked` makes it once-ever, so this also recovers the
+  // members the gap already stranded: they are asked on their next Home.
+  //
+  // On FOCUS, not on mount: tab screens stay mounted, so a member who signs in
+  // from MORE would otherwise meet a sheet about service reminders over the
+  // More list, which is where it landed the first time this ran on the device
+  // (2026-09-07). The sheet belongs to Home, so Home has to be the screen.
+  useFocusEffect(
+    useCallback(() => {
+      if (!isMember) return;
+      reachedValueMoment('signed_in');
+    }, [isMember, reachedValueMoment]),
+  );
 
   // A GUEST BROWSING A BRANCH THAT CLOSED IS MOVED TO HQ, and a member browsing somebody
   // else's is too. The card is what explains a missing hero, and the card belongs to the
@@ -290,11 +321,19 @@ export default function Home() {
   );
   // "I'm here" is offered around service time (docs/spec/10), to guests too:
   // the tap gates rather than the control being hidden (docs/spec/07).
-  const serviceToday = checkInOpen(
+  //
+  // WHICH gathering, because the hero hands its card to the next service the
+  // moment one ends while the offer runs to midnight. Until the control knew
+  // that, it sat under a card advertising a different meeting for the rest of
+  // the day (mockup "HOME · the gathering has ended"). While the gathering is
+  // running the hero keeps the control; once it is over the control moves to a
+  // note that can name it.
+  const open = openCheckIn(
     servicesQuery.data ?? [],
     branch?.timezone ?? 'UTC',
     now,
   );
+  const endedGathering = open?.ended === true ? open.service : null;
   // A tap on a branch that is not their own raises the visiting question rather
   // than writing (features/rhythm/visiting). The sheet that answers it is
   // mounted at the root, so Home has nothing to render for it.
@@ -547,6 +586,26 @@ export default function Home() {
       <HomeDashboard
         service={
           <>
+            {/* Once the gathering is over the check-in leaves the hero, and sits
+                ABOVE it (decided on the device, 2026-09-07): the hero is about
+                what is NEXT, and a line about what already happened reads as a
+                postscript underneath it and as context on top of it. It names
+                the gathering, which the hero no longer can, and carries the
+                branch name too, because the hero's visit note goes with the
+                hero (mockup "HOME · the gathering has ended"). */}
+            {endedGathering !== null ? (
+              <EndedGatheringNote
+                serviceName={serviceName(endedGathering, t)}
+                visitingBranchName={visitingBranchName}
+                visitingShortName={
+                  visitingBranchName === null
+                    ? null
+                    : shortBranchName(visitingBranchName)
+                }
+                checkedIn={imHere.checkedIn}
+                onPress={imHere.press}
+              />
+            ) : null}
             {/* What used to be here, and why the deletion is the fix: `archive_branch()`
             leaves `branch_services` alone (there is no flag to clear, which is
             also why re-opening restores the diary) and the services query carries
@@ -582,7 +641,8 @@ export default function Home() {
                   router.push('/watch');
                 }}
                 imHere={
-                  serviceToday
+                  // Only while the hero IS the gathering the check-in is for.
+                  open !== null && endedGathering === null
                     ? { checkedIn: imHere.checkedIn, onPress: imHere.press }
                     : null
                 }

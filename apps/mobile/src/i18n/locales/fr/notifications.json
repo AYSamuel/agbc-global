@@ -40,6 +40,8 @@
   },
   "prefsTitle": "Notifications",
   "prefsSection": "Notifications push",
+  "prefsGuestTitle": "Ces réglages appartiennent à ton compte",
+  "prefsGuestBody": "Connecte-toi pour choisir ce qui arrive sur ton téléphone, et pour tout désactiver.",
   "branchBody": "Nouvelles et changements de {{branch}}",
   "osOffBody": "Les notifications push sont désactivées pour AGBC sur cet appareil. Activez-les dans les réglages pour recevoir les rappels.",
   "osOffAction": "Ouvrir les réglages du système",
