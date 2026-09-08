@@ -100,7 +100,13 @@ export function NotificationAsk() {
       footnote={t(
         pending === 'rsvp'
           ? 'rhythm:notifyFootnoteRsvp'
-          : 'rhythm:notifyFootnote',
+          : pending === 'signed_in'
+            ? // Nothing was just done to reassure them about: this one arrives
+              // because they are now a member, so the line is about the account
+              // rather than about an act (`06`'s "framed around member
+              // activity").
+              'rhythm:notifyFootnoteSignedIn'
+            : 'rhythm:notifyFootnote',
       )}
     />
   );

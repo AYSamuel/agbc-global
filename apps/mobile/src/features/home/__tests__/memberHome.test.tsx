@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import '@/i18n';
 import { ToastProvider } from '@/components/ui';
+import { useNotificationAskStore } from '@/features/notifications/ask';
 import { useVisitConfirmStore } from '@/features/rhythm/visiting';
 import { useWriteQueueStore } from '@/lib/writeQueue';
 import { useAuthStore } from '@/state/auth';
@@ -29,6 +30,14 @@ const mockPush = jest.fn<undefined, [unknown]>();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({}),
+  // Home raises the notification ask on FOCUS, not on mount, so that a member
+  // signing in from another tab does not meet it over that tab. In test-land,
+  // rendering Home IS focusing it.
+  useFocusEffect: (effect: import('react').EffectCallback) => {
+    const { useEffect } = jest.requireActual<typeof import('react')>('react');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- test shim: mount once, like a first focus
+    useEffect(effect, []);
+  },
 }));
 
 jest.mock('expo-localization', () => ({
@@ -167,6 +176,7 @@ beforeEach(() => {
   useAuthStore.setState({ status: 'guest', email: null, profile: null });
   useGateStore.setState({ pending: null, dismissedKinds: [] });
   useVisitConfirmStore.setState({ pending: null });
+  useNotificationAskStore.setState({ asked: false, pending: null });
   useWriteQueueStore.setState({ queue: {}, handlers: null, draining: false });
   mockServices.mockReturnValue({
     data: [
@@ -387,6 +397,89 @@ describe('"I\'m here" (docs/spec/10)', () => {
     expect(Object.values(useWriteQueueStore.getState().queue)).toHaveLength(1);
   });
 
+  // The gathering has ended (mockup "HOME · the gathering has ended"). The hero
+  // has handed its card to Wednesday while the offer runs to midnight, so the
+  // control moves to a line that can still name what it is for.
+  test('once it is over, the check-in leaves the hero and names the gathering', async () => {
+    signIn(GLASGOW);
+    // A branch that also gathers on Wednesday, which is what the hero moves on
+    // to and what made the old placement wrong.
+    mockServices.mockReturnValue({
+      data: [
+        {
+          weekday: 0,
+          start_time: '12:00:00',
+          duration_min: 120,
+          kind: 'sunday',
+          label: '',
+        },
+        {
+          weekday: 3,
+          start_time: '18:00:00',
+          duration_min: 90,
+          kind: 'midweek',
+          label: '',
+        },
+      ],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    // Sunday 15:00 UTC: the noon service (120 min) finished at 14:00.
+    jest.setSystemTime(new Date('2026-08-09T15:00:00Z').getTime());
+    await renderHome();
+    expect(screen.getByText(/Sunday Service, earlier today/)).toBeOnTheScreen();
+    expect(
+      screen.getByText('You can still say you were there.'),
+    ).toBeOnTheScreen();
+    // The hero has moved on to Wednesday, which is exactly why the line above
+    // has to name Sunday itself.
+    expect(screen.getByText(/Midweek Service/)).toBeOnTheScreen();
+  });
+
+  test('the tap from that line records the same check-in', async () => {
+    signIn(GLASGOW);
+    jest.setSystemTime(new Date('2026-08-09T15:00:00Z').getTime());
+    await renderHome();
+    await fireEvent.press(screen.getByRole('button', { name: "I'm here" }));
+    const queued = Object.values(useWriteQueueStore.getState().queue);
+    expect(queued).toHaveLength(1);
+    expect(queued[0]).toMatchObject({ kind: 'attendance', state: GLASGOW });
+  });
+
+  test('while the gathering runs, no such line: the hero still has it', async () => {
+    signIn(GLASGOW);
+    await renderHome();
+    expect(screen.queryByText(/earlier today/)).toBeNull();
+    expect(screen.getByRole('button', { name: "I'm here" })).toBeOnTheScreen();
+  });
+
+  test('checked in, it becomes a receipt with nothing left to tap', async () => {
+    signIn(GLASGOW);
+    jest.setSystemTime(new Date('2026-08-09T15:00:00Z').getTime());
+    mockRhythm.mockReturnValue({
+      data: rhythmRow({ checkedIn: true }),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderHome();
+    expect(
+      screen.getByText(/Counted at Sunday Service, earlier today/),
+    ).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: "I'm here" })).toBeNull();
+  });
+
+  test('browsing another branch, the line keeps the branch name', async () => {
+    // The hero's visit note goes with the hero, so this line has to carry the
+    // disclosure instead.
+    signIn(BERLIN);
+    jest.setSystemTime(new Date('2026-08-09T15:00:00Z').getTime());
+    await renderHome();
+    expect(
+      screen.getByText(/Sunday Service at AGBC Glasgow, earlier today/),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(/it counts at Glasgow/)).toBeOnTheScreen();
+  });
+
   test('once the answer is in, the note stops asking', async () => {
     signIn(BERLIN);
     mockRhythm.mockReturnValue({
@@ -399,6 +492,29 @@ describe('"I\'m here" (docs/spec/10)', () => {
       screen.getByText(/You're checked in at AGBC Glasgow today/),
     ).toBeOnTheScreen();
     expect(screen.queryByText(/Visiting AGBC Glasgow today/)).toBeNull();
+  });
+});
+
+// `06`'s third trigger for the notification ask, and the one that was missing:
+// without it a member who never checked in and never RSVPd was never asked, so
+// the OS was never asked either and push never arrived.
+describe('the notification ask after sign-in', () => {
+  test('a member on Home is owed the ask, with the moment named', async () => {
+    signIn();
+    await renderHome();
+    expect(useNotificationAskStore.getState().pending).toBe('signed_in');
+  });
+
+  test('a guest is not: tokens are never registered before sign-in', async () => {
+    await renderHome();
+    expect(useNotificationAskStore.getState().pending).toBeNull();
+  });
+
+  test('and a member who has already had the one ask is left alone', async () => {
+    useNotificationAskStore.setState({ asked: true, pending: null });
+    signIn();
+    await renderHome();
+    expect(useNotificationAskStore.getState().pending).toBeNull();
   });
 });
 

@@ -21,6 +21,12 @@ const mockPush = jest.fn<undefined, [unknown]>();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useLocalSearchParams: () => ({}),
+  // Home raises the notification ask on focus; rendering it here IS focusing it.
+  useFocusEffect: (effect: import('react').EffectCallback) => {
+    const { useEffect } = jest.requireActual<typeof import('react')>('react');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- test shim: mount once, like a first focus
+    useEffect(effect, []);
+  },
 }));
 
 jest.mock('expo-localization', () => ({

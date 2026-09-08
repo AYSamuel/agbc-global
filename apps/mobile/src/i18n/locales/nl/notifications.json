@@ -40,6 +40,8 @@
   },
   "prefsTitle": "Meldingen",
   "prefsSection": "Pushmeldingen",
+  "prefsGuestTitle": "Deze schakelaars horen bij je account",
+  "prefsGuestBody": "Meld je aan om te kiezen wat je telefoon bereikt, en om het uit te zetten.",
   "branchBody": "Nieuws en wijzigingen uit {{branch}}",
   "osOffBody": "Push staat uit voor AGBC op dit toestel. Zet het aan in Instellingen om herinneringen te krijgen.",
   "osOffAction": "Systeeminstellingen openen",

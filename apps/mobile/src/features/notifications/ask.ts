@@ -20,8 +20,15 @@ import { createJSONStorage, persist } from 'zustand/middleware';
  * they just did stands whatever they answer, and that sentence has to name the
  * right thing: "you're checked in either way" read as a lie under an RSVP
  * (found on device, 2026-08-09).
+ *
+ * `signed_in` is the third of the three triggers `06` names and the LAST to be
+ * built (2026-09-07). Without it a member who never checked in and never RSVPd
+ * was never asked at all, so the OS was never asked either: notifications piled
+ * up in the centre while nothing reached the phone, and NOTIF-PREFS said
+ * nothing, because its banner waits for this app to have had its one ask. Ayo
+ * lived that for days and had to find the OS setting himself.
  */
-export type ValueMoment = 'check_in' | 'rsvp';
+export type ValueMoment = 'check_in' | 'rsvp' | 'signed_in';
 
 interface AskState {
   /** The sheet has been shown once. Never shown again. */

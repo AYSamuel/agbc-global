@@ -39,6 +39,10 @@ export type AnalyticsGateAction =
   | 'notifications'
   | 'im_here'
   | 'my_posts'
+  // The prefs screen's own gate (2026-09-08). Rare by construction: Settings
+  // hides its row for guests and the route is not deep-linkable, so this counts
+  // sessions that ENDED underneath a member who was standing on it.
+  | 'notification_prefs'
   | 'my_list'
   | 'rhythm'
   | 'report'

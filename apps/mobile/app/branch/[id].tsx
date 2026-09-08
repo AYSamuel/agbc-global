@@ -51,7 +51,7 @@ const HERO_MIN_HEIGHT = 196;
 
 // BRANCH-INFO (docs/spec/04 church screens, mockup BRANCH-INFO frame): one
 // branch's hero, next service (computed from branch_services with the
-// display-string fallback, docs/spec/07 zero-rows rule), lead + leaders,
+// display-string fallback, docs/spec/07 zero-rows rule), the branch's lead,
 // welcome word, and the "Watch this branch" browsing-context action. "I'm
 // here" appears around service time only (`checkInOpen`, shared with Home so
 // the same action is offered at the same moments) and records attendance at
@@ -161,13 +161,12 @@ export default function BranchInfo() {
   const heroEyebrow = `${branch.city} · ${branch.country}`;
   const welcomeQuote = `“${branch.welcome}”`;
 
-  const leaders = [
-    ...(branch.lead ? [branch.lead] : []),
-    ...branch.leaders,
-  ].filter(
-    (row, index, all) =>
-      all.findIndex((other) => other.name === row.name) === index,
-  );
+  // THE PASTOR ALONE (Ayo, 2026-09-08). The mockup's `.leadcard` has only ever
+  // drawn one person; the code drifted by appending `branch.leaders` to the
+  // lead, so this is the screen returning to its frame rather than departing
+  // from it. The other leaders keep existing in the data and on the dashboard:
+  // what a branch page owes a visitor is the person who leads it, not a roster.
+  const leadership = branch.lead === null ? [] : [branch.lead];
 
   const share = () => {
     void shareText(
@@ -374,7 +373,7 @@ export default function BranchInfo() {
         </View>
 
         {/* Mockup .leadcard. */}
-        {leaders.length > 0 ? (
+        {leadership.length > 0 ? (
           <View
             style={{
               marginTop: 14,
@@ -387,7 +386,7 @@ export default function BranchInfo() {
               gap: spacing.md,
             }}
           >
-            {leaders.map((leader) => (
+            {leadership.map((leader) => (
               <View
                 key={`${leader.name ?? ''}-${leader.role ?? ''}`}
                 style={{

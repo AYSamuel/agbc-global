@@ -18,6 +18,7 @@ import {
   dayBucket,
   formatServiceDay,
   formatServiceTime,
+  serviceName,
   type NextService,
 } from './nextService';
 
@@ -83,9 +84,8 @@ export function NextServiceCard({
         : t('home:serviceTimesSoon');
     }
     const time = formatServiceTime(next.service.start_time, locale);
-    const name =
-      next.service.label || t(`home:serviceKind.${next.service.kind}`);
-    return `${name} · ${time}`;
+    // Named by the shared helper, because the ended-gathering note names one too.
+    return `${serviceName(next.service, t)} · ${time}`;
   })();
 
   return (

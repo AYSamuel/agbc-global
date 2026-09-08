@@ -40,6 +40,8 @@
   },
   "prefsTitle": "Benachrichtigungen",
   "prefsSection": "Push-Benachrichtigungen",
+  "prefsGuestTitle": "Diese Schalter gehören zu deinem Konto",
+  "prefsGuestBody": "Melde dich an, um zu wählen, was dein Handy erreicht, und um es abzuschalten.",
   "branchBody": "Neuigkeiten und Änderungen aus {{branch}}",
   "osOffBody": "Push ist für AGBC auf diesem Gerät ausgeschaltet. Schalte es in den Einstellungen ein, um Erinnerungen zu bekommen.",
   "osOffAction": "Systemeinstellungen öffnen",

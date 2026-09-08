@@ -40,6 +40,8 @@
   },
   "prefsTitle": "Notifications",
   "prefsSection": "Push notifications",
+  "prefsGuestTitle": "These switches belong to your account",
+  "prefsGuestBody": "Sign in to choose what reaches your phone, and to turn any of it off.",
   "branchBody": "News and changes from {{branch}}",
   "osOffBody": "Push is turned off for AGBC on this device. Turn it on in Settings to get reminders.",
   "osOffAction": "Open system settings",

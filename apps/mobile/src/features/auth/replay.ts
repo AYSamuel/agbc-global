@@ -96,6 +96,11 @@ function performReplay(action: GateAction): Promise<ReplayOutcome> {
       checkInOrAsk(action.branchId, action.branchName);
       return Promise.resolve('done');
     }
+    case 'notification_prefs': {
+      // Navigation-shaped, like `my_posts` below: the promise was the screen.
+      router.replace('/settings/notifications');
+      return Promise.resolve('done');
+    }
     case 'my_posts': {
       // The gated action WAS "show me my posts", so replaying it is the screen. `replace`
       // and not `push`: AUTH-4 has already returned them to /(tabs)/more, which is where
