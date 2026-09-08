@@ -10,15 +10,56 @@ Copy to paste: `docs/store/listing.json`. Form answers: `docs/store/data-safety.
 
 ## SUBMISSION RECORD: Android, versionCode 22, sent for review 2026-09-05
 
-**Status: in review, restarted on 2026-09-05 in the evening.** Six changes are with Google:
-production release 22 at full rollout, content rating, target audience, privacy policy, data
-safety, and the Foreground service permissions declaration. That sixth one was MISSED at
-upload; Play flagged it overdue the next day, and sending it restarted the review that had
-begun that morning, by decision (a rejection for an undeclared permission costs more than a
-day of queue). Reviews are typically under seven days. Follow-up 1 below records what filing
-it took, because it took an evening. The store listing itself is ALREADY LIVE: listing copy and graphics
-on an app that is already published do not go through review, so they went out the moment
-they were saved, hours before the release did.
+**Status: the release went live 2026-09-06. THE STORE LISTING DID NOT, and sat unsent for
+three days; it was finally sent for review on 2026-09-08.** Six changes went with the
+release: production release 22 at full rollout, content rating, target audience, privacy
+policy, data safety, and the Foreground service permissions declaration. That sixth one was
+MISSED at upload; Play flagged it overdue the next day, and sending it restarted the review
+that had begun that morning, by decision (a rejection for an undeclared permission costs more
+than a day of queue). Reviews are typically under seven days. Follow-up 1 below records what
+filing it took, because it took an evening.
+
+> **CORRECTION, 2026-09-08.** This section first claimed the listing was "ALREADY LIVE",
+> because "listing copy and graphics on an app that is already published do not go through
+> review, so they went out the moment they were saved". **Both halves were false**, and the
+> error cost three days of the app sitting on Play under the wrong name.
+>
+> Store listing changes DO go through review. Google's own page on this is explicit that
+> "Updates to your store listings" are held with everything else and that "Items are not sent
+> for review until you click **Send for review**"
+> (support.google.com/googleplay/android-developer/answer/9859654).
+>
+> And they had not been saved at all. On 2026-09-08 the release had been live for three days
+> while play.google.com still served **Grace Portal**, the old icon and the old screenshots.
+> Publishing overview said "You have no unpublished changes", which reads like nothing is
+> outstanding and actually meant nothing had ever entered the pipeline. The evidence was one
+> level down, on the Default store listing page: a **"Live · Draft changes"** chip, every new
+> value present in the form (name `AGBC Global`, both descriptions, the gold-A icon, all
+> fifteen screenshots), and a bar pinned to the bottom of the page reading *"If you save,
+> changes will be saved in Publishing overview, ready for you to send for review."* The work
+> had been typed in and left. Play keeps such drafts server-side indefinitely, which is the
+> only reason none of it was lost.
+>
+> Saved and sent on 2026-09-08 as seven items, all `en-US` / Default store listing: app name,
+> short description, full description, app icon, phone screenshots, 7-inch tablet
+> screenshots, 10-inch tablet screenshots. Managed publishing is OFF on this account, so they
+> go live on approval with no second step. Note that "sent" first means a pre-review pass
+> ("Running quick checks for commonly found issues", ~15 min), and the batch only reaches a
+> reviewer if those checks pass.
+
+**THE RULE THIS LEAVES, and it is the third time this console has caught us the same way.**
+Nothing in Play Console is committed because it looks committed:
+
+- a dialog needs **Add**, then the page needs **Save** (the sign-in details, below);
+- a page needs **Save**, then Publishing overview needs **Send for review** (the foreground
+  service declaration, follow-up 1);
+- and a form can hold a complete set of edits that were never saved at all, showing them back
+  to you every time you open it (this listing).
+
+All three look finished on the screen you are standing on. **Verify from Publishing overview,
+never from the form you just filled in**, and for anything public, verify from the live store
+page itself. `play.google.com/store/apps/details?id=com.oami.agbcapp` is the only source that
+cannot be mistaken for progress.
 
 What shipped, so a later reader does not have to reconstruct it:
 
@@ -81,11 +122,13 @@ Play. Gaps are fine; Play only requires the number to increase.
 
 ### Known gaps, deliberately carried past launch
 
-- **No OTA updates.** `expo-updates` is not installed, so every fix is a full store release
-  with a review cycle, and `21` §8's "rollback = republish the previous update" cannot work as
-  written. The `eas build` prompt offered to install it mid-build and was declined, correctly:
-  it adds native code and would have invalidated the artefact already tested. **Decide this
-  deliberately after launch rather than inside a build prompt.**
+- ~~**No OTA updates.**~~ **DECIDED, 2026-09-08 (W4.10): there will be no OTA.** `expo-updates`
+  stays uninstalled and every fix is a full store release with a review cycle, so `21` §8's
+  "rollback = republish the previous update" is gone rather than merely unbuilt (`21` §8 now
+  says so, and carries the three costs this accepts). The `eas build` prompt that offered to
+  install it mid-build was declined correctly at the time, and this is the deliberate decision
+  the gap asked for, made outside a build prompt. What replaced the experience OTA was wanted
+  for is Play's in-app updates, below.
 - **`eas submit` is not configured.** `eas.json` has `submit.production: {}` and there is no
   Google service-account key, so the 84 MB bundle was uploaded by hand through the browser.
   Every future release repeats that until a service account exists.
@@ -339,7 +382,35 @@ one that damages people rather than the numbers.
 
 **Raise `minimum_supported_version` per platform, and only once THAT store shows the build
 live** (`21` §8). Raising Android's floor while iOS is still in review hard-blocks every iOS
-member behind a screen telling them to install a build the App Store will not give them.
+member behind a screen telling them to install a build the App Store will not give them. The
+floor is a `x.y.z` string per platform and is NOT a build number: `1.0.0+22` cannot work,
+because the gate reads `expoConfig.version` and an unparseable floor fails open, so it would
+gate nothing while looking set.
+
+---
+
+## 4b. In-app updates, from the release after versionCode 22 (W4.10)
+
+The app now tells a member that an ordinary new version exists, at most once a day, and installs
+it through Play without leaving the app. Three things about that which only a release can settle:
+
+- **It cannot be tested from an EAS APK.** Play's in-app updates work only on a build the Play
+  Store itself installed, and a sideloaded one reports "no update available" forever. The first
+  real test of the feature is therefore the first release AFTER the one that ships it: install
+  the previous version from an internal testing track, publish a higher versionCode to the same
+  track, open the app.
+- **Nothing to configure per release.** No priority, no flag, no `app_config` key. Play answers
+  "is there something newer" and the app asks it once a day. **The one optional lever** is Play's
+  update priority: set 4 or higher on a release (Publishing API, not the console UI) and the app
+  hands the screen straight to Play's immediate flow instead of offering a choice. Use it for a
+  release nobody should stay behind on, and leave it alone otherwise.
+- **Two releases behind escalates on its own**, measured as 28 days since Play told the device a
+  newer version existed, which is two fortnightly trains (`21` §8). Nothing to remember.
+
+iOS has none of this until the App Store record has a numeric id: add it as
+`ios.infoPlist.AppStoreID` in `app.config.js` and the same sheet starts working there, opening
+the App Store rather than installing. Until then the iOS check answers "nothing new", safely and
+silently, and the store link is still the whole of the iOS path.
 
 ---
 
