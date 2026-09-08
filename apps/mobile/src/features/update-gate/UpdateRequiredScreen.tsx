@@ -13,9 +13,24 @@ import {
 import { Button, UpdateIcon } from '@/components/ui';
 import { storeUrl } from '@/lib/links';
 
-// Blocking forced-update screen (docs/spec/21 §8). No mockup frame exists for it
-// (flagged to Ayo in the W1.2 PR): composed from the splash/auth patterns: ink
-// surface, gold tile, display title, one gold action out to the store.
+import { startUpdate } from './inAppUpdates';
+
+// Blocking forced-update screen (docs/spec/21 §8). Framed at last at W4.10 as it
+// actually ships (`UPDATE-REQUIRED`, mockup W4.10); it was built at W1.2 with no frame
+// at all, composed from the splash/auth patterns: ink surface, gold tile, display
+// title, one gold action out to the store.
+//
+// WHAT W4.10 CHANGED IS THE BUTTON, not a pixel of the screen. It used to leave the app
+// for the store listing and leave the member to find the Update button themselves; on
+// Android it now runs Play's IMMEDIATE in-app update, which installs without going
+// anywhere. IMMEDIATE rather than flexible because this screen exists for the case where
+// there is no choice: a flexible download would hand the member back to a blocked app to
+// wait in.
+//
+// The store link stays as the fallback and is still the whole of iOS: Apple has no
+// install API, and with no App Store id in the Info.plist the native call rejects, which
+// is exactly what routes it back here (see inAppUpdates.ts). Sideloaded builds and
+// devices without Play land here too. A blocked member always has somewhere to go.
 export function UpdateRequiredScreen() {
   const { t } = useTranslation();
 
@@ -73,7 +88,9 @@ export function UpdateRequiredScreen() {
           variant="accent"
           fullWidth
           onPress={() => {
-            void Linking.openURL(storeUrl());
+            void startUpdate(true).then((started) => {
+              if (!started) void Linking.openURL(storeUrl());
+            });
           }}
         />
       </View>

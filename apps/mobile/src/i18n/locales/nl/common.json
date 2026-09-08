@@ -89,6 +89,13 @@
     "body": "Deze versie van de app wordt niet meer ondersteund. Werk nu bij om verbonden te blijven met de familie.",
     "cta": "Nu bijwerken"
   },
+  "updateNotice": {
+    "title": "Er is een nieuwe versie",
+    "body": "Deze bevat de nieuwste verbeteringen. Het duurt maar even, en alles wat je hier bewaart blijft precies waar het is.",
+    "cta": "Bijwerken",
+    "footnote": "We vragen het vandaag niet nog een keer.",
+    "dismissed": "Updatemelding gesloten. De nieuwe versie wacht wanneer je er klaar voor bent."
+  },
   "languages": {
     "en": "Engels",
     "de": "Duits",

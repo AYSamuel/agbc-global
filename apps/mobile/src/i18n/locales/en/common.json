@@ -89,6 +89,13 @@
     "body": "This version of the app is no longer supported. Update now to stay in step with the family.",
     "cta": "Update now"
   },
+  "updateNotice": {
+    "title": "A new version is ready",
+    "body": "This one carries the latest fixes. It takes a moment, and everything you keep here stays exactly where it is.",
+    "cta": "Update",
+    "footnote": "We won't ask again today.",
+    "dismissed": "Update notice closed. The new version will be waiting whenever you're ready."
+  },
   "languages": {
     "en": "English",
     "de": "German",

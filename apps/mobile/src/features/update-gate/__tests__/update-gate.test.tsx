@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from '@testing-library/react-native';
 import { Linking, Text } from 'react-native';
 
@@ -11,6 +12,7 @@ import { APP_STORE_URL, PLAY_STORE_URL } from '@/lib/links';
 import { ThemeScope } from '@/theme';
 
 import { ForcedUpdateGate } from '../ForcedUpdateGate';
+import { resetInAppUpdatesModuleForTests } from '../inAppUpdates';
 import { refreshMinimumVersion, useUpdateGateStore } from '../store';
 import { UpdateRequiredScreen } from '../UpdateRequiredScreen';
 import {
@@ -43,6 +45,15 @@ jest.mock('@/lib/supabase', () => ({
 jest.mock('expo-constants', () => ({
   __esModule: true,
   default: { expoConfig: { version: '1.0.0' } },
+}));
+
+// The wall's button now asks the platform to install rather than linking out (W4.10
+// slice 2). Mocked so both endings can be driven: Play taking over, and every case
+// that cannot (iOS with no App Store id, a sideloaded build, no Play Store at all).
+const mockStart = jest.fn<Promise<boolean>, [boolean | undefined]>();
+jest.mock('expo-in-app-updates', () => ({
+  checkForUpdate: () => Promise.resolve({ updateAvailable: false }),
+  startUpdate: (isImmediate?: boolean) => mockStart(isImmediate),
 }));
 
 function inTheme(ui: React.ReactElement) {
@@ -208,13 +219,46 @@ describe('ForcedUpdateGate', () => {
 });
 
 describe('UpdateRequiredScreen', () => {
-  test('the CTA opens the platform store link', async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    resetInAppUpdatesModuleForTests();
+    mockStart.mockResolvedValue(false);
+  });
+
+  test('the CTA asks the platform to install, and asks for the IMMEDIATE flow', async () => {
+    // The screen exists for the case where there is no choice, so a flexible
+    // download would hand the member back to a blocked app to wait in.
+    await inTheme(<UpdateRequiredScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Update now' }));
+
+    expect(mockStart).toHaveBeenCalledWith(true);
+  });
+
+  test('a platform that cannot install still opens the store link', async () => {
+    // iOS has no install API at all, and a sideloaded build has no Play flow, so
+    // this is the whole of the iOS path and the fallback everywhere else.
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await inTheme(<UpdateRequiredScreen />);
     await fireEvent.press(screen.getByRole('button', { name: 'Update now' }));
+
     // jest-expo runs as iOS; the Android leg carries the frozen package id.
-    expect(openURL).toHaveBeenCalledWith(APP_STORE_URL);
+    await waitFor(() => {
+      expect(openURL).toHaveBeenCalledWith(APP_STORE_URL);
+    });
     expect(PLAY_STORE_URL).toContain('com.oami.agbcapp');
+    openURL.mockRestore();
+  });
+
+  test('a member whose install Play took over is not also sent to the listing', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    mockStart.mockResolvedValue(true);
+    await inTheme(<UpdateRequiredScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Update now' }));
+
+    await waitFor(() => {
+      expect(mockStart).toHaveBeenCalled();
+    });
+    expect(openURL).not.toHaveBeenCalled();
     openURL.mockRestore();
   });
 });

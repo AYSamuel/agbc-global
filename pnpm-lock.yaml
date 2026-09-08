@@ -159,6 +159,9 @@ importers:
       expo-image-picker:
         specifier: ~57.0.6
         version: 57.0.6(expo@57.0.8)
+      expo-in-app-updates:
+        specifier: ^0.12.0
+        version: 0.12.0(expo@57.0.8)
       expo-linking:
         specifier: ~57.0.4
         version: 57.0.4(expo@57.0.8)(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)
@@ -4224,6 +4227,11 @@ packages:
     peerDependenciesMeta:
       react-native-web:
         optional: true
+
+  expo-in-app-updates@0.12.0:
+    resolution: {integrity: sha512-RqqT0KEqZNbOk5Zxq+JQ7ph7mH/ZNfKOowPyZI8K2YnYBjjNIOyt5PlSZz5/JtmPsBGe6/oKiu1QY+4rGfY+Eg==}
+    peerDependencies:
+      expo: '*'
 
   expo-json-utils@57.0.1:
     resolution: {integrity: sha512-cgTe1NqzQdYs/WN+3nIY5IZg8s0pb0xaTUbhYvxQDn137GbwRfHoGM2se3m3Vsl4Qu+B9G4RPEK5WJDEU2Do7g==}
@@ -11636,6 +11644,10 @@ snapshots:
       sf-symbols-typescript: 2.2.0
     optionalDependencies:
       react-native-web: 0.21.2(react-dom@19.2.4(react@19.2.3))(react@19.2.3)
+
+  expo-in-app-updates@0.12.0(expo@57.0.8):
+    dependencies:
+      expo: 57.0.8(c07635dc9773e0adb6cd92baf4d47c53)
 
   expo-json-utils@57.0.1: {}
 

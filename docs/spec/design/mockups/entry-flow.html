@@ -2460,6 +2460,96 @@
   <div class="gallery t-dark" id="w35cDark"></div>
   <script>(function(){var l=document.getElementById('w35cLight'),d=document.getElementById('w35cDark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
+  <h2 class="ghead" id="w410">&#128260; W4.10 &middot; Updating from inside the app &middot; light</h2>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>a newer version exists</b> &#8594; <b>UPDATE-NOTICE</b> (once a day, dismissible) &#8594; Play installs it and the app relaunches &nbsp;|&nbsp; <b>two releases behind</b> &#8594; Play's own IMMEDIATE flow, which is Google's screen and not ours &nbsp;|&nbsp; <b>below the floor</b> &#8594; <b>UPDATE-REQUIRED</b>, which is not a prompt but a wall.</p>
+  <div class="gallery t-light" id="w410Light">
+
+      <!-- UPDATE-NOTICE · the optional update (composed 2026-09-08). The app has only
+           ever had the WALL: `app_config.minimum_supported_version` and a screen that
+           refuses to go further. Nothing tells a member that an ordinary new version
+           exists, so the only update they ever hear about is one that has already
+           locked them out.
+           A SHEET rather than a line on Home, because it is one decision with an
+           action, which is what every other app-level ask here is: the notification
+           ask, the analytics ask, the visiting confirm. A banner would also tie it to
+           Home, and an update is not Home's business.
+           AT MOST ONCE A DAY (Ayo, 2026-09-08), and the footnote says so out loud, so
+           "Not now" is a promise rather than a brush-off. The flag is local and
+           persisted, the same shape as `features/notifications/ask.ts`.
+           WHAT THE BUTTON DOES IS THE PLATFORM'S CHOICE, not ours: on Android it hands
+           over to Play's flexible in-app update, which downloads while the member
+           carries on and asks to restart when it is ready; on iOS it opens the App
+           Store, because Apple has no install API at all. Same sheet, same words, two
+           endings, and that is the ceiling on iOS whatever we build.
+           BUILT 2026-09-08, AND THE IOS HALF IS INERT UNTIL THE APP STORE RECORD HAS A
+           NUMERIC ID. The native check reads `AppStoreID` from the Info.plist and the
+           app has never had one, so the lookup matches nothing and answers "no update
+           available", which is the safe silence rather than a wrong promise. Adding
+           `ios.infoPlist.AppStoreID` to app.config.js turns this frame on for iOS with
+           no code change and no change here. -->
+      <div class="device">
+        <p class="name"><b>UPDATE-NOTICE</b> &middot; a new version is ready (dismissible, once a day)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Lighthouse Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">This Wednesday</span><h2>Midweek Prayer &middot; 7:00 PM</h2><div class="where">Oudenarder Str. 16, 13347 Berlin</div><div class="btns"><button class="btn gold" style="width:auto">Plan a visit</button><button class="btn glass" style="width:auto">Watch</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 150deg,rgba(255,255,255,.16) 150deg 360deg)"><i>5</i></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet">
+            <div class="grab"></div>
+            <div class="gi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg></div>
+            <h3>A new version is ready</h3>
+            <p>This one carries the latest fixes. It takes a moment, and everything you keep here stays exactly where it is.</p>
+            <button class="btn primary">Update</button>
+            <button class="btn ghost">Not now</button>
+            <div class="authnote" style="margin-top:2px">We won't ask again today.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPDATE-REQUIRED · the wall. BUILT AT W1.2 AND NEVER FRAMED: its own file says
+           so ("No mockup frame exists for it (flagged to Ayo in the W1.2 PR): composed
+           from the splash/auth patterns"). Drawn here as it actually ships, so the
+           screen finally has a reference to be diffed against, and because W4.10 changes
+           its button.
+           The change: today it LINKS OUT to the store listing. On Android it will run
+           Play's IMMEDIATE in-app update instead, which installs without leaving the
+           app; iOS keeps the link, because there is nothing else it can do. The words do
+           not change, and neither does the shape: ink ground, gold tile, one way out.
+           It is deliberately not a sheet. A sheet implies a choice, and this screen
+           exists for the case where there is none. -->
+      <div class="device">
+        <p class="name"><b>UPDATE-REQUIRED</b> &middot; below the floor (as built at W1.2, framed at last)</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" style="background:var(--ink);display:flex;align-items:center;justify-content:center;padding:0 34px">
+            <div style="text-align:center">
+              <div class="authicon" style="width:76px;height:76px;border-radius:22px;margin:0 auto 20px"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg></div>
+              <div class="h1" style="color:#fff;margin-bottom:12px">Time for an update</div>
+              <p style="font-size:14.5px;line-height:1.5;color:#9aa6bd;margin:0 0 26px">This version of the app is no longer supported. Update now to stay in step with the family.</p>
+              <button class="btn gold">Update now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+
+  <h2 class="ghead">&#127769; W4.10 &middot; Updating from inside the app &middot; dark</h2>
+  <div class="gallery t-dark" id="w410Dark"></div>
+  <script>(function(){var l=document.getElementById('w410Light'),d=document.getElementById('w410Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
 
 
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>

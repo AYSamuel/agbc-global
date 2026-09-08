@@ -90,6 +90,13 @@
     "body": "Cette version de l'application n'est plus prise en charge. Mettez-la à jour pour rester en lien avec la famille.",
     "cta": "Mettre à jour"
   },
+  "updateNotice": {
+    "title": "Une nouvelle version est prête",
+    "body": "Elle apporte les dernières améliorations. Cela prend un instant, et tout ce que tu gardes ici reste exactement où il est.",
+    "cta": "Mettre à jour",
+    "footnote": "Nous ne te le redemanderons pas aujourd'hui.",
+    "dismissed": "Avis de mise à jour fermé. La nouvelle version t'attend quand tu seras prêt."
+  },
   "languages": {
     "en": "Anglais",
     "de": "Allemand",
