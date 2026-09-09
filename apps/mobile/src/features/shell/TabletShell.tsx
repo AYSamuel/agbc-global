@@ -192,9 +192,21 @@ export function TabletShell({ children }: PropsWithChildren) {
             items={items}
             activeKey={activeKey}
             onPress={(key) => {
-              // `navigate` rather than `push`: tapping a root you are already deep
-              // inside should return to it, not stack a second copy.
-              router.navigate(`/(tabs)/${key}`);
+              const href = `/(tabs)/${key}` as const;
+              // Two different actions for one tap, measured against expo-router's
+              // real navigators (railNavigation.test.tsx, 2026-09-09) after Ayo
+              // found that from NOW PLAYING a rail tap landed on Home and only a
+              // second tap reached the tab. Inside the tab group `navigate` is a
+              // tab switch. From a STACK screen above it (sermon, testimony,
+              // academy...) the same `navigate` finds no matching route on the
+              // stack and PUSHES a second copy of the whole tab group on top of
+              // the sermon, which mounts on its initial tab; `dismissTo` instead
+              // pops the stack back to the one tab group and switches it, which
+              // is what the rail means. `dismissTo` from inside the tabs is a
+              // no-op (the tab router has no POP_TO), so it cannot be the only
+              // call either.
+              if (inTabs) router.navigate(href);
+              else router.dismissTo(href);
             }}
             accessibilityLabel={t('tabs.railLabel')}
           />
