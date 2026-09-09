@@ -87,10 +87,23 @@ tile mono 432 "transparent" "#ffffff" 169 0
 # with `imageWidth: 76` (app.config.js). Rendered at 4x for a crisp downscale.
 tile splash 304 "$GOLD" "$NAVY" 160 88
 
+# The Android notification small icon (expo-notifications `icon`, added
+# 2026-09-09 for `18`'s tray-icon line): 96x96, all white on transparency, the
+# same letterform. Android draws it in ONE colour at 24dp and Google's guidance
+# keeps the art inside ~20dp of that, so the glyph fills about 80% of the canvas
+# rather than sitting inset for an adaptive mask, which is why the monochrome
+# layer above could not simply be reused (its inset art lands as a blob in the
+# tray). 108px was measured rather than guessed: the rendered glyph's opaque
+# bounding box is 76x72 at (10,11), i.e. ~80% of the canvas with ~2.5dp of
+# padding at xxhdpi, and every opaque pixel is pure white (checked with pngjs on
+# 2026-09-09). Like the rest of this set it reaches a device only in a new build.
+tile tray 96 "transparent" "#ffffff" 108 0
+
 shot icon 1024
 shot fg 512
 shot mono 432
 shot splash 304
+shot tray 96
 
 # The adaptive background is flat gold; no glyph, so no font to render.
 cat > "$WORK/bg.html" <<EOF
@@ -104,9 +117,10 @@ cp "$WORK/fg.png"     "$OUT/android-icon-foreground.png"
 cp "$WORK/bg.png"     "$OUT/android-icon-background.png"
 cp "$WORK/mono.png"   "$OUT/android-icon-monochrome.png"
 cp "$WORK/splash.png" "$OUT/splash-icon.png"
+cp "$WORK/tray.png"   "$OUT/notification-icon.png"
 
 echo "Wrote the icon set to $OUT:"
-for f in icon android-icon-foreground android-icon-background android-icon-monochrome splash-icon; do
+for f in icon android-icon-foreground android-icon-background android-icon-monochrome splash-icon notification-icon; do
   echo "  $f.png"
 done
 echo
