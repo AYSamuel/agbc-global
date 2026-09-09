@@ -71,8 +71,47 @@ This is the account-level-incident path. It follows Supabase's own backup/restor
    - `auth.schema_migrations` and `storage.migrations` restore empty. They are the auth/storage services' own version ledgers; the target project's services maintain their own. Expected, not data loss.
    - **App triggers ON `auth.users` are NOT in the dump** (they are managed-schema objects; the trio skips that DDL). The retired app had two; anything OUR migrations put on `auth.users` later must be reapplied from `supabase/migrations/`, which is the schema of record anyway.
    - **`supabase_migrations.schema_migrations` (the migration history) is not in the dump.** After a Path A restore, rebuild it with `supabase migration repair` against the migrations folder.
+   - **Storage policies and cron schedules are not in the dump either** (measured 2026-09-09: `schema.sql` carries zero statements `ON "storage"."objects"` and zero `cron.schedule` calls). The six buckets' RLS (who may read `sermon-audio`, who may write `event-images`, and so on) and every job's schedule live in `cron.job` and on `storage.objects`, both managed-schema territory the trio skips. After Path A, re-run the migrations that create them, or the buckets are unreadable and no job ever ticks while `cron.job_run_details` stays silent.
+   - **The target's managed schemas must be at least as new as the source's.** The dump names every column, and production's auth and storage services move ahead of whatever restores it: on 2026-09-09 five columns in the dump (`auth.custom_oauth_providers.custom_claims_allowlist`, `storage.buckets.versioning_status`, `storage.objects.archived_at`, `.is_delete_marker`, `.is_versioned`) did not exist on the CLI's local stack. A fresh hosted project is newer than production by construction, so Path A proper does not hit this; the local variant below does, and drops those columns from `data.sql` before loading.
 6. **Repoint the WEBSITE** (this is the live casualty): in Vercel (`Desktop/agbc` project), update `SUPABASE_URL` / service key env vars to the new project, redeploy, and test a donation read + a course registration read. The app (dev-pointed at P1 time) follows later.
 7. Auth config, SMTP, and edge-function secrets are NOT in the dump; re-mirror per `docs/runbooks/credentials.md` ("Arming the scheduled jobs") and `23` §1's `config push` caveat.
+
+## Path A on the local stack · the drill target while the org is on Free
+
+**Why this exists (2026-09-09):** `21` §7 says "restore into a scratch project", and the Free plan does not allow one. Two ACTIVE projects are the cap across every org Ayo owns, `agbc-production` holds one and the other company's project holds the other, and a paused project cannot take a restore. So the drill target is `supabase start`: a full stack (Postgres, auth, PostgREST, storage, Mailpit) whose managed schemas are current, which is exactly what a fresh hosted project would give, minus the platform's own quirks. Everything the drill is meant to prove (the key opens the file, the trio loads in one transaction, the counts and checksums match, the dashboard boots and an admin signs in with their restored MFA factor) is proven here. It costs the local dev data, which `pnpm db:reset` puts back afterwards.
+
+```bash
+# From C:estore-drill with db/ extracted (Git Bash). The stack is already running.
+# 1. Adapt: drop the columns the local managed schemas do not have yet (see step 5 above),
+#    writing db/data.local.sql; the script also writes a per-table row-count manifest.
+# 2. Prep the target: drop what the dump recreates, truncate the managed rows it carries.
+cat > db/prep.sql <<'EOF'
+set storage.allow_delete_query = 'true';
+drop schema if exists jobs cascade;
+drop schema public cascade;
+create schema public;
+alter schema public owner to pg_database_owner;
+truncate auth.audit_log_entries, auth.custom_oauth_providers, auth.flow_state, auth.users, auth.identities,
+  auth.instances, auth.oauth_clients, auth.sessions, auth.mfa_amr_claims, auth.mfa_factors, auth.mfa_challenges,
+  auth.oauth_authorizations, auth.oauth_client_states, auth.oauth_consents, auth.one_time_tokens,
+  auth.refresh_tokens, auth.sso_providers, auth.saml_providers, auth.saml_relay_states, auth.sso_domains,
+  auth.webauthn_challenges, auth.webauthn_credentials,
+  storage.objects, storage.buckets, storage.buckets_analytics cascade;
+EOF
+docker cp db supabase_db_agbc-global:/tmp/db
+MSYS_NO_PATHCONV=1 docker exec -e PGPASSWORD=postgres supabase_db_agbc-global psql -U supabase_admin -d postgres \
+  --single-transaction --variable ON_ERROR_STOP=1 --file /tmp/db/prep.sql
+# 3. The official recipe, as supabase_admin (session_replication_role needs a superuser here).
+MSYS_NO_PATHCONV=1 docker exec -e PGPASSWORD=postgres supabase_db_agbc-global psql -U supabase_admin -d postgres \
+  --single-transaction --variable ON_ERROR_STOP=1 \
+  --file /tmp/db/roles.sql --file /tmp/db/schema.sql \
+  --command 'SET session_replication_role = replica' --file /tmp/db/data.local.sql
+# 4. Make the API see the new schema, then verify (checklist below) before booting the dashboard.
+docker exec -e PGPASSWORD=postgres supabase_db_agbc-global psql -U supabase_admin -d postgres -Atc "notify pgrst, 'reload schema';"
+docker restart supabase_rest_agbc-global supabase_auth_agbc-global
+```
+
+The dashboard then runs with `next start` and the local URL and publishable key (the existing `.next` build bakes `127.0.0.1:55321`, so no rebuild). Sign in with the admin's real address: the code lands in Mailpit (`127.0.0.1:55324`), and the authenticator app works unchanged because `auth.mfa_factors` came with the dump. `config.toml` already wires the custom access token hook, which the dump's `schema.sql` recreates in `public`.
 
 ## Path B · Prod is alive but something was damaged (inspect, then surgically fix)
 
@@ -141,6 +180,7 @@ Compare the restored copy against the source (or against this file's drill recor
 
 | Date | Dump | Target | Result |
 |---|---|---|---|
+| 2026-09-09 | `nightly/agbc-prod-2026-09-09.tar.zst.age` from B2 (92.7 MB: two 46 MB MP3s in `sermon-audio`, see below), decrypted with the vault's identity | The LOCAL stack, per "Path A on the local stack" above, because the Free plan has no room for a scratch project | **VERIFIED, and the first drill to use a real nightly, the real key, and the dashboard.** Download ~30 s; decrypt + unpack 1 s; prep + restore **2 s** in one transaction with zero errors; **73 of 73 tables identical** to the dump's own row counts (330 rows); `donations` and `course_registrations` md5 **identical to production**, read from the SQL editor the same minute (`421d35af…`, `5b4da09e…`). Dashboard booted with `next start`, admin signed in through Mailpit OTP + the restored TOTP factor, moderation queue, People and the sermon shelf (102 messages, the same day's sync) rendered from restored rows. **Findings:** (1) the key's password-manager entry took two attempts to copy correctly, and a wrong field silently produced a 59-byte file: an age identity is a 74-character line starting `AGE-SECRET-KEY-1`, check that before anything else; (2) five dump columns had no home on the local stack (step 5 above), adapted rather than hidden; (3) storage policies and `cron.job` are not in the dump (step 5); (4) `sermon-audio` on production holds a second 46 MB object (`0186563c…`, uploaded 2026-09-06 11:56 UTC) that no sermon row references, so the traffic fence's "one MP3" is two on disk and every nightly since carries 92 MB; delete the orphan from the dashboard. Storage objects were not copied into the target, deliberately: the drill is about the database and the dashboard, and the tarball's file listing already proves the bytes arrived. Whole drill, first download (14:38) to teardown (15:23): **45 minutes** wall clock, most of it the key handoff and the sign-in; the restore itself is seconds |
 | 2026-08-10 | Live trio taken with the pipeline's exact commands (roles 297 B, schema 147 KB, data 1.1 MB, 42 tables) | Disposable `public.ecr.aws/supabase/postgres:17.6.1.106` container, Path B procedure | **VERIFIED.** Row counts identical on 40/42 tables; the 2 diffs are the expected service ledgers (`auth.schema_migrations`, `storage.migrations`, see Path A notes). Full-row md5 checksums identical (UTC/ISO-normalized) on `public.donations` (12), `public.course_registrations` (4), `public.users` (8), `public.daily_verses` (58); id-level checksums identical on `auth.users` (8) and `storage.objects` (7). All 7 storage objects fetched; byte sizes matched restored metadata exactly. All 12 donations rows carry donor name + email (columns populated, checked without printing PII). Whole drill ran on the dev machine at zero cost |
 
-Quarterly drill required per `21` §7; book the next one when closing this file.
+Quarterly drill required per `21` §7. **Next one due by 2026-12-09.** Before it, check whether the org is on Pro yet: if so, the target goes back to a real scratch project (Path A proper) and this file's local variant becomes the fallback.
