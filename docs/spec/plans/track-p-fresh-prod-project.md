@@ -165,7 +165,8 @@ not recurring gifts at all but one-per-category fixtures written on a single day
 website. So nothing was copied, and the "stop if any row looks real" branch never triggered.
 
 **Restoring `agbc-app` needs a free active slot**, so pause `agbc-production` first. That is
-the reversal path now, and it is worth knowing before you need it.
+the reversal path now, and it is worth knowing before you need it. **Gone at Phase 5
+(2026-09-09): the project is deleted, and the reversal path with it.**
 
 1. ~~Create the project (EU, Free).~~ Done via the management API, which sets a database
    password nobody ever sees; Ayo then set a known one through **Reset database password**.
@@ -447,10 +448,42 @@ What remains of this phase, on its original schedule:
 
 **Until step 3, do not press "Disable JWT-based API keys".**
 
-## Phase 5 · Retire the old project
+## Phase 5 · Retire the old project · DONE 2026-09-09
 
 Only after the website has run on the new project for a few days with no surprises. Final dump
 archived first, then delete. Nothing in the app or the website may still reference the old ref.
+
+**Executed 2026-09-09, three weeks after the website moved (Phase 3, 2026-08-19), with two
+findings that changed the archive step.**
+
+1. **The "final dump" this plan relied on was a week from ageing out.**
+   `nightly/agbc-prod-2026-08-17.tar.zst.age` sits in the same B2 prefix as every other
+   nightly, and ADR 0018's 30-day lifecycle rule is bucket-wide, so it would have been hidden
+   on 2026-09-16 and deleted the day after. "Archived" had meant "uploaded once", which is not
+   the same thing under a retention rule. A paused project cannot be dumped and both active
+   slots were spoken for, so re-taking it was not an option either.
+2. **A paused project offers its own export, and that became the archive.** Studio's overview
+   for a paused project shows "Export your data" with two downloads: the platform's own
+   database backup taken at the moment of the pause, and a zip of every storage object. Both
+   were downloaded and verified BEFORE anything was deleted:
+   `db_cluster-17-08-2026@13-52-24.backup.gz` (404,891 bytes; a valid gzip of a plain-SQL
+   cluster dump whose `COPY` list carries `donations`, `course_registrations`, `users`,
+   `daily_verses`, the retired app's tables, `auth`, `storage` and the old `vault.secrets`)
+   and `fotfplvqsnmbzjjhqlwp.storage.zip` (347,338 bytes; the 7 `avatars` objects). They are
+   the only copy of the old project now and live with the age key, outside every repo.
+3. **The ref sweep found nothing live.** Both repos were grepped for `fotfplvqsnmbzjjhqlwp`:
+   the website has zero mentions, and every mention here is either a historical record (ADR
+   0001, ADR 0023, the two audit runbooks, `19`'s region checkbox) or a doc corrected in this
+   change. GitHub's `production` environment secrets had all been re-pointed on 2026-08-17/18.
+4. **Deleted from Settings > General > Delete project**, typing the project name to confirm.
+   The org's project list then showed `agbc-production` alone. For the record: the assistant
+   drove the export and reached the confirm dialog, and the harness refused to type into a
+   deletion confirm, so the final click was Ayo's, which is where this plan always put it.
+
+**What it changes:** the second Free-plan active slot is free, which is what the restore drill
+(`18`, `21` §7) has been waiting on; the reversal path recorded at Phase 1 ("pause
+`agbc-production` first, then restore `agbc-app`") no longer exists; and the destructive-work
+gate in `CLAUDE.md` has no subject left.
 
 ---
 

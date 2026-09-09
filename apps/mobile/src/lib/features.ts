@@ -21,14 +21,16 @@
 interface Features {
   /**
    * STORE and LIBRARY (`14`). Deleted by W4.2, which needs W4.1's Payhip
-   * pipeline; W4.1 was parked by Ayo on 2026-09-01 with only its schema built.
-   * `18`'s MVP definition already defers both.
+   * pipeline; W4.1 was parked by Ayo on 2026-09-01 with only its schema built,
+   * and W4.2 to W4.4 were parked with it on 2026-09-09 (`25`). `18`'s MVP
+   * definition already defers both.
    */
   readonly store: boolean;
 
   /**
-   * PLAN, the devotional reading plan (`14`). Deleted by W4.4. `18` defers it
-   * with the Store, since the plan it reads is a paid entitlement.
+   * PLAN, the devotional reading plan (`14`). Deleted by W4.4, which is parked
+   * with the rest of the book track since 2026-09-09 (`25`). `18` defers it with
+   * the Store, since the plan it reads is a paid entitlement.
    */
   readonly devotionalPlan: boolean;
 }

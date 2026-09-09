@@ -4,17 +4,17 @@ For the moment something has gone badly wrong with the prod Supabase project. Re
 
 > **Which project is production changed on 2026-08-17 (ADR 0023).** Production is now
 > **`agbc-production`, ref `mqvojrkotwwvwzsewybx`**, eu-central-1. Every `fotfplvqsnmbzjjhqlwp`
-> below refers to the OLD shared project, which is **paused, not deleted**: its data is intact
-> and restorable for up to a year from the dashboard, so if the thing that went wrong is
-> confined to the old website tables, **restoring that project may be faster than any procedure
-> in this file**. Note it needs a free active slot (the Free plan allows two active projects and
-> the other belongs to a different company), so pause `agbc-production` first.
+> below refers to the OLD shared project, paused on 2026-08-17 and **DELETED on 2026-09-09
+> (Track P Phase 5)**. Its archive is the platform's own pause-time export, downloaded from the
+> paused project's overview and verified before deletion: `db_cluster-17-08-2026@13-52-24.backup.gz`
+> and `fotfplvqsnmbzjjhqlwp.storage.zip`, kept with the age key outside every repo. The database
+> file is a plain-SQL cluster dump (roles, schema and data in one file, `COPY` blocks), so it
+> restores with `psql` rather than as this pipeline's trio. The B2 nightly
+> `agbc-prod-2026-08-17.tar.zst.age` was NOT the archive: everything under `nightly/` ages out
+> under the 30-day rule, and this file said otherwise for three weeks.
 >
-> Its final archive is `nightly/agbc-prod-2026-08-17.tar.zst.age`, taken minutes before the
-> pause. A paused project cannot be dumped, so no later one exists or ever will.
->
-> **Path B assumes prod is reachable for a read-only managed-schema dump.** Against the old
-> project that is no longer true while it is paused; restore it first, or use Path A.
+> **Path B assumes prod is reachable for a read-only managed-schema dump**, which is true of
+> `agbc-production`.
 
 ## What exists
 
