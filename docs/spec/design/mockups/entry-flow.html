@@ -552,8 +552,12 @@
      link back to YouTube. A sentence did neither: this is their badge, and it is the way
      to the video that audio mode otherwise lacked. Absent on a message that was never on
      YouTube, which borrows nothing to credit. */
-  .ytcredit{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;font-size:13px;font-weight:700;color:var(--text)}
-  .ytcredit .badge{width:34px;height:24px;border-radius:7px;background:#ff0000;display:grid;place-items:center;flex:none}
+  /* 2026-09-09: the app draws YouTube's OWN icon here (the Core YouTube icon PNG
+     from brand.youtube, unmodified), not this CSS approximation. Two numbers moved
+     to match their rules: the red is #ff0033 (the current mark), and the gap is 12px
+     because their clear space must be at least the triangle's size (~9x10 at 24px). */
+  .ytcredit{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;font-size:13px;font-weight:700;color:var(--text)}
+  .ytcredit .badge{width:34px;height:24px;border-radius:7px;background:#ff0033;display:grid;place-items:center;flex:none}
   .ytcredit .badge::after{content:"";border-left:9px solid #fff;border-top:5.5px solid transparent;border-bottom:5.5px solid transparent;margin-left:2px}
   .live-badge{background:var(--red);color:#fff;border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:6px}
   .live-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff}

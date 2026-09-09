@@ -210,16 +210,18 @@ const config = {
       // accent (packages/shared palette.gold) and the one brand colour that holds on both
       // a light and a dark shade; navy would disappear into a dark one.
       //
-      // `icon` IS DELIBERATELY NOT SET YET, and that is a decision rather than an
-      // oversight. Android's small icon must be a solid-white silhouette with
-      // transparency, and the only candidate in the repo is the 432x432 ADAPTIVE
-      // monochrome layer, whose art is inset for the adaptive mask and would render as a
-      // small blob in the tray. Making a purpose-built 96x96 is a design task, not
-      // something to invent here, and until it exists Android falls back to the app icon,
-      // which rendered correctly on the device (2026-08-16 shade screenshots). Flagged
-      // for Ayo rather than guessed at.
+      // `icon` is the tray's small icon (2026-09-09, `18`'s tray-icon line). Android
+      // draws it in ONE colour from a white-on-transparent silhouette, so it is not the
+      // app icon and could not be the 432x432 adaptive monochrome layer either: that
+      // art is inset for the adaptive mask and lands as a blob at 24dp. It is the same
+      // letterform as the icon set, rendered by scripts/render-app-icon.sh at 96x96
+      // with the glyph filling ~80% of the canvas, which is Google's own proportion
+      // for the small icon. Until it existed Android fell back to the app icon, which
+      // rendered acceptably (2026-08-16 shade screenshots). NATIVE, like the rest of
+      // the plugin: it reaches a device only in a new build, so its first look is the
+      // next store train's, not this PR's.
       'expo-notifications',
-      { color: '#ffcf4a' },
+      { color: '#ffcf4a', icon: './assets/images/notification-icon.png' },
     ],
     [
       // R8 (W4.11 slice 2). Play's release dashboard carries "App optimization is

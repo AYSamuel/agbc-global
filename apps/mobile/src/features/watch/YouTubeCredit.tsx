@@ -1,6 +1,6 @@
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, type ImageSourcePropType } from 'react-native';
 
-import { fontFamily, radius, spacing } from '@agbc/shared/theme';
+import { fontFamily, spacing } from '@agbc/shared/theme';
 
 import { useTheme } from '@/theme';
 
@@ -15,13 +15,27 @@ import { useTheme } from '@/theme';
 // did neither. This does both, and it is also the way to the video that audio
 // mode otherwise lacked.
 //
-// Before store submission, swap the drawn badge for the official asset from
-// YouTube's branding kit: a mark we drew ourselves is an approximation of a
-// brand feature rather than the brand feature (on `18`'s checklist).
+// THE MARK IS THEIRS, NOT DRAWN (2026-09-09, `18`'s brand-asset line). Until
+// this the badge was a red View with a bordered triangle, an approximation of a
+// brand feature rather than the brand feature, and its red was #FF0000 where
+// the current icon is #FF0033. The PNGs are cut from the "Core YouTube icon"
+// pack on brand.youtube (`yt_icon_red_digital.png`, its transparent margin
+// removed, resized to 24dp high at 1x/2x/3x with the colours untouched). Three
+// of their rules hold here, with the numbers measured off the asset:
+//   - minimum height 20dp (this is 24);
+//   - the colours are never modified, which is why the mark is an image rather
+//     than a themed SVG, and why it is the same in both themes;
+//   - clear space on every side of at least the triangle's own size. The
+//     triangle is 0.37 x 0.43 of the icon's height, so at 24dp it is ~9 x 10dp,
+//     and the gap to the label is 12 (the mockup said 9, corrected on the frame
+//     in the same change).
 
-/** YouTube red. A brand colour, deliberately NOT a token: it belongs to them,
- * and putting it in our palette would invite reuse as if it were ours. */
-const YOUTUBE_RED = '#ff0000';
+const YOUTUBE_ICON =
+  require('../../../assets/images/youtube-icon.png') as ImageSourcePropType;
+
+/** The mark's own proportions (826 x 578 in the source), at 24dp high. */
+const ICON_HEIGHT = 24;
+const ICON_WIDTH = 34;
 
 export interface YouTubeCreditProps {
   /** "Watch on YouTube", already localized. */
@@ -41,36 +55,19 @@ export function YouTubeCredit({ label, onPress }: YouTubeCreditProps) {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 9,
+        gap: 12,
         marginTop: spacing.lg,
         opacity: pressed ? 0.7 : 1,
       })}
     >
-      <View
-        style={{
-          width: 34,
-          height: 24,
-          borderRadius: radius.control - 5,
-          backgroundColor: YOUTUBE_RED,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* The play triangle, borders rather than an SVG: the same shape the
-            mockup's `.badge::after` draws, and the same trick `SermonRow`'s
-            play chip already uses. */}
-        <View
-          style={{
-            marginLeft: 2,
-            borderLeftWidth: 9,
-            borderTopWidth: 5.5,
-            borderBottomWidth: 5.5,
-            borderLeftColor: '#ffffff',
-            borderTopColor: 'transparent',
-            borderBottomColor: 'transparent',
-          }}
-        />
-      </View>
+      {/* Decorative: the Pressable already carries the label for screen readers. */}
+      <Image
+        source={YOUTUBE_ICON}
+        accessible={false}
+        accessibilityIgnoresInvertColors
+        resizeMode="contain"
+        style={{ width: ICON_WIDTH, height: ICON_HEIGHT }}
+      />
       <Text
         maxFontSizeMultiplier={1.3}
         numberOfLines={1}
