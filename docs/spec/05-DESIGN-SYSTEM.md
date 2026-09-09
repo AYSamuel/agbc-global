@@ -194,6 +194,15 @@ Every feature's acceptance criteria include the verification matrix: small phone
   theme control is inline on the Settings root, and Privacy and About link out to the website,
   so building the frame as drawn would mean giving Settings an information architecture it does
   not have, which changes the PHONE too. On a tablet Settings stays a single column, wider.
+- **A rail tap from a STACK screen is `dismissTo`, never `navigate` (fixed 2026-09-09).** Ayo
+  found on the tablet that from NOW PLAYING a rail tap showed Home and only a second tap reached
+  the tab. Measured against expo-router's real navigators (`features/shell/__tests__/railNavigation.test.tsx`):
+  inside the tab group `navigate` is a tab switch, but from a stack screen above it the same
+  call finds no matching route on the root stack and PUSHES a second copy of the whole tab group
+  on top of the sermon, mounted on its initial tab. `dismissTo` pops to the one tab group and
+  switches it, and is a no-op from inside the tabs, so `TabletShell` uses each where it works.
+  The rail is the only surface that offers a tab switch from a stack screen; a phone's tab bar
+  is never visible there.
 - **A tablet STARTS BELOW the status bar** (Ayo, 2026-09-02). Android draws edge-to-edge, so
   the app's own surfaces ran up behind the system bar. Content was never overlapped, and
   measuring proved it: the rail's first item sat at exactly `insets.top` plus its own padding.

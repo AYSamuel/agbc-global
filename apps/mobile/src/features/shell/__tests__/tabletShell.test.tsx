@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 import i18n from '@/i18n';
@@ -31,11 +31,13 @@ jest.mock(
 );
 
 const mockNavigate = jest.fn();
+const mockDismissTo = jest.fn();
 let mockSegments: string[] = ['(tabs)', 'home'];
 let mockPathname = '/';
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     navigate: mockNavigate,
+    dismissTo: mockDismissTo,
     push: jest.fn(),
     back: jest.fn(),
   }),
@@ -234,4 +236,28 @@ describe('FAMILY two-pane (mockup FAMILY · feed + detail)', () => {
       expect(screen.getByText(CONTENT)).toBeOnTheScreen();
     },
   );
+});
+
+// A rail tap is two different navigator actions depending on where the tap
+// lands from, measured against expo-router's real navigators in
+// railNavigation.test.tsx. Ayo found the wrong one on the tablet on 2026-09-09:
+// from NOW PLAYING, tapping Give showed Home, and only a second tap reached Give.
+describe('a rail tap from a stack screen pops to the tab, not on top of it', () => {
+  test('inside the tab group it is a tab switch (navigate)', async () => {
+    mockWidth = 900;
+    mockSegments = ['(tabs)', 'home'];
+    await renderShell();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Give' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/(tabs)/give');
+    expect(mockDismissTo).not.toHaveBeenCalled();
+  });
+
+  test('from a stack screen above it, it dismisses back to the tab (dismissTo)', async () => {
+    mockWidth = 900;
+    mockSegments = ['sermon', '[id]'];
+    await renderShell();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Give' }));
+    expect(mockDismissTo).toHaveBeenCalledWith('/(tabs)/give');
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });
