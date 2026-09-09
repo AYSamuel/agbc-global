@@ -1,6 +1,10 @@
-import { assertEquals } from 'jsr:@std/assert@1';
+import { assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
 
-import { captureEdgeError, captureEdgeMessage } from './sentry.ts';
+import {
+  captureEdgeError,
+  captureEdgeMessage,
+  fingerprintFor,
+} from './sentry.ts';
 
 // Crash reporting for edge functions (W2.10). What is asserted here is the OFF state, which
 // is the one every environment except production is in: no SENTRY_DSN means no init, no
@@ -49,6 +53,16 @@ Deno.test('captureEdgeMessage without a DSN is a silent no-op', async () => {
   await captureEdgeMessage('verse-monitor', 'and at info level', 'info');
 
   assertEquals(true, true);
+});
+
+// Grouping (2026-09-08). Every job's failure has the same stack shape, so without this five
+// jobs' gateway timeouts were one Sentry issue titled after push-receipts. What can be
+// asserted offline is the contract Sentry is handed: its own grouping is kept, and the slug
+// is added, so two jobs with the same stack file as two issues.
+
+Deno.test('captures are grouped per function on top of Sentry\'s own grouping', () => {
+  assertEquals(fingerprintFor('push-receipts'), ['{{ default }}', 'push-receipts']);
+  assertNotEquals(fingerprintFor('push-receipts'), fingerprintFor('event-notices'));
 });
 
 Deno.test('captureEdgeMessage never throws', async () => {

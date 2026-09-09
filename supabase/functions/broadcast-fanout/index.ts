@@ -22,6 +22,7 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { pushSenderFromEnv } from '../_shared/notify.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { buildFanoutTargets, planFanout, type ChunkRow } from './core.ts';
 
@@ -73,7 +74,10 @@ async function run(
   supabase: SupabaseClient,
   healthcheckUrl: string | null,
 ): Promise<Response> {
-  const { data, error } = await supabase.rpc('broadcasts_in_flight');
+  const { data, error } = await retryTransient(
+    () => supabase.rpc('broadcasts_in_flight'),
+    { label: 'broadcast-fanout: in-flight read' },
+  );
   if (error) throw new Error(`in-flight read failed: ${error.message}`);
 
   const inFlight = (data ?? []) as InFlightRow[];

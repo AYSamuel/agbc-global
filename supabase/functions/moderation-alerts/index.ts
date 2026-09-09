@@ -11,8 +11,10 @@
 //   * record  AFTER the send, never before. At-least-once is the right failure mode here: a
 //             duplicate nudge is a nuisance, a swallowed safeguarding report is not.
 //
-// NO RETRIES, deliberately. The next tick is the retry, and because the work is derived from
-// the queue rather than from a queue of its own, a failed run costs an hour and nothing else.
+// NO RETRIES OF THE WORK, deliberately. The next tick is the retry, and because the work is
+// derived from the queue rather than from a queue of its own, a failed run costs an hour and
+// nothing else. The reads ride `retryTransient` (2026-09-08), which is a different thing: a
+// gateway that answered instead of PostgREST is asked again, a send never is.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
@@ -21,6 +23,7 @@ import { resendSender, type EmailSender } from '../_shared/email.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { buildDigests, type AlertRow, type LedgerEntry } from './core.ts';
 
@@ -66,8 +69,9 @@ async function run(
   const { error: pruneError } = await supabase.rpc('prune_job_alerts');
   if (pruneError) throw new Error(`prune failed: ${pruneError.message}`);
 
-  const { data: batch, error: batchError } = await supabase.rpc(
-    'moderation_alert_batch',
+  const { data: batch, error: batchError } = await retryTransient(
+    () => supabase.rpc('moderation_alert_batch'),
+    { label: 'moderation-alerts: batch read' },
   );
   if (batchError) throw new Error(`batch failed: ${batchError.message}`);
   const rows = (batch ?? []) as AlertRow[];
@@ -75,11 +79,15 @@ async function run(
   // Escalation needs somewhere to escalate TO. With no admin account there is no such place,
   // and the batch cannot say so because it would simply return no rows: exactly the silence
   // this whole slice exists to prevent, so it is checked and it fails the run.
-  const { count: admins, error: adminError } = await supabase
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
-    .eq('role', 'admin')
-    .is('deleted_at', null);
+  const { count: admins, error: adminError } = await retryTransient(
+    () =>
+      supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'admin')
+        .is('deleted_at', null),
+    { label: 'moderation-alerts: admin count' },
+  );
   if (adminError) throw new Error(`admin count failed: ${adminError.message}`);
   const hasAdmin = (admins ?? 0) > 0;
   if (!hasAdmin) {

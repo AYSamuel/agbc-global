@@ -23,6 +23,7 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { deliverNotifications, pushSenderFromEnv } from '../_shared/notify.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { buildEntries, type DueEventRow } from './core.ts';
 
@@ -70,7 +71,10 @@ async function run(
   supabase: SupabaseClient,
   healthcheckUrl: string | null,
 ): Promise<Response> {
-  const { data, error } = await supabase.rpc('due_event_notices');
+  const { data, error } = await retryTransient(
+    () => supabase.rpc('due_event_notices'),
+    { label: 'event-notices: due read' },
+  );
   if (error) throw new Error(`due read failed: ${error.message}`);
 
   const due = (data ?? []) as DueEventRow[];
@@ -131,10 +135,14 @@ async function announce(
   let drained = false;
 
   while (pages < MAX_PAGES_PER_EVENT) {
-    const { data, error } = await supabase.rpc('event_notice_recipients', {
-      event: row.event_id,
-      chunk_size: PAGE,
-    });
+    const { data, error } = await retryTransient(
+      () =>
+        supabase.rpc('event_notice_recipients', {
+          event: row.event_id,
+          chunk_size: PAGE,
+        }),
+      { label: 'event-notices: recipients read' },
+    );
     if (error) throw new Error(`recipients read failed: ${error.message}`);
 
     const page = (data ?? []) as Array<{ profile_id: string }>;

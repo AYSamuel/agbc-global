@@ -65,6 +65,19 @@ function ready(): boolean {
 }
 
 /**
+ * How Sentry files what this module sends. Its default grouping is by stack shape, and every
+ * scheduled job here has the same one (`run` under `Deno.serve`'s handler, throwing a
+ * labelled Error), so on 2026-09-08 five jobs' gateway timeouts were filed as ONE issue
+ * titled after push-receipts, with the other four hidden inside its events list. The tag
+ * alone never grouped anything; only the fingerprint does. Keeping `{{ default }}` in it
+ * keeps Sentry's own grouping and adds the slug on top, so the unit becomes one function per
+ * failure shape, which is the unit a human acts on.
+ */
+export function fingerprintFor(fn: string): string[] {
+  return ['{{ default }}', fn];
+}
+
+/**
  * Report a failure that the function has already handled. Always await it: an isolate can be
  * frozen the moment the response is returned, so an unflushed event is a lost event.
  *
@@ -78,6 +91,7 @@ export async function captureEdgeError(
   try {
     Sentry.withScope((scope) => {
       scope.setTag('function', fn);
+      scope.setFingerprint(fingerprintFor(fn));
       Sentry.captureException(error);
     });
     await Sentry.flush(2_000);
@@ -115,6 +129,7 @@ export async function captureEdgeMessage(
   try {
     Sentry.withScope((scope) => {
       scope.setTag('function', fn);
+      scope.setFingerprint(fingerprintFor(fn));
       scope.setLevel(level);
       Sentry.captureMessage(message);
     });

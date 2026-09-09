@@ -12,6 +12,7 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import {
   buildVerseAlerts,
   runCanary,
@@ -66,9 +67,9 @@ async function run(
     ping: (ok) => pingDeadMan(optionalEnv('HEALTHCHECK_URL_RESEND_CANARY'), ok),
   });
 
-  const { data: batch, error: batchError } = await supabase.rpc(
-    'verse_alert_batch',
-    { floor_days: FLOOR_DAYS },
+  const { data: batch, error: batchError } = await retryTransient(
+    () => supabase.rpc('verse_alert_batch', { floor_days: FLOOR_DAYS }),
+    { label: 'verse-monitor: batch read' },
   );
   if (batchError) throw new Error(`batch failed: ${batchError.message}`);
   const rows = (batch ?? []) as DepthRow[];
