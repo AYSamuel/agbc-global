@@ -25,6 +25,7 @@ import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 
 const JOB = 'erasure-sweep';
@@ -82,13 +83,17 @@ async function run(
   supabase: SupabaseClient,
   healthcheckUrl: string | null,
 ): Promise<Response> {
-  const { data, error } = await supabase
-    .from('account_erasures')
-    .select('id, profile_id, storage_paths, attempts')
-    .is('completed_at', null)
-    .lt('attempts', MAX_ATTEMPTS)
-    .order('requested_at', { ascending: true })
-    .limit(BATCH);
+  const { data, error } = await retryTransient(
+    () =>
+      supabase
+        .from('account_erasures')
+        .select('id, profile_id, storage_paths, attempts')
+        .is('completed_at', null)
+        .lt('attempts', MAX_ATTEMPTS)
+        .order('requested_at', { ascending: true })
+        .limit(BATCH),
+    { label: 'erasure-sweep: queue read' },
+  );
 
   if (error) throw new Error(`erasure read failed: ${error.message}`);
 
@@ -129,11 +134,15 @@ async function run(
   // GDPR obligation sitting unfinished, so it stops being a retry and becomes a person's
   // problem. Counted separately from this pass's failures, because the whole point is that
   // it is no longer being attempted.
-  const { count: stuck } = await supabase
-    .from('account_erasures')
-    .select('id', { count: 'exact', head: true })
-    .is('completed_at', null)
-    .gte('attempts', MAX_ATTEMPTS);
+  const { count: stuck } = await retryTransient(
+    () =>
+      supabase
+        .from('account_erasures')
+        .select('id', { count: 'exact', head: true })
+        .is('completed_at', null)
+        .gte('attempts', MAX_ATTEMPTS),
+    { label: 'erasure-sweep: stuck count' },
+  );
 
   if (stuck && stuck > 0) {
     console.error(

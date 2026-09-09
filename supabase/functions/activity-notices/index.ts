@@ -24,6 +24,7 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { deliverNotifications, pushSenderFromEnv } from '../_shared/notify.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { buildEntries, type ActivityDueRow } from './core.ts';
 
@@ -72,7 +73,10 @@ async function run(
   // No arguments: the defaults (now(), a 15-minute settle, a 7-day lookback) are the
   // production values and live in one place, on the function. pgTAP drives the other
   // clocks.
-  const { data, error } = await supabase.rpc('activity_notice_batch');
+  const { data, error } = await retryTransient(
+    () => supabase.rpc('activity_notice_batch'),
+    { label: 'activity-notices: batch read' },
+  );
   if (error) throw new Error(`batch failed: ${error.message}`);
 
   const due = (data ?? []) as ActivityDueRow[];

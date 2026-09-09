@@ -10,6 +10,7 @@ import { isServiceRoleRequest, unauthorized } from '../_shared/auth.ts';
 import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import {
   planSync,
@@ -70,13 +71,17 @@ async function run(
   healthcheckUrl: string | null,
 ): Promise<Response> {
   {
-    const { data: hq, error: hqError } = await supabase
-      .from('branches')
-      .select('youtube_channel_id')
-      .eq('is_hq', true)
-      .not('youtube_channel_id', 'is', null)
-      .limit(1)
-      .maybeSingle();
+    const { data: hq, error: hqError } = await retryTransient(
+      () =>
+        supabase
+          .from('branches')
+          .select('youtube_channel_id')
+          .eq('is_hq', true)
+          .not('youtube_channel_id', 'is', null)
+          .limit(1)
+          .maybeSingle(),
+      { label: 'youtube-sync: branch read' },
+    );
     if (hqError) throw new Error(`branches read failed: ${hqError.message}`);
     const channelId = hq?.youtube_channel_id as string | undefined;
     if (!channelId) {
@@ -89,10 +94,14 @@ async function run(
       ? await fetchApiVideos(channelId, apiKey)
       : await fetchRssVideos(channelId);
 
-    const { data: existingRows, error: existingError } = await supabase
-      .from('sermons')
-      .select('youtube_id, status')
-      .not('youtube_id', 'is', null);
+    const { data: existingRows, error: existingError } = await retryTransient(
+      () =>
+        supabase
+          .from('sermons')
+          .select('youtube_id, status')
+          .not('youtube_id', 'is', null),
+      { label: 'youtube-sync: sermons read' },
+    );
     if (existingError) {
       throw new Error(`sermons read failed: ${existingError.message}`);
     }

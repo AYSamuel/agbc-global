@@ -17,6 +17,7 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { deliverNotifications, pushSenderFromEnv } from '../_shared/notify.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import { advancingIds, buildEntries, type PrayerDueRow } from './core.ts';
 
@@ -56,7 +57,10 @@ async function run(
   supabase: SupabaseClient,
   healthcheckUrl: string | null,
 ): Promise<Response> {
-  const { data, error } = await supabase.rpc('prayer_reminder_batch');
+  const { data, error } = await retryTransient(
+    () => supabase.rpc('prayer_reminder_batch'),
+    { label: 'prayer-reminders: batch read' },
+  );
   if (error) throw new Error(`batch failed: ${error.message}`);
 
   const due = (data ?? []) as PrayerDueRow[];

@@ -24,6 +24,7 @@ import { optionalEnv, requiredEnv } from '../_shared/env.ts';
 import { pingDeadMan } from '../_shared/healthchecks.ts';
 import { claimJobLease, releaseJobLease } from '../_shared/jobs.ts';
 import { expoReceiptFetcher, type ReceiptFetcher } from '../_shared/push.ts';
+import { retryTransient } from '../_shared/retry.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
 import {
   buildRateAlert,
@@ -81,9 +82,9 @@ async function run(
   // ONE read across both ledgers (20260820140000). Two client reads would each take their
   // own thousand, which is more than Expo accepts in a request and would let one table
   // starve while the other drained.
-  const { data: ticketRows, error: ticketsError } = await supabase.rpc(
-    'unprocessed_push_tickets',
-    { batch: BATCH },
+  const { data: ticketRows, error: ticketsError } = await retryTransient(
+    () => supabase.rpc('unprocessed_push_tickets', { batch: BATCH }),
+    { label: 'push-receipts: tickets read' },
   );
   if (ticketsError) throw new Error(`tickets read failed: ${ticketsError.message}`);
 
@@ -166,7 +167,10 @@ async function run(
  * must not stop tokens being pruned, which is the job's actual duty.
  */
 async function maybeAlarm(supabase: SupabaseClient): Promise<number> {
-  const { data, error } = await supabase.rpc('push_error_rate', { window_hours: 24 });
+  const { data, error } = await retryTransient(
+    () => supabase.rpc('push_error_rate', { window_hours: 24 }),
+    { label: 'push-receipts: rate read' },
+  );
   if (error) throw new Error(`rate read failed: ${error.message}`);
 
   const row = (data as Array<{ sent: number; errored: number; error_ratio: number }> | null)
@@ -186,11 +190,15 @@ async function maybeAlarm(supabase: SupabaseClient): Promise<number> {
     return 0;
   }
 
-  const { data: admins, error: adminsError } = await supabase
-    .from('profiles')
-    .select('id, email')
-    .eq('role', 'admin')
-    .is('deleted_at', null);
+  const { data: admins, error: adminsError } = await retryTransient(
+    () =>
+      supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('role', 'admin')
+        .is('deleted_at', null),
+    { label: 'push-receipts: admins read' },
+  );
   if (adminsError) throw new Error(`admins read failed: ${adminsError.message}`);
 
   const alert = buildRateAlert(rate, optionalEnv('DASHBOARD_URL'));
@@ -205,12 +213,16 @@ async function maybeAlarm(supabase: SupabaseClient): Promise<number> {
   for (const admin of (admins ?? []) as Array<{ id: string; email: string | null }>) {
     if (!admin.email) continue;
     // Already told today? The ledger answers, and it answers per admin.
-    const { count, error: seenError } = await supabase
-      .from('job_alerts')
-      .select('*', { count: 'exact', head: true })
-      .eq('recipient_id', admin.id)
-      .eq('kind', 'push_error_rate')
-      .eq('subject', today);
+    const { count, error: seenError } = await retryTransient(
+      () =>
+        supabase
+          .from('job_alerts')
+          .select('*', { count: 'exact', head: true })
+          .eq('recipient_id', admin.id)
+          .eq('kind', 'push_error_rate')
+          .eq('subject', today),
+      { label: 'push-receipts: ledger read' },
+    );
     if (seenError) throw new Error(`ledger read failed: ${seenError.message}`);
     if ((count ?? 0) > 0) continue;
 
