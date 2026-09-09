@@ -4,10 +4,11 @@ name: Prod backup
 # of the production project, which since 2026-08-17 is `agbc-production`, a project
 # of our own (ADR 0023). It is the safety net for the church website's donations and
 # course_registrations as much as for the app, because the website moves onto this
-# same project at the plan's Phase 3. The old shared project it replaced is PAUSED
-# and fully archived (`nightly/agbc-prod-2026-08-17.tar.zst.age`, taken immediately
-# before pausing); a paused project cannot be dumped, so that file is the whole of
-# it and nothing here reaches it any more.
+# same project at the plan's Phase 3. The old shared project it replaced was paused
+# on 2026-08-17 and deleted on 2026-09-09 (Track P Phase 5); its archive is the
+# platform's own pause-time export, kept outside every repo. The 2026-08-17 nightly
+# here was never a permanent archive: everything under `nightly/` ages out under the
+# bucket's 30-day rule, which is the retention ADR 0018 chose.
 #
 # This is the one sanctioned GitHub Actions cron (CI-budget
 # rule, project CLAUDE.md): pg_cron cannot run pg_dump, so the platform scheduler

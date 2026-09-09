@@ -93,7 +93,8 @@ the overlap lasts days, and the old one is deleted at the end.
 - **The destructive-work gate loses most of its subject** and keeps the rest. There is no
   cleanup to gate; what remains destructive is deleting the OLD project, which happens only
   after the website has run on the new one for a few days and after a final dump is
-  archived.
+  archived. **Done 2026-09-09 (plan, Phase 5), and the archive that was actually kept is the
+  platform's own pause-time export, not the B2 nightly: that one ages out at 30 days.**
 - **The traffic fence is deliberately not reinstated.** App builds will point at production
   on the Free plan (unchanged decision), because the egress risk is sermon audio and that is
   entirely within our control: no audio is uploaded to production storage, usage alerts sit

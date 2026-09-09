@@ -52,6 +52,7 @@ A pragmatic path from empty repo to a launched app + leader dashboard. Cut lines
 ## Phase 4: Store/Library + polish + store submission
 - Bookstore (buy on Payhip) + entitlement pipeline (API-confirmed, see `14`) + **My Library reader** + reading state. Honest sizing: the reader is 2 to 3 weeks (both PDF and EPUB ship in v1 by decision 2026-07-12); the devotional structured-import tool ships with it (`10`/`17`).
 - Devotional plan feature (`PLAN`/`PLAN-DAY`) unlocks here, riding the entitlement pipeline; the daily-verse CTA switches on (`07`/`10`).
+- **PARKED 2026-09-09 (Ayo): the whole book track, W4.2 (Store + Library), W4.3 (READER) and W4.4 (devotional plan + Dashboard Phase C), joins W4.1 in the parked state.** Nothing is cut and nothing moves to a later phase: they resume together, in board order, when the church wants to sell books through the app. Their doors stay shut behind `apps/mobile/src/lib/features.ts`, their routes stay routable, and the verse card keeps shipping without the devotional CTA per `07`. `25` carries each entry's state.
 - Content management in dashboard (plans, books) (Phase C of `17`; verse CRUD already shipped in Phase A).
 - Account deletion, privacy, full localization pass (EN/DE/NL/FR), empty/error/offline states audit.
 - Analytics + Sentry; performance pass; accessibility (hit targets, contrast, dynamic type).
@@ -109,7 +110,7 @@ If you must cut to the bone for v1, ship: **Onboarding · Home + daily verse (no
   Play asks for a privacy-policy URL at submission, so this is a W4.8 blocker as much as a
   W4.6 one. The named data-protection contact `20` asks for is also still unnamed.
 - [ ] Launch-content checklist from `22-CONTENT-OPERATIONS.md` §2 complete (verses queued, devotional imported, seeded testimonies, trained moderators).
-- [ ] Restore drill executed (prod dump restored into a scratch project, `21` §7). **Never run** (audited 2026-08-31). Note the dependency the audit surfaced: `21` §7 asks the drill to "boot the dashboard against it", so this cannot be completed until the dashboard is deployable. Also note a restore needs a free ACTIVE project slot on the Free plan, and the old paused project currently holds the second one.
+- [ ] Restore drill executed (prod dump restored into a scratch project, `21` §7). **Never run** (audited 2026-08-31). Note the dependency the audit surfaced: `21` §7 asks the drill to "boot the dashboard against it", so this cannot be completed until the dashboard is deployable. A restore needs a free ACTIVE project slot on the Free plan; **the old paused project held the second one until it was deleted on 2026-09-09 (Track P Phase 5), so the slot is free**, and the dashboard has been deployed since 2026-08-31. Nothing blocks this drill any more.
 - [x] ~~Shipping on Expo SDK 56+ (Play target API 36 requirement from 2026-08-31).~~ **Done, and verified on the deadline itself (2026-08-31).** `apps/mobile` is on `expo ~57.0.8`, and the build installed on the device reports `targetSdk=36`. The Play requirement took effect today and the app already satisfies it, so this needs watching rather than doing: the next SDK bump must not regress it.
 - [ ] Block, report, and moderation UGC controls verified against Apple 1.2 / Play UGC policy.
 - [ ] **The manual matrix (`21` §4) is executed EXCEPT for two dimensions, W4.7 (2026-09-02).**

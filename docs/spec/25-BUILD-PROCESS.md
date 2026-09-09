@@ -315,17 +315,17 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 - **Do NOT read this item as "the website's bookstore needs automating".** Checked first-hand: `Desktop/agbc`'s store is one book (the Word Devotional, Payhip id `5cLzF`) rendered as a plain link to `payhip.com/b/5cLzF`, with no script and no webhook, and manual is the correct design for a shop window. Payhip takes the money and emails the file, so the buyer is already served and the website has no reason to learn a sale happened. This item exists only because the APP has to connect two facts that never meet: a payment made in a browser under one address, and an app account signed in as somebody. See the plan's §2.
 - Done: `21` §4 edge-integration tests green (replayed fixture grants once; forged refund does not revoke; restore grants exactly once).
 
-**W4.2 · Store + Library screens**
+**W4.2 · Store + Library screens** (**PARKED 2026-09-09**, with W4.3 and W4.4: Ayo's call, the book track as a whole waits on the church wanting to sell books through the app, the same reason W4.1 was parked. Nothing here was started. Resume in board order once W4.1 resumes.)
 - Refs: `14`, mockup STORE/BOOK-DETAIL/LIBRARY frames.
 - Build: STORE grid, BOOK-DETAIL (Buy → Payhip in-app browser; owned → Read; return-from-purchase refetch + banner), LIBRARY with progress; entitlement-gated signed-URL file access (short TTL, per-request edge function).
 - Done: buy-on-dev flow end to end with a Payhip test product; "Read" on unowned routes to Buy.
 
-**W4.3 · READER** (multi-session; honestly sized 2-3 weeks in `14`)
+**W4.3 · READER** (multi-session; honestly sized 2-3 weeks in `14`; **PARKED 2026-09-09** with W4.2 and W4.4, nothing started)
 - Refs: `14` reader stack + offline model.
 - Build: PDF first (`@kishannareshpal/expo-pdf`, fallback plan per `14`), then EPUB (`@epubjs-react-native/core` + file-system compatibility patch); location persistence (`reading_state`), font size, reading theme, offline download (File API, signed URL at download time, Wi-Fi-only option), refund re-lock behavior.
 - Done: `14` acceptance criteria on both formats, both platforms, offline reading verified.
 
-**W4.4 · Devotional plan + Dashboard Phase C**
+**W4.4 · Devotional plan + Dashboard Phase C** (**PARKED 2026-09-09**, nothing started. Ayo's call after the session that scoped it: with W4.1 parked and W4.2 unbuilt there is no BOOK-DETAIL for Home's CTA to fall back to and no way for a member to earn an entitlement except by hand. The questions that session would have asked, so the next one starts from them: the access model while nothing can be bought (paid with dashboard grants, a free starter plan with `book_id` null, or both), the content source and import format for the pastor's devotional, how much of the dashboard Library module ships with it, and whether the daily reminder does. Two things the read found: `02`'s `devotional_days` has no per-day `title` while the PLAN frame shows one, and the "template" `22` §1 says the import follows does not exist yet.)
 - Refs: `10` (plan model), `02` (plan tables), `17` §4 (import tool), `22` §1.
 - Build BE: reading_plans/devotional_days/plan_enrollments/plan_progress migrations (entitlement-join RLS); dashboard structured-import tool + books/content management.
 - Build FE: PLAN (enrollment anchor, today's day logic), PLAN-DAY (mark complete → progress + milestone), Home verse-card CTA switches ON (entitled → PLAN-DAY, else BOOK-DETAIL); import the real devotional with the pastor's file.
@@ -494,6 +494,7 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
 - **P1 · DONE (2026-08-10).** Nightly off-provider `db dump` pipeline + one verified restore, covering the live website's data too (ADR 0018, `docs/runbooks/restore-from-backup.md`). Unaffected by the reversal, except that it has to FOLLOW the website onto the new project at Phase 3.
 - ~~**P2-P6**~~ **superseded.** They described auditing, rehearsing and then executing a destructive cleanup of the shared project so it could become ours. There is no cleanup: our whole migration history applies to an empty project, which CI proves on every PR. P2's audit was done and stands as the record of what the old project holds (`docs/runbooks/prod-audit-2026-07-30.md`); it is also what priced the reuse plan and so caused the reversal.
 - The plan's phases, in order: **0** decide and prepare (creates nothing: the ADR, the `donations` migration and its contract test, a final archived dump, the rotated review code) · **1** create the project and apply · **2** edge functions, secrets, vault · **3** move the website (the ONLY step that touches agbcglobal.com) · **4** point the app at production and close W3.3 · **5** retire the old project.
+- **P5 · DONE (2026-09-09).** `agbc-app` deleted from the dashboard after its own export (the platform's pause-time database backup plus the storage zip) was downloaded and verified. The B2 nightly of 2026-08-17 that this index had called "a final archived dump" was a week from the bucket's 30-day age-out; the plan's Phase 5 notes carry that lesson. **The second Free active slot is free**, which unblocks the restore drill (`18`).
 - **The traffic fence is lifted, deliberately** (ADR 0023): app builds point at production on Free, mitigated by uploading NO sermon audio to production storage (one 44 MB file since 2026-09-05, by decision, to film the Play foreground-service declaration), 80% usage alerts, and a written trigger to upgrade to Pro past 50% egress in any month. `24` §1's fence line is annotated accordingly.
 
 ---
