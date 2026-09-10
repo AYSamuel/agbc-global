@@ -162,8 +162,26 @@ export function DashboardShell({
         </div>
       </nav>
 
+      {/* The content column, capped and centred, with the RAIL DELIBERATELY OUTSIDE IT
+          (frame `W4.12 · WIDE`, approved 2026-09-11; the rail stays pinned to the edge
+          because it is the app's furniture rather than part of the reading column).
+
+          63rem is 1008px, which is not a new number: it is what `.main` holds in the
+          mockup at the 1280px width every frame in `dashboard.html` is drawn at
+          (1280 - 216 rail - 56 padding). So this is INERT at or below a laptop width and
+          only bites on a larger monitor, where `main` is otherwise a flex column with no
+          ceiling. Measured across the matrix: the column is 985px at a 1280 viewport (cap
+          off, nothing moves), and the cap first bites at about 1288. On Ayo's 2560px
+          monitor the column WAS 2265px, so a 520px form left 1745px of empty space beside
+          it and a queue card stretched the width of the desk, which is somebody's
+          testimony as one line to be read all the way across.
+
+          The mockup's own note that "1280 is the narrowest common laptop, if it works here
+          it works on anything bigger" was wrong and is corrected in that file: this layout
+          does not break above 1280, it degrades steadily, and only the narrowest width had
+          ever been drawn. */}
       <main id="main" className="min-w-0 flex-1 px-5 py-6 sm:px-7">
-        {children}
+        <div className="mx-auto w-full max-w-[63rem]">{children}</div>
       </main>
     </div>
   );
