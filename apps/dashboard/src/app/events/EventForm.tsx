@@ -311,7 +311,7 @@ function Field({
 }) {
   const shared =
     'mt-1.5 w-full rounded-input border bg-card px-3.5 py-3 text-body text-text ' +
-    (invalid ? 'border-danger' : 'border-cardline');
+    (invalid ? 'border-danger' : 'border-controlline');
 
   return (
     <div className="mt-4">

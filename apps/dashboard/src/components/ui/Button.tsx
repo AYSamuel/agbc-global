@@ -17,8 +17,15 @@ const base =
 
 const variants: Record<Variant, string> = {
   primary: 'bg-btn text-btn-text font-extrabold hover:opacity-90',
+  // `controlline`, not `cardline`, since W4.12. An outline button has NOTHING but this
+  // line to say it is a button, which is WCAG 1.4.11's 3:1 for "visual information
+  // required to identify user interface components". W4.7 split the two tokens apart for
+  // exactly this and named an outline button as one of its cases, but that pass swept the
+  // mobile app only, so every outline button in the dashboard stayed on the decorative
+  // hairline at 1.31:1 against a card. `cardline` remains right for a card's own edge,
+  // which content identifies on its own.
   secondary:
-    'border border-cardline bg-card text-text font-semibold hover:bg-alt',
+    'border border-controlline bg-card text-text font-semibold hover:bg-alt',
   ghost: 'text-blue font-semibold underline-offset-4 hover:underline',
   // The mockup's `.btn.danger`: outlined rather than filled, because a destructive control
   // should be findable without being the thing the eye lands on first. Added for the event

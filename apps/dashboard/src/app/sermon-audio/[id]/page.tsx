@@ -201,12 +201,14 @@ function Manage({
         {audioOnly ? null : (
           <form action={removeAudioAction}>
             <input type="hidden" name="sermonId" value={sermon.id} />
-            <button
-              type="submit"
-              className="inline-flex min-h-12 items-center rounded-button border border-danger px-5 text-body font-semibold text-danger"
-            >
-              {text.remove}
-            </button>
+            {/* `danger`, which is the mockup's own `.btn.danger` for this control
+                (`SERMON-AUDIO-MANAGE`). It was a hand-rolled button with the danger colours
+                inlined; the variant exists precisely so that treatment has one definition. */}
+            <SubmitButton
+              variant="danger"
+              label={text.remove}
+              pendingLabel={text.removing}
+            />
           </form>
         )}
       </div>
@@ -321,12 +323,11 @@ function Manage({
             </p>
             <form action={removeArtworkAction} className="mt-3">
               <input type="hidden" name="sermonId" value={sermon.id} />
-              <button
-                type="submit"
-                className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
-              >
-                {picture.remove}
-              </button>
+              <SubmitButton
+                variant="secondary"
+                label={picture.remove}
+                pendingLabel={picture.removing}
+              />
             </form>
           </div>
         </div>

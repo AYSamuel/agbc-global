@@ -152,7 +152,7 @@ export default async function UnlinkRegistrationPage({
             aria-describedby="confirmName-hint"
             placeholder={member.displayName}
             className={`mt-1.5 min-h-12 w-full rounded-input border bg-card px-3.5 py-3 text-body text-text ${
-              mismatch ? 'border-danger' : 'border-cardline'
+              mismatch ? 'border-danger' : 'border-controlline'
             }`}
           />
           <p id="confirmName-hint" className="mt-1.5 text-small text-muted">

@@ -140,13 +140,18 @@ export const copy = {
       'Reviewing only for now. Approve, reject and remove arrive in the next slice, once the branch scoping above is proven.',
     actions: {
       approve: 'Approve',
+      // Pending labels say what is HAPPENING, not "Loading". A reviewer clearing a queue
+      // needs to know which decision is in flight, because the three sit side by side.
+      approvePending: 'Approving…',
       reject: 'Reject with reason',
       rejectOpen: 'Reject with reason',
       rejectSubmit: 'Send this back to the author',
+      rejectPending: 'Sending back…',
       rejectLabel: 'What should they change? The author sees this.',
       remove: 'Remove',
       removeOpen: 'Remove',
       removeSubmit: 'Remove permanently',
+      removePending: 'Removing…',
       removeLabel:
         'Why is this being removed? Kept for the ministry record only, never shown to the author.',
       // The confirm step, and the reason it exists: this is the one decision a leader
@@ -228,9 +233,13 @@ export const copy = {
     },
     actions: {
       dismiss: 'Dismiss reports',
+      dismissPending: 'Dismissing…',
       flag: 'Flag safeguarding',
+      flagPending: 'Flagging…',
       reject: 'Reject with reason',
+      rejectPending: 'Sending back…',
       remove: 'Remove',
+      removePending: 'Removing…',
     },
     outcome: {
       dismissed:
@@ -377,6 +386,7 @@ export const copy = {
     waitingLabel: 'Waiting for you · oldest first',
     wantsToJoin: 'Wants to join',
     approve: 'Approve',
+    approvePending: 'Approving…',
     refuseOpen: 'Refuse with a reason',
 
     refusingLabel: (name: string) => `Refusing ${name}`,
@@ -389,6 +399,7 @@ export const copy = {
     private: (branch: string) =>
       `They are told only that it was not approved, and pointed at ${branch}'s contact address. The note is kept for 7 years and can be read by an admin. You will not be able to read it back.`,
     refuseSubmit: 'Refuse this request',
+    refusePending: 'Refusing…',
     cancel: 'Cancel',
 
     emptyTitle: 'Nobody is waiting',
@@ -574,6 +585,10 @@ export const copy = {
       saving: 'Saving…',
       cancel: 'Cancel',
       remove: 'Remove',
+      // Its own pending label, because Save and Remove share one form here. Without it the
+      // Remove click greyed both controls out while only Save changed, so the screen said
+      // "Saving…" to somebody who had just asked to remove the verse.
+      removing: 'Removing…',
       outcome: {
         saved: 'That verse is scheduled.',
         removed: 'That verse was removed.',

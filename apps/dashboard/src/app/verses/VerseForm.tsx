@@ -142,7 +142,7 @@ export function VerseForm({
           required
           rows={3}
           defaultValue={verse?.text ?? ''}
-          className="mt-1.5 w-full rounded-control border border-cardline bg-card px-4 py-3 text-body leading-relaxed text-text"
+          className="mt-1.5 w-full rounded-control border border-controlline bg-card px-4 py-3 text-body leading-relaxed text-text"
         />
       </div>
 
@@ -171,6 +171,13 @@ export function VerseForm({
  *
  * The hook reads the status of the form ABOVE it in the tree, so a button that called it
  * from inside `VerseForm` would always read idle.
+ *
+ * WHICH BUTTON WAS PRESSED IS TRACKED SEPARATELY, and it has to be. Save and Remove submit
+ * the SAME form to two different actions (`formAction`), so `useFormStatus` reports one
+ * `pending` for both and cannot say which is running. Until W4.12 only Save read that flag,
+ * so pressing Remove greyed both controls out and changed the Save button to "Saving…",
+ * which told a leader who had just asked to delete a verse that it was being saved. The
+ * press is recorded on the way down, and it decides which of the two relabels.
  */
 function Actions({
   removing,
@@ -180,11 +187,21 @@ function Actions({
   remove: (formData: FormData) => void | Promise<void>;
 }) {
   const { pending } = useFormStatus();
+  const [pressed, setPressed] = useState<'save' | 'remove'>('save');
 
   return (
     <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-cardline pt-3.5">
-      <Button type="submit" disabled={pending}>
-        {pending ? copy.verses.verse.saving : copy.verses.verse.save}
+      <Button
+        type="submit"
+        disabled={pending}
+        aria-busy={pending && pressed === 'save'}
+        onClick={() => {
+          setPressed('save');
+        }}
+      >
+        {pending && pressed === 'save'
+          ? copy.verses.verse.saving
+          : copy.verses.verse.save}
       </Button>
       <Link
         href="/verses"
@@ -205,9 +222,15 @@ function Actions({
             formAction={remove}
             formNoValidate
             disabled={pending}
+            aria-busy={pending && pressed === 'remove'}
+            onClick={() => {
+              setPressed('remove');
+            }}
             className="border-danger text-danger"
           >
-            {copy.verses.verse.remove}
+            {pending && pressed === 'remove'
+              ? copy.verses.verse.removing
+              : copy.verses.verse.remove}
           </Button>
         </>
       ) : null}

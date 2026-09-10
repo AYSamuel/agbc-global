@@ -1,5 +1,5 @@
 import { act } from '@/app/reports/actions';
-import { Button } from '@/components/ui/Button';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import type { ReportedItem } from '@/server/reportsInbox';
 
@@ -27,9 +27,11 @@ export function ReportedActions({ item }: { item: ReportedItem }) {
       {item.isSafeguarding ? null : (
         <form action={act}>
           <Hidden item={item} action="dismiss" />
-          <Button type="submit" variant="secondary">
-            {copy.reports.actions.dismiss}
-          </Button>
+          <SubmitButton
+            variant="secondary"
+            label={copy.reports.actions.dismiss}
+            pendingLabel={copy.reports.actions.dismissPending}
+          />
         </form>
       )}
 
@@ -54,12 +56,14 @@ export function ReportedActions({ item }: { item: ReportedItem }) {
               name="rejectionReason"
               required
               rows={3}
-              className="rounded-control border border-cardline bg-card px-4 py-3 text-body text-text"
+              className="rounded-control border border-controlline bg-card px-4 py-3 text-body text-text"
             />
             <div>
-              <Button type="submit" variant="secondary">
-                {copy.queue.actions.rejectSubmit}
-              </Button>
+              <SubmitButton
+                variant="secondary"
+                label={copy.queue.actions.rejectSubmit}
+                pendingLabel={copy.reports.actions.rejectPending}
+              />
             </div>
           </form>
         </details>
@@ -68,9 +72,11 @@ export function ReportedActions({ item }: { item: ReportedItem }) {
       {item.isSafeguarding ? null : (
         <form action={act}>
           <Hidden item={item} action="flag_safeguarding" />
-          <Button type="submit" variant="secondary">
-            {copy.reports.actions.flag}
-          </Button>
+          <SubmitButton
+            variant="secondary"
+            label={copy.reports.actions.flag}
+            pendingLabel={copy.reports.actions.flagPending}
+          />
         </form>
       )}
 
@@ -98,12 +104,14 @@ export function ReportedActions({ item }: { item: ReportedItem }) {
               name="moderationNote"
               required
               rows={3}
-              className="rounded-control border border-cardline bg-card px-4 py-3 text-body text-text"
+              className="rounded-control border border-controlline bg-card px-4 py-3 text-body text-text"
             />
             <div>
-              <Button type="submit" variant="secondary">
-                {copy.queue.actions.removeSubmit}
-              </Button>
+              <SubmitButton
+                variant="secondary"
+                label={copy.queue.actions.removeSubmit}
+                pendingLabel={copy.reports.actions.removePending}
+              />
             </div>
           </form>
         </details>

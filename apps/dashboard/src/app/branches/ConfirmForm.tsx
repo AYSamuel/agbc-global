@@ -113,7 +113,7 @@ export function ConfirmForm({
           aria-describedby={codeHint ? 'code-hint' : undefined}
           className={
             'mt-1.5 min-h-12 w-[190px] rounded-input border bg-card px-3.5 py-3 font-mono text-body tracking-[0.34em] text-text ' +
-            (problem === 'bad_code' ? 'border-danger' : 'border-cardline')
+            (problem === 'bad_code' ? 'border-danger' : 'border-controlline')
           }
         />
         {codeHint && (

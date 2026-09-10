@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest';
 
 import type { ScheduledVerse } from '@/server/verses';
 import { expectNoA11yViolations } from '@/test/a11y';
+import { deferred } from '@/test/deferred';
 
 import { VerseForm } from './VerseForm';
 
@@ -113,4 +114,39 @@ test('Remove acts on the day the form was opened on, not the day now typed in it
   const submitted = remove.mock.calls[0][0] as FormData;
   expect(submitted.get('originalDate')).toBe('2026-08-14');
   expect(submitted.get('originalLanguage')).toBe('de');
+});
+
+test('pressing Remove says Removing, and never says Saving', async () => {
+  const user = userEvent.setup();
+  // Held open so the pending state is observable. Save and Remove submit the SAME form to
+  // two different actions, so `useFormStatus` reports one flag for both and cannot say
+  // which is running: until W4.12 only Save read it, so a Remove click greyed both controls
+  // and changed the OTHER button to "Saving…".
+  const { promise, release } = deferred();
+  const remove = vi.fn(() => promise);
+
+  render(<VerseForm verse={GERMAN} save={noop} remove={remove} />);
+  await user.click(screen.getByRole('button', { name: 'Remove' }));
+
+  expect(
+    await screen.findByRole('button', { name: 'Removing…' }),
+  ).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Saving…' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+
+  release();
+});
+
+test('pressing Save says Saving, and never says Removing', async () => {
+  const user = userEvent.setup();
+  const { promise, release } = deferred();
+  const save = vi.fn(() => promise);
+
+  render(<VerseForm verse={GERMAN} save={save} remove={noop} />);
+  await user.click(screen.getByRole('button', { name: 'Save' }));
+
+  expect(await screen.findByRole('button', { name: 'Saving…' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Removing…' })).toBeNull();
+
+  release();
 });

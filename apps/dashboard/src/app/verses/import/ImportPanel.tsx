@@ -128,7 +128,7 @@ export function ImportPanel({
             onChange={(event) => {
               setPaste(event.target.value);
             }}
-            className="mt-1.5 w-full rounded-control border border-cardline bg-card px-4 py-3 font-mono text-body leading-relaxed text-text"
+            className="mt-1.5 w-full rounded-control border border-controlline bg-card px-4 py-3 font-mono text-body leading-relaxed text-text"
           />
           <p id="verses-paste-hint" className={HINT}>
             {copy.verses.import.pasteHint}
