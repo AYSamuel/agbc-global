@@ -43,6 +43,44 @@ const BLANK_SERVICE: ServiceRow = {
   label: '',
 };
 
+/**
+ * A stable identity for a repeatable row, because the ROW is what a person removes.
+ *
+ * The inputs inside these rows are uncontrolled (`defaultValue`), deliberately: a
+ * seventeen-field form should not re-render on every keystroke. That is what makes the React
+ * key load-bearing here rather than cosmetic. `defaultValue` is read only when React MOUNTS
+ * an input, so a key that changes meaning between renders hands the surviving row somebody
+ * else's DOM node, with the previous occupant's text still sitting in it.
+ *
+ * Keying by array index did exactly that until 2026-09-10, and it LOST TYPED DATA rather than
+ * merely looking wrong. Removing the middle of three rows re-pointed `service-1` from row 2
+ * to row 3; React reused the node; row 3 came back showing what had been typed into row 2,
+ * and its own text was gone. `ServiceRow.id` cannot stand in for this, because a row that has
+ * never been saved does not have one, and `label` cannot either, because two freshly added
+ * rows are both blank.
+ *
+ * Two prefixes, and the split is the whole design. Rows present at mount are keyed
+ * `first-<index>` from the lazy initialiser, which runs ONCE per mount rather than once per
+ * render, so the index never gets the chance to change meaning. Rows a person adds afterwards
+ * are keyed `added-<n>` from a counter in state. The prefixes cannot collide, so the counter
+ * never has to know how many rows the form started with.
+ *
+ * WHY NOT ONE COUNTER FOR BOTH, which is the obvious shape. This file is a client component,
+ * but Next still server-renders it for the initial HTML, so the ids the server writes have to
+ * be the ids the browser mints or hydration mismatches. A module-level counter fails that
+ * outright: module scope on the server outlives the request, so it would be at some arbitrary
+ * number by the time it reached this form while the browser's copy started at zero. A ref
+ * fixes the mismatch but `react-hooks/refs` refuses it, correctly, because a value a render
+ * reads should be one React knows about. Indexing the initial rows sidesteps both: the server
+ * and the browser walk the same rows in the same order, so they agree by construction.
+ *
+ * A counter rather than `crypto.randomUUID()` for the added rows: this has to be unique within
+ * one form for the life of one mount, not unique in the world, and a counter behaves
+ * identically in jsdom and in a browser.
+ */
+type ServiceDraft = ServiceRow & { rowKey: string };
+type LeaderDraft = { name: string; role: string; rowKey: string };
+
 export function BranchForm({
   save,
   existing,
@@ -81,12 +119,28 @@ export function BranchForm({
     order: typed?.order ?? (existing ? String(existing.order) : ''),
   };
 
-  const [services, setServices] = useState<ServiceRow[]>(
-    typed?.services ?? existing?.services ?? [BLANK_SERVICE],
+  // Lazy initialisers, and they have to be: run on every render these would re-key every row
+  // on every keystroke elsewhere in the form, which is the same defect from the other end.
+  // The index is safe HERE, and only here, because this runs once per mount rather than once
+  // per render, and because both the server's render and the browser's walk the same rows in
+  // the same order.
+  const [services, setServices] = useState<ServiceDraft[]>(() =>
+    (typed?.services ?? existing?.services ?? [BLANK_SERVICE]).map(
+      (row, index) => ({ ...row, rowKey: `first-${String(index)}` }),
+    ),
   );
-  const [leaders, setLeaders] = useState<{ name: string; role: string }[]>(
-    typed?.leaders ?? existing?.leaders ?? [],
+  const [leaders, setLeaders] = useState<LeaderDraft[]>(() =>
+    (typed?.leaders ?? existing?.leaders ?? []).map((person, index) => ({
+      ...person,
+      rowKey: `first-${String(index)}`,
+    })),
   );
+
+  // Rows added after mount. A counter in STATE rather than a ref, because reading a ref during
+  // render is what `react-hooks/refs` forbids and it is right to: the value a render reads has
+  // to be one React knows about. The `added-` prefix is what keeps this from ever colliding
+  // with a `first-` key, so the counter never has to know how many rows it started with.
+  const [added, setAdded] = useState(0);
 
   return (
     <form action={submit} className="max-w-[520px]" key={attempt}>
@@ -212,9 +266,9 @@ export function BranchForm({
       </p>
 
       <Section title={copy.branches.sectionWhen} />
-      {services.map((row, index) => (
+      {services.map((row) => (
         <div
-          key={`service-${String(index)}`}
+          key={row.rowKey}
           // NOWRAP, and the label column shrinks instead. With `flex-wrap` the remove
           // control dropped to a line of its own at every width tested, where it stops
           // reading as "remove THIS row" (seen in the browser at 1280 and 1024). The row's
@@ -222,14 +276,11 @@ export function BranchForm({
           className="mt-2 flex items-end gap-2"
         >
           <div className="w-[112px]">
-            <label
-              htmlFor={`serviceWeekday-${String(index)}`}
-              className="sr-only"
-            >
+            <label htmlFor={`serviceWeekday-${row.rowKey}`} className="sr-only">
               {copy.branches.weekdayLabel}
             </label>
             <select
-              id={`serviceWeekday-${String(index)}`}
+              id={`serviceWeekday-${row.rowKey}`}
               name="serviceWeekday"
               defaultValue={String(row.weekday)}
               className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3 py-3 text-body text-text"
@@ -242,14 +293,11 @@ export function BranchForm({
             </select>
           </div>
           <div className="w-[104px]">
-            <label
-              htmlFor={`serviceStart-${String(index)}`}
-              className="sr-only"
-            >
+            <label htmlFor={`serviceStart-${row.rowKey}`} className="sr-only">
               {copy.branches.startTimeLabel}
             </label>
             <input
-              id={`serviceStart-${String(index)}`}
+              id={`serviceStart-${row.rowKey}`}
               name="serviceStart"
               type="time"
               required
@@ -259,11 +307,11 @@ export function BranchForm({
             />
           </div>
           <div className="w-[112px]">
-            <label htmlFor={`serviceKind-${String(index)}`} className="sr-only">
+            <label htmlFor={`serviceKind-${row.rowKey}`} className="sr-only">
               {copy.branches.serviceKindLabel}
             </label>
             <select
-              id={`serviceKind-${String(index)}`}
+              id={`serviceKind-${row.rowKey}`}
               name="serviceKind"
               defaultValue={row.kind}
               className="mt-1.5 min-h-12 w-full rounded-input border border-controlline bg-card px-3 py-3 text-body text-text"
@@ -278,14 +326,11 @@ export function BranchForm({
             </select>
           </div>
           <div className="min-w-0 flex-1">
-            <label
-              htmlFor={`serviceLabel-${String(index)}`}
-              className="sr-only"
-            >
+            <label htmlFor={`serviceLabel-${row.rowKey}`} className="sr-only">
               {copy.branches.serviceLabelLabel}
             </label>
             <input
-              id={`serviceLabel-${String(index)}`}
+              id={`serviceLabel-${row.rowKey}`}
               name="serviceLabel"
               placeholder={copy.branches.serviceLabelLabel}
               defaultValue={row.label}
@@ -295,7 +340,9 @@ export function BranchForm({
           <button
             type="button"
             onClick={() => {
-              setServices(services.filter((_, at) => at !== index));
+              setServices(
+                services.filter((each) => each.rowKey !== row.rowKey),
+              );
             }}
             className="min-h-12 flex-none self-end px-1.5 text-body font-bold text-muted"
           >
@@ -311,7 +358,11 @@ export function BranchForm({
           type="button"
           variant="secondary"
           onClick={() => {
-            setServices([...services, BLANK_SERVICE]);
+            setServices([
+              ...services,
+              { ...BLANK_SERVICE, rowKey: `added-${String(added)}` },
+            ]);
+            setAdded(added + 1);
           }}
         >
           {copy.branches.addService}
@@ -353,17 +404,17 @@ export function BranchForm({
       <span className="mt-4 block text-caption font-extrabold tracking-widest text-muted uppercase">
         {copy.branches.leadersLabel}
       </span>
-      {leaders.map((person, index) => (
+      {leaders.map((person) => (
         <div
-          key={`leader-${String(index)}`}
+          key={person.rowKey}
           className="mt-2 flex flex-wrap items-end gap-2"
         >
           <div className="min-w-[140px] flex-1">
-            <label htmlFor={`leaderName-${String(index)}`} className="sr-only">
+            <label htmlFor={`leaderName-${person.rowKey}`} className="sr-only">
               {copy.branches.leaderNameLabel}
             </label>
             <input
-              id={`leaderName-${String(index)}`}
+              id={`leaderName-${person.rowKey}`}
               name="leaderName"
               defaultValue={person.name}
               placeholder={copy.branches.leaderNameLabel}
@@ -371,11 +422,11 @@ export function BranchForm({
             />
           </div>
           <div className="min-w-[140px] flex-1">
-            <label htmlFor={`leaderRole-${String(index)}`} className="sr-only">
+            <label htmlFor={`leaderRole-${person.rowKey}`} className="sr-only">
               {copy.branches.leaderRoleLabel}
             </label>
             <input
-              id={`leaderRole-${String(index)}`}
+              id={`leaderRole-${person.rowKey}`}
               name="leaderRole"
               defaultValue={person.role}
               placeholder={copy.branches.leaderRoleLabel}
@@ -385,7 +436,9 @@ export function BranchForm({
           <button
             type="button"
             onClick={() => {
-              setLeaders(leaders.filter((_, at) => at !== index));
+              setLeaders(
+                leaders.filter((each) => each.rowKey !== person.rowKey),
+              );
             }}
             className="min-h-12 px-2 text-body font-bold text-muted"
           >
@@ -401,7 +454,11 @@ export function BranchForm({
           type="button"
           variant="secondary"
           onClick={() => {
-            setLeaders([...leaders, { name: '', role: '' }]);
+            setLeaders([
+              ...leaders,
+              { name: '', role: '', rowKey: `added-${String(added)}` },
+            ]);
+            setAdded(added + 1);
           }}
         >
           {copy.branches.addLeader}
