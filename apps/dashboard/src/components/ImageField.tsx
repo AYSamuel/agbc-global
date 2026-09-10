@@ -9,9 +9,12 @@ import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
 import { MAX_IMAGE_BYTES } from '@/server/imageShelf';
 
-import { wholeKb, wholeMb } from '@/app/sermon-audio/format';
-import type { MintAction } from '@/app/sermon-audio/state';
-import { uploadViaXhr, type UploadFn } from '@/app/sermon-audio/upload';
+import { wholeKb, wholeMb } from '@/app/(dashboard)/sermon-audio/format';
+import type { MintAction } from '@/app/(dashboard)/sermon-audio/state';
+import {
+  uploadViaXhr,
+  type UploadFn,
+} from '@/app/(dashboard)/sermon-audio/upload';
 
 import { ImagePreview, type ImageSubject } from './ImagePreview';
 

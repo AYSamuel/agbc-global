@@ -21,7 +21,7 @@ import { QueueActions } from './QueueActions';
  * `moderateItem.test.ts` proves against the database.
  */
 const decide = vi.fn();
-vi.mock('@/app/moderation/actions', () => ({
+vi.mock('@/app/(dashboard)/moderation/actions', () => ({
   decide: (formData: FormData) => decide(formData) as unknown,
 }));
 
