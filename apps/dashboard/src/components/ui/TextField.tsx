@@ -38,7 +38,7 @@ export function TextField({
         aria-invalid={error ? true : undefined}
         className={
           'min-h-12 rounded-control border bg-card px-4 text-body text-text ' +
-          `${error ? 'border-danger' : 'border-cardline'} ${className}`
+          `${error ? 'border-danger' : 'border-controlline'} ${className}`
         }
         {...props}
       />

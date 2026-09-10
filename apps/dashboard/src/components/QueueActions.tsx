@@ -1,5 +1,5 @@
 import { decide } from '@/app/moderation/actions';
-import { Button } from '@/components/ui/Button';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import type { QueueItem } from '@/server/moderationQueue';
 
@@ -9,6 +9,15 @@ import type { QueueItem } from '@/server/moderationQueue';
  * Plain forms posting to a Server Action, so the whole thing works with HTML alone: no
  * JavaScript, no dialogs. That matters more than it sounds. `confirm()` is unusable for
  * some assistive tech, cannot be styled to say WHY, and vanishes if scripts fail.
+ *
+ * All three go through `SubmitButton`, which is what `SubmitButton.tsx` was written for and
+ * did not get until W4.12. Until then these were the busiest controls in the product and the
+ * only feedback on a click was the page eventually changing: a decision takes a server round
+ * trip, and a control that stays live while it works is a control that invites the second
+ * press. The database refuses the duplicate, so the damage was always bounded, but a reviewer
+ * clearing a queue should not have to find that out. Each says which decision is in flight
+ * rather than "Loading", because the three sit side by side. It degrades correctly with
+ * scripts off: `useFormStatus` reports nothing and the button is an ordinary submit.
  *
  * Friction is placed where the decision is irreversible, and nowhere else (decided
  * 2026-07-29):
@@ -35,7 +44,10 @@ export function QueueActions({
     <div className="mt-4 flex flex-wrap items-start gap-2.5 border-t border-cardline pt-3.5">
       <form action={decide}>
         <Hidden item={item} filter={filter} decision="approve" />
-        <Button type="submit">{copy.queue.actions.approve}</Button>
+        <SubmitButton
+          label={copy.queue.actions.approve}
+          pendingLabel={copy.queue.actions.approvePending}
+        />
       </form>
 
       <details className="group">
@@ -55,12 +67,14 @@ export function QueueActions({
             name="rejectionReason"
             required
             rows={3}
-            className="rounded-control border border-cardline bg-card px-4 py-3 text-body text-text"
+            className="rounded-control border border-controlline bg-card px-4 py-3 text-body text-text"
           />
           <div>
-            <Button type="submit" variant="secondary">
-              {copy.queue.actions.rejectSubmit}
-            </Button>
+            <SubmitButton
+              variant="secondary"
+              label={copy.queue.actions.rejectSubmit}
+              pendingLabel={copy.queue.actions.rejectPending}
+            />
           </div>
         </form>
       </details>
@@ -90,12 +104,14 @@ export function QueueActions({
             name="moderationNote"
             required
             rows={3}
-            className="rounded-control border border-cardline bg-card px-4 py-3 text-body text-text"
+            className="rounded-control border border-controlline bg-card px-4 py-3 text-body text-text"
           />
           <div>
-            <Button type="submit" variant="secondary">
-              {copy.queue.actions.removeSubmit}
-            </Button>
+            <SubmitButton
+              variant="secondary"
+              label={copy.queue.actions.removeSubmit}
+              pendingLabel={copy.queue.actions.removePending}
+            />
           </div>
         </form>
       </details>

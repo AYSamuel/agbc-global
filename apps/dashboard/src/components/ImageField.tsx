@@ -319,7 +319,7 @@ export function ImageField({
               const file = event.dataTransfer.files.item(0);
               if (file) void accept(file);
             }}
-            className="flex cursor-pointer flex-col items-center gap-1.5 rounded-card border border-dashed border-cardline bg-card px-5 py-4 text-center"
+            className="flex cursor-pointer flex-col items-center gap-1.5 rounded-card border border-dashed border-controlline bg-card px-5 py-4 text-center"
           >
             <span aria-hidden="true" className="text-muted">
               ⬚

@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/Button';
 import { Notice } from '@/components/ui/Notice';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import type { BranchRequest } from '@/server/branchRequests';
 
@@ -44,7 +44,7 @@ export function RefuseForm({ request }: { request: BranchRequest }) {
               required
               rows={4}
               placeholder={copy.requests.notePlaceholder}
-              className="mt-1.5 w-full rounded-control border border-cardline bg-card px-4 py-3 text-body leading-relaxed text-text"
+              className="mt-1.5 w-full rounded-control border border-controlline bg-card px-4 py-3 text-body leading-relaxed text-text"
             />
           </div>
 
@@ -58,13 +58,12 @@ export function RefuseForm({ request }: { request: BranchRequest }) {
           <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-cardline pt-3.5">
             {/* The mockup's `.btn.danger`: outlined rather than filled, because refusing is
                 not the primary act on this screen even when it is the right one. */}
-            <Button
-              type="submit"
+            <SubmitButton
               variant="secondary"
               className="border-danger text-danger"
-            >
-              {copy.requests.refuseSubmit}
-            </Button>
+              label={copy.requests.refuseSubmit}
+              pendingLabel={copy.requests.refusePending}
+            />
             <a
               href="/people/requests"
               className="inline-flex min-h-12 items-center px-2 text-body font-semibold text-blue underline-offset-4 hover:underline"

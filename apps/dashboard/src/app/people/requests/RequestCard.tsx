@@ -1,6 +1,6 @@
 import { Avatar } from '@/components/ui/Avatar';
-import { Button } from '@/components/ui/Button';
 import { Pill } from '@/components/ui/Pill';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import {
   WAITING_TOO_LONG_MS,
@@ -49,7 +49,10 @@ export function WaitingRequest({
         <form action={decide}>
           <input type="hidden" name="requestId" value={request.id} />
           <input type="hidden" name="decision" value="approve" />
-          <Button type="submit">{copy.requests.approve}</Button>
+          <SubmitButton
+            label={copy.requests.approve}
+            pendingLabel={copy.requests.approvePending}
+          />
         </form>
         {/* A link, not a script: the refusal view is a URL, so it survives a refresh and
             can be reached with the keyboard alone. The id is opaque and discloses nothing,

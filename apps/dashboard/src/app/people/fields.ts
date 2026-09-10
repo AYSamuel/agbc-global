@@ -23,6 +23,10 @@ export const HINT =
 /**
  * `.inp`. 48px rather than the frame's 44px minimum: the responsiveness rules prefer 48,
  * and `Button` already sits at 48, so a field and the button under it line up.
+ *
+ * `controlline` since W4.12, for the reason spelled out on `Button`'s secondary variant:
+ * an empty text field is identified by its boundary and nothing else, so that boundary owes
+ * WCAG 1.4.11's 3:1 rather than the decorative hairline's 1.31:1.
  */
 export const CONTROL =
-  'mt-1.5 min-h-12 w-full rounded-control border border-cardline bg-card px-4 text-body text-text';
+  'mt-1.5 min-h-12 w-full rounded-control border border-controlline bg-card px-4 text-body text-text';
