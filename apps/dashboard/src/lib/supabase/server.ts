@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 import type { Database } from '@agbc/shared/database';
 
@@ -26,9 +27,22 @@ import { publicSupabaseConfig } from './env';
  * A new client per request, always. Never module scope: on a warm serverless instance a
  * shared client leaks one user's session into another user's request (Supabase's SSR
  * advanced guide, Fluid compute).
+ *
+ * ONE PER REQUEST RATHER THAN ONE PER CALL, since W4.12 slice 4, and `cache()` is what
+ * makes the distinction safe. React's `cache()` is scoped to a single render pass, so it
+ * cannot do what module scope would; two requests never meet. What it buys is that the
+ * `(dashboard)` layout and the page inside it now BOTH call `authorize()`, and without it
+ * a hard load would pay for two `getUser()` round trips and two `profiles` reads instead
+ * of one, because `authorize()` memoizes against the client instance it was handed.
+ *
+ * This does not weaken `17`'s rule that the session is confirmed with the auth server
+ * rather than decoded locally. It still is, once, at the start of the request. Asking the
+ * same question twice microseconds apart in one request was never the guarantee; the
+ * guarantee is that a revoked session dies on the NEXT request rather than at token
+ * expiry, and that is untouched.
  */
 
-export async function createServerComponentClient() {
+export const createServerComponentClient = cache(async () => {
   const { url, key } = publicSupabaseConfig();
   const cookieStore = await cookies();
 
@@ -50,7 +64,7 @@ export async function createServerComponentClient() {
       },
     },
   });
-}
+});
 
 export interface RouteClient {
   supabase: SupabaseClient<Database>;

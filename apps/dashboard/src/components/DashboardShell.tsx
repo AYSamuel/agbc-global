@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { copy } from '@/copy/en';
+import { RailRow, type Destination } from '@/components/RailRow';
 import type { Caller } from '@/server/authorize';
 
 /**
@@ -11,14 +12,6 @@ import type { Caller } from '@/server/authorize';
  * is all there will ever be". The later destinations are dimmed and tagged with their
  * phase, and each phase lights one up rather than reshaping the navigation.
  */
-
-interface Destination {
-  key: string;
-  label: string;
-  href?: string;
-  phase?: 'B' | 'C';
-  icon: string;
-}
 
 const BUILT: Destination[] = [
   {
@@ -95,12 +88,10 @@ const LATER: Destination[] = [
 
 export function DashboardShell({
   caller,
-  current,
   waiting = 0,
   children,
 }: {
   caller: Caller;
-  current: string;
   /**
    * Branch requests waiting on this caller (decision 12). It rides the rail so a leader
    * meets it on the same visit as their moderation queue, which is the whole mechanism:
@@ -138,18 +129,13 @@ export function DashboardShell({
                 ? { ...destination, href: peopleHref(caller.role) }
                 : destination
             }
-            current={current}
             count={destination.key === 'people' ? waiting : 0}
           />
         ))}
 
         <RailSection title={copy.nav.later} />
         {LATER.map((destination) => (
-          <RailRow
-            key={destination.key}
-            destination={destination}
-            current={current}
-          />
+          <RailRow key={destination.key} destination={destination} />
         ))}
 
         <div className="mt-auto border-t border-cardline px-2.5 pt-3.5 text-label leading-relaxed text-muted">
@@ -202,67 +188,5 @@ function RailSection({ title }: { title: string }) {
     <p className="px-2.5 pt-3.5 pb-1.5 text-[0.59rem] font-extrabold tracking-[0.14em] text-muted uppercase">
       {title}
     </p>
-  );
-}
-
-function RailRow({
-  destination,
-  current,
-  count = 0,
-}: {
-  destination: Destination;
-  current: string;
-  count?: number;
-}) {
-  const active = destination.key === current;
-  const base =
-    'flex items-center gap-2.5 rounded-control px-2.5 py-2.5 text-body font-bold';
-
-  // A destination that does not exist yet is not a link and is not focusable: a keyboard
-  // user should not tab through five dead stops to reach the content.
-  if (!destination.href) {
-    return (
-      <span className={`${base} text-muted opacity-60`}>
-        <span aria-hidden="true" className="w-4.5">
-          {destination.icon}
-        </span>
-        {destination.label}
-        {destination.phase ? (
-          <>
-            <span
-              aria-hidden="true"
-              className="ml-auto rounded-full bg-alt px-1.5 py-0.5 text-[0.56rem] font-extrabold tracking-wider uppercase"
-            >
-              {destination.phase}
-            </span>
-            {/* The dimming is not the message: say it out loud for assistive tech. */}
-            <span className="sr-only">
-              {copy.nav.notYet(destination.phase)}
-            </span>
-          </>
-        ) : null}
-      </span>
-    );
-  }
-
-  return (
-    <a
-      href={destination.href}
-      aria-current={active ? 'page' : undefined}
-      className={`${base} ${active ? 'bg-alt text-text' : 'text-sub hover:bg-alt'}`}
-    >
-      <span aria-hidden="true" className="w-4.5">
-        {destination.icon}
-      </span>
-      {destination.label}
-      {count > 0 ? (
-        // The number is not the message: it is read out as part of the link's name, so a
-        // screen reader hears "People, 2 waiting" rather than "People 2".
-        <span className="ml-auto min-w-5 rounded-full bg-btn px-1.5 py-0.5 text-center text-[0.66rem] font-extrabold text-btn-text">
-          <span aria-hidden="true">{count}</span>
-          <span className="sr-only">{copy.nav.waiting(count)}</span>
-        </span>
-      ) : null}
-    </a>
   );
 }

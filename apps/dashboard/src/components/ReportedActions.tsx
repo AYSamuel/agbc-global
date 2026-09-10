@@ -1,4 +1,4 @@
-import { act } from '@/app/reports/actions';
+import { act } from '@/app/(dashboard)/reports/actions';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import type { ReportedItem } from '@/server/reportsInbox';

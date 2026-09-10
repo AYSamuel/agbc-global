@@ -7,7 +7,7 @@ import { expectNoA11yViolations } from '@/test/a11y';
 
 import type { ImageSubject } from '@/components/ImagePreview';
 import { ImageField } from '@/components/ImageField';
-import type { MintResult } from '@/app/sermon-audio/state';
+import type { MintResult } from '@/app/(dashboard)/sermon-audio/state';
 
 /**
  * The picture picker's four moments (frame: `SERMON-AUDIO-ARTWORK`), with its one

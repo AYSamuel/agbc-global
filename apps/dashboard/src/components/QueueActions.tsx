@@ -1,4 +1,4 @@
-import { decide } from '@/app/moderation/actions';
+import { decide } from '@/app/(dashboard)/moderation/actions';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import type { QueueItem } from '@/server/moderationQueue';

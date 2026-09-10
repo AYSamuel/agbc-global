@@ -14,7 +14,7 @@ import { ReportedCard } from './ReportedCard';
  * match the rules, and the rules themselves are proven in `resolveReports.test.ts`
  * against the database.
  */
-vi.mock('@/app/reports/actions', () => ({ act: vi.fn() }));
+vi.mock('@/app/(dashboard)/reports/actions', () => ({ act: vi.fn() }));
 
 const NOW = Date.parse('2026-08-04T12:00:00Z');
 
