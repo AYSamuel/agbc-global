@@ -203,7 +203,7 @@ importers:
         version: 1.31.0(react-native-svg@15.15.4(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
       posthog-react-native:
         specifier: ^4.61.5
-        version: 4.61.5(25b7875f36659ffc9c6f564b2f406400)
+        version: 4.67.0(25b7875f36659ffc9c6f564b2f406400)
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -1617,11 +1617,11 @@ packages:
   '@oxc-project/types@0.139.0':
     resolution: {integrity: sha512-r9gHphtCs+1M7J0pw6Sn/hh/Wpa/iQrOOkrNAlVLF/gHq+/CJmHIWKKUUhdWjcD6CIa8idarspCsASiXCXvFUw==}
 
-  '@posthog/core@1.47.0':
-    resolution: {integrity: sha512-LW62V+9yx7G7mLd+EYpwW0PiaPZI8XRJ1tLuhw+9fXHpugLp8XQD5JuCQ2kIXvoUfyx1DpKfGQY3dUnzMOIn7Q==}
+  '@posthog/core@1.52.0':
+    resolution: {integrity: sha512-pvbdeRRpizktmo8MXZQxjAI4aFfNajwkzxbm72wKV9n2wWcnQWa4m+AqTI2zmmCSsYk7F666rRUdvYqZLjjhWg==}
 
-  '@posthog/types@1.402.2':
-    resolution: {integrity: sha512-ZZTiS4dLwF4/D0YTzS3gGSLFnhuNOY5yu4d9VGS9trGe5GW6FjIXo20p18K5BPW2RZSYSld8sdnSAY3AUXleUQ==}
+  '@posthog/types@1.409.4':
+    resolution: {integrity: sha512-X8egIUjMe1uItlxpbLfWypS2SWLOF+5Vzvne/44AsaHa/fYbtSy8itJNk5iQS1MZEwVYAEYUsQY1vuN61jpxTg==}
 
   '@radix-ui/primitive@1.1.5':
     resolution: {integrity: sha512-d86WIWFYNtGA0H/d8exstrTRTp7eWJYlYJbtNofxr/3ljupZYn6EFDG/Qgu/0Kc8v7yMUxySagqJsL1+PdYjWg==}
@@ -5840,11 +5840,11 @@ packages:
     resolution: {integrity: sha512-Mz8SaolMd8nB+G13WkORcxQKHZ/NE4xXevtkJHVuG+guo9/wYKlIMTKAqGdEmYOXR2ijPjTYNHssizdaVSUNdQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-react-native@4.61.5:
-    resolution: {integrity: sha512-pP/tBu91NNleO6EfZCTf+g1+mm1thQSuJIWMaKva+nby2BjqJmaohMRGyAwJ9LwIuaO/6k26q1jNKHK+DV2SOg==}
+  posthog-react-native@4.67.0:
+    resolution: {integrity: sha512-gixH1hHguHxDJsrKZtblUKhrIZq0tXTdOxNTm5orb5SH0r6o/3jvxPQPC4DgsPkUmaMTVCAp3S/JJofILJ5Qlw==}
     hasBin: true
     peerDependencies:
-      '@posthog/react-native-plugin': '>= 2.2.0'
+      '@posthog/react-native-plugin': '>= 2.4.3'
       '@react-native-async-storage/async-storage': '>=1.0.0'
       '@react-navigation/native': '>= 5.0.0'
       expo-application: '>= 4.0.0'
@@ -8738,11 +8738,11 @@ snapshots:
 
   '@oxc-project/types@0.139.0': {}
 
-  '@posthog/core@1.47.0':
+  '@posthog/core@1.52.0':
     dependencies:
-      '@posthog/types': 1.402.2
+      '@posthog/types': 1.409.4
 
-  '@posthog/types@1.402.2': {}
+  '@posthog/types@1.409.4': {}
 
   '@radix-ui/primitive@1.1.5': {}
 
@@ -13596,10 +13596,10 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-react-native@4.61.5(25b7875f36659ffc9c6f564b2f406400):
+  posthog-react-native@4.67.0(25b7875f36659ffc9c6f564b2f406400):
     dependencies:
-      '@posthog/core': 1.47.0
-      '@posthog/types': 1.402.2
+      '@posthog/core': 1.52.0
+      '@posthog/types': 1.409.4
     optionalDependencies:
       '@react-native-async-storage/async-storage': 2.2.0(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/jest-preset@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(@react-native/metro-config@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))
       expo-application: 57.0.2(expo@57.0.8)
