@@ -321,6 +321,254 @@
 
   </div>
 
+  <p class="ghead">W4.12 &middot; THE SIX LOADING STATES THAT WERE NEVER DRAWN</p>
+  <div class="gnote"><span>Four screens got a loading frame when they were designed
+    (<b>QUEUE-LOADING</b>, <b>VERSES-LOADING</b>, <b>SERMON-AUDIO-LOADING</b>,
+    <b>REGISTRATIONS-LOADING</b>) and were then never built. These six never got one at all,
+    which is why <code>25</code> §4's "every data surface implements the four states" has been
+    unmet on the dashboard since it was written. Composed from the four above rather than
+    invented: <b>two header skeletons, then the stat row if the screen has one, then a REAL
+    section label, then one or two cards at the shape that screen actually draws.</b>
+    The three rules those frames state, restated once here because they are the whole
+    discipline: <b>a stat number is a skeleton and never a zero</b>, since a "0 waiting" that
+    becomes "3" a second later is the one wrong number a screen must not print;
+    <b>actions are hidden while loading, never disabled</b>, so nothing under a skeleton can
+    be clicked; and <b>offline is the one state where an action IS disabled rather than
+    hidden</b>. Skeleton widths track the real text, so nothing jumps when the content
+    lands.</span>
+    <span style="display:block;margin-top:10px"><b>A loading state is aligned exactly like the
+    content it stands in for</b> (Ayo, 2026-09-11), and it is aligned that way by construction
+    rather than by being remembered: the skeleton renders in the same slot as the page, inside
+    the capped, centred content column from the WIDE frame above, so it cannot drift out of
+    agreement with what replaces it. The six frames below are drawn at 900px, where that cap is
+    inert and the column is simply the full width; the last frame in this section shows the
+    same skeleton on a wide monitor, centred, for the avoidance of doubt.</span></div>
+  <div class="gallery">
+
+    <div class="device">
+      <p class="name"><b>REPORTS-LOADING</b> &middot; three counts, and the one that must never read zero</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/reports</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:95px;height:26px"></div>
+            <div class="skel" style="width:150px;height:14px;margin-top:9px"></div>
+            <div class="stats" style="margin-top:18px">
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:42px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:92px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:112px;height:10px;margin-top:7px"></div></div>
+            </div>
+            <div class="mlabel">Reported &middot; first report first</div>
+            <div class="item">
+              <div class="skel" style="width:96px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:100%;height:14px;margin-top:12px"></div>
+              <div class="skel" style="width:78%;height:14px;margin-top:8px"></div>
+              <div class="skel" style="width:210px;height:14px;margin-top:16px"></div>
+            </div>
+            <div class="item">
+              <div class="skel" style="width:96px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:100%;height:14px;margin-top:12px"></div>
+              <div class="skel" style="width:61%;height:14px;margin-top:8px"></div>
+              <div class="skel" style="width:210px;height:14px;margin-top:16px"></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:14px 2px 0">The safeguarding
+              count is the reason this screen gets skeletons rather than zeros at all: a
+              momentary &ldquo;0 safeguarding&rdquo; is the most reassuring wrong number the
+              dashboard could print.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>REQUESTS-LOADING</b> &middot; a person, a branch they are leaving, a branch they are joining</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/people/requests</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:200px;height:26px"></div>
+            <div class="skel" style="width:150px;height:14px;margin-top:9px"></div>
+            <div class="stats" style="margin-top:18px">
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:64px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:96px;height:10px;margin-top:7px"></div></div>
+              <div class="ps"><div class="skel" style="width:30px;height:22px"></div><div class="skel" style="width:78px;height:10px;margin-top:7px"></div></div>
+            </div>
+            <div class="mlabel">Waiting for you &middot; oldest first</div>
+            <div class="item">
+              <div class="skel" style="width:96px;height:18px;border-radius:100px"></div>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+                <div class="skel" style="width:40px;height:40px;border-radius:100px;flex:none"></div>
+                <div style="flex:1">
+                  <div class="skel" style="width:44%;height:16px"></div>
+                  <div class="skel" style="width:66%;height:13px;margin-top:8px"></div>
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="skel" style="width:96px;height:18px;border-radius:100px"></div>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+                <div class="skel" style="width:40px;height:40px;border-radius:100px;flex:none"></div>
+                <div style="flex:1">
+                  <div class="skel" style="width:36%;height:16px"></div>
+                  <div class="skel" style="width:58%;height:13px;margin-top:8px"></div>
+                </div>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:14px 2px 0">Approve and Refuse
+              are absent, not greyed: a decision about somebody's membership should not be
+              reachable a frame before the screen knows who they are.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>BROADCASTS-LOADING</b> &middot; no stat row, because this screen has none</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/broadcasts</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:135px;height:26px"></div>
+            <div class="skel" style="width:245px;height:14px;margin-top:9px"></div>
+            <div class="mlabel" style="padding-top:18px">Waiting for an admin</div>
+            <div class="item">
+              <div class="skel" style="width:104px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:58%;height:16px;margin-top:12px"></div>
+              <div class="skel" style="width:100%;height:13px;margin-top:8px"></div>
+              <div class="skel" style="width:190px;height:13px;margin-top:14px"></div>
+            </div>
+            <div class="item">
+              <div class="skel" style="width:104px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:47%;height:16px;margin-top:12px"></div>
+              <div class="skel" style="width:88%;height:13px;margin-top:8px"></div>
+              <div class="skel" style="width:190px;height:13px;margin-top:14px"></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted)">Nothing here is a stat row, and one
+              must not be invented for symmetry: this screen counts nothing, so a skeleton
+              promising three numbers would be a lie the content then has to break.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>EVENTS-LOADING</b> &middot; two sections, and the second is drawn because it is always there</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/events</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:85px;height:26px"></div>
+            <div class="skel" style="width:230px;height:14px;margin-top:9px"></div>
+            <div class="mlabel" style="padding-top:18px">Coming up</div>
+            <div class="item">
+              <div class="skel" style="width:88px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:52%;height:16px;margin-top:12px"></div>
+              <div class="skel" style="width:70%;height:13px;margin-top:8px"></div>
+            </div>
+            <div class="item">
+              <div class="skel" style="width:88px;height:18px;border-radius:100px"></div>
+              <div class="skel" style="width:41%;height:16px;margin-top:12px"></div>
+              <div class="skel" style="width:63%;height:13px;margin-top:8px"></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted)">Only the first section is drawn.
+              &ldquo;Already happened&rdquo; is below the fold on every real screen, and a
+              skeleton for something the reader cannot see buys nothing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>BRANCHES-LOADING</b> &middot; a place, not a post: no type pill</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/branches</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:110px;height:26px"></div>
+            <div class="skel" style="width:265px;height:14px;margin-top:9px"></div>
+            <div class="mlabel" style="padding-top:18px">Open</div>
+            <div class="item">
+              <div class="skel" style="width:38%;height:17px"></div>
+              <div class="skel" style="width:54%;height:13px;margin-top:9px"></div>
+              <div class="skel" style="width:170px;height:13px;margin-top:14px"></div>
+            </div>
+            <div class="item">
+              <div class="skel" style="width:31%;height:17px"></div>
+              <div class="skel" style="width:46%;height:13px;margin-top:9px"></div>
+              <div class="skel" style="width:170px;height:13px;margin-top:14px"></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted)">No pill on the card, because a branch
+              row has none. The skeleton draws what the screen draws; a pill here would pop out
+              of existence the moment the data arrived.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>PEOPLE-LOADING</b> &middot; a form, not a list, so the skeleton is a field</p>
+      <div class="win narrow">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/people</span></div>
+        <div class="app">
+          <div class="main" style="padding-top:22px">
+            <div class="skel" style="width:82px;height:26px"></div>
+            <div class="skel" style="width:160px;height:14px;margin-top:9px"></div>
+            <div class="skel" style="width:150px;height:13px;margin-top:20px"></div>
+            <div class="field" style="margin-top:14px">
+              <div class="skel" style="width:88px;height:11px"></div>
+              <div class="skel" style="width:100%;height:46px;margin-top:8px;border-radius:12px"></div>
+              <div class="skel" style="width:62%;height:12px;margin-top:9px"></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:20px 2px 0">The only one of the
+              six with nothing to list. What loads here is the branch list behind the chooser,
+              so the field is drawn and the button that acts on it is not.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>LOADING &middot; WIDE</b> &middot; the skeleton sits in the content column, like the content</p>
+      <div class="win wide">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/events</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <a href="#"><span class="ic">&#9993;</span>Broadcasts</a>
+            <a class="on" href="#"><span class="ic">&#9788;</span>Events</a>
+            <a href="#"><span class="ic">&#9638;</span>Branches</a>
+            <a href="#"><span class="ic">&#9670;</span>Academy</a>
+            <div class="spacer"></div>
+            <div class="who">Signed in as<b>Grace Bello</b>Branch leader &middot; AGBC Glasgow</div>
+          </nav>
+          <div class="main">
+            <div class="mcol">
+              <div class="skel" style="width:85px;height:26px"></div>
+              <div class="skel" style="width:230px;height:14px;margin-top:9px"></div>
+              <div class="mlabel" style="padding-top:18px">Coming up</div>
+              <div class="item">
+                <div class="skel" style="width:88px;height:18px;border-radius:100px"></div>
+                <div class="skel" style="width:52%;height:16px;margin-top:12px"></div>
+                <div class="skel" style="width:70%;height:13px;margin-top:8px"></div>
+              </div>
+              <div class="item">
+                <div class="skel" style="width:88px;height:18px;border-radius:100px"></div>
+                <div class="skel" style="width:41%;height:16px;margin-top:12px"></div>
+                <div class="skel" style="width:63%;height:13px;margin-top:8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <p class="ghead">W2.7 &middot; PEOPLE (roles) &middot; admin only, exact email, step-up</p>
   <div class="gallery" id="w27dLight">
 
