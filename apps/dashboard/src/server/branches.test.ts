@@ -197,11 +197,18 @@ describe('adding a branch', () => {
     // made this fail for a reason that has nothing to do with adding one (seen 2026-08-22,
     // once `eventImages.test.ts` became a third file doing it). Naming what appeared is
     // also the stronger claim.
+    //
+    // CONTAINS rather than equals, since 2026-09-11: `branches/actions.test.ts` became the
+    // fourth file adding branches, and "exactly one branch appeared" is a claim about the
+    // whole database rather than about this save. The claim this test is for is that the
+    // branch THIS admin just added reached a signed-out visitor, which is what is asserted;
+    // rows another file created in the same window are none of its business, and the file
+    // header's rule (every assertion scoped to rows this file created) is the same rule.
     const after = await asTheAppSeesIt();
     const appeared = after.filter(
       (row) => !before.some((earlier) => earlier.id === row.id),
     );
-    expect(appeared.map((row) => row.id)).toEqual([created.id]);
+    expect(appeared.map((row) => row.id)).toContain(created.id);
   });
 
   test('a leader cannot add one, however the form is posted', async () => {

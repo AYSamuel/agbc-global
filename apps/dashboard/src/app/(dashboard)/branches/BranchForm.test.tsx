@@ -165,3 +165,39 @@ test('the form has no accessibility violations with its repeatable rows', async 
 
   await expectNoA11yViolations(container);
 });
+
+/**
+ * What the two forms actually POST, read off the rendered DOM.
+ *
+ * The contract `actions.ts` is written against, asserted here rather than assumed there.
+ * Every test in this file and every test in `server/branches.test.ts` was green from
+ * 2026-08-21 to 2026-09-11 while no branch could be edited at all, because the form's body
+ * and the action's expectation disagreed and nothing looked at both. These two tests and
+ * `actions.test.ts` are the halves meeting.
+ */
+function posted(container: HTMLElement): FormData {
+  const form = container.querySelector('form');
+  if (!form) throw new Error('the form did not render');
+  return new FormData(form);
+}
+
+test('the edit form posts its short id as existingSlug, and no slug at all', () => {
+  const { container } = render(<BranchForm save={noop} existing={branch()} />);
+  const body = posted(container);
+
+  // Once a branch exists its short id is SHOWN, not offered: `Locked` is a paragraph, because
+  // the UPDATE column grant excludes the column and re-slugging is a different branch wearing
+  // its rows. So there is no `slug` field to submit, and the action must take it from the row
+  // it reads server-side. Reading it from here is what refused every edit.
+  expect(body.get('slug')).toBeNull();
+  expect(body.get('existingSlug')).toBe('glasgow');
+  expect(body.get('name')).toBe('AGBC Glasgow');
+});
+
+test('the add form posts a slug and no existingSlug, the one moment it can be chosen', () => {
+  const { container } = render(<BranchForm save={noop} />);
+  const body = posted(container);
+
+  expect(body.has('slug')).toBe(true);
+  expect(body.get('existingSlug')).toBeNull();
+});
