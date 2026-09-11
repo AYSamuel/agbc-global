@@ -10,15 +10,33 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 ## 0. Where we stand today
 
-| Area | State |
-|------|-------|
-| Product spec | Complete: docs 00-24, audited (`AUDIT-2026-07-12.md`) and remediated; decisions log current in `BUILD-READINESS-TRACKER.md` |
-| Design | Complete as an HTML prototype: `design/mockups/entry-flow.html` is the canonical visual/interaction reference (every screen, light AND dark, tablet landscape + portrait, edge/in-screen states; see `05`). Figma is parked. `design/SCREENS-CHECKLIST.md` predates the final design sessions and is stale; trust `05` + the HTML file |
-| Repo | `agbc-global` on GitHub, `main` PR-protected, docs committed. Monorepo scaffold NOT yet created (steps 5-11 of the `23` §4 runbook remain) |
-| Code | None. Phase -1 accounts (Meta for broadcasts, Apple invite, FCM, observability, etc.) not started. The Twilio + NG sender-ID rows were dropped with the email-OTP decision (2026-07-18, `03`): Phase -1 now contains no paid item and no auth-blocking fuse |
-| Readiness gates | See `BUILD-READINESS-TRACKER.md`: Gate 1 (wedge interviews) runs in parallel and does not block Phases 0-1; Gate 2 owners must be named before Phase 2; Gate 4 (backup pipeline, NDPA) gates prod work only |
+**Corrected 2026-09-11, and the correction is the point.** Until that day this section said
+"Code: None" and "Monorepo scaffold NOT yet created", while the app was in the Play Store, the
+dashboard was deployed, and four phases had shipped. It had been wrong for months, in the one
+place §1 tells every session to look first. So it no longer holds a table of counts that rot:
+**the board below is the position, and this section only says how to read it.**
 
-**Conclusion: the build can start now.** Nothing gates Phase 0 or Phase 1 except the scaffold itself and the Phase -1 fuses that must be lit on day 1 (they run in the background for weeks; see `24`).
+| Question | Where the answer lives, and how stale it can be |
+|---|---|
+| What has shipped? | **§2 of this file, the board.** Every work item carries its own COMPLETE or PARKED line and the PRs that landed it. It is written as each item closes, so it is only ever as stale as the last session. |
+| What is true of the code right now? | **Git history, and the code.** `25` §1 opens with "derive position from git history + the board" for this reason. Never from prose, including this file's. |
+| What is still owed before launch? | **`18` §Launch checklist.** It is the only list that outlives a phase, and several of its items are content operations or hardware, not engineering. |
+| What did an item decide, and why? | The numbered specs, the ADRs in `docs/decisions/`, the runbooks in `docs/runbooks/`, and the migration headers. A plan file in `docs/spec/plans/` exists only while its item is open. |
+| What should a screen look like? | **`design/mockups/entry-flow.html`** for the app and `design/mockups/dashboard.html` for the dashboard, read first-hand in the build session (§4). Figma is parked and `design/SCREENS-CHECKLIST.md` is stale; trust `05` plus the HTML. |
+
+**The honest one-line position, 2026-09-11:** Phases 0 to 3 have exited, and **every Phase 4
+board item is now either COMPLETE or PARKED**, the parked ones being the book track (W4.1 to
+W4.4) which waits on the church wanting to sell books through the app. The app is live on
+Google Play and the leader dashboard is deployed. **So there is no "next item" to pick up from
+the board**, and a session that wants one is choosing between three things rather than reading
+one off: closing something on `18`'s launch checklist, scoping a Phase 4 exit audit the way
+W2.10 and W3.6 did for their phases, or taking an item off a plan file's deferred backlog
+(W4.12's is the largest, and W4.13 came off it).
+
+**What this section must never become again.** A count, a percentage, or a "current state"
+paragraph that a session has to remember to update. Every one of those has gone stale here
+before. If a fact belongs to one work item, it belongs on that item's board entry; if it
+outlives the phase, it belongs on `18`'s checklist.
 
 ---
 
@@ -507,6 +525,14 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
 - **THE FIX FOR A DUPLICATE READ IS A SHARED MEMO, NOT A SHARED ARGUMENT.** Acting on a report read the target row twice, once to authorize the content decision and once to authorize closing the reports, and both were right to: `17` forbids a branch id that arrives from the caller, because that lets the caller nominate their own authority. Passing the id from the first function to the second would have bought one round trip and turned a function whose safety is self-contained into one whose safety depends on who called it. `server/branchOf.ts` caches the read against the CLIENT instead, which is per request in exactly the way `authorize()`'s session memo already is, and neither caller trusts the other.
 - **A mutation that produces the RIGHT value is not an escape, but you have to look.** The new "the cheap headquarters read is the one the whole list names" test survived deleting its `is_hq` filter, because the unfiltered first row happens to be Glasgow in this fixture. It went red the moment the filter pointed at the wrong branch. A mutation check answers "would this test notice a different value", and a mutation that changes no value answers nothing; run a second one rather than recording the first as a pass.
 - **`NEXT_PUBLIC_*` is inlined at BUILD time, so a server started with the right environment can still serve a bundle built without it.** The sign-in form hydrated, took the click, and threw "Missing Supabase config" from inside the browser chunk while the server process held the variables perfectly. Rebuild, do not restart.
+
+**W4.14 · The bundle gets a budget · COMPLETE (2026-09-11)**, one PR. Off W4.12's deferred backlog, and the smallest item on it that stops a regression rather than fixing one instance.
+- **`~/.claude/standards/frontend.md` has required a JS budget in CI since it was written, and this repo had never had one.** That is how the dashboard arrived at W4.12 shipping **696 KB raw / 208 KB gzipped on every page** with nobody having decided to: a bundle grows one reasonable import at a time, each small, and no single PR ever looks like the problem. **A number in a file is the only thing that notices the sum.**
+- Budget set at **220 KB gz against a measured 208**, about 6% of headroom: ordinary churn passes, a new library does not. Measured from `rootMainFiles` in a real build, gzipped, because that is what crosses the wire. **Not per route**, because App Router's per-segment chunks are small next to the shared entry and would only add noise; **not per chunk**, because the filenames are content-hashed and change every build, so only the total is stable enough to assert on.
+- **Raising it is allowed and is the point.** The failure message says so, and says to record what the increase bought. A guard that can only ever be satisfied by refusing work gets deleted; one that asks for a decision gets kept.
+- **128 KB of the 208 is Sentry's browser SDK**, on the critical path against the standard's own rule that third parties never get the main thread first. Getting it off is still on W4.12's backlog, and the budget comment points at it, so the number should drop a long way when that lands.
+- **Mutation-checked both ways**: lowering the budget below the real figure fails with the per-chunk breakdown, and a missing manifest fails with "run the build first" rather than passing vacuously. The empty-`rootMainFiles` case is a failure too, deliberately: if the manifest shape changes under us, a checker that quietly measured an empty list would pass forever while guarding nothing.
+- **The cost is named rather than hidden**: `pr.yml` sits in all three path filters, so the PR that adds this runs the full matrix once. The guard is also listed in the dashboard filter for the same reason the two mobile checkers are listed in theirs, which the file already states: a guard that never executes guards nothing.
 - Refs: `17` · `21` §2-4 · `25` §5 · `design/mockups/dashboard.html` (four approved loading frames) · `~/.claude/standards/frontend.md`.
 - Why it exists: Ayo reported the dashboard "feels like it lags, it doesn't feel like a single page app, sometimes I click and I wait". **The dashboard has no client-side navigation at all.** The rail is a raw `<a href>` (`DashboardShell.tsx:231`), as are the moderation filter chips, the People links and the branch-request links, so every module switch is a full browser page load that re-executes **696 KB raw / 208 KB gzipped** of JavaScript (measured from `build-manifest.json` `rootMainFiles`, not estimated; 414 KB raw of it is Sentry's browser SDK).
 - **This is the dashboard's missing W4.7.** That item's six slices were all `apps/mobile`. The dashboard has never had a performance, navigation or loading-state pass, and `25` §4 item 4, which §5 inherits, has required all four data states of every data surface since it was written. There is no `loading.tsx`, no `Suspense` and no skeleton anywhere in `apps/dashboard/src`, and no use of `useTransition`, `useOptimistic`, `startTransition` or `useRouter`.
@@ -567,6 +593,7 @@ Same as §4 minus the device matrix (desktop-first web, but check a narrow windo
 - Every new route ships with an IDOR probe test (foreign branch id) in CI (`21` §4).
 - Service-role usage is reserved for genuinely admin operations; prefer the caller's JWT + RLS.
 - Passkey/step-up requirements per `17` before any privileged module ships.
+- **The JavaScript every page loads has a budget, and CI enforces it** (W4.14, `scripts/check-js-budget.mjs`, `pnpm js:budget`). It measures the gzipped `rootMainFiles` from a real build, which is the shared entry every route pays before any of its own code. **Raising the number is a decision, not a failure**: change it in the PR that spends it and say what it bought. What the guard exists to stop is the number drifting up while nobody is asked, which is exactly how the dashboard reached 208 KB gz on every page without anyone choosing to.
 
 ---
 
