@@ -20,6 +20,7 @@
     "jobs:arm-local": "node scripts/arm-local-jobs.mjs",
     "i18n:check": "node scripts/check-i18n-keys.mjs",
     "store:check": "node scripts/check-store-listing.mjs",
+    "js:budget": "node scripts/check-js-budget.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --no-bail run typecheck"

@@ -17,6 +17,7 @@ on:
       # still start nothing.
       - 'scripts/check-i18n-keys.mjs'
       - 'scripts/check-store-listing.mjs'
+      - 'scripts/check-js-budget.mjs'
 
 # Supersede older runs of the same PR (devops standard: CI cost hygiene).
 concurrency:
@@ -57,6 +58,9 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/pr.yml'
+              # The JS budget runs in this job, so an edit to the budget has to
+              # run the job, exactly as the two checkers above do for mobile.
+              - 'scripts/check-js-budget.mjs'
             supabase:
               - 'supabase/**'
               - '.github/workflows/pr.yml'
@@ -125,6 +129,11 @@ jobs:
       - run: supabase start -x analytics,edge-runtime,functions,imgproxy,inbucket,meta,realtime,storage,studio,vector
       - run: pnpm --filter dashboard test
       - run: pnpm --filter dashboard build
+      # Measured from the build above, so it has to follow it. The frontend standard
+      # has asked for a JS budget since it was written and this repo had never had
+      # one, which is how the dashboard came to ship 208 KB gz on every page without
+      # anyone deciding to. Raising the number is allowed; drifting past it is not.
+      - run: pnpm js:budget
 
   supabase:
     needs: changes
