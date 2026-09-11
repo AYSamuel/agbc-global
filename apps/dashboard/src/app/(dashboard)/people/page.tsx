@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -47,12 +48,12 @@ export default async function PeoplePage() {
             action={
               // Never a dead end: a leader who follows the rail here is handed the
               // surface that IS theirs, rather than being told what is not.
-              <a
+              <Link
                 href="/people/requests"
                 className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
               >
                 {copy.refused.notAdminAction}
-              </a>
+              </Link>
             }
           >
             {copy.refused.notAdminBody}
@@ -76,12 +77,12 @@ export default async function PeoplePage() {
           leader and after 48 hours when it does, so their People screen has to reach
           that queue rather than leaving it to a typed URL. */}
       <p className="mt-3">
-        <a
+        <Link
           href="/people/requests"
           className="text-body font-semibold text-blue underline-offset-4 hover:underline"
         >
           {copy.people.toRequests}
-        </a>
+        </Link>
       </p>
       <PeoplePanel branches={branches} find={find} assign={assign} />
     </Frame>

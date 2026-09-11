@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Notice } from '@/components/ui/Notice';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
@@ -64,12 +65,12 @@ export function RefuseForm({ request }: { request: BranchRequest }) {
               label={copy.requests.refuseSubmit}
               pendingLabel={copy.requests.refusePending}
             />
-            <a
+            <Link
               href="/people/requests"
               className="inline-flex min-h-12 items-center px-2 text-body font-semibold text-blue underline-offset-4 hover:underline"
             >
               {copy.requests.cancel}
-            </a>
+            </Link>
           </div>
         </form>
       </article>
