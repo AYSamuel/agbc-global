@@ -84,6 +84,43 @@ Give branch leaders and ministry admins the tools to **run the app's content and
 - Writes across `testimonies`, `prayers`, `reports`, `broadcasts`, `events`, `daily_verses`, `reading_plans`, `devotional_days`, `courses`, `course_registrations`, `books`, `entitlements`, `branches`, `profiles.role`.
 - All gated by role + branch scope on the server.
 
+## Navigation and loading (W4.12, ADR 0025)
+
+This section did not exist until 2026-09-11, and its absence is the reason the dashboard
+shipped with **no client-side navigation and no loading state on any screen** while still
+passing every acceptance criterion below. `25` §4 item 4 has required the four states of every
+data surface since it was written; nothing here asked for them, so nobody built them.
+
+- **The dashboard is a single-page app, and navigating it is a client transition.** Internal
+  links are `next/link`. Two exceptions, both deliberate: the skip link is a raw anchor because
+  it moves focus rather than navigating, and sign-in and MFA use `window.location.assign`
+  because the session cookies were just written by the browser client and a soft navigation
+  races them.
+- **One shell, in `src/app/(dashboard)/layout.tsx`.** It is a route group, so no URL changes.
+  Next preserves a layout across a client transition, so the rail is not part of what gets
+  replaced. **It is NOT the authorization boundary:** layouts are not re-run on client
+  navigation, so every page still awaits its own `authorize()` for its own action, and the
+  database is still the boundary. The layout's check decides what the shell shows.
+- **Every data surface has a loading state**, built from the frames in
+  `design/mockups/dashboard.html`. Three rules those frames state, which hold for any screen
+  added later: **a stat number is a skeleton and never a zero** (a "0 safeguarding" that
+  becomes "3" is the most reassuring wrong number this dashboard could print); **actions are
+  hidden while loading, never disabled**, so nothing under a skeleton can be clicked; and
+  **offline is the one state where an action IS disabled rather than hidden**. Skeletons are a
+  static gradient, not a shimmer.
+- **A `loading.tsx` is the fallback for its own segment AND everything nested under it**, so a
+  list skeleton will otherwise be drawn over a form one route down. Nested routes override it
+  with `components/ui/FormLoading`.
+- **The content column stops at 1008px and centres beside the rail**, which stays pinned to the
+  edge. That number is what the mockup already holds at the 1280px width every frame is drawn
+  at, so it changes nothing on a laptop and stops the column chasing the edge of a large
+  monitor.
+- **Measured, and worth re-measuring against.** Before: every rail click was a full document
+  load that re-parsed 810 KB of JavaScript and showed nothing for ~259 ms. After: a client
+  transition that puts the destination's skeleton on screen in **5 ms median** (3 to 17 ms over
+  seven hops) with the rail never unmounted. The instrument is a `MutationObserver`; `rAF` and
+  timers throttle to about 1 Hz in a backgrounded tab and will produce convincing artefacts.
+
 ## States / edge cases
 - **Leader acting outside branch:** blocked server-side.
 - **Double-moderation:** last action wins with audit; UI shows current status.
