@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Avatar } from '@/components/ui/Avatar';
 import { Pill } from '@/components/ui/Pill';
 import { SubmitButton } from '@/components/ui/SubmitButton';
@@ -57,12 +58,12 @@ export function WaitingRequest({
         {/* A link, not a script: the refusal view is a URL, so it survives a refresh and
             can be reached with the keyboard alone. The id is opaque and discloses nothing,
             which is why this surface may use the URL where `/people` may not. */}
-        <a
+        <Link
           href={`/people/requests?refuse=${request.id}`}
           className="inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
         >
           {copy.requests.refuseOpen}
-        </a>
+        </Link>
       </div>
     </article>
   );

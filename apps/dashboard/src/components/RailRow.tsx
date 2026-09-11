@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useSelectedLayoutSegment } from 'next/navigation';
 
 import { copy } from '@/copy/en';
@@ -21,6 +22,21 @@ import { copy } from '@/copy/en';
  * leader while its segment is still `people`.
  *
  * This is the whole cost of the shell in JavaScript: eleven rows and a string compare.
+ *
+ * `<Link>` SINCE W4.12 SLICE 3, and that one word is what the whole item was for. Until it,
+ * every rail click was a full browser document load: React torn down, 810 KB of JavaScript
+ * re-parsed from cache, the rail itself rebuilt, and nothing on screen in the meantime but the
+ * page the reader was trying to leave. Ayo's report was that the dashboard "doesn't feel like
+ * a single page app", and it was not one.
+ *
+ * It had to come LAST of the three, not first. A client transition removes the browser's own
+ * tab spinner and puts nothing in its place, so on its own it would have swapped a crude
+ * signal for no signal at all, which is the "impression that the app is not responding" Next's
+ * own docs name. The shared layout (slice 4) and the loading states (slice 5) are what make
+ * this an improvement rather than a trade.
+ *
+ * The skip link in `app/layout.tsx` stays a plain `<a href="#main">` and should: it moves
+ * focus within the page and navigates nowhere.
  */
 
 export interface Destination {
@@ -78,7 +94,7 @@ export function RailRow({
   }
 
   return (
-    <a
+    <Link
       href={destination.href}
       aria-current={active ? 'page' : undefined}
       className={`${base} ${active ? 'bg-alt text-text' : 'text-sub hover:bg-alt'}`}
@@ -95,6 +111,6 @@ export function RailRow({
           <span className="sr-only">{copy.nav.waiting(count)}</span>
         </span>
       ) : null}
-    </a>
+    </Link>
   );
 }

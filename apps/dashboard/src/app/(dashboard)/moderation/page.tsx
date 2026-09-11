@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { Alert } from '@/components/ui/Alert';
@@ -173,7 +174,7 @@ function FilterTab({
 }) {
   return (
     <li>
-      <a
+      <Link
         href={href}
         aria-current={active ? 'true' : undefined}
         className={`block rounded-control px-4 py-2 text-body font-bold ${
@@ -183,7 +184,7 @@ function FilterTab({
         }`}
       >
         {children}
-      </a>
+      </Link>
     </li>
   );
 }
