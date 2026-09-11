@@ -148,3 +148,32 @@ Directory, which is where Vercel reads it from.
 whose effect is invisible from a local measurement: everything else was measured against a
 local stack on the same machine, where there is no ocean to cross. The honest way to see it is
 a before and after against production.
+
+### Measured against production, 2026-09-11, both sides in one sitting
+
+Vercel keeps a previous production deployment live at its own URL, so the pre-merge build
+(`iad1`) and the merged one (`fra1`) could be driven alternately from one browser in one
+sitting, which is the only kind of comparison W4.12 left us willing to trust. Same route, same
+build, same machine: the ONLY variable is the region the function ran in. The region each
+response came from was read off `x-vercel-id`, whose second segment is the function region
+(`fra1::iad1::…` before, `fra1::fra1::…` after), rather than assumed from the config.
+
+| `/sign-in`, 8 samples per round | median | range |
+|---|---|---|
+| **`iad1`** (Washington), round 1 | 167 ms | 150 to 175 |
+| **`iad1`** (Washington), round 2 | 161 ms | 147 to 173 |
+| **`fra1`** (Frankfurt) | **68 ms** | 54 to 96 |
+
+**About 95 ms, on a page that touches no database at all.** That is purely the leg from the
+browser to the function, because `/sign-in` renders without a Supabase call, and it is the
+SMALLER half of what the pin buys: it says nothing about the function-to-database leg, which is the one paid
+two serial times by `authorize()` on every authenticated page plus once per data wave.
+
+**What is NOT measured, and why.** There is no before for an authenticated page. Those need a
+signed-in session, the region moved the moment the merge deployed, and Vercel's Hobby plan
+padlocks p75 duration and TTFB behind Observability Plus, so no history could be read back
+either. Authenticated renders on production now sit at **157 to 242 ms median** (`/sermon-audio`
+157, `/branches` 216, `/people` 230, `/verses` 230, `/moderation` 241, `/reports` 242), which
+stands as the baseline for the next change rather than as a result of this one. The saving on
+those pages is arithmetic, not measurement: an Atlantic round trip is roughly the 95 ms above,
+each page paid two of them for auth alone, and those are now intra-region.
