@@ -5,7 +5,7 @@ import { Notice } from '@/components/ui/Notice';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
-import { loadBranch, loadBranches } from '@/server/branches';
+import { loadBranch, loadHeadquarters } from '@/server/branches';
 
 import { moveHeadquartersAction } from '../../actions';
 import { ConfirmForm } from '../../ConfirmForm';
@@ -45,16 +45,18 @@ export default async function MoveHeadquartersPage({
   }
 
   const { slug } = await params;
-  const branch = await loadBranch(supabase, slug);
+  // Both in one wave (W4.13). Which branch holds the badge today does not depend on which
+  // branch is being offered it, and the reader needs the two names side by side either way.
+  const [branch, current] = await Promise.all([
+    loadBranch(supabase, slug),
+    loadHeadquarters(supabase),
+  ]);
   if (!branch) notFound();
 
   // Both are refusals `set_headquarters` makes; asking the question anyway would end in an
   // error the reader could not have avoided.
   if (branch.isHq) redirect(`/branches/${slug}`);
   if (branch.status !== 'active') redirect(`/branches/${slug}`);
-
-  const all = await loadBranches(supabase);
-  const current = all.find((row) => row.isHq);
 
   return (
     <>

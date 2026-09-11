@@ -1,15 +1,15 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { Alert } from '@/components/ui/Alert';
 import { PageHeader } from '@/components/PageHeader';
-import { QueueItem } from '@/components/QueueItem';
 import { Stat } from '@/components/ui/Stat';
 import { Guide } from '@/components/ui/Guide';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
 import { loadModerationQueue, type QueueKind } from '@/server/moderationQueue';
+
+import { Queue } from './Queue';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,20 +59,10 @@ export default async function ModerationPage({
   const queue = await loadModerationQueue(supabase, caller, { kind });
   const scope =
     caller.role === 'admin' ? copy.queue.allBranches : caller.branchName;
-  const outcome = readOutcome(params.outcome);
 
   return (
     <>
       <PageHeader title={copy.queue.title} scope={scope} />
-
-      {outcome ? (
-        // The result of the last decision, carried back as a query parameter so it
-        // survives without JavaScript and a refresh re-submits nothing. Errors are
-        // announced; successes are polite.
-        <div className="mt-4">
-          <Alert tone={outcome.tone}>{outcome.message}</Alert>
-        </div>
-      ) : null}
 
       <dl className="mt-4 flex flex-wrap gap-2.5">
         <Stat label={copy.queue.stats.toReview} value={queue.counts.all} />
@@ -104,56 +94,9 @@ export default async function ModerationPage({
         {copy.queue.safeguarding}
       </Guide>
 
-      {queue.items.length === 0 ? (
-        <div className="flex flex-col items-center px-8 py-16 text-center">
-          <h2 className="font-display text-[1.2rem] font-extrabold">
-            {copy.queue.emptyTitle}
-          </h2>
-          <p className="mt-1.5 max-w-[44ch] text-body leading-relaxed text-sub">
-            {copy.queue.emptyBody(scope)}
-          </p>
-        </div>
-      ) : (
-        <>
-          <h2 className="pt-5 pb-2.5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
-            {copy.queue.waitingLabel}
-          </h2>
-          {queue.items.map((item) => (
-            <QueueItem
-              key={item.id}
-              item={item}
-              now={queue.readAt}
-              filter={kind}
-            />
-          ))}
-        </>
-      )}
+      <Queue items={queue.items} now={queue.readAt} scope={scope} />
     </>
   );
-}
-
-const OUTCOMES: Record<string, { message: string; tone: 'error' | 'info' }> = {
-  approved: { message: copy.queue.outcome.approved, tone: 'info' },
-  rejected: { message: copy.queue.outcome.rejected, tone: 'info' },
-  removed: { message: copy.queue.outcome.removed, tone: 'info' },
-  content_changed: {
-    message: copy.queue.outcome.contentChanged,
-    tone: 'error',
-  },
-  refused: { message: copy.queue.outcome.refused, tone: 'error' },
-  restore_needs_admin: {
-    message: copy.queue.outcome.restoreNeedsAdmin,
-    tone: 'error',
-  },
-  missing_reason: { message: copy.queue.outcome.missingReason, tone: 'error' },
-  failed: { message: copy.queue.outcome.failed, tone: 'error' },
-};
-
-function readOutcome(
-  value: string | string[] | undefined,
-): { message: string; tone: 'error' | 'info' } | undefined {
-  const candidate = Array.isArray(value) ? value[0] : value;
-  return candidate ? OUTCOMES[candidate] : undefined;
 }
 
 function readKind(value: string | string[] | undefined): QueueKind | undefined {

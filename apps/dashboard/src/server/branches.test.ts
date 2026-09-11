@@ -15,6 +15,7 @@ import {
   loadBranch,
   loadBranches,
   loadCloseImpact,
+  loadHeadquarters,
   moveHeadquarters,
   reopenBranch,
   saveBranch,
@@ -305,6 +306,28 @@ describe('editing one', () => {
     expect(all.map((row) => row.slug)).toContain(`test-branch-${stamp}`);
     // Ordered by `order`, so the four seeded branches come before this one at 97.
     expect(all.length).toBeGreaterThanOrEqual(5);
+  });
+
+  test('the headquarters read on its own is the one the whole list names', async () => {
+    // The equivalence three screens now rest on (W4.13). Each of them used to find the
+    // headquarters by loading every branch, which meant every service row and a row per
+    // live profile in the church, to read a name and an id; they read one row instead. So
+    // what has to hold is that the cheap answer IS the expensive one, and it is asserted
+    // against the same list rather than against a slug this file happens to know.
+    //
+    // Read-only on purpose: HQ is global state this file must not move (see the header).
+    const client = ministryAdmin.serverClient();
+    const [hq, all] = await Promise.all([
+      loadHeadquarters(client),
+      loadBranches(client),
+    ]);
+
+    const fromList = all.find((row) => row.isHq);
+    expect(hq).not.toBeNull();
+    expect(hq?.id).toBe(fromList?.id);
+    expect(hq?.name).toBe(fromList?.name);
+    // And exactly one branch holds it, which is what makes `maybeSingle` honest here.
+    expect(all.filter((row) => row.isHq)).toHaveLength(1);
   });
 });
 

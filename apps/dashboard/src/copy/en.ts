@@ -173,6 +173,11 @@ export const copy = {
         'Removed content can only be restored by a ministry admin.',
       missingReason: 'A reason is required, so nothing was changed.',
       failed: 'Something went wrong and nothing was changed. Try again.',
+      // Deliberately a weaker claim than `failed`. If the request never came back we do
+      // not know whether it arrived, so promising that nothing changed would be a guess
+      // about the one thing the reviewer needs to be right.
+      unreachable:
+        'We could not reach the server, so we cannot say whether this was saved. Reload to see where it stands.',
     },
     emptyTitle: 'Nothing waiting',
     emptyBody: (branch: string) =>

@@ -8,7 +8,11 @@ import { Stat } from '@/components/ui/Stat';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
-import { loadBranch, loadBranches, loadCloseImpact } from '@/server/branches';
+import {
+  loadBranch,
+  loadCloseImpact,
+  loadHeadquarters,
+} from '@/server/branches';
 
 import { closeBranchAction } from '../../actions';
 import { ConfirmForm } from '../../ConfirmForm';
@@ -50,7 +54,12 @@ export default async function CloseBranchPage({
   }
 
   const { slug } = await params;
-  const branch = await loadBranch(supabase, slug);
+  // The headquarters joins the first wave rather than the second (W4.13): it is one row, it
+  // depends on nothing here, and it used to arrive via a read of every branch in the ministry.
+  const [branch, hq] = await Promise.all([
+    loadBranch(supabase, slug),
+    loadHeadquarters(supabase),
+  ]);
   if (!branch) notFound();
 
   // Two refusals this page must not pretend to be able to ask about. Both are enforced by
@@ -59,11 +68,7 @@ export default async function CloseBranchPage({
   if (branch.status === 'archived') redirect(`/branches/${slug}`);
   if (branch.isHq) redirect(`/branches/${slug}`);
 
-  const [impact, all] = await Promise.all([
-    loadCloseImpact(supabase, branch),
-    loadBranches(supabase),
-  ]);
-  const hq = all.find((row) => row.isHq);
+  const impact = await loadCloseImpact(supabase, branch);
   const blocked = impact.leaders.length > 0;
 
   return (

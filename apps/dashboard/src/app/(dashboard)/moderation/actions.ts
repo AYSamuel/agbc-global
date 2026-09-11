@@ -1,6 +1,6 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { moderateItem, type Decision } from '@/server/moderateItem';
@@ -17,19 +17,34 @@ import type { QueueKind } from '@/server/moderationQueue';
  * Note what is NOT read from the form: the branch. moderateItem() reads it from the row
  * being decided, so a crafted field cannot nominate the caller's own authority.
  *
- * The outcome comes back as a query parameter rather than a return value, which keeps
- * the whole flow working with plain HTML: no JavaScript, no useActionState, and a
- * refresh after deciding does not re-submit anything.
+ * IT RETURNS ITS OUTCOME RATHER THAN REDIRECTING WITH ONE (W4.13, changed 2026-09-11).
+ * It used to answer with `redirect('/moderation?outcome=approved')`, which kept the whole
+ * flow working with plain HTML. Ayo dropped the no-JavaScript requirement for this staff
+ * tool on 2026-09-10, and this is the first place that decision is spent: an optimistic
+ * queue cannot be built on a redirect, because a redirect throws, discards the return
+ * value, and re-renders the page the optimistic update was trying to avoid re-rendering.
+ *
+ * `revalidatePath` replaces what the redirect was quietly doing: keeping the server's copy
+ * of the queue honest. The optimistic removal is what the reviewer sees immediately; this
+ * is what makes it true a moment later, and what puts the item BACK if the database refused
+ * the decision.
+ *
+ * The rest of the file is unchanged, deliberately. What is read from the form, what is not
+ * (the branch, which `moderateItem()` reads from the row so a crafted field cannot nominate
+ * the caller's own authority), and the compare-and-set on `reviewedUpdatedAt` are all the
+ * same. This changed how the answer travels, not what the answer is.
  */
-export async function decide(formData: FormData): Promise<void> {
+export type DecisionOutcome =
+  { ok: true; decision: Decision } | { ok: false; reason: string };
+
+export async function decide(formData: FormData): Promise<DecisionOutcome> {
   const kind = readKind(formData.get('kind'));
   const decision = readDecision(formData.get('decision'));
   const id = readString(formData.get('id'));
   const reviewedUpdatedAt = readString(formData.get('reviewedUpdatedAt'));
-  const filter = readString(formData.get('filter'));
 
   if (!kind || !decision || !id || !reviewedUpdatedAt) {
-    redirect(back(filter, 'failed'));
+    return { ok: false, reason: 'failed' };
   }
 
   const supabase = await createServerComponentClient();
@@ -42,25 +57,13 @@ export async function decide(formData: FormData): Promise<void> {
     moderationNote: readString(formData.get('moderationNote')),
   });
 
-  if (result.ok) {
-    redirect(back(filter, DONE[decision]));
-  }
+  // The server's copy of the queue, brought back in line with what just happened. On a
+  // refusal this is what restores the row the client optimistically removed.
+  revalidatePath('/moderation');
 
-  redirect(back(filter, result.reason));
-}
-
-const DONE: Record<Decision, string> = {
-  approve: 'approved',
-  reject: 'rejected',
-  remove: 'removed',
-};
-
-/** Always our own path, never anything derived from the request. */
-function back(filter: string | undefined, outcome: string): string {
-  const params = new URLSearchParams();
-  if (filter === 'testimony' || filter === 'prayer') params.set('kind', filter);
-  params.set('outcome', outcome);
-  return `/moderation?${params.toString()}`;
+  return result.ok
+    ? { ok: true, decision }
+    : { ok: false, reason: result.reason };
 }
 
 function readString(value: FormDataEntryValue | null): string | undefined {

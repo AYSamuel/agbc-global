@@ -211,6 +211,29 @@ export async function loadBranches(supabase: Client): Promise<BranchRow[]> {
   );
 }
 
+/**
+ * Which branch is the headquarters, and what it is called (W4.13).
+ *
+ * Three screens need exactly this and nothing else: the edit form's HQ banner, the move-HQ
+ * confirm, and the close confirm. All three used to get it by loading EVERY branch, which
+ * means every service row in the ministry and, through `loadMemberCounts`, a row per live
+ * profile in the church, to read two fields off one of them. At most one row can answer
+ * (`20260821120000`'s partial unique index on `is_hq`), so `maybeSingle` is exact rather than
+ * optimistic, and none of the three has to be told what a branch is.
+ */
+export async function loadHeadquarters(
+  supabase: Client,
+): Promise<{ id: string; name: string } | null> {
+  const { data, error } = await supabase
+    .from('branches')
+    .select('id, name')
+    .eq('is_hq', true)
+    .maybeSingle();
+
+  if (error) throw new Error(`headquarters read failed: ${error.message}`);
+  return data;
+}
+
 export async function loadBranch(
   supabase: Client,
   slug: string,

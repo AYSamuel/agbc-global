@@ -97,7 +97,12 @@ export async function loadModerationQueue(
   // Branch and author names come from separate tables. Two small lookups rather than a
   // join, because the view is a union and PostgREST cannot embed through it; both are
   // bounded by the number of DISTINCT ids on screen, not by the row count.
-  const [branchNames, authorNames] = await Promise.all([
+  // All three in ONE wave (W4.13). Signing the photos used to wait for the two name lookups
+  // for no reason: it needs the rows, which are already in hand, and nothing from either
+  // lookup. That made this loader three serial round trips where two would do, on the screen
+  // a leader opens most. It matters more than the millisecond count suggests now that the
+  // functions run in Frankfurt beside the database rather than in Washington.
+  const [branchNames, authorNames, photoUrls] = await Promise.all([
     lookupBranchNames(
       supabase,
       rows.map((row) => row.branch_id),
@@ -106,11 +111,11 @@ export async function loadModerationQueue(
       supabase,
       rows.map((row) => row.author_id),
     ),
+    signPhotos(
+      supabase,
+      rows.map((row) => row.image_path),
+    ),
   ]);
-  const photoUrls = await signPhotos(
-    supabase,
-    rows.map((row) => row.image_path),
-  );
 
   const items: QueueItem[] = rows.map((row) => ({
     // The view's columns are all nullable in the generated types (Postgres cannot prove

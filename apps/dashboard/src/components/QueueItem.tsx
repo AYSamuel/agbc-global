@@ -13,11 +13,11 @@ import type { QueueItem as Item } from '@/server/moderationQueue';
 export function QueueItem({
   item,
   now,
-  filter,
+  onDecide,
 }: {
   item: Item;
   now: number;
-  filter?: string;
+  onDecide: (formData: FormData) => void | Promise<void>;
 }) {
   const waitedDays = Math.floor(
     (now - new Date(item.createdAt).getTime()) / (24 * 60 * 60 * 1000),
@@ -73,7 +73,7 @@ export function QueueItem({
         ) : null}
       </p>
 
-      <QueueActions item={item} filter={filter} />
+      <QueueActions item={item} onDecide={onDecide} />
     </article>
   );
 }

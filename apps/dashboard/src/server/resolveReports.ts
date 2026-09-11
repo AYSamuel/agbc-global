@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@agbc/shared/database';
 
 import { authorize } from './authorize';
+import { branchOf } from './branchOf';
 import type { QueueKind } from './moderationQueue';
 
 /**
@@ -134,23 +135,4 @@ async function flag(
 /** Which of the two nullable target columns holds this kind (`reports_exactly_one_target`). */
 function targetColumn(kind: QueueKind): 'prayer_id' | 'testimony_id' {
   return kind === 'prayer' ? 'prayer_id' : 'testimony_id';
-}
-
-/**
- * The target's branch, read from the row itself.
- *
- * A branch id arriving in a form field would let the caller nominate their own authority,
- * which is the exact hole `17` forbids and the CI probes hunt for.
- */
-async function branchOf(
-  supabase: Client,
-  kind: QueueKind,
-  id: string,
-): Promise<string | null> {
-  const { data } = await supabase
-    .from(kind === 'prayer' ? 'prayers' : 'testimonies')
-    .select('branch_id')
-    .eq('id', id)
-    .maybeSingle();
-  return data?.branch_id ?? null;
 }
