@@ -73,9 +73,22 @@ function leaders(form: FormData): { name: string; role: string }[] {
   return names.map((name, index) => ({ name, role: roles[index] ?? '' }));
 }
 
-function collect(form: FormData): BranchValues {
+/**
+ * What the browser sent, as the form's own values.
+ *
+ * `existingSlug` is the slug of the row the server has already read, and it is the ONLY
+ * source of the slug on an edit. Once a branch exists the form SHOWS its short id rather
+ * than offering it: `BranchForm` renders it through `Locked`, a paragraph, because the
+ * UPDATE column grant (`20260820180000`) excludes the column and re-slugging a branch is a
+ * different branch wearing its rows. A form with no input submits no field, so reading
+ * `slug` from the request here refused every edit of every branch with "Give the branch a
+ * short id.", a sentence about a box that is not on the screen. It is the same rule this
+ * file already applies to the id one line above the call: the row is read server-side, and
+ * what identifies it never travels in the request body.
+ */
+function collect(form: FormData, existingSlug?: string): BranchValues {
   return {
-    slug: text(form, 'slug'),
+    slug: existingSlug ?? text(form, 'slug'),
     name: text(form, 'name'),
     city: text(form, 'city'),
     country: text(form, 'country'),
@@ -103,7 +116,6 @@ export async function saveBranchAction(
   formData: FormData,
 ): Promise<BranchFormState> {
   const attempt = (previous.status === 'error' ? previous.attempt : 0) + 1;
-  const values = collect(formData);
 
   const supabase = await createServerComponentClient();
   const editingSlug = text(formData, 'existingSlug');
@@ -111,6 +123,11 @@ export async function saveBranchAction(
   // The row is read server-side rather than trusted from the form, for the reason every
   // module here gives: an id in a request body is the caller handing themselves a target.
   const existing = editingSlug ? await loadBranch(supabase, editingSlug) : null;
+
+  // AFTER the row, never before: on an edit the slug comes from `existing`, not the form.
+  // This also keeps the short id on screen when some OTHER field is refused, since these
+  // are the values the form is re-rendered from.
+  const values = collect(formData, existing?.slug);
 
   const result = await saveBranch(
     supabase,
