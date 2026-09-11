@@ -27,6 +27,7 @@ Give branch leaders and ministry admins the tools to **run the app's content and
 ### 1. Moderation queue
 - Pending **testimonies** + **prayers** (per branch for leaders; all for admins).
 - Actions: **Approve / Reject (with reason) / Remove**. Approving flips `status='approved'` → appears in app feed; author notified. **Compare-and-set:** every decision carries the `updated_at` of the version reviewed; if the author edited meanwhile, the action fails with "content changed since review" and the item returns to the queue (`02` invariants). Only admins can restore `removed` content (audit-logged).
+- **A decided item leaves the queue at once, before the server answers** (W4.13). The reviewer's next decision is never behind a round trip, which on the busiest screen in the product was the whole of the wait. **A refused decision puts the row back and says why**, which is the compare-and-set above made visible: optimism here is a guess about latency, never about authority, and the database is still the only thing that decides. This is also the one dashboard screen whose outcome does NOT travel in the URL as `?outcome=`; the other five still redirect, and move only when there is reason to touch them.
 - **Reports** inbox (`reports`): review flagged content → action or dismiss.
 - Audit trail (`moderated_by`, `moderated_at`).
 - **Freshness safeguard:** leaders are notified (push/in-app) when new items enter their queue; anything `pending` longer than 48h escalates to admins, who can moderate any branch. A quiet leader must never make a branch's feed look dead.

@@ -1,4 +1,3 @@
-import { decide } from '@/app/(dashboard)/moderation/actions';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { copy } from '@/copy/en';
 import type { QueueItem } from '@/server/moderationQueue';
@@ -6,9 +5,15 @@ import type { QueueItem } from '@/server/moderationQueue';
 /**
  * The three decisions (docs/spec/17 §1, W2.7 slice 3).
  *
- * Plain forms posting to a Server Action, so the whole thing works with HTML alone: no
- * JavaScript, no dialogs. That matters more than it sounds. `confirm()` is unusable for
- * some assistive tech, cannot be styled to say WHY, and vanishes if scripts fail.
+ * Plain forms posting to a Server Action, and no dialogs. `confirm()` is unusable for some
+ * assistive tech, cannot be styled to say WHY, and vanishes if scripts fail.
+ *
+ * THE ACTION ARRIVES AS A PROP since W4.13, rather than being imported here. `Queue.tsx` wraps
+ * it so a decided item can leave the screen before the server answers, and a component that
+ * imported the action directly could not be given that wrapper. It also means this file no
+ * longer works with scripts off: that was true of the whole queue until W4.13 and is the
+ * deliberate cost of the optimistic list (Ayo dropped the no-JavaScript requirement for this
+ * staff tool on 2026-09-10). The `filter` hidden field went with the redirect it fed.
  *
  * All three go through `SubmitButton`, which is what `SubmitButton.tsx` was written for and
  * did not get until W4.12. Until then these were the busiest controls in the product and the
@@ -35,15 +40,15 @@ import type { QueueItem } from '@/server/moderationQueue';
  */
 export function QueueActions({
   item,
-  filter,
+  onDecide,
 }: {
   item: QueueItem;
-  filter?: string;
+  onDecide: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <div className="mt-4 flex flex-wrap items-start gap-2.5 border-t border-cardline pt-3.5">
-      <form action={decide}>
-        <Hidden item={item} filter={filter} decision="approve" />
+      <form action={onDecide}>
+        <Hidden item={item} decision="approve" />
         <SubmitButton
           label={copy.queue.actions.approve}
           pendingLabel={copy.queue.actions.approvePending}
@@ -54,8 +59,11 @@ export function QueueActions({
         <summary className="inline-flex min-h-12 cursor-pointer list-none items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text">
           {copy.queue.actions.rejectOpen}
         </summary>
-        <form action={decide} className="mt-3 flex max-w-prose flex-col gap-2">
-          <Hidden item={item} filter={filter} decision="reject" />
+        <form
+          action={onDecide}
+          className="mt-3 flex max-w-prose flex-col gap-2"
+        >
+          <Hidden item={item} decision="reject" />
           <label
             htmlFor={`reject-${item.id}`}
             className="text-body font-semibold text-text"
@@ -83,8 +91,11 @@ export function QueueActions({
         <summary className="inline-flex min-h-12 cursor-pointer list-none items-center rounded-button border border-danger px-5 text-body font-semibold text-danger">
           {copy.queue.actions.removeOpen}
         </summary>
-        <form action={decide} className="mt-3 flex max-w-prose flex-col gap-2">
-          <Hidden item={item} filter={filter} decision="remove" />
+        <form
+          action={onDecide}
+          className="mt-3 flex max-w-prose flex-col gap-2"
+        >
+          <Hidden item={item} decision="remove" />
           {/* The confirmation, in words rather than a dialog: it says what is about to
               happen and why it cannot be taken back. */}
           <p
@@ -119,15 +130,7 @@ export function QueueActions({
   );
 }
 
-function Hidden({
-  item,
-  filter,
-  decision,
-}: {
-  item: QueueItem;
-  filter?: string;
-  decision: string;
-}) {
+function Hidden({ item, decision }: { item: QueueItem; decision: string }) {
   return (
     <>
       <input type="hidden" name="kind" value={item.kind} />
@@ -136,7 +139,6 @@ function Hidden({
           the author has moved on since (PT409 -> "content changed since review"). */}
       <input type="hidden" name="reviewedUpdatedAt" value={item.updatedAt} />
       <input type="hidden" name="decision" value={decision} />
-      {filter ? <input type="hidden" name="filter" value={filter} /> : null}
     </>
   );
 }

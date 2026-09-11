@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@agbc/shared/database';
 
 import { authorize } from './authorize';
+import { branchOf } from './branchOf';
 import type { QueueKind } from './moderationQueue';
 
 /**
@@ -76,16 +77,14 @@ export async function moderateItem(
   const table = input.kind === 'prayer' ? 'prayers' : 'testimonies';
 
   // The target's branch, read from the row. If the caller cannot even see it, there is
-  // nothing to authorize and nothing to tell them beyond a refusal.
-  const { data: target } = await supabase
-    .from(table)
-    .select('branch_id, status')
-    .eq('id', input.id)
-    .maybeSingle();
-  if (!target) return { ok: false, reason: 'refused' };
+  // nothing to authorize and nothing to tell them beyond a refusal. Through the shared memo
+  // (W4.13) so that deciding FROM the reports screen, which authorizes the content decision
+  // and then the report closure, reads the row once rather than twice.
+  const branchId = await branchOf(supabase, input.kind, input.id);
+  if (!branchId) return { ok: false, reason: 'refused' };
   const verdict = await authorize(supabase, {
     action: 'moderate_content',
-    branchId: target.branch_id,
+    branchId,
   });
   if (!verdict.ok) {
     return {

@@ -15,15 +15,16 @@ import { QueueActions } from './QueueActions';
  * only sign a click had registered was the page eventually changing, a whole server round
  * trip later. `SubmitButton.tsx` was written partly for this queue and never wired to it.
  *
- * The action is stubbed with a promise the test controls, because "pending" only exists
- * while a submission is in flight and a real action would settle before anything could be
- * asserted. What is under test is this component's wiring, not the decision itself, which
- * `moderateItem.test.ts` proves against the database.
+ * The action is a PROP since W4.13, so this file no longer mocks a module: `Queue.tsx` wraps
+ * the real action to remove the decided row optimistically, and a component that imported it
+ * directly could not be handed that wrapper. A plain `vi.fn()` is now the whole stub.
+ *
+ * It returns a promise the test controls, because "pending" only exists while a submission is
+ * in flight and a settled action would be finished before the first assertion. What is under
+ * test is this component's wiring, not the decision itself, which `moderateItem.test.ts`
+ * proves against the database.
  */
 const decide = vi.fn();
-vi.mock('@/app/(dashboard)/moderation/actions', () => ({
-  decide: (formData: FormData) => decide(formData) as unknown,
-}));
 
 const ITEM: QueueItem = {
   id: 'testimony-1',
@@ -50,7 +51,7 @@ function heldAction() {
 test('Approve says it is approving while the decision is in flight', async () => {
   const user = userEvent.setup();
   const release = heldAction();
-  render(<QueueActions item={ITEM} />);
+  render(<QueueActions item={ITEM} onDecide={decide} />);
 
   const approve = screen.getByRole('button', { name: 'Approve' });
   await user.click(approve);
@@ -68,7 +69,7 @@ test('Approve says it is approving while the decision is in flight', async () =>
 test('Reject says it is sending back, not approving', async () => {
   const user = userEvent.setup();
   const release = heldAction();
-  render(<QueueActions item={ITEM} />);
+  render(<QueueActions item={ITEM} onDecide={decide} />);
 
   // The reason is required, and the disclosure has to be opened to reach it.
   await user.click(screen.getByText('Reject with reason'));
@@ -93,7 +94,7 @@ test('Reject says it is sending back, not approving', async () => {
 test('Remove says it is removing', async () => {
   const user = userEvent.setup();
   const release = heldAction();
-  render(<QueueActions item={ITEM} />);
+  render(<QueueActions item={ITEM} onDecide={decide} />);
 
   await user.click(screen.getByText('Remove'));
   await user.type(
@@ -109,7 +110,7 @@ test('Remove says it is removing', async () => {
 });
 
 test('the decisions have no accessibility violations', async () => {
-  const { container } = render(<QueueActions item={ITEM} />);
+  const { container } = render(<QueueActions item={ITEM} onDecide={decide} />);
 
   await expectNoA11yViolations(container);
 });

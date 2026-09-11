@@ -6,7 +6,9 @@ import type { ReportedItem } from '@/server/reportsInbox';
 /**
  * What a leader can do about a reported post (docs/spec/17 §1, frame `REPORTS`).
  *
- * Plain forms posting to a Server Action, like `QueueActions`: no JavaScript, no dialogs.
+ * Plain forms posting to a Server Action, still working with HTML alone and with no dialogs.
+ * This screen did NOT follow the moderation queue off that road at W4.13; it moves when there
+ * is reason to touch it rather than in a sweep, so its outcome still travels as `?outcome=`.
  * Two of these decide the reports, two decide the post, and all four go through one
  * action so the reports close with the decision rather than in a second click.
  *

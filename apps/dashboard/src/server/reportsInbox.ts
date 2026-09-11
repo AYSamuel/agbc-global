@@ -88,6 +88,16 @@ export async function loadReportsInbox(
   supabase: Client,
   now: number = Date.now(),
 ): Promise<ReportsInbox> {
+  // Started here and awaited at the end (W4.13). It depends on nothing this function reads,
+  // so it used to sit as a whole extra round trip at the BOTTOM of the chain, awaited inside
+  // the returned object literal where it was easy to miss. Kicked off now, it rides along
+  // with the reads below instead of following them, which takes this loader from six serial
+  // waves to five on the worst path and from four to three on the empty one.
+  //
+  // Safe to leave floating: `countResolvedThisMonth` reads supabase-js's `{ count }` and
+  // never rejects, so an early `throw` below cannot strand an unhandled rejection.
+  const resolvedThisMonth = countResolvedThisMonth(supabase, now);
+
   const { data, error } = await supabase
     .from('reports')
     .select('testimony_id, prayer_id, reason, is_safeguarding, created_at')
@@ -105,7 +115,7 @@ export async function loadReportsInbox(
       counts: {
         open: 0,
         safeguarding: 0,
-        resolvedThisMonth: await countResolvedThisMonth(supabase, now),
+        resolvedThisMonth: await resolvedThisMonth,
       },
     };
   }
@@ -174,7 +184,7 @@ export async function loadReportsInbox(
     counts: {
       open: items.length,
       safeguarding: items.filter((item) => item.isSafeguarding).length,
-      resolvedThisMonth: await countResolvedThisMonth(supabase, now),
+      resolvedThisMonth: await resolvedThisMonth,
     },
   };
 }

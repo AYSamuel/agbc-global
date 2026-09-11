@@ -129,3 +129,22 @@ reason under "Why": layouts are not re-run on client navigation.
 **Animate the skeletons.** Rejected: the mockup's `.skel` is a static three-stop gradient and
 that file has no `@keyframes` anywhere. An animated skeleton would be code inventing a decision
 the design did not make.
+
+## Amendment, 2026-09-11: the region was `iad1`, and is now pinned to `fra1`
+
+The open question above is closed, and the answer was the bad one. The console read
+**`iad1`, Washington D.C.**, while the database is in Frankfurt. **Nobody had chosen it:**
+Vercel's docs give `iad1` as the documented default for functions, so this was the cost of
+never having set it.
+
+Pinned to **`fra1`**, which is `eu-central-1`, the same AWS region as `agbc-production`
+rather than merely the same continent. It is set in `apps/dashboard/vercel.json` rather than
+the dashboard, because `~/.claude/standards/devops.md` asks that anything click-configured be
+reproducible from code, and because Vercel's docs state the file **overrides** the Project
+Settings value. The file lives under `apps/dashboard/` since that is the project's Root
+Directory, which is where Vercel reads it from.
+
+**This changes nothing until the next deployment**, and it is the one change in W4.12 and W4.13
+whose effect is invisible from a local measurement: everything else was measured against a
+local stack on the same machine, where there is no ocean to cross. The honest way to see it is
+a before and after against production.

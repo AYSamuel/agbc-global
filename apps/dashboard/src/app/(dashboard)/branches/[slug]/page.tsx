@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { copy } from '@/copy/en';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { authorize } from '@/server/authorize';
-import { loadBranch, loadBranches } from '@/server/branches';
+import { loadBranch, loadHeadquarters } from '@/server/branches';
 
 import { saveBranchAction } from '../actions';
 import { BranchForm } from '../BranchForm';
@@ -20,7 +20,8 @@ export const dynamic = 'force-dynamic';
  * the events cancel screen gives: what has to be read before confirming does not fit in one.
  *
  * The HQ banner needs to know which branch currently holds it, which is a fact about
- * ANOTHER row, so the list is read here rather than guessed from this one.
+ * ANOTHER row, so it is read here rather than guessed from this one. One row, in the same
+ * wave as the branch itself (W4.13): it depends on nothing this page has yet.
  */
 export default async function BranchPage({
   params,
@@ -42,11 +43,11 @@ export default async function BranchPage({
   }
 
   const { slug } = await params;
-  const branch = await loadBranch(supabase, slug);
+  const [branch, hq] = await Promise.all([
+    loadBranch(supabase, slug),
+    loadHeadquarters(supabase),
+  ]);
   if (!branch) notFound();
-
-  const all = await loadBranches(supabase);
-  const hq = all.find((row) => row.isHq);
 
   return (
     <>

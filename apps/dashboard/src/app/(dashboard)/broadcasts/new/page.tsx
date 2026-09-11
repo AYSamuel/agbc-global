@@ -39,12 +39,11 @@ export default async function NewBroadcastPage() {
     action: 'compose_ministry_broadcast',
   });
 
-  const { data: branch } = await supabase
-    .from('branches')
-    .select('name')
-    .eq('id', caller.branchId)
-    .maybeSingle();
-  const branchName = branch?.name ?? '';
+  // The name comes off the caller rather than off a second read of `branches` (W4.13).
+  // `authorize()` already embedded it when it loaded the profile, and the second `authorize`
+  // above is answered from the same memo, so this page is now one round trip rather than two
+  // for a fact it was already holding.
+  const branchName = caller.branchName;
 
   return (
     <>

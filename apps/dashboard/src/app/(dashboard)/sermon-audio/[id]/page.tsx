@@ -9,6 +9,7 @@ import { createServerComponentClient } from '@/lib/supabase/server';
 import {
   loadAudioFacts,
   loadSermon,
+  type AudioFacts,
   type ShelfRow,
 } from '@/server/sermonAudio';
 import {
@@ -90,18 +91,28 @@ export default async function SermonAudioItemPage({
       ? { url: sermon.thumbnailUrl, kind: 'youtube' }
       : { url: null, kind: 'none' };
 
+  // Both storage reads in ONE wave (W4.13). They used to sit as two awaits inside the SAME
+  // JSX props object, which evaluates left to right: the artwork listing waited for the audio
+  // listing although neither needs the other, making this the worst-shaped page in the app at
+  // five serial round trips. An await in a props object is the easiest kind to miss, because
+  // it does not look like a chain.
+  const [facts, artworkFacts] = await Promise.all([
+    manage && sermon.audioPath
+      ? loadAudioFacts(supabase, sermon.audioPath)
+      : null,
+    manage && sermon.artworkPath
+      ? loadArtworkFacts(supabase, sermon.artworkPath)
+      : null,
+  ]);
+
   return (
     <>
       {manage && sermon.audioPath ? (
         <Manage
           sermon={sermon}
-          facts={await loadAudioFacts(supabase, sermon.audioPath)}
+          facts={facts}
           artwork={artwork}
-          artworkFacts={
-            sermon.artworkPath
-              ? await loadArtworkFacts(supabase, sermon.artworkPath)
-              : null
-          }
+          artworkFacts={artworkFacts}
           outcome={readParam(query.outcome)}
         />
       ) : (
@@ -138,7 +149,7 @@ function Manage({
   outcome,
 }: {
   sermon: ShelfRow;
-  facts: { sizeBytes: number | null; shelvedAt: string | null };
+  facts: AudioFacts | null;
   artwork: ImageSubject;
   artworkFacts: ArtworkFacts | null;
   outcome?: string;
@@ -171,14 +182,14 @@ function Manage({
             {text.factsPill(wholeMinutes(sermon.durationSec ?? 60))}
           </Pill>
           <span className="flex-1" />
-          {facts.shelvedAt ? (
+          {facts?.shelvedAt ? (
             <span className="text-[0.72rem] font-bold text-muted">
               {text.shelvedOn(shortDate(facts.shelvedAt))}
             </span>
           ) : null}
         </div>
         <p className="mt-2.5 text-[0.78rem] font-bold text-muted">
-          {facts.sizeBytes
+          {facts?.sizeBytes
             ? `${copy.sermonAudio.sizeMb(wholeMb(facts.sizeBytes))} · `
             : ''}
           {extension}
