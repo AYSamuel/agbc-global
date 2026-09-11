@@ -10,15 +10,33 @@ Written 2026-07-18, at the moment the repo is docs-only and no code exists. Work
 
 ## 0. Where we stand today
 
-| Area | State |
-|------|-------|
-| Product spec | Complete: docs 00-24, audited (`AUDIT-2026-07-12.md`) and remediated; decisions log current in `BUILD-READINESS-TRACKER.md` |
-| Design | Complete as an HTML prototype: `design/mockups/entry-flow.html` is the canonical visual/interaction reference (every screen, light AND dark, tablet landscape + portrait, edge/in-screen states; see `05`). Figma is parked. `design/SCREENS-CHECKLIST.md` predates the final design sessions and is stale; trust `05` + the HTML file |
-| Repo | `agbc-global` on GitHub, `main` PR-protected, docs committed. Monorepo scaffold NOT yet created (steps 5-11 of the `23` §4 runbook remain) |
-| Code | None. Phase -1 accounts (Meta for broadcasts, Apple invite, FCM, observability, etc.) not started. The Twilio + NG sender-ID rows were dropped with the email-OTP decision (2026-07-18, `03`): Phase -1 now contains no paid item and no auth-blocking fuse |
-| Readiness gates | See `BUILD-READINESS-TRACKER.md`: Gate 1 (wedge interviews) runs in parallel and does not block Phases 0-1; Gate 2 owners must be named before Phase 2; Gate 4 (backup pipeline, NDPA) gates prod work only |
+**Corrected 2026-09-11, and the correction is the point.** Until that day this section said
+"Code: None" and "Monorepo scaffold NOT yet created", while the app was in the Play Store, the
+dashboard was deployed, and four phases had shipped. It had been wrong for months, in the one
+place §1 tells every session to look first. So it no longer holds a table of counts that rot:
+**the board below is the position, and this section only says how to read it.**
 
-**Conclusion: the build can start now.** Nothing gates Phase 0 or Phase 1 except the scaffold itself and the Phase -1 fuses that must be lit on day 1 (they run in the background for weeks; see `24`).
+| Question | Where the answer lives, and how stale it can be |
+|---|---|
+| What has shipped? | **§2 of this file, the board.** Every work item carries its own COMPLETE or PARKED line and the PRs that landed it. It is written as each item closes, so it is only ever as stale as the last session. |
+| What is true of the code right now? | **Git history, and the code.** `25` §1 opens with "derive position from git history + the board" for this reason. Never from prose, including this file's. |
+| What is still owed before launch? | **`18` §Launch checklist.** It is the only list that outlives a phase, and several of its items are content operations or hardware, not engineering. |
+| What did an item decide, and why? | The numbered specs, the ADRs in `docs/decisions/`, the runbooks in `docs/runbooks/`, and the migration headers. A plan file in `docs/spec/plans/` exists only while its item is open. |
+| What should a screen look like? | **`design/mockups/entry-flow.html`** for the app and `design/mockups/dashboard.html` for the dashboard, read first-hand in the build session (§4). Figma is parked and `design/SCREENS-CHECKLIST.md` is stale; trust `05` plus the HTML. |
+
+**The honest one-line position, 2026-09-11:** Phases 0 to 3 have exited, and **every Phase 4
+board item is now either COMPLETE or PARKED**, the parked ones being the book track (W4.1 to
+W4.4) which waits on the church wanting to sell books through the app. The app is live on
+Google Play and the leader dashboard is deployed. **So there is no "next item" to pick up from
+the board**, and a session that wants one is choosing between three things rather than reading
+one off: closing something on `18`'s launch checklist, scoping a Phase 4 exit audit the way
+W2.10 and W3.6 did for their phases, or taking an item off a plan file's deferred backlog
+(W4.12's is the largest, and W4.13 came off it).
+
+**What this section must never become again.** A count, a percentage, or a "current state"
+paragraph that a session has to remember to update. Every one of those has gone stale here
+before. If a fact belongs to one work item, it belongs on that item's board entry; if it
+outlives the phase, it belongs on `18`'s checklist.
 
 ---
 
