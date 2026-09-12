@@ -132,7 +132,7 @@ Two admin grants exist, declared as data in `bootstrap_admins` and applied by tr
 
 1. [x] Onboarded in the mobile app. Done before the migration reached production, so the profile arrived as a member and was promoted when the dispatch applied (see above).
 2. [x] Promotion confirmed, read off the live People record rather than the deploy's exit code: the account shows ADMIN.
-3. [x] TOTP enrolled on the dashboard, **via the manual setup key**, the QR being the known failure this runbook already carries.
+3. [x] TOTP enrolled on the dashboard, **via the manual setup key**, the QR being the failure this runbook carried. That failure is fixed as of the same day, so the next enrolment should be able to scan.
 4. [ ] Seed stored offline. **The vault copy is reported done; the PRINTED copy for the church safe is NOT confirmed and stays open**, which is the same half that was never completed for the retired account.
 5. [x] Verified once and signed out.
 
@@ -220,7 +220,7 @@ builds whose stack traces are minified for ever. Nothing warns you.
 - [x] ~~Destroy the retired break-glass secrets~~ **Done 2026-09-12**: the `oami.gospel@gmail.com` seed is gone from the vault. Its account was erased by its holder and its grant revoked by the migration, so the seed was a credential for nothing
 - [ ] **Print the NEW break-glass TOTP seed** (`agbc.noreply@gmail.com`) and place it with the keystore in the church safe. The vault copy exists; the printed copy is the half that survives losing the vault, and it is the one half that was never completed for the retired account either. **Still open**
 - [ ] **Name a SECOND HUMAN admin.** Sharpened 2026-09-12 rather than newly added: the identity swap restored availability and changed nothing about oversight, because both admin identities are held by one person, so nobody can review that person's actions on Art. 9 data. See the standing entry below
-- [ ] **Dashboard follow-up:** the `/mfa` enrolment QR would not scan inside Google Authenticator. **Manual setup-key entry has now worked three times and the QR has failed all three** (both admins on 2026-08-19, the new break-glass identity on 2026-09-12), which moves this from an anecdote to a reproducible defect on the one screen every future staff member has to pass through. Look at the QR's rendered size, contrast and format at the next dashboard session
+- [x] ~~**Dashboard follow-up:** the `/mfa` enrolment QR would not scan inside Google Authenticator~~ **FIXED 2026-09-12.** It was drawn on `bg-card`, which is dark navy in the dashboard's dark theme, and Supabase returns the code as black modules on a TRANSPARENT background, so it was black on dark navy. It now sits on a fixed light surface in both themes (`--t-scan-bg`). **Measured rather than reasoned**: a real QR decoder, given the rendered pixels, failed on the dark card and succeeded on white at the same size, which also ruled out the scaling that looked like a second cause. Three failed enrolments (both admins 2026-08-19, the new break-glass identity 2026-09-12) all predate the fix. **Nobody needs to re-enrol**: a working factor stays working, and this only affects the next person who sets one up
 - [ ] Fill TBC sign-in methods as each account is next touched
 - [ ] Record domain renewal date from the registrar
 - [ ] Revisit the age-key single-point-of-failure (ADR 0018) when a second owner joins the password-manager vault: an offline copy in the church safe would then have a second custodian and the objection falls away

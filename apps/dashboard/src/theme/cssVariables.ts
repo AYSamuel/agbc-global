@@ -52,6 +52,15 @@ function brandVariables(): string {
     // sits on a themed surface. The fallback cover is drawn where a picture would be, and
     // the caption pill sits on top of one, so both are identical in light and dark, and
     // the mockup's `.pl-art.none` carries no dark override either.
+    // The surface a QR code is drawn on, fixed light in BOTH themes, and the reason is
+    // not aesthetic. Supabase returns the enrolment QR as an SVG of black modules with
+    // NO background of its own, so on this dashboard's dark card it was black on dark
+    // navy: a scanner sees almost no contrast and Google Authenticator refused it at
+    // three enrolments in a row. A QR is a machine-readable target rather than a themed
+    // element, so it gets the light theme's card colour whatever the reader's theme is.
+    // Measured rather than reasoned: a real QR decoder given the rendered pixels failed on
+    // the dark card and succeeded on white, at the same size.
+    '--t-scan-bg': color.light.card,
     '--t-art-from': media.artFrom,
     '--t-art-to': media.artTo,
     '--t-tag-bg': media.tagBg,

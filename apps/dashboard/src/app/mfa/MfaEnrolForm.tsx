@@ -128,10 +128,12 @@ export function MfaEnrolForm({ next }: { next: string }) {
   }
 
   if (!factor) {
-    // Loading. Real dimensions, so nothing jumps when the QR arrives.
+    // Loading. Real dimensions, so nothing jumps when the QR arrives: 231px of QR plus
+    // the 16px quiet zone on each side is 263, and h-66 is 264. This tracks the image
+    // below, so a change to the QR's size is a change here too.
     return (
       <div
-        className="h-54 w-full animate-pulse rounded-card bg-alt"
+        className="h-66 w-full animate-pulse rounded-card bg-alt"
         role="status"
         aria-label="Preparing your setup code"
       />
@@ -152,15 +154,38 @@ export function MfaEnrolForm({ next }: { next: string }) {
         </div>
       ) : null}
 
-      {/* Supabase returns the QR as an SVG data URL. */}
+      {/*
+        Supabase returns the QR as an SVG data URL, and TWO things about that SVG decide
+        whether a phone can actually read what is on screen. Both were wrong until
+        2026-09-12, and between them they are why the QR failed three enrolments in a row
+        while the printed setup key worked every time.
+
+        IT HAS NO BACKGROUND OF ITS OWN, and that was the bug. The SVG is bare black
+        rects on transparency, so it took the colour underneath, and `bg-card` is dark
+        navy in this dashboard's dark theme. Black on dark navy is not a contrast problem
+        a scanner can work around: a real QR decoder, given these exact pixels, failed on
+        the dark card and succeeded on white. It gets a fixed light surface now, in both
+        themes, because a QR is a machine-readable target rather than a themed element.
+
+        IT IS 231px AND HAS NO viewBox, so drawing it at 200 fitted a 3px module grid
+        into a 0.866 scale and every module edge landed mid-pixel. Natural size now, so
+        the modules stay square. THIS WAS NOT THE BUG, and the measurement is the only
+        reason that is known: decoding the same code at 200px on white succeeded, and at
+        231px on the dark card still failed, so the background was the whole cause and
+        the scale is sharpness alone. Kept because crisper is better for a camera held
+        at an angle, not because it was broken.
+
+        The padding is the quiet zone the QR spec requires, not decoration: a code with
+        no margin is a code many scanners refuse.
+      */}
       {/* eslint-disable-next-line @next/next/no-img-element -- a data: URL: there is
           nothing for the image optimizer to fetch or resize. */}
       <img
         src={factor.qrCode}
         alt={copy.mfa.qrAlt}
-        width={200}
-        height={200}
-        className="self-center rounded-card bg-card p-3"
+        width={231}
+        height={231}
+        className="self-center rounded-card bg-scan-bg p-4"
       />
 
       {/* The typed alternative, because a QR is unusable for anyone who cannot see it,

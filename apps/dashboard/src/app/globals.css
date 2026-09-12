@@ -47,6 +47,7 @@
   --color-navy: var(--t-navy);
   --color-on-ink: var(--t-on-ink);
   --color-gold-deep: var(--t-gold-deep);
+  --color-scan-bg: var(--t-scan-bg);
 
   /* The 05 type scale, in rem so it follows the reader's own font-size setting. */
   --text-hero: var(--t-text-hero);
