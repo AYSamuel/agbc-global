@@ -93,12 +93,20 @@ commands, the proof that the alert fires, and the off switch with its deadline, 
 
 ## In-app admin identities (ADR 0015, 2026-07-30)
 
-Two admin grants exist, declared as data in `bootstrap_admins` and applied by trigger, so both are visible in git rather than hand-typed (migrations `20260729120000` and `20260730150000`). Nothing else in the schema can hand out `admin`: `set_member_role` refuses `target = auth.uid()`.
+Two admin grants exist, declared as data in `bootstrap_admins` and applied by trigger, so both are visible in git rather than hand-typed (migrations `20260729120000`, `20260730150000`, and `20260911120000` which changed who holds the second one). Nothing else in the schema can hand out `admin`: `set_member_role` refuses `target = auth.uid()`.
 
 | Address | Role | Purpose |
 |---|---|---|
 | `aysamuel007@gmail.com` | Daily admin | Ayo's ordinary account, the same identity he uses in the mobile app |
-| `oami.gospel@gmail.com` | **Break-glass admin** | Second identity so the erasure lockout and the 48-hour fallback approver are not one account |
+| `agbc.noreply@gmail.com` | **Break-glass admin** | Second identity so the erasure lockout and the 48-hour fallback approver are not one account. **Since 2026-09-11**, replacing `oami.gospel@gmail.com` |
+
+### The identity changed hands, 2026-09-11
+
+`oami.gospel@gmail.com` is retired: its holder erased the account through the app, and migration `20260911120000` removed its allowlist row, demoted any profile still carrying the grant, and added `agbc.noreply@gmail.com` in its place.
+
+**The lesson worth keeping, because it was live for a window:** erasing the account did NOT remove the grant. `bootstrap_admins` sits deliberately outside `profiles`' cascade, so closing an app account cannot silently revoke an admin grant, which is right and which here meant **the licence outlived the account**. Between the erasure and the migration, anyone signing up with that address would have been promoted straight back to admin by `profiles_bootstrap_admin`, with nobody deciding anything. **Retiring an admin is always two acts: the profile AND the allowlist row.** Proven both ways against the local stack before the migration shipped: the new address is promoted on signup, and the old one signing up again stays a member.
+
+**Steps 1 to 5 below are owed again for the new address**, and are unticked for it. Until they are done there is functionally ONE admin, so the erasure lockout the break-glass account exists to prevent is live, and broadcasts have no second approver (`17`).
 
 **The break-glass account is availability and recovery, not oversight.** A second account held by the same person cannot review that person's actions. Separation of duties needs a second HUMAN admin, which is still open (see the open action below and ADR 0015).
 
@@ -114,9 +122,11 @@ Two admin grants exist, declared as data in `bootstrap_admins` and applied by tr
 4. [x] **Store that seed offline** (Supabase TOTP issues no recovery codes; the setup key IS the recovery): password-manager vault plus a printed copy with the keystore in the church safe. A break-glass account whose second factor lives on the same phone as the daily account's is not a break-glass account. **Only store the seed enrolled against PRODUCTION.** A local or dev seed is a different Supabase project and `pnpm db:reset` wipes it, so keeping one is a false sense of having done this step. **Vault copy saved 2026-08-19; the PRINTED copy for the church safe is still owed** (see open actions).
 5. [x] **Verify once, then leave it alone.** Sign in to the dashboard, confirm it admits the session, sign out. Its whole value is being unused and available. Do not use it for routine work. **Verified and signed out 2026-08-19.**
 
-All five steps are done in production as of 2026-08-19; the daily admin (`aysamuel007@gmail.com`) enrolled TOTP the same night, so both admin identities are at `aal2` capability.
+All five steps were done in production as of 2026-08-19 **for the retired identity**; the daily admin (`aysamuel007@gmail.com`) enrolled TOTP the same night and remains at `aal2` capability. **The tick boxes above therefore describe `oami.gospel@gmail.com` and are history.** `agbc.noreply@gmail.com` has never signed in, so every step is owed for it: onboard in the MOBILE app first (nothing else creates a profile), confirm the promotion landed with a null `actor_id`, enrol TOTP on the dashboard **using the manual setup key rather than the QR** (step 3's known failure), store that seed offline, then verify once and leave it alone.
 
-**Custody caveat, accepted knowingly:** a personal-provider mailbox is controlled by whoever holds that Google account, not by the ministry, so it does not outlive its holder the way a church-domain mailbox would. Ayo's decision, 2026-07-30, having been offered the domain alternative. Moving it to a managed church domain later needs one more `bootstrap_admins` row plus a demotion of the old one.
+**One precondition that is new with this address and decides whether any of it works:** sign-in is email OTP and nothing else, so that mailbox must RECEIVE mail and be read by someone. An address named "noreply" that nobody monitors is an admin identity that can never sign in, and it would fail at exactly the moment a break-glass account exists for. Raised with Ayo on 2026-09-11 and confirmed as intended.
+
+**Custody caveat, accepted knowingly and UNCHANGED by the 2026-09-11 swap:** a personal-provider mailbox is controlled by whoever holds that Google account, not by the ministry, so it does not outlive its holder the way a church-domain mailbox would. `agbc.noreply@gmail.com` is still a Google mailbox, so it buys a ministry-shaped NAME and no change in custody. Ayo's decision, 2026-07-30 and again 2026-09-11, having been offered the domain alternative both times. Moving to a managed church domain needs one more `bootstrap_admins` row plus a demotion of the old one, which is exactly the shape `20260911120000` now demonstrates.
 
 ## Arming the scheduled jobs in a hosted environment (W2.7 slice 5, ADR 0016)
 
@@ -190,8 +200,11 @@ builds whose stack traces are minified for ever. Nothing warns you.
 - [ ] Rename the PostHog project from `Default project` to something meaningful (cosmetic; the token does not change)
 - [ ] Name and add second owners (church officer) on: Supabase org, password-manager vault, Apple (once Ayo's Admin invite lands)
 - [ ] **Name a second HUMAN in-app admin** (a trustee or officer), which is the only thing that provides separation of duties over Art. 9 data. The break-glass account above covers availability, not oversight. Before Founding Members (ADR 0015)
-- [x] ~~Complete the five break-glass activation steps above, **in production, at Track P** (mobile onboarding, confirm the promotion, dashboard TOTP, seed offline, verify and leave)~~ **Done 2026-08-19 (Track P Phase 4); see the checklist above for how**
-- [ ] **Print the break-glass TOTP seed** and place it with the keystore in the church safe (the vault copy exists; the printed copy is the half that survives losing the vault)
+- [x] ~~Complete the five break-glass activation steps above, **in production, at Track P** (mobile onboarding, confirm the promotion, dashboard TOTP, seed offline, verify and leave)~~ **Done 2026-08-19 (Track P Phase 4) for `oami.gospel@gmail.com`, which is now RETIRED, so this tick is history rather than current state**
+- [ ] **Complete the five activation steps again for `agbc.noreply@gmail.com`** (identity changed 2026-09-11, `20260911120000`). Onboard in the MOBILE app first, since nothing else creates a profile; enrol TOTP with the manual setup key, not the QR. **Until this is done the ministry has one live admin**, so the erasure lockout is unguarded and broadcasts have no second approver (`17`)
+- [ ] **Confirm `agbc.noreply@gmail.com` can actually RECEIVE and be read.** Sign-in is email OTP and nothing else, so a "noreply" mailbox nobody monitors is an admin identity that can never sign in, failing at exactly the moment a break-glass account exists for. Cheapest possible check, and it gates the step above
+- [ ] **Destroy the retired break-glass secrets**: the `oami.gospel@gmail.com` TOTP seed in the password-manager vault, and any printed copy. Its account is erased and its grant is revoked, so the seed is now a credential for nothing that should still be lying around
+- [ ] **Print the break-glass TOTP seed** and place it with the keystore in the church safe (the vault copy exists; the printed copy is the half that survives losing the vault). **Applies to the NEW seed**, once the step above creates one
 - [ ] **Dashboard follow-up:** the `/mfa` enrolment QR would not scan inside Google Authenticator (manual setup-key entry worked, twice). Look at the QR's rendered size/contrast/format at the next dashboard session
 - [ ] Fill TBC sign-in methods as each account is next touched
 - [ ] Record domain renewal date from the registrar
