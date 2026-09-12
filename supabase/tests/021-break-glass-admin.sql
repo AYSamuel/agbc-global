@@ -17,16 +17,31 @@
 -- it was wrong, and a suite that checked behaviour without checking attribution had nothing to
 -- say about it. Test 7 is the counterweight, and it also stays green either way, which is how it
 -- proves the fix is narrow rather than a blanket "credit nobody".
+--
+-- THE IDENTITY CHANGED HANDS 2026-09-11 (`20260911120000`): out `oami.gospel@gmail.com`, in
+-- `agbc.noreply@gmail.com`, on Ayo's decision. Tests 3 to 7 still run and still matter, because
+-- what they prove is the MECHANISM: an allowlisted address is promoted on signup, and that
+-- promotion is credited to the server rather than to the person receiving it. The incoming
+-- admin depends on both. They now run against a fixture address of this file's own making,
+-- because using the live one quietly coupled "does the mechanism work" to "who is an admin
+-- today", and the swap is what exposed that coupling.
+--
+-- Tests 1 and 8 are the ones that had to change, and they are the reason this file had to be
+-- opened at all: pinning the allowlist as an exact set is what makes changing who holds admin a
+-- deliberate act that has to come past a review, rather than a quiet one.
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(8);
 
 -- --- the allowlist ---------------------------------------------------------------------
 
+-- The urgent half of the swap. `bootstrap_admins` sits outside `profiles`' cascade, so erasing
+-- that account on 2026-09-11 did NOT remove its licence: until the migration ran, anyone
+-- signing up with the old address was promoted straight back to admin.
 select is(
   (select count(*)::int from public.bootstrap_admins
     where email = 'oami.gospel@gmail.com'),
-  1, 'the break-glass address is on the allowlist');
+  0, 'the outgoing address is off the allowlist, so a re-signup cannot re-promote it');
 
 -- The primary key check is `email = lower(email)`, so a mixed-case row cannot exist and the
 -- allowlist cannot hold the same identity twice in different cases. Asserted because the
@@ -39,15 +54,21 @@ select is(
 -- Created exactly the way AUTH-3 creates it: the member's own row, under their own uid, with
 -- role pinned to member by the INSERT policy. The promotion then happens on top of that row.
 
+-- A fixture address, allowlisted by this test rather than by production. Before the retirement
+-- these tests used the live break-glass address, which quietly coupled "does the mechanism
+-- work" to "who is an admin today"; the first thing the retirement broke was that coupling.
+insert into public.bootstrap_admins (email, note)
+values ('t021-bootstrap@test.local', 'Fixture for 021: exercises the bootstrap promotion.');
+
 insert into auth.users (id, email) values
-  ('b0000000-0000-4000-8000-0000000000a1', 'oami.gospel@gmail.com');
+  ('b0000000-0000-4000-8000-0000000000a1', 't021-bootstrap@test.local');
 
 set local role authenticated;
 set local request.jwt.claims to
   '{"sub": "b0000000-0000-4000-8000-0000000000a1", "role": "authenticated", "user_role": "member"}';
 
 insert into public.profiles (id, email, display_name, branch_id, role, onboarded_at)
-values ('b0000000-0000-4000-8000-0000000000a1', 'oami.gospel@gmail.com', 'Break Glass',
+values ('b0000000-0000-4000-8000-0000000000a1', 't021-bootstrap@test.local', 'Bootstrap Fixture',
         '00000000-0000-4000-8000-000000000001', 'member', now());
 
 reset role;
@@ -118,10 +139,16 @@ reset request.jwt.claims;
 -- What the migration DOES guarantee is the allowlist, so that is what is pinned, as an exact set
 -- rather than a count. Adding or removing an admin grant is then a deliberate change that has to
 -- come past this assertion, which is the same reasoning as the grant-count tests in `019`.
+-- The live set, minus this file's own fixture row, which is inserted above and is not a grant
+-- anybody holds. Still exactly two identities after the swap, so the erasure lockout keeps a
+-- second key and broadcasts keep a second approver (`17`); what changed is WHICH address holds
+-- the second one. Asserted as an exact set rather than a count, so that both adding a grant and
+-- swapping one have to come past this line.
 select is(
-  (select string_agg(email, ',' order by email) from public.bootstrap_admins),
-  'aysamuel007@gmail.com,oami.gospel@gmail.com',
-  'the allowlist grants admin to exactly two identities, so the erasure lockout has a second key');
+  (select string_agg(email, ',' order by email) from public.bootstrap_admins
+    where email <> 't021-bootstrap@test.local'),
+  'agbc.noreply@gmail.com,aysamuel007@gmail.com',
+  'the allowlist grants admin to exactly two identities, the second one now the new break-glass address');
 
 select * from finish();
 rollback;
