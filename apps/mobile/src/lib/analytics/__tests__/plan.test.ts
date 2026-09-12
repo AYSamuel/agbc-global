@@ -24,7 +24,9 @@ describe('the v1 tracking plan', () => {
       (name) => EVENT_SOURCE[name].fires === 'deferred',
     );
 
-    // Six of them as of W2.10 slice 1: push (W3.3) and the Phase 4 plan/library surfaces.
+    // Six of them at W2.10 slice 1; four now. The three push events landed with W3.3/W3.5,
+    // and `content_shared` joined at W4.15, which is the register doing its job: the set
+    // shrinks as items ship and grows when a new surface is agreed before it is built.
     expect(deferred.length).toBeGreaterThan(0);
     for (const name of deferred) {
       const source = EVENT_SOURCE[name];
@@ -42,6 +44,10 @@ describe('the v1 tracking plan', () => {
     expect(names).toContain('testimony_approved');
     expect(names).toContain('reader_opened');
     expect(names).toContain('broadcast_received');
-    expect(names).toHaveLength(24);
+    // W4.15. The app's only organic growth surface, and it went unmeasured from launch
+    // until somebody asked whether sharing works; spot-checked here so it cannot be
+    // dropped as quietly as it was missing.
+    expect(names).toContain('content_shared');
+    expect(names).toHaveLength(25);
   });
 });

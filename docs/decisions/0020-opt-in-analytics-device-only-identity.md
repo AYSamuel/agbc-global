@@ -39,6 +39,34 @@ The consoles turned out to constrain the shape. PostHog's free plan allows **one
 
 Also settled while collecting the values: **three Sentry projects** (`agbc-mobile` react-native, `agbc-dashboard` nextjs, `agbc-edge` deno) in the `agbc-app` org, each created with error monitoring only, no tracing/replay/profiling/logging products. All three DSNs ingest at `ingest.de.sentry.io`, which verifies the EU-storage claim in `credentials.md` rather than trusting it. The mobile Sentry DSN is deliberately absent from local dev: the free tier is 5k errors a month and local crash noise would spend it on nothing.
 
+## Amendment, 2026-09-12 (`content_shared`, the first event added since v1)
+
+Decision 5 makes an unlisted product event out of scope, so adding one is a decision at this
+level rather than a detail of the item that wants it. **W4.15 turns nine text shares into
+picture shares, and there has never been a share event at all**, which means the app's only
+organic growth surface has been unmeasured since launch. The wedge is "belonging made
+visible"; a testimony leaving the app for somebody's WhatsApp is that wedge working, and it
+was invisible.
+
+**One event, `content_shared`, carrying `content_kind` and `sent_as`.** Both are closed
+unions rather than strings, and the app asserts at compile time that every kind it can share
+appears in the first, exactly as `assertGateActionsCovered` already does for gates.
+
+`sent_as` is deliberately a three-way (`image` / `text` / `text_after_failure`) rather than a
+format plus a `fell_back` boolean, because **the two text cases are different facts**: one is
+a member preferring words, which is a verdict on the feature, and the other is a member being
+handed words because the capture failed, which is a verdict on the build. A boolean pair
+would let a call site record both at once; a union cannot. The third value is also the only
+monitoring this item gets for a failure mode that no test in this repo can see, since
+rasterising a view is native work on hardware we do not own.
+
+Rejected: a second event for opening the preview sheet and abandoning it. The sheet is one tap
+from a card, so most of its abandonment is a mis-tap rather than a decision, and decision 5's
+restraint is worth more than the number.
+
+Nothing fires yet. `EVENT_SOURCE` names W4.15 as the owner, which is the same contract the
+three remaining deferred events keep.
+
 ## Consequences
 
 - `20` amended: the lawful-basis row for crash reporting, and §Consent mechanics restated to match decisions 1-4. `22` §5 gains a note that lifecycle events supply the MAU denominator. `21` §6.1 gains the DSN/scrubbing shape. `25`'s W2.10 entry records the slicing.
