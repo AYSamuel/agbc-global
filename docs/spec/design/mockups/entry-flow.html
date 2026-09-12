@@ -971,6 +971,201 @@
      ahead, never a locked achievement. */
   .mbadge.up .mi{background:var(--alt);color:var(--muted)}
   .mbadge.up .ml{color:var(--muted)}
+
+  /* ---- W4.15 · Share as a picture ---------------------------------------------------- */
+  /* THE CARD IS NOT THEME-AWARE, and this is the one rule to carry out of here. Every
+     other surface in this file has a light and a dark half because a member is looking
+     at it inside our app. A share card is a PNG that leaves the app: it lands in
+     somebody else's WhatsApp, on somebody else's phone, in somebody else's theme, and
+     it has to look the same in all of them. So every colour below is a literal, never a
+     var(), and the dark gallery at the foot of this section shows the SAME cards on
+     purpose rather than by oversight. `.verse` set this precedent already: a constant
+     cream scripture card in both themes, and VerseCard.tsx says so in its header.
+     DRAWN AT 360x360 FOR 1080x1080, so one css px here is three real ones. Type sizes
+     below are therefore a third of what ships: the 25px quote is 75px on the real card,
+     and the 11px url is 33px, which is the floor worth having at thumbnail size in a
+     chat list. */
+  .sc{width:360px;height:360px;border-radius:20px;overflow:hidden;position:relative;
+      display:flex;flex-direction:column;justify-content:space-between;padding:27px 26px;
+      font-family:var(--font);flex:none}
+  /* Every card opens the same way: a 16px gold stroke icon and an uppercase label saying
+     what kind of thing this is. Lifted wholesale from `.verse .row1`, so the family of
+     cards is held together by a row the app already draws. */
+  .sc .scrow1{display:flex;align-items:center;gap:8px;position:relative}
+  .sc .sceye{font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}
+  .sc .scmid{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 0}
+  .sc .scq{font-family:var(--disp);font-weight:700;font-size:25px;line-height:1.34;letter-spacing:-.015em}
+  .sc .scq.sm{font-size:21px;line-height:1.4}
+  /* The third rung of the auto-fit ladder, and the last: 18/63/54 here is 54 real px.
+     Below this the card stops shrinking and starts cutting, because a 1080 square read
+     as a thumbnail in a chat list has a floor. */
+  .sc .scq.xs{font-size:18px;line-height:1.45}
+  /* Said only when the words were actually cut. Gold, so it reads as the one thing on
+     the card worth acting on, and honest, so a forwarded testimony never pretends to be
+     complete. */
+  .sc .scmore{font-size:11.5px;font-weight:800;letter-spacing:.03em;color:#ffcf4a;margin-top:11px}
+  /* A sentence under a title, where the title is not itself the whole message. The
+     milestone is the only card that needs one: its title names the milestone and the line
+     says what it meant, and the member's name then signs it. */
+  .sc .scline{font-size:13px;font-weight:600;line-height:1.45;margin-top:11px}
+  .sc .scby{font-size:13px;font-weight:800;margin-top:16px}
+  .sc .scby .b{font-weight:600;display:block;margin-top:3px;font-size:12px}
+  /* The footer is the whole reason this item needed a design decision. expo-sharing sends
+     a FILE and nothing else (SharingOptions is mimeType/dialogTitle/UTI/anchor), so on
+     Android no caption, no link and no app name can travel beside the picture. Anything a
+     stranger needs in order to find us has to be ON the card. Hence the mark and the
+     address, on every single one, at a size that survives a chat thumbnail. */
+  .sc .scfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding-top:13px;border-top:1px solid;position:relative}
+  .sc .scmark{display:flex;align-items:center;gap:9px;min-width:0}
+  .sc .scnames{display:flex;flex-direction:column;min-width:0}
+  /* THE QR IS THE ONLY THING ON THE CARD A RECIPIENT CAN ACT ON (Ayo, 2026-09-12, after
+     asking the right question: is the footer clickable?). It is not, and neither is
+     anything else, because the card is a PNG. The printed address carries the information
+     but not the route: somebody has to read it, leave the chat and type it. A QR is
+     scannable straight off the received image, by Lens on Android or the Photos app on
+     iOS, with nothing typed.
+     THE CAPTION ROUTE WAS CHECKED FIRST AND DOES NOT WORK. `expo-sharing` cannot send text
+     beside a file at all, and `react-native-share`, which can, hits WhatsApp prioritising
+     one over the other so the caption and the image fight. On the app this church actually
+     shares into, a clickable link beside the picture is not dependable, so the route has to
+     be IN the picture.
+     Dark modules are the brand navy on a WHITE ground in both themes, never the card's own
+     colours. This repo learned that the expensive way the same week (`4278341`, 2026-09-12):
+     the dashboard's MFA enrolment QR was black modules with no background of its own, so it
+     took the dark navy underneath it, and three enrolments failed to scan across two people
+     and six weeks before anybody read it as our bug rather than as a quirk of Google
+     Authenticator. Its conclusion is this one: a QR is a machine-readable target, not a
+     themed element, so it takes a fixed light surface whatever is around it. Navy on white
+     still measures about 14:1 and scans anywhere; a QR tinted to match the card would look
+     better and read worse, which is the wrong trade for the only element here with a job.
+     NO NEW NATIVE MODULE: `react-native-qrcode-svg` is pure JavaScript over
+     `react-native-svg`, already linked here for the map, so this costs no extra EAS build
+     on top of the two W4.15 already owes. The code below is REAL and encodes
+     https://agbcglobal.com, so the frame can be scanned rather than taken on trust.
+     SIZED BY ARITHMETIC, AND IT IS TIGHTER THAN IT LOOKS. 46px drawn is 138px on the real
+     1080 card, and this code is 25 modules plus a 4-module quiet zone each side, so a
+     module is 4.2px. That is comfortable at full size and it is NOT what a recipient gets:
+     chat apps recompress, and at an 800px downscale the module falls to 3.1px, which is at
+     or under what a scanner can resolve. Drawn bigger than the footer really wants for
+     exactly that reason.
+     IF IT PROVES UNSCANNABLE ON A REAL FORWARDED IMAGE, the lever is the URL rather than
+     the size: 14 bytes or fewer encodes as a 21-module version 1 instead of 25, which is
+     14% bigger modules at no cost in card space. `agbcglobal.com` without the scheme is
+     exactly 14. That is the fallback, not the default, because an explicit https:// is the
+     more reliably parsed of the two and reliability is this element's whole job.
+     THIS CANNOT BE SETTLED FROM A DESKTOP. The acceptance test is scanning the card after
+     it has been through WhatsApp, not scanning the PNG we produced. */
+  .sc .scqr{width:46px;height:46px;flex:none;border-radius:5px;background:#fff center/contain no-repeat url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2033%2033%22%20shape-rendering%3D%22crispEdges%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M0%200h33v33H0z%22%2F%3E%3Cpath%20stroke%3D%22%2314213d%22%20d%3D%22M4%204.5h7m3%200h1m2%200h3m2%200h7M4%205.5h1m5%200h1m1%200h1m2%200h6m1%200h1m5%200h1M4%206.5h1m1%200h3m1%200h1m2%200h1m4%200h1m1%200h1m1%200h1m1%200h3m1%200h1M4%207.5h1m1%200h3m1%200h1m3%200h3m2%200h1m2%200h1m1%200h3m1%200h1M4%208.5h1m1%200h3m1%200h1m1%200h2m2%200h4m2%200h1m1%200h3m1%200h1M4%209.5h1m5%200h1m2%200h1m4%200h2m2%200h1m5%200h1M4%2010.5h7m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h7M13%2011.5h2m1%200h2M4%2012.5h1m1%200h1m1%200h1m1%200h1m2%200h2m1%200h2m2%200h1m3%200h1m2%200h1M4%2013.5h3m1%200h1m4%200h5m2%200h3m5%200h1M6%2014.5h2m1%200h2m1%200h1m1%200h1m1%200h3m2%200h4m1%200h3M6%2015.5h3m3%200h1m1%200h5m1%200h1m1%200h2m3%200h1M7%2016.5h1m2%200h1m2%200h3m1%200h1m1%200h4m2%200h1m1%200h2M5%2017.5h1m1%200h2m2%200h2m2%200h1m4%200h3m2%200h1m2%200h1M4%2018.5h1m2%200h1m2%200h4m3%200h1m2%200h1m1%200h2m2%200h3M5%2019.5h2m1%200h1m2%200h2m2%200h1m1%200h6m1%200h1m2%200h1M4%2020.5h1m3%200h6m2%200h2m1%200h7M12%2021.5h1m2%200h2m2%200h2m3%200h2m1%200h2M4%2022.5h7m2%200h1m1%200h2m2%200h2m1%200h1m1%200h2m1%200h2M4%2023.5h1m5%200h1m5%200h3m1%200h1m3%200h2m1%200h2M4%2024.5h1m1%200h3m1%200h1m1%200h1m1%200h2m2%200h1m1%200h6m1%200h2M4%2025.5h1m1%200h3m1%200h1m2%200h3m4%200h1m2%200h4M4%2026.5h1m1%200h3m1%200h1m1%200h1m4%200h1m1%200h2m3%200h1m3%200h1M4%2027.5h1m5%200h1m3%200h2m3%200h3m2%200h2m1%200h1M4%2028.5h7m1%200h1m3%200h1m2%200h3m1%200h1m3%200h2%22%2F%3E%3C%2Fsvg%3E")}
+  .sc .scmk{width:27px;height:27px;border-radius:8px;background:#ffcf4a;color:#14213d;
+      display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:16px;flex:none}
+  .sc .scwm{font-family:var(--disp);font-weight:800;font-size:13.5px;letter-spacing:-.01em;white-space:nowrap}
+  .sc .scurl{font-size:10.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;margin-top:1px}
+
+  /* VERSE · the cream card, scaled. Values are `.verse`'s own, so the picture a member
+     sends is recognisably the card they tapped. */
+  .sc.sc-cream{background:linear-gradient(135deg,#fbf3dd,#f5e8ce);border:1px solid #eeddb5}
+  .sc.sc-cream .sceye{color:#866100}
+  .sc.sc-cream .scq{color:#2b2517}
+  .sc.sc-cream .scby{color:#7a5b12}
+  .sc.sc-cream .scfoot{border-top-color:#e3d1a6}
+  .sc.sc-cream .scwm{color:#2b2517}
+  .sc.sc-cream .scurl{color:#74602f}
+
+  /* INK · testimony, prayer, branch. The app's own band colour, so a forwarded testimony
+     still looks like it came from here. */
+  .sc.sc-ink{background:linear-gradient(150deg,#1e2f52,#0e1420)}
+  .sc.sc-ink .sceye{color:#ffcf4a}
+  .sc.sc-ink .scq{color:#ffffff}
+  .sc.sc-ink .scby{color:#e4c98a}
+  .sc.sc-ink .scby .b{color:#95a1b7}
+  .sc.sc-ink .scfoot{border-top-color:rgba(255,255,255,.16)}
+  .sc.sc-ink .scwm{color:#ffffff}
+  .sc.sc-ink .scurl{color:rgba(255,255,255,.62)}
+
+  /* PHOTO · a testimony photo, an event picture or message artwork carries the card, with
+     the same bottom-up scrim `.photo::before` uses on the onboarding hero. Stronger here
+     than there, because text sits lower down and the picture underneath is one nobody has
+     seen yet. */
+  .sc.sc-photo{background:linear-gradient(155deg,#4a5a72,#1b2536)}
+  .sc.sc-photo::before{content:"";position:absolute;inset:0;
+      background:linear-gradient(180deg,rgba(14,20,32,.30) 0%,rgba(14,20,32,.62) 42%,rgba(14,20,32,.94) 100%)}
+  /* Content sits at the FOOT of a photo card, never centred. The scrim is 62% at the
+     middle and 94% at the bottom, and the picture underneath is one nobody has seen yet,
+     so white text goes where the ground is guaranteed dark. Centred was drawn first and
+     the render showed both the risk and a dead gap under the words. */
+  .sc.sc-photo .scmid{justify-content:flex-end}
+  .sc.sc-photo .sceye{color:#ffcf4a}
+  .sc.sc-photo .scq{color:#ffffff}
+  .sc.sc-photo .scby{color:#e4c98a}
+  .sc.sc-photo .scby .b{color:#c2cad8}
+  .sc.sc-photo .scfoot{border-top-color:rgba(255,255,255,.22)}
+  .sc.sc-photo .scwm{color:#ffffff}
+  .sc.sc-photo .scurl{color:rgba(255,255,255,.68)}
+  .sc.sc-photo .phlabel{position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;
+      color:rgba(255,255,255,.45);letter-spacing:.06em;z-index:2}
+
+  /* GOLD · the milestone alone. Nothing else in the app is gold-ground at this size, and
+     that is the point: a milestone is the one card that is purely glad.
+     CONTRAST PASS, 2026-09-12, and it caught three of this section's own colours. A gold
+     ground is the brightest surface in the app, so text on it has to go much darker than
+     the same text on cream, and eyeballing it does the opposite: the card looks so legible
+     that nothing prompts you to measure. Measured against the gradient's DARKER end
+     (#f0b21f), the kicker was 3.33:1, the branch line 3.77 and the url 3.77, all under
+     WCAG 1.4.3's 4.5 for text at these sizes and all now at 4.78. The cream card's url was
+     3.72 for the same reason and is 5.01. W4.7 ran exactly this pass over the app and it
+     did not reach here, because this section did not exist yet. */
+  .sc.sc-gold{background:linear-gradient(140deg,#ffd968,#f0b21f)}
+  .sc.sc-gold .sceye{color:#5a4614}
+  .sc.sc-gold .scq{color:#14213d}
+  .sc.sc-gold .scline{color:#4a3c14}
+  .sc.sc-gold .scby{color:#14213d}
+  .sc.sc-gold .scby .b{color:#5a4614}
+  .sc.sc-gold .scfoot{border-top-color:rgba(20,33,61,.22)}
+  .sc.sc-gold .scmk{background:#14213d;color:#ffcf4a}
+  .sc.sc-gold .scwm{color:#14213d}
+  .sc.sc-gold .scurl{color:#5a4614}
+
+  /* A testimony is marked as a quotation with REAL curly quotes in the text, the way
+     `.testi .body` and `testimonyShareText()` already do it, and not with a decorative
+     glyph behind the words. An oversized open quote was drawn here first and removed on
+     sight of the render: at any alpha that stayed subtle it read as a grey smudge over the
+     navy, and at any alpha that read as a quote it fought the words. A prayer request gets
+     no quotes at all, because it is not a quotation, it is somebody asking. */
+
+  /* The ask on a prayer card. A quiet line, not a button: a picture has no controls, and
+     drawing one that cannot be pressed is a lie the card tells in every chat it lands in. */
+  .sc .scask{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;
+      letter-spacing:.02em;color:#ffcf4a;margin-top:15px}
+
+  /* EVENT · the date block, and the service rows a branch card lists. */
+  .sc .scdate{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+      width:64px;padding:8px 0 9px;border-radius:12px;background:#ffcf4a;color:#14213d;margin-bottom:14px}
+  .sc .scdate .d{font-family:var(--disp);font-weight:800;font-size:25px;line-height:1}
+  .sc .scdate .m{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+  .sc .scrows{margin-top:15px;display:flex;flex-direction:column;gap:7px}
+  .sc .scrows div{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;color:#c8d1e0}
+  .sc .scrows svg{flex:none;color:#ffcf4a}
+  .sc .scrows b{font-weight:800;color:#ffffff}
+
+  /* SERMON · the play disc, the app's gold disc at the size a 1080 card can carry. */
+  .sc .scplay{width:52px;height:52px;border-radius:50%;background:#ffcf4a;color:#14213d;
+      display:grid;place-items:center;margin-bottom:15px;box-shadow:0 0 0 9px rgba(255,207,74,.16)}
+
+  /* ---- SHARE-PREVIEW · the sheet ----------------------------------------------------- */
+  /* The card at 0.65, which is 234px here and the full 1080 on the phone. It is shown whole
+     and never cropped: the member is being asked to approve exactly what leaves the app, and
+     a preview that hides an edge is not a preview. */
+  .scwrap{width:234px;height:234px;margin:0 auto 16px;position:relative;border-radius:13px;
+      overflow:hidden;box-shadow:0 10px 26px -12px rgba(20,33,61,.5)}
+  .scwrap .sc{transform:scale(.65);transform-origin:top left;border-radius:20px}
+  .scwrap.sk{background:var(--alt);border:1px solid var(--border);display:grid;place-items:center;box-shadow:none}
+  .scwrap.sk .sktext{font-size:12.5px;font-weight:700;color:var(--muted)}
+  .sharesheet .kindline{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+      color:var(--muted);margin-bottom:14px}
+  .sharesheet .failnote{display:flex;gap:9px;text-align:left;background:var(--alt);border-radius:12px;
+      padding:12px 13px;margin-bottom:14px;font-size:12.5px;line-height:1.45;color:var(--sub)}
+  .sharesheet .failnote svg{flex:none;margin-top:1px;color:var(--red)}
 </style>
 
 <main class="stage">
@@ -2554,6 +2749,479 @@
   <div class="gallery t-dark" id="w410Dark"></div>
   <script>(function(){var l=document.getElementById('w410Light'),d=document.getElementById('w410Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
+
+
+  <h2 class="ghead" id="w415">&#128247; W4.15 &middot; Share as a picture &middot; light</h2>
+  <p class="flow">FLOW &nbsp;&middot;&nbsp; <b>Share</b> (anywhere in the app) &#8594; <b>SHARE-PREVIEW</b>, the card you are about to send &#8594; <b>Share</b> hands the PNG to the OS sheet &nbsp;|&nbsp; <b>Send as text instead</b> is the old behaviour, kept on every sheet &nbsp;|&nbsp; the picture cannot be made &#8594; the sheet says so and offers text.</p>
+  <p class="alwayson" style="padding:0 20px 10px">Nine places in the app say <b>Share</b> and all nine send plain text today. This section draws what they send instead. <b>Three things decided with Ayo on 2026-09-12.</b> <b>A preview sheet rather than a silent hand-off:</b> a picture of somebody's prayer request is not a thing to send without being shown it first, and the sheet is also the only place a text fallback can live. <b>Square only, 1080x1080:</b> it survives a WhatsApp chat, a WhatsApp status, an Instagram feed and a Facebook post, where a 9:16 story card is cropped hard by the most common share of all. <b>The footer carries the mark and the address on every card,</b> and that is forced rather than chosen: <code>expo-sharing</code> sends a file and nothing else (its whole options type is <code>mimeType</code>, <code>dialogTitle</code>, <code>UTI</code>, <code>anchor</code>), so on Android no caption, no link and no app name can travel beside the picture. Whatever a stranger needs in order to find us has to be printed on the card itself. <b>And the cards are not theme-aware,</b> which is the rule to carry out of here: they leave the app, so the dark gallery below shows the same eleven cards on purpose. <b>Two costs stated up front.</b> This needs <code>react-native-view-shot</code> and <code>expo-sharing</code>, two native modules, so it trips the dev-client fence and owes an EAS rebuild before it can be seen on a device. And a picture cannot be read by a screen reader or translated by the person who receives it, which is why <b>Send as text instead</b> is on every sheet rather than being a fallback for failures: <code>09</code> line 73 makes OS-share translation the v1 answer for a post written in a language the reader does not speak, and an image would quietly take that away.</p>
+  <div class="gallery t-light" id="w415Light">
+
+      <!-- CARD - daily verse. THE ONE THE SPEC ALREADY PROMISED: `07` line 54 ("Share
+           renders a branded verse image/text") and line 40, which chose the World English
+           Bible precisely so that storing the text and putting it on a branded picture is
+           licensing-clean. VerseCard.tsx has carried the deferral note in its header since
+           W1.2 and named the blocker correctly.
+           It is `.verse` scaled up rather than a new design, deliberately: the member taps
+           a cream card and a cream card is what lands in the chat. If a licensed
+           translation is ever adopted, `07` line 40 says an attribution line arrives here
+           as well as on the card in the app. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; daily verse (1080 &times; 1080, drawn at a third)</p>
+        <div class="sc sc-cream">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="sceye">Verse of the day</span></div>
+          <div class="scmid">
+            <div class="scq">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+            <div class="scby">Philippians 4:19 &middot; WEB</div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a testimony, no photo. The wedge, so this is the card that has to travel
+           best. The oversized open quote is decorative and sits BEHIND the words; the
+           attribution is the author's display name and their branch, which is exactly what
+           `testimonyShareText()` already puts in the text share, so nothing new about a
+           person is disclosed by moving to a picture.
+           This card is also the OFFLINE and the photo-failed fallback for the card beside
+           it: a testimony's photo lives in a remote bucket, and when it cannot be fetched
+           the card is composed without it rather than the share failing. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a testimony (also the fallback when a photo will not load)</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
+          <div class="scmid">
+            <div class="scq">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+            <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a testimony that carries a photo. The picture the author attached becomes
+           the ground, under the same bottom-up scrim `.photo::before` uses on the
+           onboarding hero, only stronger: the words sit low and the photograph underneath
+           is one nobody has seen yet.
+           NOTE WHAT THIS DOES NOT CHANGE. The photo is already public on an approved
+           testimony and already went through the photo consent version
+           (`content-share-photo-v1`, `20` §Photos), so putting it on the share card
+           discloses nothing the feed does not. What WOULD be new is a photo on a card for
+           a post that never carried one, and there is no path to that here. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a testimony with its photo</p>
+        <div class="sc sc-photo">
+          <span class="phlabel">PHOTO</span>
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
+          <div class="scmid">
+            <div class="scq sm">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+            <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a long testimony. THE STATE THAT FORCED A RULE, and it is not an edge
+           case: `09` line 26 lets a testimony run to 2000 characters and a prayer request
+           to 1000, and nothing near that fits on a 1080 square at a size anyone can read in
+           a chat list. Something had to give, and the choice was made here rather than
+           discovered on a device.
+           THE CARD AUTO-FITS FIRST, THEN TELLS THE TRUTH. The quote steps down through
+           three display sizes (75 / 63 / 54 real px) looking for one that fits, and only
+           when the smallest still overflows does it cut, on a word boundary, and say so.
+           THE CUT LANDS NEAR 190 CHARACTERS, and that number was measured rather than
+           chosen: the first draft of this frame asserted a longer one, rendered, and
+           pushed its own footer off the bottom of the card. Five lines at the smallest
+           size is what a 1080 square holds once the kicker, the cut line, the attribution
+           and the footer have taken their share. The build fits by measuring the laid-out
+           text, not by counting characters; 190 is the sanity check, not the mechanism.
+           A truncated quote that pretends to be the whole thing is the one outcome not
+           allowed: this is somebody's testimony, and a card that silently ends it
+           mid-thought misrepresents them to everyone who receives it.
+           THE CUT LINE IS GOLD AND SAYS WHERE THE REST IS, which is also the only growth
+           surface on any of these cards that a member actually wants to tap.
+           AND THE CARD NEVER FOLLOWS THE DEVICE FONT SCALE. Every other surface in this
+           app scales to 200% and must (`05`, and the house rule), but this one is a fixed
+           1080 canvas: at 200% the words would simply leave the picture. So the card
+           renders with font scaling OFF and fits by the ladder above instead. The
+           member's own accessibility settings are honoured by the other button on the
+           sheet: "Send as text instead" produces text their reader can size, read aloud
+           and translate. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a long testimony (auto-fit, then cut, and it says so)</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
+          <div class="scmid">
+            <div class="scq xs">&#8220;For eight months I applied and heard nothing back. Somewhere in the fifth month I stopped praying altogether, and the family here kept praying when I could not. In June a job came, and&hellip;</div>
+            <div class="scmore">Read it all in the app</div>
+            <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a prayer request, named. FLAGGED TO AYO BEFORE IT WAS INCLUDED and chosen
+           with the flag read (2026-09-12): a prayer request can carry Article 9 health
+           data (`20`), and a picture travels further than text and cannot be edited back.
+           What the design does about that: no Glory count, no reaction, no date, nothing
+           the text share does not already carry, and the ask is a LINE rather than a
+           button, because a picture has no controls and drawing one that cannot be pressed
+           is a lie the card tells in every chat it lands in.
+           The open quote is deliberately absent here, unlike the testimony beside it. A
+           prayer request is not a quotation. It is somebody asking. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a prayer request</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span class="sceye">Prayer request</span></div>
+          <div class="scmid">
+            <div class="scq sm">Please pray for my mother&#39;s surgery on Thursday, and for peace at home while we wait.</div>
+            <div class="scask"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg> Will you pray?</div>
+            <div class="scby">Daniel A.<span class="b">AGBC Emmen</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a prayer request posted anonymously. THE BRANCH IS GONE, and that is a
+           deliberate departure from what the app shows in its own feed, recorded here so
+           the next session does not "fix" it back.
+           In the app an anonymous request reads "A member" and sits inside a branch-scoped
+           feed the reader already had to be in. On a card that gets forwarded, naming the
+           branch narrows an anonymous, possibly medical request to one congregation of a
+           few dozen people, which is most of the way to naming the author. The request
+           keeps its words, "A member" keeps its promise, and nothing else is printed.
+           "A member" is `family:aMember`, the same words the compose screen offers
+           ("Post anonymously as A member") and the same words a departed author's kept
+           post carries, so the card never reveals WHICH kind of anonymity this is. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a prayer request, posted anonymously (no branch)</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span class="sceye">Prayer request</span></div>
+          <div class="scmid">
+            <div class="scq sm">Pray for me. I have been carrying something heavy for a long time and I am tired.</div>
+            <div class="scask"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg> Will you pray?</div>
+            <div class="scby">A member</div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - an event, with the picture a leader gave it. The `event-images` bucket has
+           existed since W3.5 and is public-read, so the card can use the real thing. This
+           is the one card that is doing a job the church already does by hand: somebody
+           makes a flyer for every event and posts it into WhatsApp. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; an event, with its picture</p>
+        <div class="sc sc-photo">
+          <span class="phlabel">EVENT PICTURE</span>
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span class="sceye">You&#39;re invited</span></div>
+          <div class="scmid">
+            <div class="scdate"><div class="d">24</div><div class="m">Aug</div></div>
+            <div class="scq sm">Night of Worship</div>
+            <div class="scby">Saturday &middot; 7:00 PM<span class="b">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - an event with no picture. A SURFACE IS A STATE (house rule): most events
+           will not have artwork, so this is the common case and not the edge one. The
+           gradient is the same ink the player falls back to for a message with no artwork,
+           so the app has one answer to "there is no picture" rather than three. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; an event with no picture (the common case)</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span class="sceye">You&#39;re invited</span></div>
+          <div class="scmid">
+            <div class="scdate"><div class="d">24</div><div class="m">Aug</div></div>
+            <div class="scq sm">Night of Worship</div>
+            <div class="scby">Saturday &middot; 7:00 PM<span class="b">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a message. The artwork rule is the one W3.1 slice 5 and W4.9 already
+           settled and this card simply obeys: the message's own artwork if it has any,
+           else the YouTube thumbnail, else the branded gradient. Three sources, one
+           order, already implemented for the player, the rails, MY-LIST and the lock
+           screen, and now for this.
+           The gold disc says "there is something to listen to here" without pretending to
+           be a control. It is the app's own disc, at the size a 1080 card can carry. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a message</p>
+        <div class="sc sc-photo">
+          <span class="phlabel">ARTWORK</span>
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span class="sceye">Message</span></div>
+          <div class="scmid">
+            <div class="scplay"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.86l11.14-6.86a1 1 0 0 0 0-1.72L9.52 4.28A1 1 0 0 0 8 5.14z"/></svg></div>
+            <div class="scq sm">Grace for the Journey</div>
+            <div class="scby">Pastor Esther Olayinka<span class="b">38 min &middot; AGBC Glasgow</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a branch. The only card whose whole job is to get a stranger through a
+           door, so it is the one that most needs the address printed on it, and the one
+           that would have been useless as a text share nobody reads.
+           Service times come from `branch_services` and are rendered with the branch's own
+           `service_times` strings, which is why the midweek line is in German here: `02`
+           stores what the branch wrote, and Berlin wrote "Mittwochs 19:00 Uhr". Do not
+           translate it on the card. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a branch</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span class="sceye">Come and visit</span></div>
+          <div class="scmid">
+            <div class="scq sm">AGBC Lighthouse Berlin</div>
+            <div class="scrows">
+              <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span><b>Sundays 11:00 AM</b></span></div>
+              <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Mittwochs 19:00 Uhr</span></div>
+              <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span>Oudenarder Str. 16, 13347 Berlin</span></div>
+            </div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD - a milestone. The only gold-ground card, and that is the point: it is the
+           one card that is purely glad. `10` says milestones are "purely positive" and the
+           house rule says grace-framed, encourage and never shame, which on a card that
+           gets forwarded means the words have to be about the FAMILY rather than about the
+           member's performance. "Twelve weeks with my church family" and not "12 week
+           streak". No number badge, no rank, nothing anyone else could fall short of.
+           First person, because unlike every other card here the member is the subject
+           rather than the messenger. Title and body are `rhythm:celebrateTwelveWeekTitle`
+           and the share line, which already read this way.
+           THE MEMBER'S NAME IS ON IT, and it is their FULL profile name rather than the
+           "Sarah O." shape every other card uses (Ayo, 2026-09-12). The difference is not
+           an inconsistency, it is the one card where the subject and the sharer are always
+           the same person: a testimony card carries a name belonging to somebody who may
+           never have chosen to send it, so it gets the feed's abbreviated `author_name`,
+           while a milestone can only ever be shared by the person it happened to. There is
+           no third party to protect here, and a name the member is giving about themselves
+           is theirs to give in full. It reads as a signature, which is what it is.
+           The line under the title is `.scline` rather than more `.scby`, so the sentence
+           and the signature are two things instead of one run-on. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a milestone</p>
+        <div class="sc sc-gold">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a5b12" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg><span class="sceye">A milestone</span></div>
+          <div class="scmid">
+            <div class="scq">A season with us</div>
+            <div class="scline">Twelve weeks with my church family.</div>
+            <div class="scby">Ayo Samuel<span class="b">AGBC Lighthouse Berlin</span></div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHARE-PREVIEW - ready. ONE SHEET FOR ALL NINE SHARE POINTS: the card changes, the
+           chrome never does, so there is one screen to build and one to keep.
+           WHY A SHEET AND NOT A SILENT HAND-OFF. Every other app-level ask here is a sheet
+           with one decision and an action (the gate, the notification ask, the analytics
+           ask, the update notice), and this is the same shape. It also has to exist for two
+           reasons that have nothing to do with taste: the member should see a picture of
+           their own prayer request before it leaves, and a text fallback needs somewhere
+           to live.
+           "SEND AS TEXT INSTEAD" IS NOT A FAILURE PATH. It is here on the happy sheet, on
+           purpose, because a picture cannot be read aloud by a screen reader and cannot be
+           translated by the person receiving it, and `09` line 73 makes OS-share
+           translation the v1 answer for a post in a language the reader does not speak.
+           A ghost button rather than a link so it is a real 44dp target. -->
+      <div class="device">
+        <p class="name"><b>SHARE-PREVIEW</b> &middot; ready (from the verse card on Home)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Lighthouse Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Share</span></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet sharesheet">
+            <div class="grab"></div>
+            <div class="kindline">Share this verse</div>
+            <div class="scwrap">
+              <div class="sc sc-cream">
+                <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="sceye">Verse of the day</span></div>
+                <div class="scmid">
+                  <div class="scq">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+                  <div class="scby">Philippians 4:19 &middot; WEB</div>
+                </div>
+                <div class="scfoot">
+                  <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+                  <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+                </div>
+              </div>
+            </div>
+            <button class="btn primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg> Share</button>
+            <button class="btn ghost">Send as text instead</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHARE-PREVIEW - the same sheet, a different card. Drawn so the chrome can be
+           seen NOT changing: the only differences are the line at the top, which names what
+           is being shared, and the card in the window. Guests reach this sheet too, on
+           every surface a guest can already share from: sharing is not a contribution and
+           `share.ts` has never gated it. -->
+      <div class="device">
+        <p class="name"><b>SHARE-PREVIEW</b> &middot; the same sheet, a testimony (guests included)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="stitle"><h1>Family</h1></div>
+            <div class="seg"><button class="on">Testimonies</button><button>Prayer</button><button>Map</button></div>
+            <div class="testi">
+              <div class="who"><span class="av">S</span><div><div class="nm">Sarah O.</div><div class="mt">AGBC Glasgow &middot; 2h</div></div></div>
+              <div class="body">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+              <div class="acts"><span class="glory"><span class="st">&#10022;</span> Glory to God &middot; 14</span><span class="shr">Share</span></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet sharesheet">
+            <div class="grab"></div>
+            <div class="kindline">Share this testimony</div>
+            <div class="scwrap">
+              <div class="sc sc-photo">
+                <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
+                <div class="scmid">
+                  <div class="scq sm">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+                  <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
+                </div>
+                <div class="scfoot">
+                  <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+                  <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+                </div>
+              </div>
+            </div>
+            <button class="btn primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg> Share</button>
+            <button class="btn ghost">Send as text instead</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHARE-PREVIEW - preparing. THE LOADING STATE, and it is a real one rather than a
+           courtesy: the card has to be laid out off-screen, any remote picture has to be
+           fetched, and only then can it be rasterised. On a testimony with a photo over a
+           slow connection that is not instant.
+           THE SHARE BUTTON IS HIDDEN AND NOT DIMMED, which is the house rule from
+           2026-07-20: while a surface is loading, the primary action that operates on the
+           loading data is hidden rather than disabled, so there are no dead buttons under
+           skeletons. "Send as text instead" STAYS, because it does not need the picture and
+           it is the fastest way out for somebody who never wanted one.
+           THE SHEET THEREFORE GROWS BY ONE BUTTON when the card lands, and that is the
+           accepted cost of the hide-don't-dim rule rather than an oversight. The skeleton
+           is the card's exact size, so the only movement is the Share button arriving; the
+           alternative was reserving its space, which is a dead gap instead of a dead
+           button and says less. -->
+      <div class="device">
+        <p class="name"><b>SHARE-PREVIEW</b> &middot; preparing (Share is hidden, not dimmed)</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="stitle"><h1>Family</h1></div>
+            <div class="seg"><button class="on">Testimonies</button><button>Prayer</button><button>Map</button></div>
+            <div class="testi">
+              <div class="who"><span class="av">S</span><div><div class="nm">Sarah O.</div><div class="mt">AGBC Glasgow &middot; 2h</div></div></div>
+              <div class="body">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+              <div class="acts"><span class="glory"><span class="st">&#10022;</span> Glory to God &middot; 14</span><span class="shr">Share</span></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet sharesheet">
+            <div class="grab"></div>
+            <div class="kindline">Share this testimony</div>
+            <div class="scwrap sk"><span class="sktext">Getting it ready&hellip;</span></div>
+            <button class="btn ghost">Send as text instead</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHARE-PREVIEW - the picture could not be made. THE ERROR STATE, and the reason it
+           matters more here than on most screens: everything on this sheet is local work
+           (lay out, rasterise, write a file), so when it fails there is nothing to retry
+           against a server and no network to blame. It fails on a device that is out of
+           space, or on an OEM that refuses the capture.
+           The copy says what happened and what to do, never the error. And the way out is
+           the thing the app did for the last year anyway, promoted to the primary button:
+           the member came here to share something, and they still can. -->
+      <div class="device">
+        <p class="name"><b>SHARE-PREVIEW</b> &middot; the picture could not be made</p>
+        <div class="phone gatephone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen" aria-hidden="true">
+            <div class="stitle"><h1>Family</h1></div>
+            <div class="seg"><button class="on">Testimonies</button><button>Prayer</button><button>Map</button></div>
+            <div class="testi">
+              <div class="who"><span class="av">S</span><div><div class="nm">Sarah O.</div><div class="mt">AGBC Glasgow &middot; 2h</div></div></div>
+              <div class="body">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
+              <div class="acts"><span class="glory"><span class="st">&#10022;</span> Glory to God &middot; 14</span><span class="shr">Share</span></div>
+            </div>
+          </div>
+          <div class="gatedim"></div>
+          <div class="gatesheet sharesheet">
+            <div class="grab"></div>
+            <div class="kindline">Share this testimony</div>
+            <div class="failnote">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+              <span>We couldn&#39;t make the picture this time. You can still send it as words, and nothing is lost.</span>
+            </div>
+            <button class="btn primary">Send as text</button>
+            <button class="btn ghost">Try the picture again</button>
+          </div>
+        </div>
+      </div>
+
+  </div>
+
+  <h2 class="ghead">&#127769; W4.15 &middot; Share as a picture &middot; dark</h2>
+  <p class="alwayson" style="padding:0 20px 10px">The eleven cards are <b>identical</b> below and that is the design, not a copy-paste miss. A share card is a PNG in somebody else's chat app, so it has no theme to follow; only the sheet around it does. Read this gallery for the sheet.</p>
+  <div class="gallery t-dark" id="w415Dark"></div>
+  <script>(function(){var l=document.getElementById('w415Light'),d=document.getElementById('w415Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
 
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>

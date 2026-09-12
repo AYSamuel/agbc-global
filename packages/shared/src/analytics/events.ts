@@ -51,6 +51,29 @@ export type AnalyticsGateAction =
   | 'course_interest';
 
 /**
+ * What was shared out of the app (W4.15), one value per share-card design. The app holds
+ * the authority (its own `ShareKind`) and asserts at compile time that every kind it can
+ * share appears here, the way `assertGateActionsCovered` already does for gates, so adding
+ * a share surface without deciding what it is called in the funnel fails typecheck rather
+ * than shipping silently.
+ */
+export type AnalyticsShareKind =
+  | 'verse'
+  | 'testimony'
+  | 'prayer'
+  | 'event'
+  | 'sermon'
+  | 'branch'
+  | 'milestone';
+
+/**
+ * How the share actually left. `text` is a member who chose words over a picture;
+ * `text_after_failure` is a member who was given words because the picture could not be
+ * made. Never collapse the two: the first is a preference and the second is a defect.
+ */
+export type AnalyticsShareOutcome = 'image' | 'text' | 'text_after_failure';
+
+/**
  * Attached to every event by the client, from the live sources rather than a copy of them
  * (the app's one-visible-fact-one-owner rule). `branch_id` is the browsed branch, which is
  * not always the member's home branch, and that difference is the point of north star 3.
@@ -131,6 +154,27 @@ export interface AnalyticsEventProperties {
   broadcast_opened: NoProperties;
   notification_opened: { type: string };
   reader_opened: { format: 'pdf' | 'epub' };
+  /**
+   * Sharing content OUT of the app, from any of the nine places that offer it (W4.15).
+   * Cross-cutting rather than part of any one feature cluster, which is why it sits at the
+   * end: `content_kind` says which surface it came from.
+   *
+   * **`sent_as` is one three-way property rather than a format plus a `fell_back` flag, so
+   * the impossible state cannot be recorded.** The distinction it exists for is the third
+   * value: a member who CHOOSES words over a picture is telling us something about the
+   * feature, and a member who got words because the picture could not be made is telling
+   * us something about the build, and a boolean pair would let a call site claim both at
+   * once. If `text_after_failure` is anything but rare, the capture is broken on real
+   * devices in a way no test here can see.
+   *
+   * Deliberately NOT a second event for opening the preview sheet and abandoning it.
+   * ADR 0020 keeps the list tight and that number is worth less than it looks: the sheet
+   * is one tap from a card, so most of its abandonment is a mis-tap rather than a verdict.
+   */
+  content_shared: {
+    content_kind: AnalyticsShareKind;
+    sent_as: AnalyticsShareOutcome;
+  };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;
@@ -186,4 +230,8 @@ export const EVENT_SOURCE: Record<AnalyticsEventName, AnalyticsEventSource> = {
   broadcast_opened: { fires: 'app' },
   notification_opened: { fires: 'app' },
   reader_opened: { fires: 'deferred', owner: 'Phase 4 · library + reader' },
+  content_shared: {
+    fires: 'deferred',
+    owner: 'W4.15 · share as a picture',
+  },
 };
