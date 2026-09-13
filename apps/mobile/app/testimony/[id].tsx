@@ -16,19 +16,20 @@ import {
 import {
   AppHeader,
   Burst,
+  Button,
   EmptyState,
   GateSheet,
   GradientFill,
   LinkIcon,
   Screen,
   Skeleton,
-  WhatsAppIcon,
 } from '@/components/ui';
 import { initials, joinMeta } from '@/features/family/format';
 import { PostActionsMenu } from '@/features/family/PostActionsMenu';
 import { useTestimonyQuery } from '@/features/family/queries';
-import { shareToWhatsApp, testimonyShareText } from '@/features/family/share';
 import { TestimonyPhoto } from '@/features/family/TestimonyPhoto';
+import { testimonyShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useBranchColors } from '@/features/family/useBranchColors';
 import { useGloryPress } from '@/features/family/useGlory';
 import { useBranchNames } from '@/features/family/useBranchNames';
@@ -39,8 +40,8 @@ import { useTheme } from '@/theme';
 
 // TESTIMONY-DETAIL (mockup frame + docs/spec/09): the answered-prayer ribbon at
 // the top, a quote-mark tile, the body as a large display quote, the author with
-// an avatar below it, a big Glory pill, and a WhatsApp share. The ⋯ actions menu
-// (edit/delete for the author, report/block otherwise) landed with W2.6.
+// an avatar below it, a big Glory pill, and Share (the picture, since W4.15). The ⋯
+// actions menu (edit/delete for the author, report/block otherwise) landed with W2.6.
 const QUOTE_MARK = '“';
 
 export default function TestimonyDetail() {
@@ -53,6 +54,7 @@ export default function TestimonyDetail() {
   const query = useTestimonyQuery(id);
   const branchNames = useBranchNames();
   const branchColorFor = useBranchColors();
+  const shareSheet = useShareSheet();
   const testimony = query.data ?? null;
   const branchName = testimony
     ? (branchNames[testimony.branch_id] ?? null)
@@ -313,42 +315,21 @@ export default function TestimonyDetail() {
             </Text>
           </Pressable>
 
-          {/* Mockup .wabtn: green-tinted "Share to WhatsApp". Sharing is outbound,
-              so guests may do it (no gate). */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('family:shareToWhatsApp')}
+          {/* The plain Share PRAYER-DETAIL already draws (`.btn.outline`), opening the
+              preview sheet and then the OS sheet (W4.15 slice 2, Ayo 2026-09-13). This
+              was `.wabtn`, a green "Share to WhatsApp" that opened a wa.me link with the
+              words in it, and a wa.me link can only ever carry TEXT: it could not send
+              the picture every other Share now sends. Sharing is outbound, so guests may
+              do it (no gate). */}
+          <Button
+            label={t('family:share')}
+            variant="outline"
+            fullWidth
             onPress={() => {
-              void shareToWhatsApp(
-                testimonyShareText(
-                  testimony.body,
-                  joinMeta([authorName, branchName]),
-                  t('appName'),
-                ),
-              );
+              const share = testimonyShare(testimony, branchName, t('appName'));
+              shareSheet.open(share.content, share.fallbackText);
             }}
-            style={({ pressed }) => ({
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              paddingVertical: 14,
-              borderRadius: radius.control,
-              backgroundColor: tonal.green.bg,
-              opacity: pressed ? 0.85 : 1,
-            })}
-          >
-            <WhatsAppIcon size={icon.lg} color={palette.green} />
-            <Text
-              style={{
-                fontFamily: fontFamily.body.extraBold,
-                fontSize: 14.5,
-                color: palette.green,
-              }}
-            >
-              {t('family:shareToWhatsApp')}
-            </Text>
-          </Pressable>
+          />
         </View>
       )}
 
@@ -372,6 +353,7 @@ export default function TestimonyDetail() {
           setGateVisible(false);
         }}
       />
+      {shareSheet.element}
     </Screen>
   );
 }

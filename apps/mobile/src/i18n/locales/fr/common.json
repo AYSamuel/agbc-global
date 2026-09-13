@@ -109,9 +109,17 @@
   "cancel": "Annuler",
   "share": {
     "previewTitle": {
-      "verse": "Partager ce verset"
+      "verse": "Partager ce verset",
+      "testimony": "Partager ce témoignage",
+      "prayer": "Partager cette demande"
     },
     "previewAlt": "L'image que tu vas envoyer",
+    "kicker": {
+      "testimony": "Un témoignage",
+      "prayer": "Demande de prière"
+    },
+    "willYouPray": "Tu pries avec nous ?",
+    "readItAll": "Tout lire dans l'app",
     "share": "Partager",
     "sendAsTextInstead": "Envoyer plutôt en texte",
     "sendAsText": "Envoyer en texte",

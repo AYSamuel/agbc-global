@@ -29,6 +29,11 @@ jest.mock('react-native-qrcode-svg', () => {
   };
 });
 
+// The card can carry a testimony photo, which reaches the storage client. The verse has
+// none; the mock only stops the import constructing a real client (src/lib/supabase throws
+// without EXPO_PUBLIC_* config).
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+
 const VERSE: VerseShareContent = {
   kind: 'verse',
   text: 'And my God will supply every need of yours',
@@ -39,7 +44,7 @@ const VERSE: VerseShareContent = {
 async function renderCard(theme: ThemeName = 'light') {
   await render(
     <ThemeScope name={theme}>
-      <ShareCard content={VERSE} />
+      <ShareCard content={VERSE} onReady={() => undefined} />
     </ThemeScope>,
   );
 }
@@ -135,7 +140,7 @@ describe('the verse share card', () => {
 
     await screen.rerender(
       <ThemeScope name="dark">
-        <ShareCard content={VERSE} />
+        <ShareCard content={VERSE} onReady={() => undefined} />
       </ThemeScope>,
     );
     const dark: unknown = screen.getByText('Philippians 4:19 · WEB', HIDDEN)

@@ -417,7 +417,9 @@
      on the feed card, so "done" reads the same way in both places. */
   .glorybig.on{background:rgba(255,207,74,.20);border:1px solid var(--gold);color:var(--text);padding:13px}
   .glorybig.on .st{color:var(--gold);-webkit-text-stroke:.3px var(--navy)}
-  .wabtn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 40px);margin:0 20px;padding:14px;border-radius:13px;background:rgba(31,138,91,.12);color:var(--green);border:none;font-weight:800;font-size:14.5px;cursor:pointer}
+  /* `.wabtn`, the green "Share to WhatsApp" on TESTIMONY-DETAIL, was retired on 2026-09-13
+     (W4.15 slice 2): a wa.me link carries text only and could not send the picture, so
+     that screen draws PRAYER-DETAIL's `.btn.outline` Share instead. See the frame. */
   .mapcanvas{position:relative;flex:1;min-height:0;background:var(--mapsea);overflow:hidden}
   .world2{position:absolute;inset:0;width:100%;height:100%}
   .world2 .land ellipse{fill:var(--mapland)}
@@ -1088,6 +1090,17 @@
      than there, because text sits lower down and the picture underneath is one nobody has
      seen yet. */
   .sc.sc-photo{background:linear-gradient(155deg,#4a5a72,#1b2536)}
+  /* THE SCRIM FOLLOWS THE WORDS IN THE BUILD (2026-09-13, W4.15 slice 2, measured on the
+     device). The stops below are what this frame draws and what a block at this frame's
+     height produces. On the phone the 94% stop is not fixed at the foot: it sits where the
+     block of words begins, with the 62% a short fade above it, and the picture above that
+     keeps the 30%. Moving the kicker into the block (the rule above) was not enough on its
+     own: a four-line quote climbs to 18% of the card, where a fixed scrim is 44%, and over
+     a white sky that measured 2.07:1 for the gold kicker and 3.04:1 for the white quote.
+     With the scrim following the block the same rows measure 11:1 and 16:1. The cost is
+     stated plainly: the longer the quote, the less of the photograph survives, and whether
+     a photo card should therefore start at the smallest rung is an open question in the
+     plan (§4). */
   .sc.sc-photo::before{content:"";position:absolute;inset:0;
       background:linear-gradient(180deg,rgba(14,20,32,.30) 0%,rgba(14,20,32,.62) 42%,rgba(14,20,32,.94) 100%)}
   /* Content sits at the FOOT of a photo card, never centred. The scrim is 62% at the
@@ -1095,6 +1108,19 @@
      so white text goes where the ground is guaranteed dark. Centred was drawn first and
      the render showed both the risk and a dead gap under the words. */
   .sc.sc-photo .scmid{justify-content:flex-end}
+  /* THE KICKER LIVES IN THE FOOT BLOCK TOO, on a photo card (Ayo, 2026-09-13, W4.15
+     slice 2). It sat at the top of the card at first, where the scrim is only 30%, and
+     the build measured it there over a bright photograph at 1.35:1 (a white wall, an
+     overexposed sky), which this file's own render could never show because the photo
+     grounds are drawn as a flat placeholder. So the row is the first child of .scmid on
+     the three photo cards rather than a sibling above it, sitting just over the quote
+     inside the 94% band with everything else (8:1 and better over pure white). One rule
+     for words on a photograph: they live at the foot. The top of a photo card is now the
+     picture alone, which is what a photo card is for. Rejected: a stronger top scrim
+     stop (darkens every photo card's upper half) and a pill behind the row (a new
+     element the other eight cards do not have). The ink and cream cards are untouched:
+     their kicker stays a sibling at the top, because their ground is known. */
+  .sc.sc-photo .scmid .scrow1{margin-bottom:14px}
   .sc.sc-photo .sceye{color:#ffcf4a}
   .sc.sc-photo .scq{color:#ffffff}
   .sc.sc-photo .scby{color:#e4c98a}
@@ -2816,8 +2842,8 @@
         <p class="name"><b>CARD</b> &middot; a testimony with its photo</p>
         <div class="sc sc-photo">
           <span class="phlabel">PHOTO</span>
-          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
           <div class="scmid">
+            <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
             <div class="scq sm">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
             <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
           </div>
@@ -2930,8 +2956,8 @@
         <p class="name"><b>CARD</b> &middot; an event, with its picture</p>
         <div class="sc sc-photo">
           <span class="phlabel">EVENT PICTURE</span>
-          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span class="sceye">You&#39;re invited</span></div>
           <div class="scmid">
+            <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span class="sceye">You&#39;re invited</span></div>
             <div class="scdate"><div class="d">24</div><div class="m">Aug</div></div>
             <div class="scq sm">Night of Worship</div>
             <div class="scby">Saturday &middot; 7:00 PM<span class="b">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</span></div>
@@ -2974,8 +3000,8 @@
         <p class="name"><b>CARD</b> &middot; a message</p>
         <div class="sc sc-photo">
           <span class="phlabel">ARTWORK</span>
-          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span class="sceye">Message</span></div>
           <div class="scmid">
+            <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span class="sceye">Message</span></div>
             <div class="scplay"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.86l11.14-6.86a1 1 0 0 0 0-1.72L9.52 4.28A1 1 0 0 0 8 5.14z"/></svg></div>
             <div class="scq sm">Grace for the Journey</div>
             <div class="scby">Pastor Esther Olayinka<span class="b">38 min &middot; AGBC Glasgow</span></div>
@@ -3127,8 +3153,8 @@
             <div class="kindline">Share this testimony</div>
             <div class="scwrap">
               <div class="sc sc-photo">
-                <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
                 <div class="scmid">
+                  <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
                   <div class="scq sm">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
                   <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
                 </div>
@@ -4231,8 +4257,14 @@
           <div class="shotbox tshot"><span class="ph">photo: the author&#39;s picture</span></div>
           <div class="tauthor"><span class="avatar" style="width:44px;height:44px">A</span><div><div class="nm">Ayo Samuel</div><div class="mt">AGBC Berlin &middot; just now</div></div></div>
           <button class="glorybig"><span class="st">&#10022;</span> Glory to God &middot; 32</button>
-          <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg> Share to WhatsApp</button>
-          <div style="height:16px"></div>
+          <!-- THE PLAIN SHARE, the same `.btn.outline` PRAYER-DETAIL draws (Ayo, 2026-09-13,
+               W4.15 slice 2). This was `.wabtn`, a green "Share to WhatsApp" that opened a
+               wa.me link with the words in it, and a wa.me link can only ever carry TEXT: it
+               could not send the picture every other Share in the app now sends. So the
+               screen offers what the others offer, SHARE-PREVIEW and then the OS sheet, on
+               which WhatsApp is one tap away. The direct-to-WhatsApp text route goes with it;
+               "Send as text instead" on the sheet keeps the words reachable. -->
+          <div class="pactions" style="padding-top:0"><button class="btn outline">Share</button></div>
         </div>
       </div>
     </div>
@@ -4253,8 +4285,7 @@
                reads identically wherever the member meets it. Tapping again
                takes it back, exactly as on the card. -->
           <button class="glorybig on"><span class="st">&#10022;</span> Glory to God &middot; 33</button>
-          <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg> Share to WhatsApp</button>
-          <div style="height:16px"></div>
+          <div class="pactions" style="padding-top:0"><button class="btn outline">Share</button></div>
         </div>
       </div>
     </div>

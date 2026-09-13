@@ -117,10 +117,18 @@ export function SharePreviewSheet({
     })();
   }, []);
 
-  const onCardLayout = useCallback(() => {
+  // The card says when it is composed (its quote has found its size, its photo has
+  // arrived or given up), and that is the moment to rasterise it. Guarded per attempt:
+  // a card re-announcing after a re-measure must not produce a second capture.
+  const onCardReady = useCallback(() => {
     if (captured.current === attempt) return;
     captured.current = attempt;
-    capture();
+    // One frame later, not now: the card's last measurement can move its scrim in the
+    // same commit that announces readiness, and a capture taken inside that commit is a
+    // picture of the frame before the paint.
+    requestAnimationFrame(() => {
+      capture();
+    });
   }, [attempt, capture]);
 
   const retry = useCallback(() => {
@@ -261,8 +269,8 @@ export function SharePreviewSheet({
           both the touch tree and the screen reader's. */}
       {state.status === 'failed' ? null : (
         <View
-          // The suite's only handle on a view with no semantic one: `onLayout` is what
-          // starts the capture, and nothing on screen represents it.
+          // The suite's handle on a view with no semantic one; nothing on screen
+          // represents it.
           testID="share-card-host"
           pointerEvents="none"
           style={{
@@ -272,9 +280,8 @@ export function SharePreviewSheet({
             width: CARD_RENDER_DP,
             height: CARD_RENDER_DP,
           }}
-          onLayout={onCardLayout}
         >
-          <ShareCard ref={cardRef} content={content} />
+          <ShareCard ref={cardRef} content={content} onReady={onCardReady} />
         </View>
       )}
     </Sheet>

@@ -28,11 +28,12 @@ import { MarkAnsweredStep } from '@/features/family/MarkAnsweredStep';
 import { OwnPrayerActions } from '@/features/family/OwnPrayerActions';
 import { PostActionsMenu } from '@/features/family/PostActionsMenu';
 import { usePrayerQuery, type PrayerFeedItem } from '@/features/family/queries';
-import { shareText, testimonyShareText } from '@/features/family/share';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useRelativeAgeLabel } from '@/features/family/useRelativeAgeLabel';
 import { useIntercessionPress } from '@/features/family/useIntercession';
 import { track } from '@/lib/analytics';
+import { prayerShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -53,6 +54,7 @@ export default function PrayerDetail() {
 
   const query = usePrayerQuery(id);
   const branchNames = useBranchNames();
+  const shareSheet = useShareSheet();
   const prayer = query.data ?? null;
   // Guests are gated; a member's tap moves them along the two-step. Called with
   // a placeholder row while the query is loading, because a hook cannot be
@@ -95,7 +97,10 @@ export default function PrayerDetail() {
 
   const shareRequest = () => {
     if (!prayer) return;
-    void shareText(testimonyShareText(prayer.body, branchName, t('appName')));
+    // The preview sheet, then the OS sheet (W4.15). An anonymous request's card drops
+    // the branch; the card decides that, from the facts handed here.
+    const share = prayerShare(prayer, branchName, t('appName'));
+    shareSheet.open(share.content, share.fallbackText);
   };
 
   const writeTestimony = () => {
@@ -422,6 +427,8 @@ export default function PrayerDetail() {
           </View>
         </View>
       )}
+
+      {shareSheet.element}
 
       <GateSheet
         visible={gateVisible}
