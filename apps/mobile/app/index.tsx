@@ -12,7 +12,10 @@ import {
   typeScale,
 } from '@agbc/shared/theme';
 
-import { usePendingDeepLinkStore } from '@/features/notifications/pendingDeepLink';
+import {
+  mayOpenPending,
+  usePendingDeepLinkStore,
+} from '@/features/notifications/pendingDeepLink';
 import { resolveAuthEntryRoute, useAuthStore } from '@/state/auth';
 import { useLaunchStore } from '@/state/launch';
 import { useTheme } from '@/theme';
@@ -54,20 +57,23 @@ export default function Splash() {
     if (effectiveStatus === null) return;
     const timer = setTimeout(() => {
       router.replace(resolveAuthEntryRoute(hasOnboarded, effectiveStatus));
-      // A notification tap that LAUNCHED the app has been waiting for this moment: it
-      // could not navigate during the first mount, because this replace would have
-      // landed on top of it (found on device 2026-08-16, W3.3 slice 4). Pushed after
-      // the entry route so back still returns somewhere sensible, and only for a
-      // member, since every deep-linked destination that matters is member-only and a
-      // guest belongs in the gate rather than on a stranger's screen.
+      // A notification tap or a scanned share link that LAUNCHED the app has been
+      // waiting for this moment: it could not navigate during the first mount, because
+      // this replace would have landed on top of it (found on device 2026-08-16, W3.3
+      // slice 4). Pushed after the entry route so back still returns somewhere
+      // sensible. Who may follow it is the store's rule: a member always, a guest only
+      // for a share link and only onto Home (W4.15 slice 2b).
       const store = usePendingDeepLinkStore.getState();
       store.markEntryDone();
       const pending = store.take();
-      if (pending !== null && effectiveStatus === 'member') {
+      if (
+        pending !== null &&
+        mayOpenPending(pending, effectiveStatus, hasOnboarded)
+      ) {
         // The assertion is needed by the compiler and unnecessary to CI's lint (typed
         // routes are generated and gitignored); see useNotifications.ts for the full note.
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        router.push(pending as Parameters<typeof router.push>[0]);
+        router.push(pending.route as Parameters<typeof router.push>[0]);
       }
     }, SPLASH_MS);
     return () => {

@@ -8,6 +8,7 @@ import { prayerShare, testimonyShare } from '../presets';
 
 describe('testimonyShare', () => {
   const item = {
+    id: 'aaaaaaaa-0000-4000-8000-000000000001',
     body: 'God provided a job after 8 months of waiting.',
     author_name: 'Sarah O.',
     image_path: 'members/sarah/1.jpg',
@@ -18,6 +19,7 @@ describe('testimonyShare', () => {
 
     expect(share.content).toEqual({
       kind: 'testimony',
+      id: 'aaaaaaaa-0000-4000-8000-000000000001',
       body: item.body,
       authorName: 'Sarah O.',
       branchName: 'AGBC Glasgow',
@@ -44,12 +46,18 @@ describe('testimonyShare', () => {
 describe('prayerShare', () => {
   it('passes anonymity as a fact, and never puts a name in the words', () => {
     const share = prayerShare(
-      { body: 'Pray for me.', author_name: null, is_anonymous: true },
+      {
+        id: 'bbbbbbbb-0000-4000-8000-000000000002',
+        body: 'Pray for me.',
+        author_name: null,
+        is_anonymous: true,
+      },
       'AGBC Emmen',
       'AGBC Global',
     );
     expect(share.content).toEqual({
       kind: 'prayer',
+      id: 'bbbbbbbb-0000-4000-8000-000000000002',
       body: 'Pray for me.',
       authorName: null,
       branchName: 'AGBC Emmen',
