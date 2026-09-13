@@ -32,6 +32,7 @@ import BookOpen from 'lucide-react-native/icons/book-open';
 import Bookmark from 'lucide-react-native/icons/bookmark';
 import Calendar from 'lucide-react-native/icons/calendar';
 import ChartColumnIncreasing from 'lucide-react-native/icons/chart-column-increasing';
+import CircleAlert from 'lucide-react-native/icons/circle-alert';
 import Check from 'lucide-react-native/icons/check';
 import ChevronDown from 'lucide-react-native/icons/chevron-down';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
@@ -191,6 +192,11 @@ export const TrashIcon = houseStyle(Trash2, 'TrashIcon');
  * draws: this screen is the one place in the app where a warning is the point rather than
  * the aftermath of something. */
 export const WarnIcon = houseStyle(TriangleAlert, 'WarnIcon');
+/** SHARE-PREVIEW's `.failnote` glyph (W4.15). Lucide's `circle-alert`, which is what that
+ * frame draws, and deliberately not `WarnIcon`: a triangle warns BEFORE something
+ * irreversible, and this reports a small local failure that has already happened and
+ * costs the member nothing. */
+export const AlertIcon = houseStyle(CircleAlert, 'AlertIcon');
 export const BookmarkIcon = houseStyle(Bookmark, 'BookmarkIcon');
 export const FlameIcon = houseStyle(Flame, 'FlameIcon');
 /** ANALYTICS-ASK's `.gi` tile (W2.10). Lucide's `chart-column-increasing`, the glyph the

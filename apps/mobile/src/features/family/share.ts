@@ -15,6 +15,25 @@ export function testimonyShareText(
     : `${quote}\n${appName}`;
 }
 
+/**
+ * The daily verse, as words (docs/spec/07 §54).
+ *
+ * Folded in here at W4.15 from `VerseCard`, which composed it inline and called
+ * `Share.share` directly. Two of the app's nine share points bypassed this module; this
+ * closes one of them, and the sermon player closes the other in slice 3.
+ *
+ * The curly quotes are `testimonyShareText`'s, not the straight ones the inline version
+ * used: one module, one way of quoting somebody.
+ */
+export function verseShareText(
+  text: string,
+  reference: string,
+  translation: string,
+): string {
+  const quote = `“${text}”`;
+  return `${quote}\n${reference} · ${translation}`;
+}
+
 /** OS share sheet (the "Share" affordance on cards and detail screens). */
 export async function shareText(message: string): Promise<void> {
   await Share.share({ message });

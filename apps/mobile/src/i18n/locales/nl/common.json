@@ -104,5 +104,18 @@
   },
   "weeks_one": "{{count}} week",
   "weeks_other": "{{count}} weken",
-  "cancel": "Annuleren"
+  "cancel": "Annuleren",
+  "share": {
+    "previewTitle": {
+      "verse": "Dit vers delen"
+    },
+    "previewAlt": "De afbeelding die je gaat versturen",
+    "share": "Delen",
+    "sendAsTextInstead": "Stuur in plaats daarvan tekst",
+    "sendAsText": "Als tekst versturen",
+    "tryAgain": "Probeer de afbeelding opnieuw",
+    "preparing": "Wordt klaargezet…",
+    "failed": "Het maken van de afbeelding is deze keer niet gelukt. Je kunt het nog steeds als woorden versturen, er gaat niets verloren.",
+    "dismissed": "Delen gesloten"
+  }
 }

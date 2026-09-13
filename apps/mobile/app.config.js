@@ -252,6 +252,14 @@ const config = {
       'expo-build-properties',
       { android: { enableMinifyInReleaseBuilds: true } },
     ],
+    // NO `expo-sharing` ENTRY, DELIBERATELY, and this note exists because the CLI asks for
+    // one: `npx expo install expo-sharing` prints "Add the following to your Expo config:
+    // plugins: ['expo-sharing']" and following that instruction would add a plugin that
+    // builds nothing. Verified against the installed 57.0.19 plugin source rather than
+    // from memory: `withShareExtension` is for receiving shares INTO the app, both halves
+    // default to `enabled: false`, and with no props it applies no config at all. W4.15
+    // shares OUT (`Sharing.shareAsync`), which needs no native configuration on either
+    // platform. Adding an app-wide share extension is a separate decision nobody has made.
     ...sentryPlugin,
   ],
   experiments: {

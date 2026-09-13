@@ -3,9 +3,11 @@ import type {
   AnalyticsEventProperties,
   AnalyticsGateAction,
   AnalyticsRole,
+  AnalyticsShareKind,
   AnalyticsStandardProperties,
 } from '@agbc/shared';
 
+import type { ShareKind } from '@/features/share/content';
 import i18n from '@/i18n';
 import { useAuthStore } from '@/state/auth';
 import { useBranchStore } from '@/state/branch';
@@ -38,6 +40,18 @@ type AssertGateActionsCovered = GateActionKind extends AnalyticsGateAction
   ? true
   : never;
 export const assertGateActionsCovered: AssertGateActionsCovered = true;
+
+/**
+ * The same guarantee for the share surfaces (W4.15). `ShareKind` is derived from the
+ * card-content union in `features/share/content`, so drawing a tenth card widens it
+ * automatically and this line stops compiling until the kind has a name in the tracking
+ * plan. The app's only organic growth surface went unmeasured from launch until W4.15;
+ * this is what stops the next surface joining it silently.
+ */
+type AssertShareKindsCovered = ShareKind extends AnalyticsShareKind
+  ? true
+  : never;
+export const assertShareKindsCovered: AssertShareKindsCovered = true;
 
 /** 'onboarding' is a half-created account (docs/spec/03): not yet a member, so a guest. */
 function currentRole(): AnalyticsRole {

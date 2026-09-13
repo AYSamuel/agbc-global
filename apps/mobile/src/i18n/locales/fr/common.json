@@ -106,5 +106,18 @@
   "weeks_one": "{{count}} semaine",
   "weeks_many": "{{count}} semaines",
   "weeks_other": "{{count}} semaines",
-  "cancel": "Annuler"
+  "cancel": "Annuler",
+  "share": {
+    "previewTitle": {
+      "verse": "Partager ce verset"
+    },
+    "previewAlt": "L'image que tu vas envoyer",
+    "share": "Partager",
+    "sendAsTextInstead": "Envoyer plutôt en texte",
+    "sendAsText": "Envoyer en texte",
+    "tryAgain": "Réessayer l'image",
+    "preparing": "Préparation…",
+    "failed": "Nous n'avons pas pu créer l'image cette fois. Tu peux toujours l'envoyer en mots, rien n'est perdu.",
+    "dismissed": "Partage fermé"
+  }
 }

@@ -204,6 +204,114 @@ export const verseCard = {
   chipBorder: '#e6d3a4',
 } as const;
 
+/**
+ * The share cards (W4.15, mockup `.sc*`), and the one rule to carry out of here:
+ *
+ * **THE CARD IS DELIBERATELY NOT THEME-AWARE. Do not add a dark variant.** Every other
+ * surface in this file has a light and a dark half because a member is looking at it
+ * inside our app. A share card is a PNG that LEAVES the app: it lands in somebody else's
+ * WhatsApp, on somebody else's phone, under somebody else's theme, and it has to look the
+ * same in all of them. The mockup's dark gallery draws the same eleven cards on purpose,
+ * not by oversight, and `verseCard` above set the precedent for a constant surface.
+ *
+ * Values are the mockup's literals verbatim. FOUR OF THEM ARE CONTRAST CORRECTIONS AND
+ * MUST NOT BE "TIDIED" BACK to the brighter originals: a gold ground is the brightest
+ * surface in the app and looks more legible than it measures, so nothing prompts you to
+ * check it. Measured against each gradient's DARKER end, `gold.kickerLabel` was 3.33:1,
+ * `gold.attributionSub` and `gold.url` 3.77 and `cream.url` 3.72, all under WCAG 1.4.3's
+ * 4.5 for text at these sizes; they are 4.78 to 5.01 now. W4.7 ran this pass over the app
+ * and could not reach here, because these cards did not exist yet.
+ *
+ * COLOURS ONLY. The card's geometry and type sizes live with the component, in the
+ * mockup's own 1080-unit design space (`features/share/card`), the way `VerseCard` keeps
+ * its sizes and takes only its colours from `verseCard`.
+ */
+export const shareCard = {
+  /**
+   * The bright gold every ground except `gold` uses for a fill: the mark tile, the
+   * event date block, the play disc, the cut line and the prayer ask.
+   */
+  accent: '#ffcf4a',
+  /** Navy, for a glyph or a letter sitting ON `accent`. */
+  onAccent: '#14213d',
+  /**
+   * The QR takes a FIXED light surface whatever card it sits on, because it is a
+   * machine-readable target rather than a themed element. Learned the expensive way the
+   * same week (commit 4278341): the dashboard's MFA QR had black modules and no
+   * background of its own, took the dark navy underneath it, and three enrolments failed
+   * to scan across two people and six weeks. Navy on white measures about 14:1.
+   */
+  qrBackground: '#ffffff',
+  qrModules: '#14213d',
+  ground: {
+    /** VERSE. `.verse`'s own values scaled up, so a member taps a cream card and a cream
+     * card is what lands in the chat. */
+    cream: {
+      from: '#fbf3dd',
+      to: '#f5e8ce',
+      border: '#eeddb5',
+      kickerIcon: '#b98600',
+      kickerLabel: '#866100',
+      quote: '#2b2517',
+      attribution: '#7a5b12',
+      footLine: '#e3d1a6',
+      wordmark: '#2b2517',
+      url: '#74602f',
+    },
+    /** INK: testimony, prayer, branch, and an event with no picture. The app's own band
+     * colour, so a forwarded post still looks like it came from here. */
+    ink: {
+      from: '#1e2f52',
+      to: '#0e1420',
+      kickerIcon: '#ffcf4a',
+      kickerLabel: '#ffcf4a',
+      quote: '#ffffff',
+      attribution: '#e4c98a',
+      attributionSub: '#95a1b7',
+      footLine: 'rgba(255,255,255,0.16)',
+      wordmark: '#ffffff',
+      url: 'rgba(255,255,255,0.62)',
+    },
+    /** PHOTO: a testimony's photo, an event's picture, a message's artwork. `from`/`to`
+     * are the ground UNDER the picture, which shows through nothing when the fetch
+     * succeeds and is the whole card when it does not. The scrim is `.photo::before`'s,
+     * strengthened, because the words sit low and the photograph is one nobody has
+     * vetted. */
+    photo: {
+      from: '#4a5a72',
+      to: '#1b2536',
+      scrimTop: 'rgba(14,20,32,0.30)',
+      scrimMiddle: 'rgba(14,20,32,0.62)',
+      scrimBottom: 'rgba(14,20,32,0.94)',
+      kickerIcon: '#ffcf4a',
+      kickerLabel: '#ffcf4a',
+      quote: '#ffffff',
+      attribution: '#e4c98a',
+      attributionSub: '#c2cad8',
+      footLine: 'rgba(255,255,255,0.22)',
+      wordmark: '#ffffff',
+      url: 'rgba(255,255,255,0.68)',
+    },
+    /** GOLD: the milestone alone, because it is the only card that is purely glad. Its
+     * mark inverts (navy tile, gold letter) since `accent` would vanish into the ground. */
+    gold: {
+      from: '#ffd968',
+      to: '#f0b21f',
+      kickerIcon: '#7a5b12',
+      kickerLabel: '#5a4614',
+      quote: '#14213d',
+      line: '#4a3c14',
+      attribution: '#14213d',
+      attributionSub: '#5a4614',
+      footLine: 'rgba(20,33,61,0.22)',
+      markBackground: '#14213d',
+      markText: '#ffcf4a',
+      wordmark: '#14213d',
+      url: '#5a4614',
+    },
+  },
+} as const;
+
 export interface ColorTokens {
   bg: string;
   /** Alt surface: segmented tracks, icon circles, skeleton base (mockup --alt). */
@@ -467,6 +575,7 @@ export const tokens = {
   palette,
   onInk,
   verseCard,
+  shareCard,
   control,
   color,
   fontFamily,

@@ -1,4 +1,11 @@
-import { color, onInk, palette, verseCard, type ThemeName } from '@agbc/shared/theme';
+import {
+  color,
+  onInk,
+  palette,
+  shareCard,
+  verseCard,
+  type ThemeName,
+} from '@agbc/shared/theme';
 
 /**
  * The contrast contract for the design tokens (W4.7 slice 2, `05` accessibility
@@ -29,6 +36,28 @@ function luminance(hex: string): number {
     0.7152 * channel(parseInt(h.slice(2, 4), 16)) +
     0.0722 * channel(parseInt(h.slice(4, 6), 16))
   );
+}
+
+/**
+ * A translucent colour laid over an opaque one, as the hex it actually becomes.
+ *
+ * Needed since W4.15: a share card's footer address is `rgba(255,255,255,0.62)`, and an
+ * alpha is not a colour until something is behind it. Measuring the stated value instead
+ * would report white's contrast and pass everything.
+ */
+function over(translucent: string, background: string): string {
+  const parts = /rgba?\(([^)]+)\)/.exec(translucent);
+  if (!parts) return translucent;
+  const [r, g, b, a = '1'] = parts[1].split(',').map((v) => v.trim());
+  const bg = background.replace('#', '');
+  const mix = (channelValue: string, index: number) =>
+    Math.round(
+      Number(channelValue) * Number(a) +
+        parseInt(bg.slice(index * 2, index * 2 + 2), 16) * (1 - Number(a)),
+    )
+      .toString(16)
+      .padStart(2, '0');
+  return `#${mix(r, 0)}${mix(g, 1)}${mix(b, 2)}`;
 }
 
 export function contrast(a: string, b: string): number {
@@ -131,6 +160,104 @@ describe('the daily verse card (constant in both themes)', () => {
       BODY_TEXT,
     );
   });
+});
+
+/**
+ * THE SHARE CARDS (W4.15), and the reason they need their own block: they are not
+ * theme-aware and never will be, so `color[theme]` says nothing about them. A card is a
+ * PNG that leaves the app and is read in somebody else's chat, at thumbnail size, which
+ * makes this the one surface where poor contrast cannot be fixed after it ships.
+ *
+ * FOUR OF THESE VALUES ARE CONTRAST CORRECTIONS and this is what stops them being tidied
+ * back: measured against the darker end of their own gradient, `gold.kickerLabel` was
+ * 3.33:1, `gold.attributionSub` and `gold.url` 3.77 and `cream.url` 3.72 when the frames
+ * were first drawn. A gold ground is the brightest surface in the app and looks more
+ * legible than it measures, which is exactly why a human pass keeps missing it.
+ */
+describe('the share cards (constant, because they leave the app)', () => {
+  const grounds = [
+    ['cream', shareCard.ground.cream],
+    ['ink', shareCard.ground.ink],
+    ['gold', shareCard.ground.gold],
+  ] as const;
+
+  describe.each(grounds)('%s', (_name, ground) => {
+    // Every hex text colour on this ground, against both ends of its gradient.
+    //
+    // The exclusions are not text on the ground: `from`/`to` ARE the ground, `border` and
+    // `footLine` are hairlines (decorative, the `cardline` argument above), `kickerIcon`
+    // is a glyph beside a label that says the same words, and the mark tile paints its own
+    // surface, so both of its colours are measured against each other in their own test.
+    // `url` on ink is translucent and is handled below, where the compositing is spelled
+    // out.
+    const texts = Object.entries(ground).filter(
+      ([key, value]) =>
+        value.startsWith('#') &&
+        ![
+          'from',
+          'to',
+          'border',
+          'footLine',
+          'kickerIcon',
+          'markBackground',
+          'markText',
+        ].includes(key),
+    );
+
+    test.each(texts)(
+      '%s reads on both ends of the gradient',
+      (_key, colour) => {
+        expect(contrast(colour, ground.from)).toBeGreaterThanOrEqual(BODY_TEXT);
+        expect(contrast(colour, ground.to)).toBeGreaterThanOrEqual(BODY_TEXT);
+      },
+    );
+  });
+
+  test('the translucent address on ink still reads', () => {
+    // `rgba(255,255,255,0.62)` is not a colour until it is over something, so it is
+    // composited onto the ground first. The lighter end of the gradient is the harder of
+    // the two for white to sit on.
+    expect(
+      contrast(
+        over(shareCard.ground.ink.url, shareCard.ground.ink.from),
+        shareCard.ground.ink.from,
+      ),
+    ).toBeGreaterThanOrEqual(BODY_TEXT);
+  });
+
+  test('the QR is a machine-readable target, not a themed element', () => {
+    // Navy on white whatever card it sits on, which is the lesson commit 4278341 paid for
+    // when the dashboard's MFA QR took the dark surface behind it and stopped scanning.
+    expect(
+      contrast(shareCard.qrModules, shareCard.qrBackground),
+    ).toBeGreaterThanOrEqual(7);
+  });
+
+  test('the mark tile labels itself on both of its grounds', () => {
+    expect(
+      contrast(shareCard.onAccent, shareCard.accent),
+    ).toBeGreaterThanOrEqual(BODY_TEXT);
+    expect(
+      contrast(
+        shareCard.ground.gold.markText,
+        shareCard.ground.gold.markBackground,
+      ),
+    ).toBeGreaterThanOrEqual(BODY_TEXT);
+  });
+
+  /**
+   * THE PHOTO GROUND IS NOT ASSERTED HERE, and the reason is worth more than an
+   * assertion would be: its ground is a photograph nobody has vetted, so no pair of
+   * tokens can be measured. What protects the words is the SCRIM, and the scrim is
+   * measurable: at the foot, where all of a photo card's text sits, it is 94% ink, so
+   * even over pure white the attribution reads at 9.89:1 and the address at 8.06:1.
+   *
+   * ONE PLACE THAT IS NOT TRUE, measured 2026-09-12 and left for W4.15 slice 2 to answer
+   * rather than fixed here: the KICKER sits at the TOP, where the scrim is only 30%. Over
+   * a bright photograph (a white wall, an overexposed sky) the gold kicker measures
+   * 1.35:1. The frames could not show this because they render the photo grounds as a
+   * flat placeholder.
+   */
 });
 
 // Content drawn on ink (the splash, photo heroes, the streak hero), identical in
