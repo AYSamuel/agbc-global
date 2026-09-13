@@ -104,5 +104,18 @@
   },
   "weeks_one": "{{count}} week",
   "weeks_other": "{{count}} weeks",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "share": {
+    "previewTitle": {
+      "verse": "Share this verse"
+    },
+    "previewAlt": "The picture you're about to send",
+    "share": "Share",
+    "sendAsTextInstead": "Send as text instead",
+    "sendAsText": "Send as text",
+    "tryAgain": "Try the picture again",
+    "preparing": "Getting it ready…",
+    "failed": "We couldn't make the picture this time. You can still send it as words, and nothing is lost.",
+    "dismissed": "Share closed"
+  }
 }

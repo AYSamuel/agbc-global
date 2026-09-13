@@ -128,14 +128,25 @@ describe('loadEvents', () => {
     // can_moderate_branch(null) is admins alone. Showing them an edit button that the
     // database would refuse is the bug this prevents.
     const rows = [record({ id: 'global', branch_id: null, branch: null })];
+    // A FIXED CLOCK, like the two tests above, and this one went red for its absence:
+    // the fixture's default start is 2026-09-12, and reading the real date put the
+    // event into `past` the morning after, so `upcoming[0]` was undefined and every
+    // PR failed CI from 2026-09-13. Any test that reaches for `upcoming` owns its
+    // clock; the loader's `new Date()` default is for the page, never for a test.
+    const clock = new Date('2026-09-12T09:00:00Z');
 
-    const asLeader = await loadEvents(clientReturning(rows).client, caller());
+    const asLeader = await loadEvents(
+      clientReturning(rows).client,
+      caller(),
+      clock,
+    );
     expect(asLeader.upcoming[0].editable).toBe(false);
     expect(asLeader.upcoming[0].branchId).toBeNull();
 
     const asAdmin = await loadEvents(
       clientReturning(rows).client,
       caller({ role: 'admin' }),
+      clock,
     );
     expect(asAdmin.upcoming[0].editable).toBe(true);
   });

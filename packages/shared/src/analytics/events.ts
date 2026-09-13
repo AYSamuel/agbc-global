@@ -230,8 +230,8 @@ export const EVENT_SOURCE: Record<AnalyticsEventName, AnalyticsEventSource> = {
   broadcast_opened: { fires: 'app' },
   notification_opened: { fires: 'app' },
   reader_opened: { fires: 'deferred', owner: 'Phase 4 · library + reader' },
-  content_shared: {
-    fires: 'deferred',
-    owner: 'W4.15 · share as a picture',
-  },
+  // Wired at W4.15 slice 1, from the daily verse. The remaining eight share points join
+  // it as slices 2 to 4 draw their cards; the event itself is already whole, because
+  // `content_kind` is what tells them apart.
+  content_shared: { fires: 'app' },
 };

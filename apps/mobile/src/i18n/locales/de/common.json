@@ -104,5 +104,18 @@
   },
   "weeks_one": "{{count}} Woche",
   "weeks_other": "{{count}} Wochen",
-  "cancel": "Abbrechen"
+  "cancel": "Abbrechen",
+  "share": {
+    "previewTitle": {
+      "verse": "Diesen Vers teilen"
+    },
+    "previewAlt": "Das Bild, das du senden wirst",
+    "share": "Teilen",
+    "sendAsTextInstead": "Stattdessen als Text senden",
+    "sendAsText": "Als Text senden",
+    "tryAgain": "Bild noch einmal versuchen",
+    "preparing": "Wird vorbereitet…",
+    "failed": "Wir konnten das Bild diesmal nicht erstellen. Du kannst es trotzdem als Worte senden, es geht nichts verloren.",
+    "dismissed": "Teilen geschlossen"
+  }
 }
