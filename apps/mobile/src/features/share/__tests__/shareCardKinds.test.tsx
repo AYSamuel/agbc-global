@@ -46,10 +46,18 @@ function rendered(): RenderedNode[] {
  * holds five lines at 54px; the frame was rendered for that, and the device pass reads it.
  */
 
-jest.mock('react-native-qrcode-svg', () => ({
-  __esModule: true,
-  default: () => null,
-}));
+jest.mock('react-native-qrcode-svg', () => {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment --
+     documented jest.mock factory shape: the value the code would encode, as text */
+  const { Text: RNText } = jest.requireActual('react-native');
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+  return {
+    __esModule: true,
+    default: ({ value }: { value: string }) => (
+      <RNText testID="qr-target">{value}</RNText>
+    ),
+  };
+});
 
 // The signer the photo card mints its URL through. `null` data is a refused or missing
 // object, which the card treats exactly like a fetch that failed.
@@ -65,6 +73,7 @@ jest.mock('@/lib/supabase', () => ({
 
 const TESTIMONY: TestimonyShareContent = {
   kind: 'testimony',
+  id: 'aaaaaaaa-0000-4000-8000-000000000001',
   body: 'God provided a job after 8 months of waiting. He is faithful.',
   authorName: 'Sarah O.',
   branchName: 'AGBC Glasgow',
@@ -73,6 +82,7 @@ const TESTIMONY: TestimonyShareContent = {
 
 const PRAYER: PrayerShareContent = {
   kind: 'prayer',
+  id: 'bbbbbbbb-0000-4000-8000-000000000002',
   body: "Please pray for my mother's surgery on Thursday.",
   authorName: 'Daniel A.',
   branchName: 'AGBC Emmen',
@@ -402,3 +412,19 @@ function sizeOf(node: { props: { style?: unknown } }): number {
   }
   return style.fontSize;
 }
+
+describe('the QR opens the thing that was scanned (slice 2b)', () => {
+  it('encodes the testimony and the prayer request by id, on www', async () => {
+    await renderCard(TESTIMONY);
+    expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
+      `https://www.agbcglobal.com/app/t/${TESTIMONY.id}`,
+    );
+  });
+
+  it('encodes the prayer request under its own prefix', async () => {
+    await renderCard(PRAYER);
+    expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
+      `https://www.agbcglobal.com/app/p/${PRAYER.id}`,
+    );
+  });
+});

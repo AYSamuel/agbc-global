@@ -18,8 +18,16 @@
 import { create } from 'zustand';
 
 interface PendingDeepLinkState {
-  /** An already-allowlisted route (see deepLinks.ts), or null. */
+  /** An already-allowlisted route (see deepLinks.ts, share/links.ts), or null. */
   route: string | null;
+  /**
+   * May a GUEST be taken there? A notification's link never (every destination that
+   * matters is member-only, and a guest belongs in the gate rather than on a stranger's
+   * screen); a scanned share card's link always, because a testimony and a prayer
+   * request are guest-browsable and the scanner is more often a stranger than a member
+   * (W4.15 slice 2b).
+   */
+  forGuests: boolean;
   /**
    * Has `app/index.tsx` finished its launch navigation?
    *
@@ -34,26 +42,43 @@ interface PendingDeepLinkState {
    * fresh process, so there is no launch where this is stuck true with nobody to consume.
    */
   entryDone: boolean;
-  set: (route: string) => void;
+  set: (route: string, options?: { forGuests: boolean }) => void;
   markEntryDone: () => void;
   /** Reads and clears in one step, so it can only be consumed once. */
-  take: () => string | null;
+  take: () => { route: string; forGuests: boolean } | null;
+}
+
+/**
+ * Whether the entry router should open a held link, given who is arriving. A member
+ * always; a guest only for a link that allows guests, and only when the entry route is
+ * Home: a first launch goes to onboarding and a half-created profile resumes AUTH-3, and
+ * a testimony pushed over either would be a stranger's screen in the wrong place.
+ */
+export function mayOpenPending(
+  pending: { forGuests: boolean },
+  status: 'member' | 'guest' | 'onboarding',
+  hasOnboarded: boolean,
+): boolean {
+  if (status === 'member') return true;
+  return pending.forGuests && status === 'guest' && hasOnboarded;
 }
 
 export const usePendingDeepLinkStore = create<PendingDeepLinkState>(
   (set, get) => ({
     route: null,
+    forGuests: false,
     entryDone: false,
-    set: (route) => {
-      set({ route });
+    set: (route, options) => {
+      set({ route, forGuests: options?.forGuests ?? false });
     },
     markEntryDone: () => {
       set({ entryDone: true });
     },
     take: () => {
-      const { route } = get();
-      if (route !== null) set({ route: null });
-      return route;
+      const { route, forGuests } = get();
+      if (route === null) return null;
+      set({ route: null, forGuests: false });
+      return { route, forGuests };
     },
   }),
 );

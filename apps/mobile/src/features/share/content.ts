@@ -35,6 +35,8 @@ export interface VerseShareContent {
  */
 export interface TestimonyShareContent {
   kind: 'testimony';
+  /** The row's id, which the QR encodes so a scan lands on this testimony (links.ts). */
+  id: string;
   body: string;
   /** The feed's abbreviated display name ("Sarah O."), or null when the feed sent none. */
   authorName: string | null;
@@ -51,6 +53,8 @@ export interface TestimonyShareContent {
  */
 export interface PrayerShareContent {
   kind: 'prayer';
+  /** The row's id, which the QR encodes so a scan lands on this request (links.ts). */
+  id: string;
   body: string;
   authorName: string | null;
   branchName: string | null;

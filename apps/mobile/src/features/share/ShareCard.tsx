@@ -23,28 +23,15 @@ import { useSignedPhotoUrl } from '@/features/family/useSignedPhotoUrl';
 
 import type { ShareContent } from './content';
 import { CARD_RENDER_DP, CARD_SCALE } from './geometry';
+import { SHARE_ORIGIN_LABEL, shareUrlFor } from './links';
 
 /**
- * THE ONE PLACE THE CARD'S DESTINATION IS WRITTEN (W4.15, Ayo 2026-09-12).
- *
- * The church's front door, chosen against what exists rather than as a preference. The
- * two destinations that would be better are a page that routes to the app store and a
- * per-content deep link, and the website can support neither today: it has no page per
- * testimony or event. Revisit the moment it grows either.
- *
- * ONE CONSTANT because eleven layouts will print it and a change must be a one-line edit.
- * If the QR proves unscannable after a real forward (plan §10), the lever is this string
- * rather than the code's size: 14 bytes or fewer encodes as a 21-module version 1 instead
- * of 25, which is 14% bigger modules at no cost in card space, and `agbcglobal.com`
- * without the scheme is exactly 14. That is the fallback, not the default: an explicit
- * `https://` is the more reliably parsed of the two, and reliability is this element's
- * whole job.
+ * WHERE THE CARD'S QR POINTS is decided in links.ts, per card (W4.15 slice 2b): a
+ * testimony's code opens that testimony, a prayer request's that request, the verse's
+ * the app's landing page. Slice 1 pointed every card at the church's front door because
+ * the website had nowhere better to go; the long testimony's "Read it all in the app"
+ * made that a promise the card itself broke, so 2b built the road on both sides.
  */
-export const SHARE_URL = 'https://agbcglobal.com';
-
-/** What the footer PRINTS, which is the address without its scheme. Derived, never a
- * second literal: the printed words and the scanned target are one fact. */
-const SHARE_URL_LABEL = SHARE_URL.replace(/^https?:\/\//, '');
 
 /**
  * How long a photo card waits for its picture before giving up and drawing the ink
@@ -211,7 +198,7 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
         onBlockTop={setBlockTop}
       />
 
-      <Footer ground={ground} />
+      <Footer ground={ground} content={content} />
     </View>
   );
 });
@@ -690,7 +677,13 @@ function ByLine({
  * and no app name travels beside the picture, and whatever a stranger needs in order to
  * find us has to be printed here (plan §3).
  */
-function Footer({ ground }: { ground: Ground }) {
+function Footer({
+  ground,
+  content,
+}: {
+  ground: Ground;
+  content: ShareContent;
+}) {
   const { t } = useTranslation();
   const tokens = shareCard.ground[ground];
   return (
@@ -758,11 +751,11 @@ function Footer({ ground }: { ground: Ground }) {
               color: tokens.url,
             }}
           >
-            {SHARE_URL_LABEL}
+            {SHARE_ORIGIN_LABEL}
           </Text>
         </View>
       </View>
-      <ShareCardQr />
+      <ShareCardQr value={shareUrlFor(content)} />
     </View>
   );
 }
@@ -770,17 +763,20 @@ function Footer({ ground }: { ground: Ground }) {
 /**
  * The QR, and THE ONLY ELEMENT ON THE CARD A RECIPIENT CAN ACT ON. The card is a PNG, so
  * the printed address carries the information but not the route: somebody has to read it,
- * leave the chat and type it. This is scannable straight off the received image.
+ * leave the chat and type it. This is scannable straight off the received image, and
+ * since slice 2b it opens the thing that was scanned (links.ts).
  *
  * SIZED BY ARITHMETIC AND TIGHTER THAN IT LOOKS. 138 units is 138 real px on the finished
- * card, and `https://agbcglobal.com` is 22 bytes, which encodes as a 25-module version 2
- * at error correction M. With a 4-module quiet zone each side that is 33 module-widths
- * across 138px, so a module is 4.2px. Driven through WhatsApp at slice 1: the app keeps a
- * 1080 square at 1080, and the code still decodes from its recompressed copy down to a
- * 400px downscale (plan §10). Drawn bigger than the footer really wants all the same,
- * because the next chat app may not be as kind.
+ * card. A per-content link (`/app/t/<uuid>`, 69 bytes) encodes as a 33-module version 4
+ * at error correction M; with a 4-module quiet zone each side that is 41 module-widths
+ * across 138px, so a module is 3.37px. Measured rather than trusted: rendered at exactly
+ * this geometry and decoded from nearest-neighbour downscales, it survives to 500px, the
+ * same floor as slice 1's 22-byte front-door code (4.2px modules), and the 77-byte long
+ * form did not (version 5, failing at 600). WhatsApp keeps a 1080 square at 1080 (plan
+ * §10). Drawn bigger than the footer really wants all the same, because the next chat
+ * app may not be as kind.
  */
-function ShareCardQr() {
+function ShareCardQr({ value }: { value: string }) {
   const size = 138 * u;
   return (
     <View
@@ -793,7 +789,7 @@ function ShareCardQr() {
       }}
     >
       <QRCode
-        value={SHARE_URL}
+        value={value}
         // `size` is the WHOLE box: the component expands its viewBox by `quietZone` and
         // still renders at `size` px, so the margin comes out of the code rather than
         // growing the element. 4 modules of 25 is the standard quiet zone.
@@ -802,7 +798,7 @@ function ShareCardQr() {
         color={shareCard.qrModules}
         backgroundColor={shareCard.qrBackground}
         // Stated rather than left to the default. M is what the frame's own code uses and
-        // what 22 bytes fits in 25 modules; H would survive more damage at the cost of a
+        // what 69 bytes fits in 33 modules; H would survive more damage at the cost of a
         // denser code, which is the wrong trade when the threat is downscaling.
         ecl="M"
       />

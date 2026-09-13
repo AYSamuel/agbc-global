@@ -15,13 +15,14 @@ import type { PrayerShareContent, TestimonyShareContent } from './content';
  * the old behaviour, kept.
  */
 export function testimonyShare(
-  item: Pick<TestimonyFeedItem, 'body' | 'author_name' | 'image_path'>,
+  item: Pick<TestimonyFeedItem, 'id' | 'body' | 'author_name' | 'image_path'>,
   branchName: string | null,
   appName: string,
 ): { content: TestimonyShareContent; fallbackText: string } {
   return {
     content: {
       kind: 'testimony',
+      id: item.id,
       body: item.body,
       authorName: item.author_name,
       branchName,
@@ -36,13 +37,14 @@ export function testimonyShare(
 }
 
 export function prayerShare(
-  prayer: Pick<PrayerFeedItem, 'body' | 'author_name' | 'is_anonymous'>,
+  prayer: Pick<PrayerFeedItem, 'id' | 'body' | 'author_name' | 'is_anonymous'>,
   branchName: string | null,
   appName: string,
 ): { content: PrayerShareContent; fallbackText: string } {
   return {
     content: {
       kind: 'prayer',
+      id: prayer.id,
       body: prayer.body,
       authorName: prayer.author_name,
       branchName,
