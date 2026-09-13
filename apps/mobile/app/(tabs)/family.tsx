@@ -18,7 +18,6 @@ import {
   useManualRefresh,
 } from '@/components/ui';
 import { FamilyMap } from '@/features/family/FamilyMap';
-import { joinMeta } from '@/features/family/format';
 import { useBlockedAuthorIds } from '@/features/family/moderation';
 import { AnsweredPrayerCard } from '@/features/family/PrayerCard';
 import {
@@ -32,8 +31,9 @@ import { PrayerRow } from '@/features/family/PrayerRow';
 import { ScopeToggle } from '@/features/family/ScopeToggle';
 import { useFamilyViewStore } from '@/features/family/viewState';
 import { useLayout } from '@/lib/layout';
-import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
+import { testimonyShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useBranchColors } from '@/features/family/useBranchColors';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useFamilyRealtime } from '@/features/family/useFamilyRealtime';
@@ -249,6 +249,8 @@ export default function Family() {
     | { kind: 'testimony'; item: TestimonyFeedItem }
     | { kind: 'prayer'; item: PrayerFeedItem };
 
+  const shareSheet = useShareSheet();
+
   const feedRows: FeedRow[] =
     tab === 'testimonies'
       ? (testimonies.data ?? []).map((item) => ({
@@ -278,15 +280,11 @@ export default function Family() {
           onGloryGate={() => {
             openGate({ kind: 'glory', testimonyId: item.id });
           }}
-          // Sharing is outbound, not a gated contribution: open the OS sheet.
+          // Sharing is outbound, not a gated contribution: the preview sheet, then
+          // the OS sheet (W4.15).
           onShare={() => {
-            void shareText(
-              testimonyShareText(
-                item.body,
-                joinMeta([item.author_name, branchName]),
-                t('appName'),
-              ),
-            );
+            const share = testimonyShare(item, branchName, t('appName'));
+            shareSheet.open(share.content, share.fallbackText);
           }}
         />
       );
@@ -422,9 +420,7 @@ export default function Family() {
           // title's 20px gutter. The ScrollView version wrapped the whole feed in
           // one padded View; a list has no such wrapper, so the inset is the row's.
           renderItem={(row) => <ListRow>{renderFeedRow(row)}</ListRow>}
-          header={
-            <View style={{ marginBottom: spacing.sm }}>{header}</View>
-          }
+          header={<View style={{ marginBottom: spacing.sm }}>{header}</View>}
           empty={<ListRow>{feedPlaceholder()}</ListRow>}
           // Clears the last card from under the pinned FAB (mockup's spacer).
           footer={showFab ? <View style={{ height: 88 }} /> : null}
@@ -441,6 +437,8 @@ export default function Family() {
           }}
         />
       ) : null}
+
+      {shareSheet.element}
 
       <GateSheet
         visible={gateVisible}

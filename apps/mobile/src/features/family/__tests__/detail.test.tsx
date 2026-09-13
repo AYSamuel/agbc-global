@@ -75,16 +75,27 @@ jest.mock('../queries', () => ({
   usePrayerQuery: () => mockPrayer(),
 }));
 
-const mockShareToWhatsApp = jest.fn();
 const mockShareText = jest.fn();
 jest.mock('../share', () => ({
-  shareToWhatsApp: (m: string) => {
-    mockShareToWhatsApp(m);
-  },
   shareText: (m: string) => {
     mockShareText(m);
   },
   testimonyShareText: () => 'share-text',
+}));
+
+// Both share points now open SHARE-PREVIEW (W4.15 slice 2), which needs the two native
+// modules present, or the hook degrades to the text share. Present here, so the screens
+// are tested as a real build sees them; the degrade has its own suite under features/share.
+jest.mock('react-native-view-shot', () => ({
+  captureRef: () => new Promise<string>(() => undefined),
+}));
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: () => Promise.resolve(true),
+  shareAsync: () => Promise.resolve(),
+}));
+jest.mock('react-native-qrcode-svg', () => ({
+  __esModule: true,
+  default: () => null,
 }));
 
 jest.mock('@/features/onboarding/useBranches', () => ({
@@ -181,7 +192,10 @@ describe('TESTIMONY-DETAIL (mockup frame)', () => {
     expect(screen.getByText(/God provided a job/)).toBeTruthy();
     expect(screen.getByText('Ayo Samuel')).toBeTruthy();
     expect(screen.getByText('Glory to God · 32')).toBeTruthy();
-    expect(screen.getByText('Share to WhatsApp')).toBeTruthy();
+    // The plain Share PRAYER-DETAIL draws, since W4.15 slice 2; the green "Share to
+    // WhatsApp" it replaced opened a wa.me link, which can only ever carry text.
+    expect(screen.getByText('Share')).toBeTruthy();
+    expect(screen.queryByText('Share to WhatsApp')).toBeNull();
   });
 
   test('the Glory pill gates for guests', async () => {
@@ -190,10 +204,12 @@ describe('TESTIMONY-DETAIL (mockup frame)', () => {
     expect(screen.getByText('Sign in to say Glory to God')).toBeTruthy();
   });
 
-  test('Share to WhatsApp shares (no gate) since sharing is outbound', async () => {
+  test('Share opens the preview sheet (no gate) since sharing is outbound', async () => {
     await renderScreen(<TestimonyDetail />);
-    await fireEvent.press(screen.getByText('Share to WhatsApp'));
-    expect(mockShareToWhatsApp).toHaveBeenCalledWith('share-text');
+    await fireEvent.press(screen.getByText('Share'));
+    // A picture of what you are about to send, never a silent hand-off (W4.15).
+    expect(await screen.findByText('Share this testimony')).toBeTruthy();
+    expect(screen.getByText('Send as text instead')).toBeTruthy();
     expect(screen.queryByText('Sign in to say Glory to God')).toBeNull();
   });
 
@@ -251,10 +267,12 @@ describe('PRAYER-DETAIL (mockup frame)', () => {
     expect(screen.getByText('Sign in to pray with them')).toBeTruthy();
   });
 
-  test('Share shares (no gate)', async () => {
+  test('Share opens the preview sheet (no gate)', async () => {
     await renderScreen(<PrayerDetail />);
     await fireEvent.press(screen.getByText('Share'));
-    expect(mockShareText).toHaveBeenCalledWith('share-text');
+    expect(await screen.findByText('Share this request')).toBeTruthy();
+    // Nothing has been sent yet: the words go only when the member chooses them.
+    expect(mockShareText).not.toHaveBeenCalled();
   });
 
   test('an answered request shows the tag and links to its testimony', async () => {

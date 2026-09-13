@@ -107,9 +107,17 @@
   "cancel": "Cancel",
   "share": {
     "previewTitle": {
-      "verse": "Share this verse"
+      "verse": "Share this verse",
+      "testimony": "Share this testimony",
+      "prayer": "Share this request"
     },
     "previewAlt": "The picture you're about to send",
+    "kicker": {
+      "testimony": "A testimony",
+      "prayer": "Prayer request"
+    },
+    "willYouPray": "Will you pray?",
+    "readItAll": "Read it all in the app",
     "share": "Share",
     "sendAsTextInstead": "Send as text instead",
     "sendAsText": "Send as text",

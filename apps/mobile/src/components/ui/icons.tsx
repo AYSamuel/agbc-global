@@ -72,6 +72,7 @@ import RotateCw from 'lucide-react-native/icons/rotate-cw';
 import Search from 'lucide-react-native/icons/search';
 import Settings from 'lucide-react-native/icons/settings';
 import Share from 'lucide-react-native/icons/share';
+import Sparkle from 'lucide-react-native/icons/sparkle';
 import ShoppingBag from 'lucide-react-native/icons/shopping-bag';
 import SquarePen from 'lucide-react-native/icons/square-pen';
 import Star from 'lucide-react-native/icons/star';
@@ -122,6 +123,10 @@ export const PinIcon = houseStyle(MapPin, 'PinIcon');
 export const StudyIcon = houseStyle(GraduationCap, 'StudyIcon');
 export const BookIcon = houseStyle(Book, 'BookIcon');
 export const ShareIcon = houseStyle(Share, 'ShareIcon');
+/** The testimony share card's kicker (W4.15 slice 2): Lucide's `sparkle`, the same
+ * four-point star the frame draws beside "A testimony". The feed's Glory star is the
+ * text glyph ✦; this is its stroke sibling at a size a 1080 card can carry. */
+export const SparkleIcon = houseStyle(Sparkle, 'SparkleIcon');
 export const SearchIcon = houseStyle(Search, 'SearchIcon');
 export const CardIcon = houseStyle(CreditCard, 'CardIcon');
 export const BankIcon = houseStyle(Landmark, 'BankIcon');

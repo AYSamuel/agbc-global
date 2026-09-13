@@ -129,8 +129,16 @@ function renderHome() {
   );
 }
 
+// A Monday morning. Home reads the real clock (`resolveNextService`, the ended
+// gathering note), and the fixture below is a Sunday noon service, so with no
+// clock of its own this file rendered "Sunday Service, earlier today." on every
+// Sunday afternoon and failed three tests, on 2026-09-13 in CI. The verse
+// fixture is dated the same day.
+const MONDAY_MORNING = new Date('2026-07-20T10:00:00Z');
+
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.useFakeTimers().setSystemTime(MONDAY_MORNING);
   // Open unless a test says otherwise, which is every test but one.
   mockBrowsedClosed.mockReturnValue({ closed: false });
   useBranchStore.setState({
@@ -169,6 +177,10 @@ beforeEach(() => {
   // Default: no sermons synced yet, so the latest-message block stays hidden
   // (docs/spec/07 states). Tests that need the block set their own row.
   mockSermons.mockReturnValue({ data: [], isError: false, refetch: jest.fn() });
+});
+
+afterEach(() => {
+  jest.useRealTimers();
 });
 
 const sermonRow = {

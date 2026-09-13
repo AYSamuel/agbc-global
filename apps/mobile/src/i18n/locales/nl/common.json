@@ -107,9 +107,17 @@
   "cancel": "Annuleren",
   "share": {
     "previewTitle": {
-      "verse": "Dit vers delen"
+      "verse": "Dit vers delen",
+      "testimony": "Dit getuigenis delen",
+      "prayer": "Dit gebedsverzoek delen"
     },
     "previewAlt": "De afbeelding die je gaat versturen",
+    "kicker": {
+      "testimony": "Een getuigenis",
+      "prayer": "Gebedsverzoek"
+    },
+    "willYouPray": "Bid je mee?",
+    "readItAll": "Lees alles in de app",
     "share": "Delen",
     "sendAsTextInstead": "Stuur in plaats daarvan tekst",
     "sendAsText": "Als tekst versturen",
