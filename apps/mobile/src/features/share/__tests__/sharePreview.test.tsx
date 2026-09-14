@@ -6,7 +6,7 @@ import {
   screen,
   userEvent,
 } from '@testing-library/react-native';
-import { Share } from 'react-native';
+import { Share, StyleSheet, type ViewStyle } from 'react-native';
 
 import { ThemeScope } from '@/theme';
 
@@ -260,5 +260,31 @@ describe('SHARE-PREVIEW', () => {
     // remembered "already captured" would block every later opening.
     await screen.findByTestId('share-preview-image');
     expect(mockCaptureRef).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * THE FRAME MUST STAY SQUARE ON A WIDE SHEET (W4.17, found 2026-09-15 in the iPad store
+   * captures, and live on every Android tablet in 1.0.2). The frame is 68% of the sheet,
+   * capped, and square by `aspectRatio`. Yoga derives the height from the percentage width
+   * BEFORE it applies a max: on a sheet wider than ~412dp the width stopped at the cap while
+   * the height stayed at 68%, and the picture filled a tall frame with both sides cut off.
+   * A phone never reaches the cap, which is why W4.15's phone matrix passed.
+   *
+   * WHAT THIS CAN AND CANNOT PROVE. Jest has no layout engine, so no size is ever computed
+   * here and a clipped preview cannot be observed; the tablet is the acceptance test. What
+   * this pins is the one rule whose absence produced the bug: whatever caps the width caps
+   * the height by the same amount, so the aspect ratio has nothing left to stretch.
+   */
+  it('caps the preview frame on both axes, so a wide sheet cannot stretch it tall', async () => {
+    await renderSheet();
+    await layOutTheCard();
+    await screen.findByTestId('share-preview-image');
+
+    const frame = StyleSheet.flatten(
+      screen.getByTestId('share-preview-frame').props.style as ViewStyle,
+    );
+    expect(frame.aspectRatio).toBe(1);
+    expect(frame.maxWidth).toEqual(expect.any(Number));
+    expect(frame.maxHeight).toBe(frame.maxWidth);
   });
 });

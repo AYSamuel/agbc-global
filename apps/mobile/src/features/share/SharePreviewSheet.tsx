@@ -288,6 +288,9 @@ export function SharePreviewSheet({
   );
 }
 
+/** The largest the preview frame may be on either axis, in dp. */
+const PREVIEW_MAX_DP = 280;
+
 /**
  * `.scwrap`: the card shown WHOLE and never cropped, because the member is being asked to
  * approve exactly what leaves the app and a preview that hides an edge is not a preview.
@@ -306,12 +309,19 @@ function PreviewWindow({
   const { colors } = useTheme();
   return (
     <View
+      testID="share-preview-frame"
       style={{
         // The frame draws 234 on a 390-wide phone, which is 68% of the sheet's content
         // width; capped so a tablet's wider sheet does not turn the preview into a poster.
         alignSelf: 'center',
         width: '68%',
-        maxWidth: 280,
+        // THE CAP IS ON BOTH AXES, NOT ONLY THE WIDTH (W4.17, 2026-09-15). Yoga derives the
+        // height from the 68% width BEFORE it applies a max, so with `maxWidth` alone a sheet
+        // wider than ~412dp gave a frame 280 wide and 68% tall, and the picture filling it
+        // lost both sides on every tablet: a cropped preview, which `.scwrap` exists to
+        // forbid. With the height capped by the same amount there is nothing left to stretch.
+        maxWidth: PREVIEW_MAX_DP,
+        maxHeight: PREVIEW_MAX_DP,
         aspectRatio: 1,
         marginBottom: spacing.lg - 2,
         shadowColor: palette.navy,
