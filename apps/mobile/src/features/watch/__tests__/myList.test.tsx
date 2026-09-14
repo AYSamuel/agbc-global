@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import i18n from '@/i18n';
+import '@/i18n';
 import { ToastProvider } from '@/components/ui';
 import { useGateStore } from '@/state/gate';
 import { ThemeScope } from '@/theme';
@@ -13,8 +13,6 @@ import MyList from '../../../../app/my-list';
 // MY-LIST (docs/spec/08, the four W3.1 slice 4 frames): the list is the
 // saving, the remove control sits on the row, and a message the channel lost
 // stays listed with its way out where the hand expects it.
-
-void i18n;
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */

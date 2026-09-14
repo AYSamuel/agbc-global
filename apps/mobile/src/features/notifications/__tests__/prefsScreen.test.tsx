@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 
-import i18n from '@/i18n';
+import '@/i18n';
 import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
@@ -16,8 +16,6 @@ import NotificationPrefsScreen from '../../../../app/settings/notifications';
 // NOTIF-PREFS (W3.3 decisions 2 and 4; both frames): five switches over six
 // columns, captions shared with the Android channels, and the OS banner that
 // appears only when the OS itself said no.
-
-void i18n;
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */

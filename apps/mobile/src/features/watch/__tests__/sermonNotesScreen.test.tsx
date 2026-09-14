@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import i18n from '@/i18n';
+import '@/i18n';
 import { ToastProvider } from '@/components/ui';
 import { useGateStore } from '@/state/gate';
 import { ThemeScope } from '@/theme';
@@ -15,8 +15,6 @@ import SermonNotes from '../../../../app/sermon/notes/[id]';
 // SERMON-NOTES, the screen (docs/spec/08, the four W3.1 slice 4 frames). The
 // machine itself is proven in notes.test.ts; here: what each state puts on the
 // page, and that the Add line exists exactly when there is a second to name.
-
-void i18n;
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */
