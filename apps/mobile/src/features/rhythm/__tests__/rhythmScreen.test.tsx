@@ -14,7 +14,13 @@ import Rhythm from '../../../../app/rhythm';
 // What is asserted here is the part `10` cares about: WHICH NUMBER LEADS in each
 // of the four states `rhythm_state()` can answer, that the grace week is said
 // once and never drawn as a row, and that a member who signs out of the network
-// gets a retry rather than a half-built screen.
+// gets a retry rather than a half-built screen. And since W4.16, that the Next
+// card says the server's distance in the approved words.
+//
+// THE WINDOW IS NOT SET, deliberately: Jest's default window is tablet-sized,
+// which silently turns on anything conditional on `isTablet`, and nothing on
+// this screen, the Next card or the strip reads it (checked 2026-09-14). If that
+// changes, these tests must state a phone width first.
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */
@@ -108,6 +114,11 @@ function rhythmRow(over: Record<string, unknown> = {}) {
     currentWeeks: 6,
     longestWeeks: 11,
     lastServiceDate: '2026-08-02',
+    // The month is held and a season is next: five whole weeks of its thirteen.
+    nextKind: '12_week_rhythm',
+    progressDone: 5,
+    progressTotal: 13,
+    progressMonth: null,
     ...over,
   };
 }
@@ -171,7 +182,41 @@ describe('the four states of rhythm_state (docs/spec/10)', () => {
     // Named rather than counted (W2.8 slice 5): the rung a member is climbing
     // towards is called the same thing on the card as on the badge.
     expect(screen.getByText('Next: A season with us')).toBeOnTheScreen();
-    expect(screen.getByText('6 to go')).toBeOnTheScreen();
+    // Calendar weeks since W4.16, and said as weeks: "8 weeks to go".
+    expect(screen.getByText('8 weeks to go')).toBeOnTheScreen();
+  });
+
+  test('toward a month of Sundays, the card counts the month the server names', async () => {
+    // The approved frame: four Sundays into November, which has five.
+    signIn();
+    mockRhythm.mockReturnValue(
+      query(
+        rhythmRow({
+          currentWeeks: 4,
+          longestWeeks: 4,
+          nextKind: '4_week_rhythm',
+          progressDone: 4,
+          progressTotal: 5,
+          progressMonth: '2026-11-01',
+        }),
+      ),
+    );
+    await renderRhythm();
+    expect(screen.getByText('Next: A month of Sundays')).toBeOnTheScreen();
+    expect(screen.getByText('4 of 5 in November')).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText('Next: A month of Sundays. 4 of 5 in November'),
+    ).toBeOnTheScreen();
+  });
+
+  test('a full count reads "Almost there", never a zero', async () => {
+    signIn();
+    mockRhythm.mockReturnValue(
+      query(rhythmRow({ currentWeeks: 12, progressDone: 13 })),
+    );
+    await renderRhythm();
+    expect(screen.getByText('Almost there')).toBeOnTheScreen();
+    expect(screen.queryByText(/0 weeks to go/)).toBeNull();
   });
 
   test('grace: the missed week is said once, and never drawn as a row', async () => {

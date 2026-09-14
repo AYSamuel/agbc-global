@@ -1,4 +1,8 @@
-import { formatAttendanceDate, formatGatheredDate } from '../format';
+import {
+  formatAttendanceDate,
+  formatGatheredDate,
+  formatMonthName,
+} from '../format';
 import { heroContent } from '../heroContent';
 import { aheadBadges, badgeFor, earnedBadges } from '../milestones';
 import type { RhythmPhase, RhythmState } from '../queries';
@@ -24,6 +28,10 @@ function rhythm(
     currentWeeks: 0,
     longestWeeks: 0,
     lastServiceDate: null,
+    nextKind: null,
+    progressDone: 0,
+    progressTotal: 0,
+    progressMonth: null,
     ...over,
   };
 }
@@ -149,5 +157,15 @@ describe('a service_date survives being displayed', () => {
   test('a value that is not a date renders as nothing, never as "Invalid Date"', () => {
     expect(formatAttendanceDate('', 'en-GB')).toBe('');
     expect(formatGatheredDate('2026-13-40', 'en-GB')).toBe('');
+    expect(formatMonthName('2026-13-01', 'en-GB')).toBe('');
+  });
+
+  test('the month being counted is its own month in every language (W4.16)', () => {
+    // `progress_month` is the month's first day. Formatted in a zone west of
+    // UTC without the carrier, 1 October would name September.
+    expect(formatMonthName('2026-10-01', 'en-GB')).toBe('October');
+    expect(formatMonthName('2026-10-01', 'de-DE')).toBe('Oktober');
+    expect(formatMonthName('2026-10-01', 'nl-NL')).toBe('oktober');
+    expect(formatMonthName('2026-10-01', 'fr-FR')).toBe('octobre');
   });
 });

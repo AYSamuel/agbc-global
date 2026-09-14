@@ -24,6 +24,22 @@ export interface RhythmState {
   /** Monotonic; never taken away. */
   longestWeeks: number;
   lastServiceDate: string | null;
+  /**
+   * The first rhythm milestone the member does not hold yet (W4.16), as a kind
+   * (`4_week_rhythm` is a month of Sundays: kinds are identifiers, see
+   * milestones.ts). Null only when the server said nothing, which a build
+   * talking to a database without W4.16's migration would get.
+   */
+  nextKind: string | null;
+  /**
+   * How far along it is, in the server's own units: the month's covered weeks
+   * of its 4 or 5 while `progressMonth` is set, whole calendar weeks of a run
+   * toward a time rung otherwise. The app divides these and never counts.
+   */
+  progressDone: number;
+  progressTotal: number;
+  /** 'YYYY-MM-01' of the month being counted, or null once the month is held. */
+  progressMonth: string | null;
 }
 
 /** The RPC's row, before it is given app-shaped names. */
@@ -34,6 +50,13 @@ interface RhythmRow {
   current_weeks: number;
   longest_weeks: number;
   last_service_date: string | null;
+  // Nullable and optional here although the generated types say otherwise:
+  // an older database answers without them, and "nothing to count toward" is
+  // the honest reading of that rather than a crash.
+  next_kind?: string | null;
+  progress_done?: number | null;
+  progress_total?: number | null;
+  progress_month?: string | null;
 }
 
 const PHASES: readonly string[] = ['none', 'active', 'grace', 'lapsed'];
@@ -51,6 +74,10 @@ export function toRhythmState(row: RhythmRow): RhythmState {
     currentWeeks: row.current_weeks,
     longestWeeks: row.longest_weeks,
     lastServiceDate: row.last_service_date,
+    nextKind: row.next_kind ?? null,
+    progressDone: row.progress_done ?? 0,
+    progressTotal: row.progress_total ?? 0,
+    progressMonth: row.progress_month ?? null,
   };
 }
 

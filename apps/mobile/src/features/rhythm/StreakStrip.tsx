@@ -2,24 +2,28 @@ import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 
 import { StatusPanel, type StatusPanelRing } from '@/components/ui';
+import { useFormattingLocale } from '@/i18n';
 
-import { badgeFor, milestoneFraction, nextMilestone } from './milestones';
+import type { Translate } from './heroContent';
+import { nextProgress } from './nextProgress';
 import type { RhythmState } from './queries';
 
-type Translate = (key: string, options?: Record<string, unknown>) => string;
-
 // Home's rhythm strip (docs/spec/07 §7, mockup W2.8 "the rhythm strip, all four
-// states"): the ink `.rhythm` panel, in whichever of `rhythm_state`'s four
-// states the member is in.
+// states" and W4.16 "the rhythm strip, every progress shape"): the ink `.rhythm`
+// panel, in whichever of `rhythm_state`'s four states the member is in.
 //
 // EVERY number here is the server's. The app chooses a sentence and nothing
-// else: the grace maths, the DST handling and what counts as a week are settled
-// in SQL and asserted in pgTAP 030 (docs/spec/10).
+// else: the grace maths, the DST handling, what counts as a week and which
+// month is being counted are settled in SQL and asserted in pgTAP 030 and 056
+// (docs/spec/10).
 //
 // THE RING appears only while a run is in progress. It is progress toward the
 // next milestone, and in `none` and `lapsed` there is no run to be part of the
 // way through: a big gold 0 is exactly the scold `10` forbids, so the panel
-// carries the sentence alone.
+// carries the sentence alone. Its LABEL is the run's weeks and its FILL is
+// `nextProgress`, so it may be an empty track (nothing counts toward the month
+// yet), which Ayo chose over hiding it on 2026-09-14: a strip that changes
+// shape from week to week while a member is active would read as lapsed.
 
 export interface StripContent {
   title: string;
@@ -33,7 +37,8 @@ export interface StripContent {
  */
 export function stripContent(
   rhythm: RhythmState,
-  t: (key: string, options?: Record<string, unknown>) => string,
+  locale: string,
+  t: Translate,
 ): StripContent {
   // The invitation also covers a running state with nothing to count. The server
   // does not produce one (a streak row exists only once attendance does, and
@@ -60,32 +65,23 @@ export function stripContent(
     };
   }
 
-  // There is always a next rung now (W2.8 slice 5), so the strip always has
-  // something to count towards and the old "steady rhythm" sentence, which
-  // covered running out of ladder, is gone with the dead end that needed it.
-  const upcoming = nextMilestone(rhythm.currentWeeks);
+  // There is always a next milestone (W2.8 slice 5 made the ladder endless, and
+  // W4.16 made "next" skip what is held), so the strip always has something to
+  // count towards. `progress` is null only when the server named none, which an
+  // older database would do: the strip then says the run and draws no ring.
+  const progress = nextProgress(rhythm, locale, t);
   return {
     title: t('rhythm:stripWeeks', { count: rhythm.currentWeeks }),
     note:
       rhythm.phase === 'grace'
         ? // The one line that names the missed week, and it names it as covered.
           t('rhythm:stripGraceNote')
-        : stripNextNote(upcoming, t),
-    ring: {
-      label: String(rhythm.currentWeeks),
-      fraction: milestoneFraction(rhythm.currentWeeks),
-    },
+        : (progress?.stripNote ?? ''),
+    ring:
+      progress === null
+        ? null
+        : { label: String(rhythm.currentWeeks), fraction: progress.fraction },
   };
-}
-
-/** "Next: A season with us", falling back to the count for a rung with no name. */
-function stripNextNote(upcoming: number, t: Translate): string {
-  const badge = badgeFor(`${String(upcoming)}_week_rhythm`);
-  return badge === null
-    ? t('rhythm:stripNextNote', { count: upcoming })
-    : t('rhythm:nextNamed', {
-        name: t(badge.labelKey, { count: badge.count }),
-      });
 }
 
 export function StreakStrip({
@@ -98,11 +94,12 @@ export function StreakStrip({
   onPress?: () => void;
 }) {
   const { t } = useTranslation();
-  const { title, note, ring } = stripContent(rhythm, t);
+  const locale = useFormattingLocale();
+  const { title, note, ring } = stripContent(rhythm, locale, t);
 
   // docs/spec/05: the strip is grouped and reads as one phrase rather than
-  // three fragments ("5-week rhythm, next milestone 12 weeks").
-  const label = `${title}. ${note}`;
+  // three fragments ("5-week rhythm. Next: A season with us").
+  const label = note === '' ? title : `${title}. ${note}`;
   const panel = (
     <StatusPanel
       label={t('rhythm:stripLabel')}

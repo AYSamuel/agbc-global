@@ -281,11 +281,23 @@ where id in (
 -- `rhythm_state()` can answer (docs/spec/10), because a state with no seeded member is a state
 -- nobody looks at until a real member is standing in it:
 --
---   Grace   (Glasgow leader)  six Sundays with one missed: state ACTIVE, and the run reads 5,
---                             which is the grace ARITHMETIC (the missed week is carried)
---   Tobi    (Glasgow member)  last Sunday only: ACTIVE, a rhythm just beginning
+--   Grace   (Glasgow leader)  every week of LAST calendar month and every week since, after one
+--                             earlier Sunday and a missed week: ACTIVE, the month of Sundays
+--                             HELD and counting toward a season, and the grace ARITHMETIC too
+--                             (the missed week is carried, so the run is one shorter than it spans)
+--   Tobi    (Glasgow member)  the weeks of THIS calendar month so far (last Sunday, when the month
+--                             has only just begun): ACTIVE, working toward the month
 --   Anke    (Berlin member)   nothing for a fortnight: state GRACE, the run still standing
 --   Marieke (Emmen member)    a month ago and nothing since: LAPSED, longest remembered
+--
+-- GRACE AND TOBI ARE BUILT FROM THE CALENDAR, NOT FROM A COUNT OF WEEKS BACK (W4.16). Since
+-- then a month of Sundays means every week of one calendar month, so "six Sundays back" holds
+-- the month on some reset days and not on others, and the screens a session opens to would
+-- change with the date. These two shapes were checked against every reset day of 2026 and
+-- 2027 through the real functions: Grace always holds the month, never a season, and is 6 to
+-- 10 weeks into the 13 or 14 toward one; Tobi never holds the month and is always counted
+-- toward THIS one (a count on 560 of 730 days, "nothing counts yet" on the other 170, which is
+-- when the reset falls in a month's first week).
 --
 -- Anke exists because the grace STATE and the grace ARITHMETIC are different things, and only
 -- the arithmetic was seeded until W2.8's screens went looking for the state (2026-08-07). Grace
@@ -298,35 +310,54 @@ where id in (
 -- (no auth.uid()): as a member every one of these would be clamped to today, which is the
 -- whole point of the clamp. Streaks and milestones are NOT seeded; the triggers derive them,
 -- so a seeded database exercises the same path a real tap does.
-insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
-select
-  p.id,
-  p.branch_id,
-  (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
-  now(),
-  'here_button'
-from public.profiles p
-cross join unnest(array[6, 5, 3, 1]) as w
-where p.email = 'dev.grace@example.test'
-on conflict (profile_id, service_date) do nothing;
-
--- One of Grace's six Sundays, credited by watching the stream instead of by the button. The
+-- One of Grace's Sundays, credited by watching the stream instead of by the button. The
 -- WRITER of these arrives at W3.2 (`08` credit-on-open); the row exists now because RHYTHM's
 -- history draws that source differently (the frame's `.atrow.live`, a red disc and "Watched
 -- live"), and a rendering path with no data behind it is a path nobody looks at until a real
--- member is standing in it. Split out of the array above rather than added to it, so the
--- dates, the run and the grace week are all exactly as they were.
+-- member is standing in it. Inserted FIRST so the calendar insert below leaves its day alone.
+-- Four weeks back is always inside Grace's unbroken stretch, because last month's first week
+-- is never nearer than four weeks.
 insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
-select p.id, p.branch_id, (date_trunc('week', current_date) - interval '4 weeks')::date + 6,
-       now(), 'live_watch'
+select p.id, p.branch_id, public.rhythm_week(current_date) - 28 + 6, now(), 'live_watch'
 from public.profiles p
 where p.email = 'dev.grace@example.test'
 on conflict (profile_id, service_date) do nothing;
 
+-- Grace: every Sunday from the first week of last calendar month to last Sunday, which covers
+-- that whole month, plus one Sunday two weeks before it, which leaves one missed week for grace
+-- to carry. Weeks are MONDAYS (`rhythm_week`), and a week belongs to the month of its Sunday
+-- (`rhythm_week_month`), which is why last month is found through the current week rather than
+-- through `current_date`'s own month.
 insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
-select p.id, p.branch_id, (date_trunc('week', current_date) - interval '1 week')::date + 6,
-       now(), 'here_button'
+select p.id, p.branch_id, sunday, now(), 'here_button'
 from public.profiles p
+cross join lateral (
+  select min(w) as first_monday
+  from public.rhythm_month_weeks((public.rhythm_week_month(current_date) - interval '1 month')::date) w
+) last_month
+cross join lateral (
+  select last_month.first_monday + 7 * i + 6 as sunday
+  from generate_series(0, (public.rhythm_week(current_date) - 7 - last_month.first_monday) / 7) i
+  union all
+  select last_month.first_monday - 14 + 6
+) sundays
+where p.email = 'dev.grace@example.test'
+on conflict (profile_id, service_date) do nothing;
+
+-- Tobi: every Sunday of this calendar month before this week. When this week IS the month's
+-- first, there is none, so last Sunday stands in (it belongs to last month): Tobi is still a
+-- member with a rhythm, and the strip says the month has nothing counted yet.
+insert into public.attendance (profile_id, branch_id, service_date, client_taken_at, source)
+select p.id, p.branch_id, sunday, now(), 'here_button'
+from public.profiles p
+cross join lateral (
+  select least(min(w), public.rhythm_week(current_date) - 7) as first_monday
+  from public.rhythm_month_weeks(public.rhythm_week_month(current_date)) w
+) this_month
+cross join lateral (
+  select this_month.first_monday + 7 * i + 6 as sunday
+  from generate_series(0, (public.rhythm_week(current_date) - 7 - this_month.first_monday) / 7) i
+) sundays
 where p.email = 'dev.tobi@example.test'
 on conflict (profile_id, service_date) do nothing;
 

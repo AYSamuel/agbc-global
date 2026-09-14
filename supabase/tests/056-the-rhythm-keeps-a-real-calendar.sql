@@ -606,8 +606,9 @@ select ok(
   and has_function_privilege('authenticated', 'public.rhythm_next_milestone(date, date[], text[], date)', 'EXECUTE'),
   'while a member may call both, and the helper rhythm_state calls as them');
 
--- A pure function a client may EXECUTE is an RPC on the public API, and two of these build a
--- series as long as their arguments say.
+-- A pure function a client may EXECUTE is an RPC on the public API, and three of these build a
+-- series as long as their arguments say. The gathering ladder predates W4.16 and had the same
+-- shape, so it joined the list in slice 3 (`20260914140000`).
 select is(
   (select count(*)::int
      from unnest(array[
@@ -615,12 +616,13 @@ select is(
        'public.rhythm_month_weeks(date)',
        'public.rhythm_covered_months(date[])',
        'public.rhythm_time_ladder(integer)',
-       'public.rhythm_time_rungs(date, date)'
+       'public.rhythm_time_rungs(date, date)',
+       'public.rhythm_gathering_rungs(integer)'
      ]) as f(signature)
      cross join unnest(array['anon', 'authenticated', 'service_role']) as r(who)
     where has_function_privilege(r.who, f.signature, 'EXECUTE')),
   0,
-  'no client role may call the calendar helpers directly, so nobody can ask the ladder for a billion years');
+  'no client role may call the ladder helpers directly, so nobody can ask either ladder for a billion rungs');
 
 select is(
   (select count(*)::int
