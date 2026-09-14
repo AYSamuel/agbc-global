@@ -337,14 +337,17 @@ select is(
     where profile_id = :'grace_member' and kind = 'first_service'),
   1, 'the first service is celebrated');
 
+-- Whether a run of weeks has made a month of Sundays depends on WHICH weeks, since W4.16
+-- (`056`, on fixed dates). All this file can say without a calendar is what holds on every day
+-- it runs: a run of six weeks is not yet a season, which needs three calendar months.
 select is(
   (select count(*)::int from public.milestones
-    where profile_id = :'grace_member' and kind = '4_week_rhythm'),
-  1, 'so is a four-week rhythm');
+    where profile_id = :'grace_member' and kind = '12_week_rhythm'),
+  0, 'a run of a few weeks is not yet a season');
 
 select is(
   (select count(*)::int from public.milestones
-    where profile_id = :'gone_member' and kind = '4_week_rhythm'),
+    where profile_id = :'gone_member' and kind like '%_week_rhythm'),
   0, 'one service earns no rhythm milestone');
 
 -- Every insert re-awards, and the unique constraint absorbs it: no double celebrations.
@@ -353,9 +356,11 @@ select lives_ok(
            values (%L, %L, current_date - 1, now())$$, :'grace_member', :'glasgow'),
   'another service is recorded without a duplicate-milestone failure');
 
+-- Asked as "no kind twice" rather than as a total, because the total depends on the date.
 select is(
-  (select count(*)::int from public.milestones where profile_id = :'grace_member'),
-  2, 'and still exactly two milestones');
+  (select count(*)::int - count(distinct kind)::int from public.milestones
+    where profile_id = :'grace_member'),
+  0, 'and no milestone is held twice');
 
 -- Content milestones land on APPROVAL, never on submission: a celebration for a post that is
 -- then rejected is the opposite of what `10` asks for.
