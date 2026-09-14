@@ -109,12 +109,18 @@
     "previewTitle": {
       "verse": "Share this verse",
       "testimony": "Share this testimony",
-      "prayer": "Share this request"
+      "prayer": "Share this request",
+      "event": "Share this event",
+      "sermon": "Share this message",
+      "branch": "Share this branch"
     },
     "previewAlt": "The picture you're about to send",
     "kicker": {
       "testimony": "A testimony",
-      "prayer": "Prayer request"
+      "prayer": "Prayer request",
+      "event": "You're invited",
+      "sermon": "Message",
+      "branch": "Come and visit"
     },
     "willYouPray": "Will you pray?",
     "readItAll": "Read it all in the app",

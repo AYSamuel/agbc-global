@@ -109,12 +109,18 @@
     "previewTitle": {
       "verse": "Diesen Vers teilen",
       "testimony": "Dieses Zeugnis teilen",
-      "prayer": "Dieses Gebetsanliegen teilen"
+      "prayer": "Dieses Gebetsanliegen teilen",
+      "event": "Diesen Termin teilen",
+      "sermon": "Diese Botschaft teilen",
+      "branch": "Diesen Standort teilen"
     },
     "previewAlt": "Das Bild, das du senden wirst",
     "kicker": {
       "testimony": "Ein Zeugnis",
-      "prayer": "Gebetsanliegen"
+      "prayer": "Gebetsanliegen",
+      "event": "Du bist eingeladen",
+      "sermon": "Botschaft",
+      "branch": "Komm vorbei"
     },
     "willYouPray": "Betest du mit?",
     "readItAll": "Alles in der App lesen",

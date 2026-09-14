@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   AppState,
   Pressable,
-  Share,
   Text,
   useWindowDimensions,
   View,
@@ -75,15 +74,14 @@ import {
 } from '@/features/watch/saved';
 import { useFormattingLocale } from '@/i18n';
 import { useSermonQuery, type SermonSummary } from '@/features/watch/queries';
+import { youtubeUrl } from '@/features/family/share';
+import { sermonShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 import { useOpenExternal } from '@/lib/openExternal';
-
-function youtubeUrl(youtubeId: string): string {
-  return `https://www.youtube.com/watch?v=${youtubeId}`;
-}
 
 // The embed plus its resume wiring (decision 2026-07-20, docs/spec/08).
 // Its own component so the start position is computed exactly once, when the
@@ -189,6 +187,7 @@ export default function Sermon() {
   const { t } = useTranslation();
   const openLink = useOpenExternal();
   const locale = useFormattingLocale();
+  const shareSheet = useShareSheet();
   const { colors } = useTheme();
   const toast = useToast();
   const { width } = useWindowDimensions();
@@ -274,12 +273,17 @@ export default function Sermon() {
       sermon?.duration_sec ?? null,
     ) ?? 0;
 
+  // W4.15 slice 3: the card, over whatever the artwork rule already shows for this
+  // message. The words the text route sends are the ones the player always sent
+  // (`sermonShareText`, folded into features/family/share.ts from here).
   const share = (s: SermonSummary) => {
-    void Share.share({
-      message: s.youtube_id
-        ? `${s.title}\n${youtubeUrl(s.youtube_id)}`
-        : s.title,
-    });
+    const minutes = durationMinutes(s.duration_sec);
+    const built = sermonShare(
+      s,
+      minutes === null ? null : t('watch:minutes', { count: minutes }),
+      formatPublishedDate(s.published_at, locale),
+    );
+    shareSheet.open(built.content, built.fallbackText);
   };
 
   const eyebrow =
@@ -672,6 +676,7 @@ export default function Sermon() {
       {/* Two sheets rather than one with swapped copy, so the words never
           flicker mid-dismissal: each stays mounted with its own text and only
           `visible` moves. */}
+      {shareSheet.element}
       <GateSheet
         visible={gate === 'notes'}
         title={t('watch:notesGateTitle')}

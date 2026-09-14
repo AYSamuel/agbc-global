@@ -61,7 +61,70 @@ export interface PrayerShareContent {
   anonymous: boolean;
 }
 
+/**
+ * An event (mockup `CARD · an event, with its picture` and `· with no picture`). The
+ * words arrive FORMATTED, in the sharer's locale, because the card draws a date block
+ * and a "Saturday · 7:00 PM" line and has no business owning `Intl`; the preset that
+ * builds this runs the same formatters EVENT-DETAIL already runs. `imageUrl` is the
+ * public `event-images` object, built rather than signed (`features/events/image.ts`),
+ * or null for the common case.
+ */
+export interface EventShareContent {
+  kind: 'event';
+  id: string;
+  title: string;
+  /** `.scdate .d`, e.g. "24". */
+  day: string;
+  /** `.scdate .m`, e.g. "Aug". */
+  month: string;
+  /** `.scby`, e.g. "Saturday · 7:00 PM". */
+  when: string;
+  /** `.scby .b`: the branch and the venue, or null for a global event with no venue. */
+  place: string | null;
+  imageUrl: string | null;
+}
+
+/**
+ * A message (mockup `CARD · a message`). `imageUrl` is what the artwork rule already
+ * decided for every other surface (`features/watch/artwork.ts`): the church's own
+ * artwork, else YouTube's thumbnail, else null and the ink ground. `meta` is the `.b`
+ * line under the speaker, formatted by the preset.
+ */
+export interface SermonShareContent {
+  kind: 'sermon';
+  id: string;
+  title: string;
+  speaker: string;
+  meta: string | null;
+  imageUrl: string | null;
+}
+
+/** One `.scrows` row on a branch card: a clock or a pin, and the words beside it. */
+export interface BranchShareRow {
+  icon: 'clock' | 'pin';
+  text: string;
+  /** `.scrows b`: the Sunday line is the one a stranger came for. */
+  strong: boolean;
+}
+
+/**
+ * A branch (mockup `CARD · a branch`). The rows are the branch's own `service_times`
+ * strings, untranslated on purpose: `02` stores what the branch wrote, and Berlin wrote
+ * "Mittwochs 19:00 Uhr".
+ */
+export interface BranchShareContent {
+  kind: 'branch';
+  id: string;
+  name: string;
+  rows: BranchShareRow[];
+}
+
 export type ShareContent =
-  VerseShareContent | TestimonyShareContent | PrayerShareContent;
+  | VerseShareContent
+  | TestimonyShareContent
+  | PrayerShareContent
+  | EventShareContent
+  | SermonShareContent
+  | BranchShareContent;
 
 export type ShareKind = ShareContent['kind'];

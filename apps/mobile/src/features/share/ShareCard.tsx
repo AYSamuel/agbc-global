@@ -14,14 +14,19 @@ import { fontFamily, palette, shareCard } from '@agbc/shared/theme';
 
 import {
   BookIcon,
+  CalendarIcon,
+  ClockIcon,
   GradientFill,
   HeartIcon,
+  PinIcon,
+  PlayIcon,
   SparkleIcon,
+  WatchTabIcon,
   type GradientStop,
 } from '@/components/ui';
 import { useSignedPhotoUrl } from '@/features/family/useSignedPhotoUrl';
 
-import type { ShareContent } from './content';
+import type { BranchShareRow, ShareContent } from './content';
 import { CARD_RENDER_DP, CARD_SCALE } from './geometry';
 import { SHARE_ORIGIN_LABEL, shareUrlFor } from './links';
 
@@ -94,9 +99,9 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
   const { t } = useTranslation();
 
   // The photo's three states. `none` for every card that has no picture to wait for.
-  const photoPath = content.kind === 'testimony' ? content.photoPath : null;
+  const photoSource = photoSourceFor(content);
   const [photo, setPhoto] = useState<'none' | 'pending' | 'shown' | 'fallback'>(
-    photoPath === null ? 'none' : 'pending',
+    photoSource === null ? 'none' : 'pending',
   );
   const [fitted, setFitted] = useState(false);
   // Where the words begin, in dp from the card's top, so a photo's scrim can be dark
@@ -137,7 +142,7 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
         label={t('share.kicker.testimony')}
         color={tokens.kickerLabel}
       />
-    ) : (
+    ) : content.kind === 'prayer' ? (
       <Kicker
         icon={
           <HeartIcon
@@ -147,6 +152,38 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
           />
         }
         label={t('share.kicker.prayer')}
+        color={tokens.kickerLabel}
+      />
+    ) : content.kind === 'event' ? (
+      <Kicker
+        icon={
+          <CalendarIcon
+            size={48 * u}
+            color={tokens.kickerIcon}
+            strokeWidth={1.8}
+          />
+        }
+        label={t('share.kicker.event')}
+        color={tokens.kickerLabel}
+      />
+    ) : content.kind === 'sermon' ? (
+      <Kicker
+        icon={
+          <WatchTabIcon
+            size={48 * u}
+            color={tokens.kickerIcon}
+            strokeWidth={1.8}
+          />
+        }
+        label={t('share.kicker.sermon')}
+        color={tokens.kickerLabel}
+      />
+    ) : (
+      <Kicker
+        icon={
+          <PinIcon size={48 * u} color={tokens.kickerIcon} strokeWidth={1.8} />
+        }
+        label={t('share.kicker.branch')}
         color={tokens.kickerLabel}
       />
     );
@@ -173,7 +210,7 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
     >
       <GroundLayer
         ground={ground}
-        photoPath={photoPath}
+        photoSource={photoSource}
         photoState={photo}
         blockTop={blockTop}
         onPhoto={setPhoto}
@@ -192,8 +229,9 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
         // photo testimony is drawn at `.scq.sm`, and on the device the top rung floated
         // the kicker up to where the scrim is still thin over a bright sky. Decided by
         // the path rather than by the ground, because the ground is not known until the
-        // picture has loaded and the ladder must not restart when it does.
-        startRung={photoPath === null ? 0 : 1}
+        // picture has loaded and the ladder must not restart when it does. The event, the
+        // message and the branch are drawn at `.scq.sm` in every frame, picture or not.
+        startRung={startRungFor(content)}
         onFitted={setFitted}
         onBlockTop={setBlockTop}
       />
@@ -233,6 +271,45 @@ function Kicker({
   );
 }
 
+/**
+ * Where a card's picture comes from, if it has one. A testimony's photo lives in the
+ * PRIVATE `testimony-photos` bucket and is signed per view; an event's picture and a
+ * message's artwork are PUBLIC objects whose URLs the presets already built (the
+ * artwork rule in `features/watch/artwork.ts`, `features/events/image.ts`). Two roads,
+ * one `Image`, and the same fallback to ink when the picture does not arrive.
+ */
+type PhotoSource =
+  { kind: 'signed'; path: string } | { kind: 'url'; url: string };
+
+function photoSourceFor(content: ShareContent): PhotoSource | null {
+  switch (content.kind) {
+    case 'testimony':
+      return content.photoPath === null
+        ? null
+        : { kind: 'signed', path: content.photoPath };
+    case 'event':
+    case 'sermon':
+      return content.imageUrl === null
+        ? null
+        : { kind: 'url', url: content.imageUrl };
+    default:
+      return null;
+  }
+}
+
+function startRungFor(content: ShareContent): 0 | 1 {
+  switch (content.kind) {
+    case 'testimony':
+      return content.photoPath === null ? 0 : 1;
+    case 'event':
+    case 'sermon':
+    case 'branch':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 /** `rgba(r,g,b,a)` from the token file as the hex + alpha `GradientFill` wants. The
  * tokens stay the frame's literals; this is the one place that has to unpack them. */
 function rgbaStop(offset: string, token: string): GradientStop {
@@ -260,18 +337,27 @@ function photoScrim(blockTop: number | null): GradientStop[] {
   const top =
     blockTop === null ? 0.42 : Math.min(0.94, blockTop / CARD_RENDER_DP);
   const fadeFrom = Math.max(0, top - 0.14);
-  const pct = (fraction: number) =>
-    `${String(Math.round(fraction * 1000) / 10)}%`;
-  return [
-    rgbaStop('0%', shareCard.ground.photo.scrimTop),
-    rgbaStop(pct(fadeFrom), shareCard.ground.photo.scrimTop),
-    rgbaStop(
-      pct(Math.max(fadeFrom, top - 0.02)),
-      shareCard.ground.photo.scrimMiddle,
-    ),
-    rgbaStop(pct(top), shareCard.ground.photo.scrimBottom),
-    rgbaStop('100%', shareCard.ground.photo.scrimBottom),
+  const points: [number, string][] = [
+    [0, shareCard.ground.photo.scrimTop],
+    [fadeFrom, shareCard.ground.photo.scrimTop],
+    [Math.max(fadeFrom, top - 0.02), shareCard.ground.photo.scrimMiddle],
+    [top, shareCard.ground.photo.scrimBottom],
+    [1, shareCard.ground.photo.scrimBottom],
   ];
+  // STRICTLY ASCENDING, or the gradient breaks. A block that begins within the top 14%
+  // of the card (a message card's kicker, disc, two-line title and meta line, on the
+  // device 2026-09-13) folds `fadeFrom` onto 0, and two stops at the same offset are two
+  // children with the same key: React drops one and warns. A stop that would not move
+  // past the one before it is simply not drawn.
+  const stops: GradientStop[] = [];
+  let last = -1;
+  for (const [fraction, colour] of points) {
+    const rounded = Math.round(fraction * 1000) / 1000;
+    if (rounded <= last) continue;
+    last = rounded;
+    stops.push(rgbaStop(`${String(rounded * 100)}%`, colour));
+  }
+  return stops;
 }
 
 /**
@@ -286,13 +372,13 @@ function photoScrim(blockTop: number | null): GradientStop[] {
  */
 function GroundLayer({
   ground,
-  photoPath,
+  photoSource,
   photoState,
   blockTop,
   onPhoto,
 }: {
   ground: Ground;
-  photoPath: string | null;
+  photoSource: PhotoSource | null;
   photoState: 'none' | 'pending' | 'shown' | 'fallback';
   blockTop: number | null;
   onPhoto: (state: 'shown' | 'fallback') => void;
@@ -307,7 +393,7 @@ function GroundLayer({
       />
     );
   }
-  if (photoPath === null || photoState === 'fallback') {
+  if (photoSource === null || photoState === 'fallback') {
     return (
       <GradientFill
         angle={150}
@@ -323,7 +409,7 @@ function GroundLayer({
         from={shareCard.ground.photo.from}
         to={shareCard.ground.photo.to}
       />
-      <PhotoLayer path={photoPath} onSettled={onPhoto} />
+      <PhotoLayer source={photoSource} onSettled={onPhoto} />
       {photoState === 'shown' ? (
         <GradientFill
           angle={180}
@@ -337,6 +423,20 @@ function GroundLayer({
 }
 
 function PhotoLayer({
+  source,
+  onSettled,
+}: {
+  source: PhotoSource;
+  onSettled: (state: 'shown' | 'fallback') => void;
+}) {
+  return source.kind === 'signed' ? (
+    <SignedPhotoLayer path={source.path} onSettled={onSettled} />
+  ) : (
+    <PhotoImage url={source.url} failed={false} onSettled={onSettled} />
+  );
+}
+
+function SignedPhotoLayer({
   path,
   onSettled,
 }: {
@@ -344,6 +444,22 @@ function PhotoLayer({
   onSettled: (state: 'shown' | 'fallback') => void;
 }) {
   const signed = useSignedPhotoUrl(path);
+  // The mint refused, or the object is gone: the same answer as a fetch that failed.
+  const url = signed.data ?? null;
+  const failed = signed.isError || (signed.data !== undefined && url === null);
+  return <PhotoImage url={url} failed={failed} onSettled={onSettled} />;
+}
+
+function PhotoImage({
+  url,
+  failed,
+  onSettled,
+}: {
+  /** Null while a signed URL is still being minted. */
+  url: string | null;
+  failed: boolean;
+  onSettled: (state: 'shown' | 'fallback') => void;
+}) {
   const settled = useRef(false);
   const settle = (state: 'shown' | 'fallback') => {
     if (settled.current) return;
@@ -351,15 +467,11 @@ function PhotoLayer({
     onSettled(state);
   };
 
-  // The mint refused, or the object is gone: the same answer as a fetch that failed.
-  const url = signed.data ?? null;
   useEffect(() => {
-    if (signed.isError || (signed.data !== undefined && url === null)) {
-      settle('fallback');
-    }
+    if (failed) settle('fallback');
     // `settle` is stable by construction (a ref-guarded closure over a prop).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signed.isError, signed.data, url]);
+  }, [failed]);
 
   // The deadline, so a hanging fetch cannot hold the sheet open forever.
   useEffect(() => {
@@ -433,13 +545,7 @@ function Middle({
   const middleTop = useRef(0);
   const lines = useRef<TextLayoutEvent['nativeEvent']['lines'] | null>(null);
 
-  const fullText =
-    content.kind === 'verse'
-      ? `“${content.text}”`
-      : content.kind === 'testimony'
-        ? `“${content.body}”`
-        : // A prayer request is not a quotation. It is somebody asking.
-          content.body;
+  const fullText = quoteFor(content);
   const shown = cut ?? fullText;
   const size = QUOTE_RUNGS[rung];
 
@@ -502,7 +608,7 @@ function Middle({
       >
         {verseAttribution}
       </Text>
-    ) : content.kind === 'verse' ? null : (
+    ) : content.kind === 'testimony' || content.kind === 'prayer' ? (
       <ByLine
         name={content.authorName ?? t('family:aMember')}
         // AN ANONYMOUS REQUEST DROPS THE BRANCH (plan §5), and this is a deliberate
@@ -516,7 +622,23 @@ function Middle({
         }
         ground={ground}
       />
-    );
+    ) : content.kind === 'event' ? (
+      // `.scby` on an event: when, then where.
+      <ByLine name={content.when} branch={content.place} ground={ground} />
+    ) : content.kind === 'sermon' ? (
+      // `.scby` on a message: who preached it, then how long and which series.
+      <ByLine name={content.speaker} branch={content.meta} ground={ground} />
+    ) : null;
+
+  // What sits ABOVE the title on the two cards that have a badge: the event's date block
+  // and the message's play disc. Both say what kind of thing this is without pretending
+  // to be a control.
+  const lead =
+    content.kind === 'event' ? (
+      <DateBlock day={content.day} month={content.month} />
+    ) : content.kind === 'sermon' ? (
+      <PlayDisc />
+    ) : null;
 
   return (
     <View
@@ -555,6 +677,7 @@ function Middle({
         }}
       >
         {kicker ? <View style={{ marginBottom: 42 * u }}>{kicker}</View> : null}
+        {lead}
         <Text
           testID="share-card-quote"
           allowFontScaling={false}
@@ -618,8 +741,153 @@ function Middle({
             </Text>
           </View>
         ) : null}
+        {content.kind === 'branch' ? <Rows rows={content.rows} /> : null}
         {attribution}
       </View>
+    </View>
+  );
+}
+
+/**
+ * The words the ladder fits. A verse and a testimony are quotations and get real curly
+ * quotes; a prayer request is somebody asking; an event, a message and a branch carry
+ * their title, which the frames draw at `.scq.sm`.
+ */
+function quoteFor(content: ShareContent): string {
+  switch (content.kind) {
+    case 'verse':
+      return `“${content.text}”`;
+    case 'testimony':
+      return `“${content.body}”`;
+    case 'prayer':
+      return content.body;
+    case 'event':
+    case 'sermon':
+      return content.title;
+    case 'branch':
+      return content.name;
+  }
+}
+
+/** `.scdate`: the gold date block on an event card. */
+function DateBlock({ day, month }: { day: string; month: string }) {
+  return (
+    <View
+      style={{
+        alignSelf: 'flex-start',
+        alignItems: 'center',
+        width: 192 * u,
+        paddingTop: 24 * u,
+        paddingBottom: 27 * u,
+        borderRadius: 36 * u,
+        backgroundColor: shareCard.accent,
+        marginBottom: 42 * u,
+      }}
+    >
+      <Text
+        allowFontScaling={false}
+        style={{
+          fontFamily: fontFamily.display.extraBold,
+          fontSize: 75 * u,
+          lineHeight: 75 * u,
+          color: shareCard.onAccent,
+        }}
+      >
+        {day}
+      </Text>
+      <Text
+        allowFontScaling={false}
+        style={{
+          fontFamily: fontFamily.body.extraBold,
+          fontSize: 28.5 * u,
+          letterSpacing: 3.99 * u,
+          textTransform: 'uppercase',
+          marginTop: 9 * u,
+          color: shareCard.onAccent,
+        }}
+      >
+        {month}
+      </Text>
+    </View>
+  );
+}
+
+/** `.scplay`: the app's gold disc, saying "there is something to listen to here" without
+ * pretending to be a control. The ring is the frame's 9px halo. */
+function PlayDisc() {
+  const halo = 27 * u;
+  return (
+    <View
+      style={{
+        alignSelf: 'flex-start',
+        width: 156 * u + 2 * halo,
+        height: 156 * u + 2 * halo,
+        borderRadius: (156 * u) / 2 + halo,
+        backgroundColor: shareCard.playHalo,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // The frame's disc sits flush with the text's left edge; the halo is drawn
+        // outside it there (box-shadow), so the ring's width is subtracted here.
+        marginLeft: -halo,
+        marginTop: -halo,
+        marginBottom: 45 * u - halo,
+      }}
+    >
+      <View
+        style={{
+          width: 156 * u,
+          height: 156 * u,
+          borderRadius: 78 * u,
+          backgroundColor: shareCard.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <PlayIcon
+          size={66 * u}
+          color={shareCard.onAccent}
+          fill={shareCard.onAccent}
+          strokeWidth={0}
+        />
+      </View>
+    </View>
+  );
+}
+
+/** `.scrows`: a branch card's service times and address, one icon each. */
+function Rows({ rows }: { rows: BranchShareRow[] }) {
+  return (
+    <View style={{ marginTop: 45 * u, gap: 21 * u }}>
+      {rows.map((row, index) => (
+        <View
+          // Rows have no identity of their own; two identical rows would be a data bug,
+          // not a key collision to work around.
+          key={`${String(index)}:${row.text}`}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 27 * u }}
+        >
+          {row.icon === 'clock' ? (
+            <ClockIcon size={42 * u} color={shareCard.accent} strokeWidth={2} />
+          ) : (
+            <PinIcon size={42 * u} color={shareCard.accent} strokeWidth={2} />
+          )}
+          <Text
+            allowFontScaling={false}
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              fontFamily: row.strong
+                ? fontFamily.body.extraBold
+                : fontFamily.body.semiBold,
+              fontSize: 37.5 * u,
+              color: row.strong
+                ? shareCard.ground.ink.quote
+                : shareCard.ground.ink.rows,
+            }}
+          >
+            {row.text}
+          </Text>
+        </View>
+      ))}
     </View>
   );
 }

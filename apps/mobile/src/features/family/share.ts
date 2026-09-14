@@ -34,6 +34,49 @@ export function verseShareText(
   return `${quote}\n${reference} · ${translation}`;
 }
 
+/** The event, as words: exactly what EVENT-DETAIL sent before W4.15 slice 3. */
+export function eventShareText(
+  title: string,
+  day: string,
+  time: string,
+  location: string | null,
+  appName: string,
+): string {
+  return `${title} · ${day} ${time}${location ? ` · ${location}` : ''} · ${appName}`;
+}
+
+/** The branch, as words: exactly what BRANCH-INFO sent before W4.15 slice 3. */
+export function branchShareText(
+  name: string,
+  city: string,
+  country: string,
+  sunday: string | null,
+  appName: string,
+): string {
+  return `${name} · ${city}, ${country}${sunday ? ` · ${sunday}` : ''} · ${appName}`;
+}
+
+export function youtubeUrl(youtubeId: string): string {
+  return `https://www.youtube.com/watch?v=${youtubeId}`;
+}
+
+/**
+ * The message, as words (docs/spec/08 §25). Folded in here at W4.15 slice 3 from the
+ * player, which composed it inline and called `Share.share` directly: the last of the
+ * nine share points to bypass this module. The words are the player's own: the title,
+ * and the YouTube link when there is one, because that is the one link a recipient can
+ * tap.
+ */
+export function sermonShareText(
+  title: string,
+  youtubeId: string | null,
+): string {
+  return youtubeId
+    ? `${title}
+${youtubeUrl(youtubeId)}`
+    : title;
+}
+
 /**
  * OS share sheet for words. Every picture share's "Send as text instead" lands here too.
  *

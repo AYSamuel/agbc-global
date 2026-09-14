@@ -47,6 +47,12 @@ export function shareUrlFor(content: ShareContent): string {
       return `${SHARE_ORIGIN}/app/t/${content.id}`;
     case 'prayer':
       return `${SHARE_ORIGIN}/app/p/${content.id}`;
+    case 'event':
+      return `${SHARE_ORIGIN}/app/e/${content.id}`;
+    case 'sermon':
+      return `${SHARE_ORIGIN}/app/m/${content.id}`;
+    case 'branch':
+      return `${SHARE_ORIGIN}/app/b/${content.id}`;
     case 'verse':
       return `${SHARE_ORIGIN}/app`;
   }
@@ -80,11 +86,21 @@ export function isShareLink(url: string): boolean {
   return SHARE_LINK.test(url);
 }
 
+/** The one-letter prefix each card prints, and the route it opens. Slice 3 added the
+ * event, the message and the branch; the website's `/app/*` page knows the same three. */
+const ROUTE_FOR_PREFIX: Record<string, string> = {
+  t: '/testimony',
+  p: '/prayer',
+  e: '/event',
+  m: '/sermon',
+  b: '/branch',
+};
+
 /**
  * The route a share link opens. Returns a string always, never null, and only ever one
- * of three shapes: a testimony, a prayer request, or Home. Everything unrecognised under
- * `/app` goes to Home rather than to an "unmatched route" screen, because a scan that
- * lands on nothing reads as a broken app (docs/spec/04: no dead ends).
+ * of the routes above or Home. Everything unrecognised under `/app` goes to Home rather
+ * than to an "unmatched route" screen, because a scan that lands on nothing reads as a
+ * broken app (docs/spec/04: no dead ends).
  */
 export function routeForShareLink(url: string): string {
   const match = SHARE_LINK.exec(url);
@@ -95,7 +111,8 @@ export function routeForShareLink(url: string): string {
   if (parts.length !== 2) return SHARE_LINK_FALLBACK;
   const [kind, id] = parts;
   if (!SEGMENT.test(id)) return SHARE_LINK_FALLBACK;
-  if (kind === 't') return `/testimony/${id}`;
-  if (kind === 'p') return `/prayer/${id}`;
-  return SHARE_LINK_FALLBACK;
+  const route = Object.hasOwn(ROUTE_FOR_PREFIX, kind)
+    ? ROUTE_FOR_PREFIX[kind]
+    : undefined;
+  return route === undefined ? SHARE_LINK_FALLBACK : `${route}/${id}`;
 }
