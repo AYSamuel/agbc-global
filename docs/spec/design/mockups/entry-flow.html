@@ -417,7 +417,9 @@
      on the feed card, so "done" reads the same way in both places. */
   .glorybig.on{background:rgba(255,207,74,.20);border:1px solid var(--gold);color:var(--text);padding:13px}
   .glorybig.on .st{color:var(--gold);-webkit-text-stroke:.3px var(--navy)}
-  .wabtn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 40px);margin:0 20px;padding:14px;border-radius:13px;background:rgba(31,138,91,.12);color:var(--green);border:none;font-weight:800;font-size:14.5px;cursor:pointer}
+  /* `.wabtn`, the green "Share to WhatsApp" on TESTIMONY-DETAIL, was retired on 2026-09-13
+     (W4.15 slice 2): a wa.me link carries text only and could not send the picture, so
+     that screen draws PRAYER-DETAIL's `.btn.outline` Share instead. See the frame. */
   .mapcanvas{position:relative;flex:1;min-height:0;background:var(--mapsea);overflow:hidden}
   .world2{position:absolute;inset:0;width:100%;height:100%}
   .world2 .land ellipse{fill:var(--mapland)}
@@ -1088,6 +1090,17 @@
      than there, because text sits lower down and the picture underneath is one nobody has
      seen yet. */
   .sc.sc-photo{background:linear-gradient(155deg,#4a5a72,#1b2536)}
+  /* THE SCRIM FOLLOWS THE WORDS IN THE BUILD (2026-09-13, W4.15 slice 2, measured on the
+     device). The stops below are what this frame draws and what a block at this frame's
+     height produces. On the phone the 94% stop is not fixed at the foot: it sits where the
+     block of words begins, with the 62% a short fade above it, and the picture above that
+     keeps the 30%. Moving the kicker into the block (the rule above) was not enough on its
+     own: a four-line quote climbs to 18% of the card, where a fixed scrim is 44%, and over
+     a white sky that measured 2.07:1 for the gold kicker and 3.04:1 for the white quote.
+     With the scrim following the block the same rows measure 11:1 and 16:1. The cost is
+     stated plainly: the longer the quote, the less of the photograph survives, and whether
+     a photo card should therefore start at the smallest rung is an open question in the
+     plan (§4). */
   .sc.sc-photo::before{content:"";position:absolute;inset:0;
       background:linear-gradient(180deg,rgba(14,20,32,.30) 0%,rgba(14,20,32,.62) 42%,rgba(14,20,32,.94) 100%)}
   /* Content sits at the FOOT of a photo card, never centred. The scrim is 62% at the
@@ -1095,6 +1108,19 @@
      so white text goes where the ground is guaranteed dark. Centred was drawn first and
      the render showed both the risk and a dead gap under the words. */
   .sc.sc-photo .scmid{justify-content:flex-end}
+  /* THE KICKER LIVES IN THE FOOT BLOCK TOO, on a photo card (Ayo, 2026-09-13, W4.15
+     slice 2). It sat at the top of the card at first, where the scrim is only 30%, and
+     the build measured it there over a bright photograph at 1.35:1 (a white wall, an
+     overexposed sky), which this file's own render could never show because the photo
+     grounds are drawn as a flat placeholder. So the row is the first child of .scmid on
+     the three photo cards rather than a sibling above it, sitting just over the quote
+     inside the 94% band with everything else (8:1 and better over pure white). One rule
+     for words on a photograph: they live at the foot. The top of a photo card is now the
+     picture alone, which is what a photo card is for. Rejected: a stronger top scrim
+     stop (darkens every photo card's upper half) and a pill behind the row (a new
+     element the other eight cards do not have). The ink and cream cards are untouched:
+     their kicker stays a sibling at the top, because their ground is known. */
+  .sc.sc-photo .scmid .scrow1{margin-bottom:14px}
   .sc.sc-photo .sceye{color:#ffcf4a}
   .sc.sc-photo .scq{color:#ffffff}
   .sc.sc-photo .scby{color:#e4c98a}
@@ -1708,7 +1734,7 @@
               <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
             </div>
             <div class="rhythm">
-              <div><div class="lab">Your rhythm</div><div class="big">1-week rhythm</div><div class="next">Next milestone: 4 weeks</div></div>
+              <div><div class="lab">Your rhythm</div><div class="big">1-week rhythm</div><div class="next">Next: A month of Sundays &middot; 1 of 4 in September</div></div>
               <div class="ring" style="background:conic-gradient(var(--gold) 0deg 90deg,rgba(255,255,255,.16) 90deg 360deg)"><i>1</i></div>
             </div>
           </div>
@@ -1727,7 +1753,7 @@
 
       <!-- MILESTONE · celebration -->
       <div class="device">
-        <p class="name"><b>MILESTONE</b> &middot; celebration overlay (4-week rhythm)</p>
+        <p class="name"><b>MILESTONE</b> &middot; celebration overlay (a month of Sundays)</p>
         <div class="phone gatephone">
           <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
           <div class="screen" aria-hidden="true">
@@ -1752,8 +1778,8 @@
                 &#128293;
               </div>
               <span class="goldeye">Milestone</span>
-              <h3>Four weeks of rhythm</h3>
-              <p>You've gathered with the family four Sundays running. We love having you here.</p>
+              <h3>A month of Sundays</h3>
+              <p>You gathered with the family every week of a whole month. We love having you here.</p>
               <button class="btn gold">Share the joy</button>
               <button class="btn ghost">Close</button>
             </div>
@@ -1785,8 +1811,8 @@
             <div class="celcard">
               <div class="celdisc">&#128293;</div>
               <span class="goldeye">Milestone</span>
-              <h3>Four weeks of rhythm</h3>
-              <p>You've gathered with the family four Sundays running. We love having you here.</p>
+              <h3>A month of Sundays</h3>
+              <p>You gathered with the family every week of a whole month. We love having you here.</p>
               <button class="btn gold">Share the joy</button>
               <button class="btn ghost">Close</button>
             </div>
@@ -1865,7 +1891,7 @@
               <div class="mbadge"><div class="mi">&#128293;</div><div class="ml">A month of Sundays</div></div>
               <div class="mbadge"><div class="mi">&#128591;</div><div class="ml">First prayer</div></div>
             </div>
-            <div class="nextm"><div class="nt"><span>Next: A season with us</span><span class="ng">7 to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:42%"></i></div></div>
+            <div class="nextm"><div class="nt"><span>Next: A season with us</span><span class="ng">7 weeks to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:46%"></i></div></div>
             <div class="mlabel">Attendance</div>
             <div class="atlist">
               <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 26 Jul</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
@@ -1997,7 +2023,7 @@
   </div>
   <p class="note"><b>What the screens draw from.</b> Every value above comes from <code>rhythm_state(branch)</code> and <code>record_attendance(branch)</code>: <code>today</code>, <code>checked_in</code>, <code>state</code>, <code>current_weeks</code>, <code>longest_weeks</code>, <code>last_service_date</code>. The app never decides what day it is and never keeps a checked-in flag of its own, so the card and the write cannot disagree. Milestones and attendance history are own-row selects.</p>
   <p class="note"><b>The toast</b> (no frame: the app's <code>Toast</code> primitive, announced through a live region). First tap: &#8220;You're here. Lovely to have you.&#8221; A tap that recorded nothing because the day already had a row, which happens on a second device or when the offline queue replays: &#8220;You're already checked in.&#8221; Offline: the tap is queued, the card shows checked-in immediately and the toast says &#8220;Saved. We'll record this when you're back online.&#8221;</p>
-  <p class="note"><b>Milestone copy</b>, one headline per kind the backend awards: <code>first_service</code> &#8220;Your first Sunday with us&#8221; &#127881; &middot; <code>4_week_rhythm</code> &#8220;Four weeks of rhythm&#8221; &#128293; &middot; <code>12_week_rhythm</code> &#8220;Twelve weeks of rhythm&#8221; &#128330; &middot; <code>first_testimony</code> &#8220;Your first testimony is live&#8221; &#10022; &middot; <code>first_prayer</code> &#8220;Your first prayer request is live&#8221; &#128591;. The overlay is shown once per milestone, when the app first sees a row it has not celebrated.</p>
+  <p class="note"><b>Milestone copy</b> lives in <code>rhythm.json</code> (<code>celebrate&lt;Kind&gt;Title</code> / <code>Body</code>), one pair per kind the backend awards. The week-rhythm kinds kept their names when W4.16 moved them onto the calendar, so <code>4_week_rhythm</code> is &#8220;A month of Sundays&#8221; and <code>12_week_rhythm</code> &#8220;A season with us&#8221;; the W4.16 section carries the bodies that changed with it. The overlay is shown once per milestone, when the app first sees a row it has not celebrated.</p>
   <p class="note"><b>The pre-permission sheet</b> is the same sheet for the first RSVP (&#8220;Want a reminder before this event?&#8221;), per <code>06</code>. It always arrives AFTER the action it accompanies has completed, so declining costs the member nothing.</p>
 
   <h2 class="ghead">&#127769; W2.8 &middot; Member Home + Rhythm &middot; dark</h2>
@@ -2816,8 +2842,8 @@
         <p class="name"><b>CARD</b> &middot; a testimony with its photo</p>
         <div class="sc sc-photo">
           <span class="phlabel">PHOTO</span>
-          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
           <div class="scmid">
+            <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
             <div class="scq sm">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
             <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
           </div>
@@ -2930,8 +2956,8 @@
         <p class="name"><b>CARD</b> &middot; an event, with its picture</p>
         <div class="sc sc-photo">
           <span class="phlabel">EVENT PICTURE</span>
-          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span class="sceye">You&#39;re invited</span></div>
           <div class="scmid">
+            <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span class="sceye">You&#39;re invited</span></div>
             <div class="scdate"><div class="d">24</div><div class="m">Aug</div></div>
             <div class="scq sm">Night of Worship</div>
             <div class="scby">Saturday &middot; 7:00 PM<span class="b">AGBC Lighthouse Berlin &middot; Prinzenstr. 84</span></div>
@@ -2969,13 +2995,20 @@
            order, already implemented for the player, the rails, MY-LIST and the lock
            screen, and now for this.
            The gold disc says "there is something to listen to here" without pretending to
-           be a control. It is the app's own disc, at the size a 1080 card can carry. -->
+           be a control. It is the app's own disc, at the size a 1080 card can carry.
+           THE LINE UNDER THE SPEAKER IS NOT A BRANCH IN THE BUILD (W4.15 slice 3,
+           2026-09-13). This frame drew "38 min · AGBC Glasgow", and a message has no
+           branch in the data: `sermons` is not branch-scoped, it is the church's channel.
+           The card carries what the player's own meta carries, the length and then the
+           series, or the published date when there is no series ("38 min · Grace
+           Series", "38 min · 12 Sep 2026"). Recorded here rather than redrawn, because
+           the frame is right about the shape and only guessed at the second fact. -->
       <div class="device">
         <p class="name"><b>CARD</b> &middot; a message</p>
         <div class="sc sc-photo">
           <span class="phlabel">ARTWORK</span>
-          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span class="sceye">Message</span></div>
           <div class="scmid">
+            <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span class="sceye">Message</span></div>
             <div class="scplay"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.86l11.14-6.86a1 1 0 0 0 0-1.72L9.52 4.28A1 1 0 0 0 8 5.14z"/></svg></div>
             <div class="scq sm">Grace for the Journey</div>
             <div class="scby">Pastor Esther Olayinka<span class="b">38 min &middot; AGBC Glasgow</span></div>
@@ -3031,14 +3064,22 @@
            no third party to protect here, and a name the member is giving about themselves
            is theirs to give in full. It reads as a signature, which is what it is.
            The line under the title is `.scline` rather than more `.scby`, so the sentence
-           and the signature are two things instead of one run-on. -->
+           and the signature are two things instead of one run-on.
+           ONE LINE FOR EVERY KIND IN THE BUILD (Ayo, 2026-09-14, W4.15 slice 4). This frame
+           wrote "Twelve weeks with my church family." for the one kind it draws; there are
+           nine kinds, including generated ones ("Your 50th gathering", "3 years with us"),
+           and the build puts `share.milestoneLine` ("With my church family at AGBC.", the
+           overlay's own share sentence) under whatever the celebration's title is, so a
+           future kind owes no card copy. The title stays the celebration's. The frame has
+           drawn that line since W4.16 (2026-09-14), when "Twelve weeks" stopped being true
+           of a season, which is now three calendar months. -->
       <div class="device">
         <p class="name"><b>CARD</b> &middot; a milestone</p>
         <div class="sc sc-gold">
           <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a5b12" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg><span class="sceye">A milestone</span></div>
           <div class="scmid">
             <div class="scq">A season with us</div>
-            <div class="scline">Twelve weeks with my church family.</div>
+            <div class="scline">With my church family at AGBC.</div>
             <div class="scby">Ayo Samuel<span class="b">AGBC Lighthouse Berlin</span></div>
           </div>
           <div class="scfoot">
@@ -3127,8 +3168,8 @@
             <div class="kindline">Share this testimony</div>
             <div class="scwrap">
               <div class="sc sc-photo">
-                <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
                 <div class="scmid">
+                  <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg><span class="sceye">A testimony</span></div>
                   <div class="scq sm">&#8220;God provided a job after 8 months of waiting. He is faithful.&#8221;</div>
                   <div class="scby">Sarah O.<span class="b">AGBC Glasgow</span></div>
                 </div>
@@ -3222,6 +3263,219 @@
   <p class="alwayson" style="padding:0 20px 10px">The eleven cards are <b>identical</b> below and that is the design, not a copy-paste miss. A share card is a PNG in somebody else's chat app, so it has no theme to follow; only the sheet around it does. Read this gallery for the sheet.</p>
   <div class="gallery t-dark" id="w415Dark"></div>
   <script>(function(){var l=document.getElementById('w415Light'),d=document.getElementById('w415Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
+
+  <!-- ==================================================================================
+       W4.16 · The rhythm keeps a real calendar (composed 2026-09-14, slice 2, for approval
+       before any screen code). Plan: docs/spec/plans/W4.16-rhythm-real-calendar.md.
+       Nothing here is a new component. The strip is `.rhythm` with its `.ring`, the card is
+       `.nextm` with its `.pbar`, the screens are W2.8's. What changed is what they COUNT:
+       a month of Sundays is every week of one calendar month (a week belongs to the month
+       its Sunday falls in, any gathering covers it), and a season, half a year and a year
+       are calendar months from the current run's first gathering. Every number drawn here
+       comes from `rhythm_state()`'s `next_kind`, `progress_done`, `progress_total` and
+       `progress_month`; the app only chooses the words.
+       ================================================================================== -->
+  <h2 class="ghead" id="w416">&#128197; W4.16 &middot; The rhythm keeps a real calendar &middot; light</h2>
+  <p class="flow">WHAT CHANGED &nbsp;&middot;&nbsp; <b>Home's ring</b> and <b>RHYTHM's Next card</b> count toward the next milestone the member does not hold yet: the <b>weeks of this month</b> until they hold a month of Sundays, then <b>weeks of calendar time</b> toward a season, half a year and each year. The strip's title and the hero's number are still the run's attended weeks.</p>
+  <p class="alwayson" style="padding:0 20px 10px"><b>No count reads zero, and no line names a miss.</b> While nothing counts toward the month yet (its first week has no gathering so far, or one of its weeks has already ended without one), the words name the month and nothing else: <b>&#8220;in October&#8221;</b>. The grace sentence is still the only copy that mentions a missed week.</p>
+  <div class="gallery t-light" id="w416Light">
+
+      <!-- HOME · toward the month, on track. Sunday 13 September 2026, checked in: the
+           gatherings of the 6th and the 13th cover September's first two weeks. The ring
+           is 2 of 4 (180deg) and its label is still the run, which here is also 2. -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; toward a month of Sundays, on track</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="head">
+              <div class="greet"><div class="hi">Good morning, Ayo</div><div class="brand">AGBC Berlin <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div>
+              <div class="rt"><button class="bell" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></button><span class="avatar">A</span></div>
+            </div>
+            <div class="hero">
+              <div class="bg"></div>
+              <div class="in"><span class="goldeye">Today</span><h2>Sunday Service &middot; 11:00 AM</h2><div class="where">AGBC Lighthouse Berlin &middot; Oudenarder Str. 16</div><div class="btns"><button class="btn gold on" style="width:auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> You're here</button><button class="btn glass" style="width:auto">Plan a visit</button></div></div>
+            </div>
+            <div class="rhythm">
+              <div><div class="lab">Your rhythm</div><div class="big">2-week rhythm</div><div class="next">Next: A month of Sundays &middot; 2 of 4 in September</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 180deg,rgba(255,255,255,.16) 180deg 360deg)"><i>2</i></div>
+            </div>
+            <div class="verse">
+              <div class="row1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b98600" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="eye">Verse of the day</span></div>
+              <div class="txt">&#8220;And my God will supply every need of yours according to his riches in glory in Christ Jesus.&#8221;</div>
+              <div class="foot"><span class="ref">Philippians 4:19 &middot; WEB</span><span class="save">Saved &#10003;</span></div>
+            </div>
+            <div class="sectitle">Latest message <a>See all</a></div>
+            <div class="sermon">
+              <div class="thumb"><span class="play"></span></div>
+              <div><div class="t">Grace for the Journey</div><div class="s">Pastor Esther Olayinka &middot; 38 min</div></div>
+            </div>
+            <div style="height:16px"></div>
+          </div>
+          <div class="tabbar">
+            <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg><span>Watch</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Family</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg><span>Give</span></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span>More</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOME · the strip in every progress shape. `none` and `lapsed` are unchanged and not
+           repeated here: they draw no ring, because there is no run in progress (W2.8). -->
+      <div class="device">
+        <p class="name"><b>HOME</b> &middot; the rhythm strip, every progress shape</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="mlabel" style="padding-top:52px">toward the month &middot; on track</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">2-week rhythm</div><div class="next">Next: A month of Sundays &middot; 2 of 4 in September</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 180deg,rgba(255,255,255,.16) 180deg 360deg)"><i>2</i></div>
+            </div>
+            <div class="mlabel">toward the month &middot; nothing counts yet</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">3-week rhythm</div><div class="next">Next: A month of Sundays in October</div></div>
+              <div class="ring" style="background:rgba(255,255,255,.16)"><i>3</i></div>
+            </div>
+            <div class="mlabel">grace &middot; and this month is out of reach</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">5-week rhythm</div><div class="next">Grace covers last week. We'd love to see you Sunday.</div></div>
+              <div class="ring" style="background:rgba(255,255,255,.16)"><i>5</i></div>
+            </div>
+            <div class="mlabel">month held &middot; toward a season</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">6-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring" style="background:conic-gradient(var(--gold) 0deg 138deg,rgba(255,255,255,.16) 138deg 360deg)"><i>6</i></div>
+            </div>
+            <div class="mlabel">month held &middot; the season is due</div>
+            <div class="rhythm" style="margin-top:0">
+              <div><div class="lab">Your rhythm</div><div class="big">13-week rhythm</div><div class="next">Next: A season with us</div></div>
+              <div class="ring" style="background:var(--gold)"><i>13</i></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · a five-Sunday month. Sunday 22 November 2026: four Sundays running, which
+           the old rule celebrated today as a month of Sundays. November has five, so the card
+           says so in its own numbers and the 29th is the one that completes it. -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; four weeks into a five-Sunday month</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="streakhero"><div class="num">4</div><div class="unit">week rhythm</div><p class="hl">4 weeks of showing up. We love having you in the family.</p><div class="lo">Longest rhythm: 4 weeks</div></div>
+            <div class="mlabel">Milestones</div>
+            <div class="mbadges">
+              <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+            </div>
+            <div class="nextm"><div class="nt"><span>Next: A month of Sundays</span><span class="ng">4 of 5 in November</span></div><div class="pbar" style="margin-top:9px"><i style="width:80%"></i></div></div>
+            <div class="mlabel">Attendance</div>
+            <div class="atlist">
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 22 Nov</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 15 Nov</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 8 Nov</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · the month held, counting to a season. Sunday 11 October 2026: a run begun
+           on 6 September, September covered (so the month is held), and a Wednesday among
+           the rows because any gathering covers its week. Five whole weeks of the thirteen
+           to 6 December have passed: 8 to go. -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; the month held, counting to a season</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="streakhero"><div class="num">6</div><div class="unit">week rhythm</div><p class="hl">6 weeks of showing up. We love having you in the family.</p><div class="lo">Longest rhythm: 6 weeks</div></div>
+            <div class="mlabel">Milestones</div>
+            <div class="mbadges">
+              <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+              <div class="mbadge"><div class="mi">&#128293;</div><div class="ml">A month of Sundays</div></div>
+            </div>
+            <div class="nextm"><div class="nt"><span>Next: A season with us</span><span class="ng">8 weeks to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:38%"></i></div></div>
+            <div class="mlabel">Attendance</div>
+            <div class="atlist">
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 11 Oct</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 4 Oct</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Wed 30 Sep</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · a returning member who already holds a season. Sunday 18 October 2026: back
+           for two weeks after a long run earlier in the year. "Next" skips the season they
+           hold and points at half a year from the NEW run's start, which is honest and far
+           away, so the screen above it has to carry the warmth: the hero says what they are
+           doing now, the longest is kept, and the badges they earned stay on show. -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; back again, already holding a season</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="chead"><button class="x" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><span class="ct">My Rhythm</span><span style="width:40px"></span></div>
+            <div class="streakhero"><div class="num">2</div><div class="unit">week rhythm</div><p class="hl">2 weeks of showing up. We love having you in the family.</p><div class="lo">Longest rhythm: 23 weeks</div></div>
+            <div class="mlabel">Milestones</div>
+            <div class="mbadges">
+              <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">First service</div></div>
+              <div class="mbadge"><div class="mi">&#128293;</div><div class="ml">A month of Sundays</div></div>
+              <div class="mbadge"><div class="mi">&#127775;</div><div class="ml">A season with us</div></div>
+              <div class="mbadge"><div class="mi">&#127881;</div><div class="ml">Your 25th gathering</div></div>
+            </div>
+            <div class="nextm"><div class="nt"><span>Next: Half a year</span><span class="ng">25 weeks to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:4%"></i></div></div>
+            <div class="mlabel">Attendance</div>
+            <div class="atlist">
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 18 Oct</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 11 Oct</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+              <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 17 May</div><div class="as">AGBC Lighthouse Berlin &middot; In person</div></div></div>
+            </div>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RHYTHM · the Next card, every shape, one per line of copy it can say. -->
+      <div class="device">
+        <p class="name"><b>RHYTHM</b> &middot; the Next card, every shape</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+          <div class="screen">
+            <div class="mlabel" style="padding-top:52px">toward the month &middot; on track</div>
+            <div class="nextm" style="margin-top:0"><div class="nt"><span>Next: A month of Sundays</span><span class="ng">2 of 4 in September</span></div><div class="pbar" style="margin-top:9px"><i style="width:50%"></i></div></div>
+            <div class="mlabel">toward the month &middot; a five-Sunday month</div>
+            <div class="nextm" style="margin-top:0"><div class="nt"><span>Next: A month of Sundays</span><span class="ng">4 of 5 in November</span></div><div class="pbar" style="margin-top:9px"><i style="width:80%"></i></div></div>
+            <div class="mlabel">toward the month &middot; nothing counts yet</div>
+            <div class="nextm" style="margin-top:0"><div class="nt"><span>Next: A month of Sundays</span><span class="ng">In October</span></div><div class="pbar" style="margin-top:9px"><i style="width:0%"></i></div></div>
+            <div class="mlabel">month held &middot; toward a season</div>
+            <div class="nextm" style="margin-top:0"><div class="nt"><span>Next: A season with us</span><span class="ng">8 weeks to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:38%"></i></div></div>
+            <div class="mlabel">the anniversary is here, or passed</div>
+            <div class="nextm" style="margin-top:0"><div class="nt"><span>Next: A season with us</span><span class="ng">Almost there</span></div><div class="pbar" style="margin-top:9px"><i style="width:100%"></i></div></div>
+            <div class="mlabel">past a year</div>
+            <div class="nextm" style="margin-top:0"><div class="nt"><span>Next: 2 years of Sundays</span><span class="ng">1 week to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:99%"></i></div></div>
+            <p class="alwayson" style="padding:18px 20px 0"><b>&#8220;Almost there&#8221;, never &#8220;0 weeks to go&#8221;.</b> When the count is full, the anniversary falls this week or has already passed with no gathering since, and in both cases the next gathering on or after it is the one that earns it.</p>
+            <div style="height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+  <p class="note"><b>What the screens draw from, added by W4.16.</b> <code>rhythm_state(branch)</code> and <code>record_attendance(branch)</code> now also answer <code>next_kind</code> (the first rhythm milestone the member does not hold), <code>progress_done</code>, <code>progress_total</code> and <code>progress_month</code> (the month being counted, null once the month is held). The month's words use the month's name in the member's language; the time rungs count whole weeks, Monday to Sunday.</p>
+  <p class="note"><b>The ring</b> fills by <code>progress_done / progress_total</code> and its label is still the run's weeks, so it never shows a 0. It CAN show an empty track: in &#8220;nothing counts yet&#8221;, and beside the grace sentence when grace falls in a month that is already out of reach. That was the one choice in this section that is a matter of taste rather than of truth, and it is <b>decided: the empty track stays</b> (Ayo, 2026-09-14), over hiding the ring until something counts, because a strip that changes shape from week to week while the member is active would look like the lapsed and none layouts. These frames were approved as drawn the same day.</p>
+  <p class="note"><b>The celebrations</b> (text only; the overlay is W2.8's). Three bodies counted weeks and now say what is true under the calendar: <code>4_week_rhythm</code> &#8220;A month of Sundays&#8221; &#128293; <i>&#8220;You gathered with the family every week of a whole month. We love having you here.&#8221;</i> (it was &#8220;four Sundays running&#8221;, untrue for a five-Sunday month, and a midweek gathering in the last week completes the month before its last Sunday, so it cannot say &#8220;every Sunday&#8221; either) &middot; <code>12_week_rhythm</code> &#8220;A season with us&#8221; &#127775; <i>&#8220;Three months of showing up. That is a season of your life spent with this family, and it shows.&#8221;</i> (was &#8220;Twelve weeks&#8221;) &middot; <code>26_week_rhythm</code> &#8220;Half a year&#8221; &#128330;&#65039; <i>&#8220;Six months of choosing to be here, and we have felt every one of them.&#8221;</i> (was &#8220;Twenty-six Sundays&#8221;, which with grace can be far fewer) &middot; <code>52_week_rhythm</code> &#8220;A year of Sundays&#8221; &#128081; <i>unchanged</i>, &#8220;A whole year gathered with this family. Thank you for the faithfulness nobody sees and everybody feels.&#8221; The years after it, the gathering counts and the first-service body already said nothing a calendar contradicts.</p>
+
+  <h2 class="ghead">&#127769; W4.16 &middot; The rhythm keeps a real calendar &middot; dark</h2>
+  <div class="gallery t-dark" id="w416Dark"></div>
+  <script>(function(){var l=document.getElementById('w416Light'),d=document.getElementById('w416Dark');if(l&&d)d.innerHTML=l.innerHTML;})();</script>
 
 
   <h2 class="ghead">&#9728;&#65039; Light mode</h2>
@@ -4231,8 +4485,14 @@
           <div class="shotbox tshot"><span class="ph">photo: the author&#39;s picture</span></div>
           <div class="tauthor"><span class="avatar" style="width:44px;height:44px">A</span><div><div class="nm">Ayo Samuel</div><div class="mt">AGBC Berlin &middot; just now</div></div></div>
           <button class="glorybig"><span class="st">&#10022;</span> Glory to God &middot; 32</button>
-          <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg> Share to WhatsApp</button>
-          <div style="height:16px"></div>
+          <!-- THE PLAIN SHARE, the same `.btn.outline` PRAYER-DETAIL draws (Ayo, 2026-09-13,
+               W4.15 slice 2). This was `.wabtn`, a green "Share to WhatsApp" that opened a
+               wa.me link with the words in it, and a wa.me link can only ever carry TEXT: it
+               could not send the picture every other Share in the app now sends. So the
+               screen offers what the others offer, SHARE-PREVIEW and then the OS sheet, on
+               which WhatsApp is one tap away. The direct-to-WhatsApp text route goes with it;
+               "Send as text instead" on the sheet keeps the words reachable. -->
+          <div class="pactions" style="padding-top:0"><button class="btn outline">Share</button></div>
         </div>
       </div>
     </div>
@@ -4253,8 +4513,7 @@
                reads identically wherever the member meets it. Tapping again
                takes it back, exactly as on the card. -->
           <button class="glorybig on"><span class="st">&#10022;</span> Glory to God &middot; 33</button>
-          <button class="wabtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg> Share to WhatsApp</button>
-          <div style="height:16px"></div>
+          <div class="pactions" style="padding-top:0"><button class="btn outline">Share</button></div>
         </div>
       </div>
     </div>
@@ -5288,7 +5547,7 @@
             <div class="mbadge"><div class="mi">&#128293;</div><div class="ml">A month of Sundays</div></div>
             <div class="mbadge"><div class="mi">&#128591;</div><div class="ml">First prayer</div></div>
           </div>
-          <div class="nextm"><div class="nt"><span>Next: A season with us</span><span class="ng">6 to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:50%"></i></div></div>
+          <div class="nextm"><div class="nt"><span>Next: A season with us</span><span class="ng">8 weeks to go</span></div><div class="pbar" style="margin-top:9px"><i style="width:38%"></i></div></div>
           <div class="mlabel">Attendance</div>
           <div class="atlist">
             <div class="atrow"><span class="ad"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="m18 9 3.52 2.147a1 1 0 0 1 .48.854V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6.999a1 1 0 0 1 .48-.854L6 9"/><path d="M6 21V7a1 1 0 0 1 .376-.782l5-3.999a1 1 0 0 1 1.249.001l5 4A1 1 0 0 1 18 7v14"/></svg></span><div class="ag"><div class="an">Sun 12 Jul</div><div class="as">AGBC Berlin &middot; In person</div></div></div>

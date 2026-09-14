@@ -24,6 +24,8 @@ jest.mock('react-native-qrcode-svg', () => ({
   __esModule: true,
   default: () => null,
 }));
+// Importing the card imports the photo signer; the mock stops it constructing a client.
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock(
   'react-native-safe-area-context',
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access -- documented jest.mock factory shape

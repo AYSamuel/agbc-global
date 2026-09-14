@@ -29,7 +29,8 @@ import {
 import { useFormattingLocale } from '@/i18n';
 import { canRouteTo, directionsUrl } from '@/features/church/directions';
 import { useBranchDetailQuery } from '@/features/church/queries';
-import { shareText } from '@/features/family/share';
+import { branchShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { branchInitial } from '@/features/onboarding/branchInitial';
 import {
   checkInOpen,
@@ -61,6 +62,7 @@ export default function BranchInfo() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
   const locale = useFormattingLocale();
+  const shareSheet = useShareSheet();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
@@ -168,10 +170,11 @@ export default function BranchInfo() {
   // what a branch page owes a visitor is the person who leads it, not a roster.
   const leadership = branch.lead === null ? [] : [branch.lead];
 
+  // W4.15 slice 3: the card whose whole job is to get a stranger through a door. The
+  // words the text route sends are the ones this screen always sent.
   const share = () => {
-    void shareText(
-      `${branch.name} · ${branch.city}, ${branch.country}${displaySunday ? ` · ${displaySunday}` : ''} · ${t('appName')}`,
-    );
+    const built = branchShare(branch, t('appName'));
+    shareSheet.open(built.content, built.fallbackText);
   };
 
   // City + country ride along so the maps app geocodes the venue even when
@@ -521,6 +524,7 @@ export default function BranchInfo() {
         </View>
       </View>
 
+      {shareSheet.element}
       <GateSheet
         visible={gateVisible}
         title={t('church:imHereGateTitle')}

@@ -62,6 +62,12 @@ jest.mock(
   () => require('react-native-safe-area-context/jest/mock').default,
 );
 
+// The card can carry a testimony photo, which reaches the storage client through
+// useSignedPhotoUrl. The verse here has none, so nothing signs anything; the mock exists
+// only so importing the card does not construct a real client (src/lib/supabase throws
+// without EXPO_PUBLIC_* config).
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+
 const VERSE = {
   kind: 'verse',
   text: 'And my God will supply every need of yours',
@@ -95,14 +101,22 @@ async function renderSheet(onClose: () => void = jest.fn()) {
 }
 
 /**
- * The capture is kicked off by the hidden card's first layout, and nothing lays anything
- * out under Jest, so the suite fires it. Deliberately NOT a shortcut past the mechanism:
- * driving it through the same event the device uses is what lets the re-capture test below
- * prove that a second opening really does produce a second layout.
+ * The capture is kicked off when the card says it is composed, and the card decides that
+ * from its own layout events, which nothing fires under Jest, so the suite fires them:
+ * the middle has room, the words fit inside it, and the card announces itself. Deliberately
+ * NOT a shortcut past the mechanism: driving it through the same events the device uses is
+ * what lets the re-capture test below prove that a second opening really does compose a
+ * second card.
  */
 async function layOutTheCard() {
-  await fireEvent(screen.getByTestId('share-card-host'), 'layout', {
-    nativeEvent: { layout: { x: 0, y: 0, width: 360, height: 360 } },
+  // The card hides itself from assistive tech (it exists to be rasterised), so the
+  // queries have to ask for hidden elements.
+  const hidden = { includeHiddenElements: true } as const;
+  await fireEvent(screen.getByTestId('share-card-middle', hidden), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: 288, height: 700 } },
+  });
+  await fireEvent(screen.getByTestId('share-card-content', hidden), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: 288, height: 300 } },
   });
 }
 

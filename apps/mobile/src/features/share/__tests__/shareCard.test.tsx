@@ -6,7 +6,8 @@ import { ThemeScope, type ThemeName } from '@/theme';
 
 import type { VerseShareContent } from '../content';
 import { CARD_RENDER_DP } from '../geometry';
-import { SHARE_URL, ShareCard } from '../ShareCard';
+import { SHARE_ORIGIN } from '../links';
+import { ShareCard } from '../ShareCard';
 
 /**
  * The verse card itself (W4.15 slice 1), and the three rules on it that a later session
@@ -29,6 +30,11 @@ jest.mock('react-native-qrcode-svg', () => {
   };
 });
 
+// The card can carry a testimony photo, which reaches the storage client. The verse has
+// none; the mock only stops the import constructing a real client (src/lib/supabase throws
+// without EXPO_PUBLIC_* config).
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+
 const VERSE: VerseShareContent = {
   kind: 'verse',
   text: 'And my God will supply every need of yours',
@@ -39,7 +45,7 @@ const VERSE: VerseShareContent = {
 async function renderCard(theme: ThemeName = 'light') {
   await render(
     <ThemeScope name={theme}>
-      <ShareCard content={VERSE} />
+      <ShareCard content={VERSE} onReady={() => undefined} />
     </ThemeScope>,
   );
 }
@@ -97,17 +103,19 @@ describe('the verse share card', () => {
     expect(screen.queryByText('Verse of the day')).toBeNull();
   });
 
-  it('prints the same address the QR encodes', async () => {
+  it('prints the address the QR opens, and the QR opens the app page', async () => {
     await renderCard();
 
     // THE ONE ELEMENT A RECIPIENT CAN ACT ON, and the printed line beside it, are one
-    // fact: the label is derived from `SHARE_URL` rather than typed a second time, so a
-    // card can never advertise one address and scan to another.
+    // fact: the label is derived from `SHARE_ORIGIN` rather than typed a second time,
+    // so a card can never advertise one address and scan to another. The verse has no
+    // page of its own, so its code opens the app's landing page (links.ts), and it does
+    // so on `www`: the apex 308-redirects and can never open the app.
     expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
-      SHARE_URL,
+      'https://www.agbcglobal.com/app',
     );
     expect(screen.getByText('agbcglobal.com', HIDDEN)).toBeTruthy();
-    expect(SHARE_URL).toContain('agbcglobal.com');
+    expect(SHARE_ORIGIN).toBe('https://www.agbcglobal.com');
   });
 
   it('never follows the device font scale', async () => {
@@ -135,7 +143,7 @@ describe('the verse share card', () => {
 
     await screen.rerender(
       <ThemeScope name="dark">
-        <ShareCard content={VERSE} />
+        <ShareCard content={VERSE} onReady={() => undefined} />
       </ThemeScope>,
     );
     const dark: unknown = screen.getByText('Philippians 4:19 · WEB', HIDDEN)

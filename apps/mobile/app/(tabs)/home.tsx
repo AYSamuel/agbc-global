@@ -25,10 +25,11 @@ import {
   useManualRefresh,
   useToast,
 } from '@/components/ui';
-import { initials, joinMeta } from '@/features/family/format';
+import { initials } from '@/features/family/format';
 import { useLatestTestimonyQuery } from '@/features/family/queries';
-import { shareText, testimonyShareText } from '@/features/family/share';
 import { TestimonyCard } from '@/features/family/TestimonyCard';
+import { testimonyShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useBranchColors } from '@/features/family/useBranchColors';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { resolveAddressLine } from '@/features/home/address';
@@ -194,6 +195,7 @@ export default function Home() {
   const testimonyHighlight = useLatestTestimonyQuery();
   const branchNames = useBranchNames();
   const branchColorFor = useBranchColors();
+  const shareSheet = useShareSheet();
   const { branches } = resolveBranchList(branchesQuery);
   // The hero's address line comes from the branch row (mockup .hero .where).
   const currentBranch = branches.find((b) => b.id === branch?.id) ?? null;
@@ -731,20 +733,16 @@ export default function Home() {
                       if (id) openGate({ kind: 'glory', testimonyId: id });
                     }}
                     // Sharing is outbound, not a gated contribution (matches the Family
-                    // feed): open the OS sheet rather than the gate.
+                    // feed): the preview sheet, then the OS sheet, never the gate.
                     onShare={() => {
                       const item = testimonyHighlight.data;
                       if (!item) return;
-                      void shareText(
-                        testimonyShareText(
-                          item.body,
-                          joinMeta([
-                            item.author_name,
-                            branchNames[item.branch_id] ?? null,
-                          ]),
-                          t('appName'),
-                        ),
+                      const share = testimonyShare(
+                        item,
+                        branchNames[item.branch_id] ?? null,
+                        t('appName'),
                       );
+                      shareSheet.open(share.content, share.fallbackText);
                     }}
                   />
                 ) : (
@@ -891,6 +889,8 @@ export default function Home() {
           router.push('/branches');
         }}
       />
+
+      {shareSheet.element}
 
       {/* One sheet, whichever gated tap opened it. The copy names the action the
           member reached for, because "sign in to continue" tells them nothing

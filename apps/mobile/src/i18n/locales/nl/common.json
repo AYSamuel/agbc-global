@@ -107,9 +107,26 @@
   "cancel": "Annuleren",
   "share": {
     "previewTitle": {
-      "verse": "Dit vers delen"
+      "verse": "Dit vers delen",
+      "testimony": "Dit getuigenis delen",
+      "prayer": "Dit gebedsverzoek delen",
+      "event": "Dit evenement delen",
+      "sermon": "Deze boodschap delen",
+      "branch": "Deze locatie delen",
+      "milestone": "Deze mijlpaal delen"
     },
     "previewAlt": "De afbeelding die je gaat versturen",
+    "kicker": {
+      "testimony": "Een getuigenis",
+      "prayer": "Gebedsverzoek",
+      "event": "Je bent uitgenodigd",
+      "sermon": "Boodschap",
+      "branch": "Kom eens langs",
+      "milestone": "Een mijlpaal"
+    },
+    "willYouPray": "Bid je mee?",
+    "milestoneLine": "Met mijn kerkfamilie bij Amazing Grace Bible Church.",
+    "readItAll": "Lees alles in de app",
     "share": "Delen",
     "sendAsTextInstead": "Stuur in plaats daarvan tekst",
     "sendAsText": "Als tekst versturen",

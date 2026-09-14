@@ -44,7 +44,8 @@ import { track } from '@/lib/analytics';
 import { useAuthStore } from '@/state/auth';
 import { useBranchNames } from '@/features/family/useBranchNames';
 import { useBranchCities } from '@/features/events/useBranchCities';
-import { shareText } from '@/features/family/share';
+import { eventShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useGateStore } from '@/state/gate';
 import { useTheme } from '@/theme';
 
@@ -61,6 +62,7 @@ export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
   const locale = useFormattingLocale();
+  const shareSheet = useShareSheet();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -176,10 +178,16 @@ export default function EventDetailScreen() {
 
   const meta = [branchName, event.location].filter(Boolean).join(' · ');
 
+  // W4.15 slice 3: the card, with the picture a leader gave the event when there is one.
+  // The words the text route sends are the ones this screen always sent.
   const share = () => {
-    void shareText(
-      `${event.title} · ${day} ${time}${event.location ? ` · ${event.location}` : ''} · ${t('appName')}`,
+    const built = eventShare(
+      event,
+      isGlobal ? null : branchName || null,
+      locale,
+      t('appName'),
     );
+    shareSheet.open(built.content, built.fallbackText);
   };
 
   return (
@@ -450,6 +458,7 @@ export default function EventDetailScreen() {
         </View>
       </View>
 
+      {shareSheet.element}
       <GateSheet
         visible={gateVisible}
         title={t('events:gateTitle')}

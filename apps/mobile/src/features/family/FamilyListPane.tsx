@@ -8,7 +8,6 @@ import { fontFamily, spacing } from '@agbc/shared/theme';
 import { EmptyState, SegmentedControl, Skeleton } from '@/components/ui';
 import { useTheme } from '@/theme';
 
-import { joinMeta } from './format';
 import { AnsweredPrayerCard } from './PrayerCard';
 import { PrayerRow } from './PrayerRow';
 import {
@@ -18,12 +17,13 @@ import {
   type TestimonyFeedItem,
 } from './queries';
 import { ScopeToggle } from './ScopeToggle';
-import { shareText, testimonyShareText } from './share';
 import { TestimonyCard } from './TestimonyCard';
 import { useBranchColors } from './useBranchColors';
 import { useBranchNames } from './useBranchNames';
 import { useFamilyViewStore } from './viewState';
 
+import { testimonyShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useBranchStore } from '@/state/branch';
 
 /**
@@ -52,6 +52,7 @@ export function FamilyListPane({ selectedId }: FamilyListPaneProps) {
   const insets = useSafeAreaInsets();
   const branchNames = useBranchNames();
   const branchColorFor = useBranchColors();
+  const shareSheet = useShareSheet();
   const branch = useBranchStore((s) => s.branch);
   const branchId = branch?.id ?? null;
 
@@ -80,154 +81,155 @@ export function FamilyListPane({ selectedId }: FamilyListPaneProps) {
         }));
 
   return (
-    <FlatList
-      data={rows}
-      keyExtractor={(row) => row.item.id}
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      contentContainerStyle={{
-        paddingTop: insets.top + spacing.screenTop,
-        paddingBottom: insets.bottom + spacing.x2l,
-      }}
-      ListHeaderComponent={
-        <View style={{ paddingHorizontal: 22, paddingTop: 24, paddingBottom: 12 }}>
-          <Text
-            accessibilityRole="header"
-            style={{
-              fontFamily: fontFamily.display.extraBold,
-              fontSize: 26,
-              letterSpacing: -0.52,
-              color: colors.text,
-              marginBottom: spacing.sm,
-            }}
+    <>
+      <FlatList
+        data={rows}
+        keyExtractor={(row) => row.item.id}
+        style={{ flex: 1, backgroundColor: colors.bg }}
+        contentContainerStyle={{
+          paddingTop: insets.top + spacing.screenTop,
+          paddingBottom: insets.bottom + spacing.x2l,
+        }}
+        ListHeaderComponent={
+          <View
+            style={{ paddingHorizontal: 22, paddingTop: 24, paddingBottom: 12 }}
           >
-            {t('tabs.family')}
-          </Text>
-          <ScopeToggle
-            value={effectiveScope}
-            onChange={setScope}
-            branchName={branch?.name ?? null}
-          />
-          <View style={{ marginTop: spacing.sm }}>
-            {/* Map is absent on purpose: a map has no detail pane to sit beside,
+            <Text
+              accessibilityRole="header"
+              style={{
+                fontFamily: fontFamily.display.extraBold,
+                fontSize: 26,
+                letterSpacing: -0.52,
+                color: colors.text,
+                marginBottom: spacing.sm,
+              }}
+            >
+              {t('tabs.family')}
+            </Text>
+            <ScopeToggle
+              value={effectiveScope}
+              onChange={setScope}
+              branchName={branch?.name ?? null}
+            />
+            <View style={{ marginTop: spacing.sm }}>
+              {/* Map is absent on purpose: a map has no detail pane to sit beside,
                 so the two-pane offers only the two feeds. Tapping Family in the
                 rail returns to the full tab, map included. */}
-            <SegmentedControl
-              accessibilityLabel={t('family:sectionLabel')}
-              segments={[
-                { key: 'testimonies', label: t('family:tabTestimonies') },
-                { key: 'prayer', label: t('family:tabPrayer') },
-              ]}
-              value={tab === 'prayer' ? 'prayer' : 'testimonies'}
-              onChange={(key) => {
-                setTab(key);
-              }}
-            />
-          </View>
-        </View>
-      }
-      ListEmptyComponent={
-        active.data === undefined && !active.isError ? (
-          <View style={{ gap: spacing.md, paddingHorizontal: spacing.lg }}>
-            <Skeleton height={150} />
-            <Skeleton height={150} />
-          </View>
-        ) : (
-          <View style={{ paddingHorizontal: spacing.lg }}>
-            <EmptyState
-              title={
-                active.isError
-                  ? t('errors:somethingWrong')
-                  : tab === 'prayer'
-                    ? t('family:emptyPrayerTitle')
-                    : t('family:emptyTestimoniesTitle')
-              }
-              body={
-                active.isError
-                  ? t('errors:couldntLoad')
-                  : tab === 'prayer'
-                    ? t('family:emptyPrayerBody')
-                    : t('family:emptyTestimoniesBody')
-              }
-              {...(active.isError
-                ? {
-                    actionLabel: t('errors:tryAgain'),
-                    onAction: () => {
-                      void active.refetch();
-                    },
-                  }
-                : {})}
-            />
-          </View>
-        )
-      }
-      renderItem={({ item: row }) => {
-        const selected = row.item.id === selectedId;
-        return (
-          // The selection belongs to the CARD, not to this padded row. Ringing
-          // the wrapper drew the border a whole gutter outside the card, which
-          // read as "the space is selected" rather than "this post is" (Ayo,
-          // 2026-09-02). The frame sets `border-color` on the `.testi` itself,
-          // so `selected` goes down to the card and recolours its own border.
-          <View style={{ paddingHorizontal: spacing.lg }}>
-            {row.kind === 'testimony' ? (
-              <TestimonyCard
-                selected={selected}
-                testimony={row.item}
-                branchName={branchNames[row.item.branch_id] ?? null}
-                branchColor={branchColorFor(row.item.branch_id)}
-                scope={effectiveScope}
-                onPress={() => {
-                  router.navigate({
-                    pathname: '/testimony/[id]',
-                    params: { id: row.item.id },
-                  });
+              <SegmentedControl
+                accessibilityLabel={t('family:sectionLabel')}
+                segments={[
+                  { key: 'testimonies', label: t('family:tabTestimonies') },
+                  { key: 'prayer', label: t('family:tabPrayer') },
+                ]}
+                value={tab === 'prayer' ? 'prayer' : 'testimonies'}
+                onChange={(key) => {
+                  setTab(key);
                 }}
-                onGloryGate={() => {
-                  router.navigate('/auth');
-                }}
-                onShare={() => {
-                  void shareText(
-                    testimonyShareText(
-                      row.item.body,
-                      joinMeta([
-                        row.item.author_name,
-                        branchNames[row.item.branch_id] ?? null,
-                      ]),
+              />
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          active.data === undefined && !active.isError ? (
+            <View style={{ gap: spacing.md, paddingHorizontal: spacing.lg }}>
+              <Skeleton height={150} />
+              <Skeleton height={150} />
+            </View>
+          ) : (
+            <View style={{ paddingHorizontal: spacing.lg }}>
+              <EmptyState
+                title={
+                  active.isError
+                    ? t('errors:somethingWrong')
+                    : tab === 'prayer'
+                      ? t('family:emptyPrayerTitle')
+                      : t('family:emptyTestimoniesTitle')
+                }
+                body={
+                  active.isError
+                    ? t('errors:couldntLoad')
+                    : tab === 'prayer'
+                      ? t('family:emptyPrayerBody')
+                      : t('family:emptyTestimoniesBody')
+                }
+                {...(active.isError
+                  ? {
+                      actionLabel: t('errors:tryAgain'),
+                      onAction: () => {
+                        void active.refetch();
+                      },
+                    }
+                  : {})}
+              />
+            </View>
+          )
+        }
+        renderItem={({ item: row }) => {
+          const selected = row.item.id === selectedId;
+          return (
+            // The selection belongs to the CARD, not to this padded row. Ringing
+            // the wrapper drew the border a whole gutter outside the card, which
+            // read as "the space is selected" rather than "this post is" (Ayo,
+            // 2026-09-02). The frame sets `border-color` on the `.testi` itself,
+            // so `selected` goes down to the card and recolours its own border.
+            <View style={{ paddingHorizontal: spacing.lg }}>
+              {row.kind === 'testimony' ? (
+                <TestimonyCard
+                  selected={selected}
+                  testimony={row.item}
+                  branchName={branchNames[row.item.branch_id] ?? null}
+                  branchColor={branchColorFor(row.item.branch_id)}
+                  scope={effectiveScope}
+                  onPress={() => {
+                    router.navigate({
+                      pathname: '/testimony/[id]',
+                      params: { id: row.item.id },
+                    });
+                  }}
+                  onGloryGate={() => {
+                    router.navigate('/auth');
+                  }}
+                  onShare={() => {
+                    const share = testimonyShare(
+                      row.item,
+                      branchNames[row.item.branch_id] ?? null,
                       t('appName'),
-                    ),
-                  );
-                }}
-              />
-            ) : row.item.answered_at ? (
-              <AnsweredPrayerCard
-                prayer={row.item}
-                onPress={() => {
-                  router.navigate({
-                    pathname: '/prayer/[id]',
-                    params: { id: row.item.id },
-                  });
-                }}
-              />
-            ) : (
-              <PrayerRow
-                selected={selected}
-                prayer={row.item}
-                branchName={branchNames[row.item.branch_id] ?? null}
-                scope={effectiveScope}
-                onOpen={() => {
-                  router.navigate({
-                    pathname: '/prayer/[id]',
-                    params: { id: row.item.id },
-                  });
-                }}
-                onGate={() => {
-                  router.navigate('/auth');
-                }}
-              />
-            )}
-          </View>
-        );
-      }}
-    />
+                    );
+                    shareSheet.open(share.content, share.fallbackText);
+                  }}
+                />
+              ) : row.item.answered_at ? (
+                <AnsweredPrayerCard
+                  prayer={row.item}
+                  onPress={() => {
+                    router.navigate({
+                      pathname: '/prayer/[id]',
+                      params: { id: row.item.id },
+                    });
+                  }}
+                />
+              ) : (
+                <PrayerRow
+                  selected={selected}
+                  prayer={row.item}
+                  branchName={branchNames[row.item.branch_id] ?? null}
+                  scope={effectiveScope}
+                  onOpen={() => {
+                    router.navigate({
+                      pathname: '/prayer/[id]',
+                      params: { id: row.item.id },
+                    });
+                  }}
+                  onGate={() => {
+                    router.navigate('/auth');
+                  }}
+                />
+              )}
+            </View>
+          );
+        }}
+      />
+      {shareSheet.element}
+    </>
   );
 }

@@ -35,6 +35,7 @@ export {
   GradientFill,
   type GradientDirection,
   type GradientFillProps,
+  type GradientStop,
 } from './Gradient';
 export * from './icons';
 export { MenuCard, MenuLabel, MenuRow, type MenuRowProps } from './Menu';

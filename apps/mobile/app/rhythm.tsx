@@ -273,9 +273,10 @@ export default function RhythmScreen() {
 
         {/* Progress THROUGH a run, so only while one is running. A lapsed member
             has none, and counting them down to a rung they are not climbing is
-            the nag `10` forbids. */}
+            the nag `10` forbids (the server still answers for them; the screen
+            chooses not to ask). */}
         {rhythm.phase === 'active' || rhythm.phase === 'grace' ? (
-          <NextMilestone weeks={rhythm.currentWeeks} />
+          <NextMilestone rhythm={rhythm} />
         ) : null}
 
         {entries.length > 0 ? (

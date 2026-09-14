@@ -1,19 +1,23 @@
--- The ladder that does not end (W2.8 slice 5, migration 20260808214722).
+-- The ladder that does not end (W2.8 slice 5, migration 20260808214722; moved onto the
+-- calendar by W4.16, migration 20260914120000).
 --
 -- Two ladders that answer different questions, and the difference is the whole design:
 --
---   week rungs      "how long without a gap": streak-based, so it resets after two missed
---                   weeks and a member can lose their PLACE on it
+--   rhythm rungs    "how long without a gap": a month of Sundays, then a season, half a year,
+--                   a year and every year after, in calendar time from the current run's first
+--                   gathering, so a member can lose their PLACE on it after two missed weeks
 --   gathering count "how many times, ever": cumulative, so nothing is ever lost
 --
 -- What is asserted here is mostly that the awards are ENDLESS and IDEMPOTENT: there is always
 -- a next rung, a badge already held is never awarded twice, and a badge is never taken away,
 -- because that last property is what makes this not Duolingo (docs/spec/10: a streak is a
--- gift, not a debt).
+-- gift, not a debt). The calendar rules themselves (five-Sunday months, anniversaries a day
+-- away) are `056`'s.
 --
--- Weeks are built backwards from the current ISO week so nothing here starts failing in
--- November. Attendance is inserted as a trusted writer (no auth.uid()), which is the only way
--- to state a service_date directly; as a member every row would be clamped to today.
+-- On FIXED dates since W4.16: whether a run of weeks has covered a calendar month depends on
+-- which weeks they are, so a history built backwards from today would pass on some days and
+-- fail on others. Attendance is inserted as a trusted writer (no auth.uid()), which is the only
+-- way to state a service_date directly; as a member every row would be clamped to today.
 
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -32,47 +36,48 @@ insert into public.profiles (id, email, display_name, branch_id, role, onboarded
   (:'climber', 't031-climber@test.local', 'T031 Climber', :'glasgow', 'member', now()),
   (:'faller', 't031-faller@test.local', 'T031 Faller', :'glasgow', 'member', now());
 
--- --- 1. the week ladder has no last rung ----------------------------------------------------
+-- --- 1. the time ladder has no last rung ----------------------------------------------------
 
 select is(
-  (select array_agg(r order by r) from public.rhythm_week_rungs(3) r),
+  (select array_agg(r order by r) from public.rhythm_time_rungs(date '2026-09-06', date '2026-12-05') r),
   null,
-  'under four weeks there is no rung yet'
+  'under three months there is no time rung yet'
 );
 
 select is(
-  (select array_agg(r order by r) from public.rhythm_week_rungs(4) r),
-  array[4],
-  'four weeks reaches the first rung'
+  (select array_agg(r order by r) from public.rhythm_time_rungs(date '2026-09-06', date '2026-12-06') r),
+  array[12],
+  'three calendar months reaches the first, a season'
 );
 
 select is(
-  (select array_agg(r order by r) from public.rhythm_week_rungs(51) r),
-  array[4, 12, 26],
-  'the named tiers arrive at 4, 12 and 26'
+  (select array_agg(r order by r) from public.rhythm_time_rungs(date '2026-09-06', date '2027-08-01') r),
+  array[12, 26],
+  'the named tiers arrive at a season and half a year'
 );
 
 select is(
-  (select array_agg(r order by r) from public.rhythm_week_rungs(52) r),
-  array[4, 12, 26, 52],
+  (select array_agg(r order by r) from public.rhythm_time_rungs(date '2026-09-06', date '2027-09-06') r),
+  array[12, 26, 52],
   'a year of Sundays is the last NAMED tier'
 );
 
 select is(
-  (select array_agg(r order by r) from public.rhythm_week_rungs(104) r),
-  array[4, 12, 26, 52, 104],
+  (select array_agg(r order by r) from public.rhythm_time_rungs(date '2026-09-06', date '2028-09-06') r),
+  array[12, 26, 52, 104],
   'and the year after it is a rung of its own'
 );
 
 select is(
-  (select array_agg(r order by r) from public.rhythm_week_rungs(520) r),
-  array[4, 12, 26, 52, 104, 156, 208, 260, 312, 364, 416, 468, 520],
+  (select array_agg(r order by r) from public.rhythm_time_rungs(date '2026-09-06', date '2036-09-06') r),
+  array[12, 26, 52, 104, 156, 208, 260, 312, 364, 416, 468, 520],
   'ten years in, every year is still a rung: the ladder does not end'
 );
 
 -- The property that matters more than any single value: there is ALWAYS a next one.
 select ok(
-  (select count(*) from public.rhythm_week_rungs(5200)) > (select count(*) from public.rhythm_week_rungs(520)),
+  (select count(*) from public.rhythm_time_rungs(date '2026-09-06', date '2126-09-06'))
+    > (select count(*) from public.rhythm_time_rungs(date '2026-09-06', date '2036-09-06')),
   'a hundred years of Sundays still has more rungs than ten'
 );
 
@@ -98,12 +103,10 @@ select is(
 
 -- --- 3. what a check-in actually awards ------------------------------------------------------
 
--- Four consecutive Sundays, ending last week: a four-week run and four gatherings.
+-- Every Sunday of September 2026: a month of Sundays and four gatherings.
 insert into public.attendance (profile_id, branch_id, service_date, source)
-select :'climber', :'glasgow',
-       (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
-       'here_button'
-from unnest(array[4, 3, 2, 1]) as w;
+select :'climber', :'glasgow', d::date, 'here_button'
+from generate_series(timestamp '2026-09-06', timestamp '2026-09-27', interval '7 days') as d;
 
 select is(
   (select count(*) from public.milestones where profile_id = :'climber' and kind = 'first_service'),
@@ -114,7 +117,7 @@ select is(
 select is(
   (select count(*) from public.milestones where profile_id = :'climber' and kind = '4_week_rhythm'),
   1::bigint,
-  'four weeks awards the four-week rung'
+  'a whole calendar month awards the month of Sundays'
 );
 
 select is(
@@ -131,19 +134,18 @@ select is(
 
 -- --- 4. self-healing: rungs skipped over are awarded on the next check-in --------------------
 
--- Backfill enough history to put the climber well past a year, without a single new
--- "check-in" of its own: this is the shape a late offline replay or a corrected record takes.
+-- Backfill enough history to put the climber past a year, in ONE statement and so without a
+-- single check-in of its own that could have awarded the rungs on the way: this is the shape a
+-- late offline replay or a corrected record takes.
 insert into public.attendance (profile_id, branch_id, service_date, source)
-select :'climber', :'glasgow',
-       (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
-       'here_button'
-from generate_series(5, 60) as w
+select :'climber', :'glasgow', d::date, 'here_button'
+from generate_series(timestamp '2026-10-04', timestamp '2027-10-31', interval '7 days') as d
 on conflict (profile_id, service_date) do nothing;
 
 select is(
   (select current_weeks from public.streaks where profile_id = :'climber'),
-  60,
-  'sixty Sundays running'
+  61,
+  'sixty-one Sundays running, 6 September 2026 to 31 October 2027'
 );
 
 select ok(
@@ -154,7 +156,7 @@ select ok(
 select is(
   (select count(*) from public.milestones where profile_id = :'climber' and kind = '104_week_rhythm'),
   0::bigint,
-  'but two years is not awarded at sixty weeks'
+  'but two years is not awarded at fourteen months'
 );
 
 select is(
@@ -173,7 +175,7 @@ select is(
 
 -- One more Sunday, which reaches no new rung.
 insert into public.attendance (profile_id, branch_id, service_date, source)
-values (:'climber', :'glasgow', current_date, 'here_button')
+values (:'climber', :'glasgow', '2027-11-07', 'here_button')
 on conflict (profile_id, service_date) do nothing;
 
 select is(
@@ -184,21 +186,20 @@ select is(
 
 -- --- 6. a broken streak keeps every badge -----------------------------------------------------
 
--- The faller: five weeks, then a gap of three, then one Sunday. The run resets to 1.
+-- The faller: five Sundays from 6 September 2026, covering September.
 insert into public.attendance (profile_id, branch_id, service_date, source)
-select :'faller', :'glasgow',
-       (date_trunc('week', current_date) - (w || ' weeks')::interval)::date + 6,
-       'here_button'
-from unnest(array[8, 7, 6, 5, 4]) as w;
+select :'faller', :'glasgow', d::date, 'here_button'
+from generate_series(timestamp '2026-09-06', timestamp '2026-10-04', interval '7 days') as d;
 
 select is(
   (select count(*) from public.milestones where profile_id = :'faller' and kind = '4_week_rhythm'),
   1::bigint,
-  'the faller reached four weeks'
+  'the faller held a month of Sundays'
 );
 
+-- Then three missed Sundays (11, 18 and 25 October) and one back, on 1 November.
 insert into public.attendance (profile_id, branch_id, service_date, source)
-values (:'faller', :'glasgow', current_date, 'here_button');
+values (:'faller', :'glasgow', '2026-11-01', 'here_button');
 
 select is(
   (select current_weeks from public.streaks where profile_id = :'faller'),
@@ -209,7 +210,7 @@ select is(
 select is(
   (select count(*) from public.milestones where profile_id = :'faller' and kind = '4_week_rhythm'),
   1::bigint,
-  'and the four-week badge is STILL HELD: this is the difference from Duolingo'
+  'and the month of Sundays is STILL HELD: this is the difference from Duolingo'
 );
 
 select is(

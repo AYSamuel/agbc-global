@@ -50,6 +50,21 @@ export function formatAttendanceDate(
   }).format(date);
 }
 
+/**
+ * The month a rhythm is counting toward: the frames' "September" in "2 of 4 in
+ * September" (W4.16). `progress_month` is the month's first day as a DATE, so it
+ * goes through the same UTC carrier: formatted in a zone west of UTC, 1 October
+ * would otherwise read as September.
+ */
+export function formatMonthName(month: string, locale: string): string {
+  const date = carrier(month);
+  if (date === null) return '';
+  return new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
 /** The lapsed hero's footnote date: the frame's "Sunday 5 July". */
 export function formatGatheredDate(
   serviceDate: string,

@@ -243,6 +243,8 @@ export const shareCard = {
    */
   qrBackground: '#ffffff',
   qrModules: '#14213d',
+  /** `.scplay`'s ring: the gold disc's soft halo on a message card (slice 3). */
+  playHalo: 'rgba(255,207,74,0.16)',
   ground: {
     /** VERSE. `.verse`'s own values scaled up, so a member taps a cream card and a cream
      * card is what lands in the chat. */
@@ -268,6 +270,8 @@ export const shareCard = {
       quote: '#ffffff',
       attribution: '#e4c98a',
       attributionSub: '#95a1b7',
+      /** `.scrows div`: a branch card's service and address rows; `quote` is their bold. */
+      rows: '#c8d1e0',
       footLine: 'rgba(255,255,255,0.16)',
       wordmark: '#ffffff',
       url: 'rgba(255,255,255,0.62)',
