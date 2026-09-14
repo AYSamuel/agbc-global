@@ -22,7 +22,7 @@ Encourage a healthy spiritual rhythm (showing up, and daily devotion), **framed 
 
 ### `RHYTHM` (My Rhythm)
 - **Current streak** (consecutive weeks with attendance), longest streak, encouraging headline.
-- **Milestones** achieved + next milestone (progress).
+- **Milestones** achieved + next milestone (progress, the server's; see §Milestones).
 - **Attendance history** (calendar/list).
 - **Devotional progress** summary → `PLAN`.
 - Grace-framed empty/paused states.
@@ -34,12 +34,17 @@ Named kinds: `first_service`, `first_testimony`, `first_prayer`, and later `plan
 
 | Ladder | Kind | Rungs | Answers |
 |---|---|---|---|
-| Week rungs | `<n>_week_rhythm` | 4, 12, 26, 52, then one per year without end | "how long without a gap"; streak-based, so a place on it CAN be lost |
+| Rhythm rungs | `4_week_rhythm`, `12_week_rhythm`, `26_week_rhythm`, `52_week_rhythm`, `<52n>_week_rhythm` | a month of Sundays; then a season, half a year, a year and every year after, in calendar months (W4.16, below) | "how long without a gap"; the time rungs are measured within a run, so a place on them CAN be lost |
 | Gatherings | `<n>_gatherings` | 10, 25, 50, 100, then one per hundred without end | "how many times, ever"; cumulative, so a lapse costs nothing |
 
-- **Deliberately not Duolingo's engine.** The endlessness is copied; the loss aversion is not. Every award is `unique(profile_id, kind)`, so a badge already held is never re-awarded and never taken away: a member whose streak breaks keeps every rung they ever reached, and the gathering ladder keeps climbing through the break.
-- **Awarding is a sweep, not two tests.** `attendance_after_insert` awards every rung at or below the current run and every gathering count reached, which is self-healing: a grace week that jumps the run, a late offline replay that bridges two runs, or a rung added years from now all award whatever was skipped on the next check-in.
-- **Named in church language, not counted:** a month of Sundays, a season with us, half a year, a year of Sundays; past that `{{count}} years of Sundays`. The gathering rungs are ORDINALS ("your 50th gathering"), which are not plurals: i18next needs `{ ordinal: true }` or it renders the raw key.
+**The rhythm rungs keep a real calendar** (W4.16, decided with Ayo 2026-09-14, migration `20260914120000`; the plan `docs/spec/plans/W4.16-rhythm-real-calendar.md` carries every reason). Until then each rung was a COUNT of attended weeks (4, 12, 26, 52), which disagreed with its own name: "A month of Sundays" landed with a fifth Sunday still to come, in 17 days where a branch meets midweek, and after six weeks of every other Sunday.
+- **A month of Sundays is every week of one calendar month.** A week belongs to the month its SUNDAY falls in, so a month has exactly as many weeks as Sundays (4 or 5). Any gathering covers its week, not only a Sunday one (members who work Sunday shifts come midweek), and several in one week count once. Grace does not apply inside the month; a missed week loses that month, and the next is a fresh chance. It is not tied to the current run: any fully covered month in a member's history earns it. A midweek gathering in the month's last week completes it before its last Sunday, so no copy may say "every Sunday".
+- **A season, half a year and a year are 3, 6 and 12 calendar months** from the first gathering of the CURRENT run, then every further 12 months. Earned at the first gathering ON OR AFTER the anniversary, never before (a run from Sunday 6 September 2026 does not reach its year on Sunday 5 September 2027). Grace still carries a run across one missed week and two still end it, so the anniversary restarts with a new run. Somebody who gathers every other Sunday reaches a year in about 27 gatherings; the gathering ladder is what counts the times.
+- **Progress is the server's.** `rhythm_state()` answers `next_kind` (the first rung the member does not hold yet, so "Next" never counts down to a badge they already have), `progress_done`, `progress_total` and `progress_month`. Before the month is held the ring and the Next card count its weeks ("2 of 4 in September", "In October" while nothing counts yet); after it, whole calendar weeks toward the next time rung ("5 weeks to go", and "Almost there" when the count is full, never "0 weeks to go"). The ring keeps the run's weeks as its label, so it can be an empty track but never a 0.
+
+- **Deliberately not Duolingo's engine.** The endlessness is copied; the loss aversion is not. Every award is `unique(profile_id, kind)`, so a badge already held is never re-awarded and never taken away: a member whose streak breaks keeps every rung they ever reached, and the gathering ladder keeps climbing through the break. Badges the old week count gave that the calendar rule would not are kept too.
+- **Awarding is a sweep, not a test of one number.** `attendance_after_insert` awards the month if any month is fully covered, every time rung the current run has reached, and every gathering count reached, which is self-healing: a late offline replay that completes a month or bridges two runs awards whatever it made true on the next check-in. The new rules award on a member's NEXT check-in; nothing was backfilled.
+- **Named in church language, not counted:** a month of Sundays, a season with us, half a year, a year of Sundays; past that `{{count}} years of Sundays`. **The rhythm kind strings are identifiers, not counts**: they kept their names when W4.16 moved them onto the calendar, because renaming them would re-celebrate every badge already held (`celebrated.ts` keeps each device's list of kinds it has told). The gathering rungs are ORDINALS ("your 50th gathering"), which are not plurals: i18next needs `{ ordinal: true }` or it renders the raw key.
 - A **belonging anniversary** ("one year since your first Sunday") was offered and NOT taken. Do not add it without asking.
 
 ### Devotional plan (`PLAN` / `PLAN-DAY`): paid, entitlement-gated

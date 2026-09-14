@@ -368,8 +368,9 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 | current_weeks | int | weeks in the member's current run. **Grace covers ONE missed week; two consecutive misses start a new run** (decided 2026-08-07, W2.8: this column said "consecutive ISO weeks" and `10` said a missed week pauses and resumes, which are different rules. `10`'s promise wins, because "Grace covers this week" is the copy the product actually makes). A streak week is **the ISO week of `attendance.service_date`, nothing else** (the timezone acted once, at write time, in the attended branch); `service_date` is immutable, so branch-timezone edits and home-branch changes never re-bucket history. **The stored value is the run as of the last attendance, and whether that run is still LIVE is decided at read time** by `rhythm_state()`, because a member who stops attending would otherwise keep showing five weeks until some job got round to them |
 | longest_weeks | int | monotonic |
 | last_service_date | date | |
+| run_started_on | date | the first service date of the run the last attendance belongs to, grace-bridged (W4.16, `20260914120000`): what a season, half a year and a year are measured from. A derived cache written beside `current_weeks`, and like it not proof the run is still live. Readable by its owner through the table's SELECT grant, deliberately (their own date, nobody else's). Filled for existing rows by the migration running `recompute_all_streaks()` once |
 
-**Recompute spec:** AFTER INSERT trigger on `attendance` runs an idempotent full recompute from `attendance` (never incremental-only), so late offline replays retro-correct. A weekly pg_cron pass re-runs it as a safety net (lock/lease so it can't double-run).
+**Recompute spec:** AFTER INSERT trigger on `attendance` runs an idempotent full recompute from `attendance` (never incremental-only), so late offline replays retro-correct. A weekly pg_cron pass re-runs it as a safety net (lock/lease so it can't double-run). Since W4.16 the same trigger awards the rhythm rungs from the calendar (`rhythm_covered_months`, `rhythm_time_rungs`), and `rhythm_state()` answers what comes next (`rhythm_next_milestone`); the rules are `10` §Milestones. None of those calendar helpers holds a client grant: two of them build a series as long as their arguments, and a function a client may EXECUTE is an RPC anyone can size (`rhythm_gathering_rungs` lost its grant for the same reason, `20260914140000`).
 
 > Streaks are **grace-framed**: a missed week pauses, never scolds; copy is encouraging (see `10`).
 
@@ -378,7 +379,7 @@ Cache/index of YouTube + self-hosted audio (a nightly sync job populates from th
 |-------|------|-------|
 | id | uuid PK | |
 | profile_id | uuid FK | |
-| kind | text | `first_service`, `4_week_rhythm`, `first_testimony`, `plan_complete:<plan_id>`… |
+| kind | text | `first_service`, `4_week_rhythm`, `first_testimony`, `plan_complete:<plan_id>`… **An identifier, not a count**: the rhythm kinds kept their names when W4.16 moved them onto the calendar, so `4_week_rhythm` is a month of Sundays, `12_week_rhythm` a season, `26_week_rhythm` half a year, `52_week_rhythm` a year and `<52n>_week_rhythm` n years. Renaming them would re-celebrate every badge already held |
 | achieved_at | timestamptz | |
 | - | unique(profile_id, kind) | insert `on conflict do nothing`: no double celebrations |
 
