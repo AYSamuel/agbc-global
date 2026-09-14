@@ -31,6 +31,32 @@ jest.mock(
   'react-native-safe-area-context',
   () => require('react-native-safe-area-context/jest/mock').default,
 );
+// The player now carries the share card (W4.15 slice 3), which reaches the storage
+// client through the testimony photo signer; nothing here signs anything. The mock
+// exists only so importing the screen does not construct a real client
+// (src/lib/supabase throws without EXPO_PUBLIC_* config).
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+        }),
+      }),
+    }),
+    storage: {
+      from: () => ({
+        createSignedUrl: () => Promise.resolve({ data: null, error: null }),
+      }),
+    },
+  },
+}));
+
 jest.mock('expo-audio', () => require('@/test/expoAudio'));
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 

@@ -109,12 +109,18 @@
     "previewTitle": {
       "verse": "Dit vers delen",
       "testimony": "Dit getuigenis delen",
-      "prayer": "Dit gebedsverzoek delen"
+      "prayer": "Dit gebedsverzoek delen",
+      "event": "Dit evenement delen",
+      "sermon": "Deze boodschap delen",
+      "branch": "Deze locatie delen"
     },
     "previewAlt": "De afbeelding die je gaat versturen",
     "kicker": {
       "testimony": "Een getuigenis",
-      "prayer": "Gebedsverzoek"
+      "prayer": "Gebedsverzoek",
+      "event": "Je bent uitgenodigd",
+      "sermon": "Boodschap",
+      "branch": "Kom eens langs"
     },
     "willYouPray": "Bid je mee?",
     "readItAll": "Lees alles in de app",

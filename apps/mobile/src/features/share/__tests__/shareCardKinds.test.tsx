@@ -12,7 +12,13 @@ import type { ReactElement } from 'react';
 
 import { ThemeScope } from '@/theme';
 
-import type { PrayerShareContent, TestimonyShareContent } from '../content';
+import type {
+  BranchShareContent,
+  EventShareContent,
+  PrayerShareContent,
+  SermonShareContent,
+  TestimonyShareContent,
+} from '../content';
 import { CARD_RENDER_DP, CARD_SCALE } from '../geometry';
 import { PHOTO_DEADLINE_MS, ShareCard } from '../ShareCard';
 
@@ -92,7 +98,12 @@ const PRAYER: PrayerShareContent = {
 const HIDDEN = { includeHiddenElements: true } as const;
 
 async function renderCard(
-  content: TestimonyShareContent | PrayerShareContent,
+  content:
+    | TestimonyShareContent
+    | PrayerShareContent
+    | EventShareContent
+    | SermonShareContent
+    | BranchShareContent,
   onReady: () => void = () => undefined,
 ) {
   const client = new QueryClient({
@@ -426,5 +437,161 @@ describe('the QR opens the thing that was scanned (slice 2b)', () => {
     expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
       `https://www.agbcglobal.com/app/p/${PRAYER.id}`,
     );
+  });
+});
+
+/** The three cards slice 3 drew: an event, a message and a branch. */
+const EVENT: EventShareContent = {
+  kind: 'event',
+  id: 'cccccccc-0000-4000-8000-000000000003',
+  title: 'Night of Worship',
+  day: '24',
+  month: 'Aug',
+  when: 'Saturday · 7:00 PM',
+  place: 'AGBC Lighthouse Berlin · Prinzenstr. 84',
+  imageUrl: 'https://public.example/event-images/x.jpg',
+};
+
+const SERMON: SermonShareContent = {
+  kind: 'sermon',
+  id: 'dddddddd-0000-4000-8000-000000000004',
+  title: 'Grace for the Journey',
+  speaker: 'Pastor Esther Olayinka',
+  meta: '38 min · Grace Series',
+  imageUrl: null,
+};
+
+const BRANCH: BranchShareContent = {
+  kind: 'branch',
+  id: 'eeeeeeee-0000-4000-8000-000000000005',
+  name: 'AGBC Lighthouse Berlin',
+  rows: [
+    { icon: 'clock', text: 'Sundays 11:00 AM', strong: true },
+    { icon: 'clock', text: 'Mittwochs 19:00 Uhr', strong: false },
+    { icon: 'pin', text: 'Oudenarder Str. 16, 13347 Berlin', strong: false },
+  ],
+};
+
+describe('the scrim on a block that begins near the top', () => {
+  it('never draws two stops at one offset (React would drop one)', async () => {
+    mockSign.mockResolvedValue({
+      data: { signedUrl: 'https://signed.example/1.jpg' },
+      error: null,
+    });
+    await renderCard({ ...TESTIMONY, photoPath: 'members/sarah/1.jpg' });
+    // A tall block: its top is 20dp from the card's top, inside the 14% fade.
+    await fireEvent(screen.getByTestId('share-card-middle', HIDDEN), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 288, height: 700 } },
+    });
+    await fireEvent(
+      screen.getByTestId('share-card-content', HIDDEN),
+      'layout',
+      { nativeEvent: { layout: { x: 0, y: 20, width: 288, height: 600 } } },
+    );
+    const photo = await screen.findByTestId('share-card-photo', HIDDEN);
+    await fireEvent(photo, 'load', {
+      nativeEvent: {
+        cacheType: 'none',
+        source: { url: 'x', width: 10, height: 10, mediaType: 'image/jpeg' },
+      },
+    });
+    const gradients = rendered()
+      .filter((node) => node.type === 'RNSVGLinearGradient')
+      .map((node) => node.props.gradient as number[]);
+    // The scrim is the gradient whose last stop is fully opaque ink at 100%; with the
+    // fade folded onto the top it has fewer than five stops, and every offset it does
+    // have is strictly greater than the one before.
+    const scrim = gradients.find(
+      (stops) => stops.length >= 6 && stops.length < 10,
+    );
+    expect(scrim).toBeDefined();
+    const offsets = (scrim ?? []).filter((_, index) => index % 2 === 0);
+    for (let i = 1; i < offsets.length; i += 1) {
+      expect(offsets[i]).toBeGreaterThan(offsets[i - 1] ?? -1);
+    }
+    expect(offsets[0]).toBe(0);
+    expect(offsets.some((o) => Math.abs(o - 20 / CARD_RENDER_DP) < 0.002)).toBe(
+      true,
+    );
+  });
+});
+
+describe('the event, the message and the branch (slice 3)', () => {
+  it('draws the event with its date block, when and where, over its public picture', async () => {
+    const onReady = jest.fn();
+    await renderCard(EVENT, onReady);
+    expect(screen.getByText('24', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('Aug', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('Night of Worship', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('Saturday · 7:00 PM', HIDDEN)).toBeTruthy();
+    expect(
+      screen.getByText('AGBC Lighthouse Berlin · Prinzenstr. 84', HIDDEN),
+    ).toBeTruthy();
+    expect(screen.getByText("You're invited", HIDDEN)).toBeTruthy();
+    expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
+      `https://www.agbcglobal.com/app/e/${EVENT.id}`,
+    );
+
+    // A public picture is fetched by its URL, never signed: the event-images bucket is
+    // public-read and the preset already built the address.
+    await measure(700, 300);
+    expect(onReady).not.toHaveBeenCalled();
+    const photo = await screen.findByTestId('share-card-photo', HIDDEN);
+    // expo-image normalises `source` into an array on the host node.
+    expect(photo.props.source).toEqual([{ uri: EVENT.imageUrl }]);
+    expect(mockSign).not.toHaveBeenCalled();
+    await fireEvent(photo, 'load', {
+      nativeEvent: {
+        cacheType: 'none',
+        source: { url: 'x', width: 10, height: 10, mediaType: 'image/jpeg' },
+      },
+    });
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('is the ink card for the common event with no picture', async () => {
+    const onReady = jest.fn();
+    await renderCard({ ...EVENT, imageUrl: null }, onReady);
+    await measure(700, 300);
+    expect(screen.queryByTestId('share-card-photo', HIDDEN)).toBeNull();
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws the message with its speaker and the line under it', async () => {
+    await renderCard(SERMON);
+    expect(screen.getByText('Message', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('Grace for the Journey', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('Pastor Esther Olayinka', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('38 min · Grace Series', HIDDEN)).toBeTruthy();
+    expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
+      `https://www.agbcglobal.com/app/m/${SERMON.id}`,
+    );
+  });
+
+  it('draws the branch with its rows and no by-line', async () => {
+    await renderCard(BRANCH);
+    expect(screen.getByText('Come and visit', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('AGBC Lighthouse Berlin', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('Sundays 11:00 AM', HIDDEN)).toBeTruthy();
+    // The branch's own words, untranslated: `02` stores what the branch wrote.
+    expect(screen.getByText('Mittwochs 19:00 Uhr', HIDDEN)).toBeTruthy();
+    expect(
+      screen.getByText('Oudenarder Str. 16, 13347 Berlin', HIDDEN),
+    ).toBeTruthy();
+    expect(screen.queryByText('A member', HIDDEN)).toBeNull();
+    expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
+      `https://www.agbcglobal.com/app/b/${BRANCH.id}`,
+    );
+  });
+
+  it('starts the three of them one rung down, as every frame draws them', async () => {
+    for (const content of [EVENT, SERMON, BRANCH]) {
+      await renderCard(content);
+      const quote = screen.getByTestId('share-card-quote', HIDDEN);
+      expect((quote.props.style as { fontSize: number }).fontSize).toBeCloseTo(
+        63 * CARD_SCALE,
+        5,
+      );
+    }
   });
 });

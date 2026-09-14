@@ -111,12 +111,18 @@
     "previewTitle": {
       "verse": "Partager ce verset",
       "testimony": "Partager ce témoignage",
-      "prayer": "Partager cette demande"
+      "prayer": "Partager cette demande",
+      "event": "Partager cet événement",
+      "sermon": "Partager ce message",
+      "branch": "Partager cette église"
     },
     "previewAlt": "L'image que tu vas envoyer",
     "kicker": {
       "testimony": "Un témoignage",
-      "prayer": "Demande de prière"
+      "prayer": "Demande de prière",
+      "event": "Tu es invité(e)",
+      "sermon": "Message",
+      "branch": "Viens nous voir"
     },
     "willYouPray": "Tu pries avec nous ?",
     "readItAll": "Tout lire dans l'app",

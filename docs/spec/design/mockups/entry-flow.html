@@ -2995,7 +2995,14 @@
            order, already implemented for the player, the rails, MY-LIST and the lock
            screen, and now for this.
            The gold disc says "there is something to listen to here" without pretending to
-           be a control. It is the app's own disc, at the size a 1080 card can carry. -->
+           be a control. It is the app's own disc, at the size a 1080 card can carry.
+           THE LINE UNDER THE SPEAKER IS NOT A BRANCH IN THE BUILD (W4.15 slice 3,
+           2026-09-13). This frame drew "38 min · AGBC Glasgow", and a message has no
+           branch in the data: `sermons` is not branch-scoped, it is the church's channel.
+           The card carries what the player's own meta carries, the length and then the
+           series, or the published date when there is no series ("38 min · Grace
+           Series", "38 min · 12 Sep 2026"). Recorded here rather than redrawn, because
+           the frame is right about the shape and only guessed at the second fact. -->
       <div class="device">
         <p class="name"><b>CARD</b> &middot; a message</p>
         <div class="sc sc-photo">

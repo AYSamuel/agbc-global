@@ -56,6 +56,31 @@ describe('shareUrlFor', () => {
       'https://www.agbcglobal.com/app/p/bbbbbbbb-0000-4000-8000-000000000002',
     );
     expect(shareUrlFor(VERSE)).toBe('https://www.agbcglobal.com/app');
+    expect(
+      shareUrlFor({
+        kind: 'event',
+        id: ID,
+        title: 'x',
+        day: '1',
+        month: 'Jan',
+        when: 'w',
+        place: null,
+        imageUrl: null,
+      }),
+    ).toBe(`https://www.agbcglobal.com/app/e/${ID}`);
+    expect(
+      shareUrlFor({
+        kind: 'sermon',
+        id: ID,
+        title: 'x',
+        speaker: 's',
+        meta: null,
+        imageUrl: null,
+      }),
+    ).toBe(`https://www.agbcglobal.com/app/m/${ID}`);
+    expect(shareUrlFor({ kind: 'branch', id: ID, name: 'n', rows: [] })).toBe(
+      `https://www.agbcglobal.com/app/b/${ID}`,
+    );
     // The apex 308-redirects and is not claimed, so a card printed with it could never
     // open the app (app.config.js, the website's SPEC-app-links.md).
     expect(SHARE_ORIGIN.startsWith('https://www.')).toBe(true);
@@ -95,6 +120,23 @@ describe('isShareLink', () => {
 });
 
 describe('routeForShareLink', () => {
+  it('opens an event, a message or a branch by its own prefix (slice 3)', () => {
+    expect(routeForShareLink(`https://www.agbcglobal.com/app/e/${ID}`)).toBe(
+      `/event/${ID}`,
+    );
+    expect(routeForShareLink(`https://www.agbcglobal.com/app/m/${ID}`)).toBe(
+      `/sermon/${ID}`,
+    );
+    expect(routeForShareLink(`agbcglobal://app/b/${ID}`)).toBe(`/branch/${ID}`);
+    // A prefix that is not a card's, and one that is only an Object property.
+    expect(routeForShareLink(`https://www.agbcglobal.com/app/z/${ID}`)).toBe(
+      '/home',
+    );
+    expect(
+      routeForShareLink(`https://www.agbcglobal.com/app/constructor/${ID}`),
+    ).toBe('/home');
+  });
+
   it('opens a testimony or a prayer request from either URL form', () => {
     expect(routeForShareLink(`https://www.agbcglobal.com/app/t/${ID}`)).toBe(
       `/testimony/${ID}`,
