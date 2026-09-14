@@ -24,12 +24,12 @@ place §1 tells every session to look first. So it no longer holds a table of co
 | What did an item decide, and why? | The numbered specs, the ADRs in `docs/decisions/`, the runbooks in `docs/runbooks/`, and the migration headers. A plan file in `docs/spec/plans/` exists only while its item is open. |
 | What should a screen look like? | **`design/mockups/entry-flow.html`** for the app and `design/mockups/dashboard.html` for the dashboard, read first-hand in the build session (§4). Figma is parked and `design/SCREENS-CHECKLIST.md` is stale; trust `05` plus the HTML. |
 
-**The honest one-line position, 2026-09-11:** Phases 0 to 3 have exited, and **every Phase 4
-board item is now either COMPLETE or PARKED**, the parked ones being the book track (W4.1 to
-W4.4) which waits on the church wanting to sell books through the app. The app is live on
-Google Play and the leader dashboard is deployed. **So there is no "next item" to pick up from
-the board**, and a session that wants one is choosing between three things rather than reading
-one off: closing something on `18`'s launch checklist, scoping a Phase 4 exit audit the way
+**The honest one-line position, 2026-09-14:** Phases 0 to 3 have exited, and every Phase 4
+board item up to W4.15 is either COMPLETE or PARKED, the parked ones being the book track (W4.1
+to W4.4) which waits on the church wanting to sell books through the app. The app is live on
+Google Play and the leader dashboard is deployed. **The one open item is W4.16** (the rhythm
+keeps a real calendar, planned 2026-09-14), so its slice 1 is the next thing to pick up. Past
+it, a session that wants work is choosing between three things rather than reading one off: closing something on `18`'s launch checklist, scoping a Phase 4 exit audit the way
 W2.10 and W3.6 did for their phases, or taking an item off a plan file's deferred backlog
 (W4.12's is the largest, and W4.13 came off it).
 
@@ -548,6 +548,13 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
 - **The fit ladder is measured, not counted** (75/63/54, then a word-boundary cut with a gold "Read it all in the app"), and the device corrected it three times: Android never re-fires `onLayout` for a changed rung on the same node (the block remounts per step); Yoga clamps a child of a definite-height column to the container unless the middle may scroll; and the photo scrim FOLLOWS the block (a fixed scrim measured 2.07:1 for the gold kicker over a white sky, 11:1 following). A block beginning within the top 14% then folded two scrim stops onto one offset, which React reports as duplicate keys; the stops are strictly ascending now.
 - **Two lessons that generalise.** A promise printed on the card is a contract with wherever its QR lands: "Read it all in the app" over a code that opened the church homepage was caught by Ayo's one question ("will someone not think the QR leads to the testimony?") and became a cross-repo slice ordered before the remaining cards. And **the dev client is not Play-signed, so App Links never verify on it**: `am start` must target the package, a cold https launch shows the dev launcher first (the URL survives), and a camera scan offers browser-or-app; only a store build proves the silent open.
 - **Left open, deliberately**: an iOS pass (no iPhone), the App Store id (turns on the AASA file and the website's iPhone button), and a "Get the app" link in the website's nav or footer.
+
+**W4.16 · The rhythm keeps a real calendar** (**PLANNED 2026-09-14**, nothing built. Plan at `docs/spec/plans/W4.16-rhythm-real-calendar.md`, merged in #305: read it before touching milestones, Home's rhythm ring or RHYTHM's Next card, because it carries every decision and the reason for each.)
+- Why it exists: Ayo, 2026-09-14: "4 should not be a month if it isn't actually a month." Every name on the week ladder is a length of calendar time and every threshold was a count of attended weeks, so "A month of Sundays" was 4 weeks: earned on 22 Nov 2026 with a fifth Sunday still to come, in 17 days where a branch meets midweek, and after six weeks of every other Sunday while the celebration said "four Sundays running". Several meetings in one week already counted once, and still do.
+- Decided (Ayo): **a month of Sundays is every week of one calendar month** (a week belongs to the month its Sunday falls in, any gathering covers its week, and grace does not apply inside the month); **a season, half a year and a year are 3, 6 and 12 calendar months** from the current run's first gathering, grace kept, landing on or after the anniversary and never before; progress shows the weeks left this month; "Next" skips every rung the member already holds. The kind strings stay as identifiers (`4_week_rhythm` now means a month), because renaming them would re-celebrate old badges through `celebrated.ts`.
+- Refs: `10` §Milestones · `02` (`streaks`, `milestones`) · migrations `20260807120000`, `20260808214722` · pgTAP `030`, `031`, `054` · `apps/mobile/src/features/rhythm/` · `entry-flow.html` W2.8 rhythm frames.
+- Build: 1 the database (one migration; `rhythm_state` and `record_attendance` reshaped additively so installed builds keep working; pgTAP on fixed dates; regenerated types) · 2 frames, approved before any screen code · 3 the app (ring, Next card, copy in all four languages, date-proof seeds, device matrix) · 4 close-out (`10`, `02`, this entry).
+- Done: the plan's pgTAP cases green and each mutation-checked; every progress shape on the device against its approved frame across the full size, scale and theme matrix; the migration dispatched to production together with the app build that carries slice 3, never before it.
 
 ### Track P · Production (parallel, gated; interleave after Phase 1)
 
