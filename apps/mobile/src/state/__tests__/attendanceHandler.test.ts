@@ -78,6 +78,10 @@ const ANSWER = {
   current_weeks: 5,
   longest_weeks: 11,
   last_service_date: '2026-08-09',
+  next_kind: '4_week_rhythm',
+  progress_done: 2,
+  progress_total: 4,
+  progress_month: '2026-08-01',
 };
 
 beforeEach(() => {
@@ -118,7 +122,32 @@ describe('the attendance handler', () => {
       currentWeeks: 5,
       longestWeeks: 11,
       lastServiceDate: '2026-08-09',
+      // What comes next arrives in the same answer (W4.16), so the tap that
+      // completes a month moves the strip on without a second read.
+      nextKind: '4_week_rhythm',
+      progressDone: 2,
+      progressTotal: 4,
+      progressMonth: '2026-08-01',
     });
+  });
+
+  test('an answer from a database without W4.16 reads as nothing to count, not a crash', async () => {
+    const old = Object.fromEntries(
+      Object.entries(ANSWER).filter(
+        ([key]) => key !== 'next_kind' && !key.startsWith('progress_'),
+      ),
+    );
+    mockRpc.mockResolvedValue({ data: [old], error: null });
+    await writeHandlers.attendance(wish(1));
+    expect(mockAnswer).toHaveBeenCalledWith(
+      'b1',
+      expect.objectContaining({
+        nextKind: null,
+        progressDone: 0,
+        progressTotal: 0,
+        progressMonth: null,
+      }),
+    );
   });
 
   test('a landed check-in asks whether it earned a milestone (W2.8 slice 4)', async () => {

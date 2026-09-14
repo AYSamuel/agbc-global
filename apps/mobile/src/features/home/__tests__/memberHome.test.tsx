@@ -135,6 +135,11 @@ function rhythmRow(over: Record<string, unknown> = {}) {
     currentWeeks: 5,
     longestWeeks: 11,
     lastServiceDate: '2026-08-02',
+    // The month is held and a season is next (W4.16): what the strip names.
+    nextKind: '12_week_rhythm',
+    progressDone: 4,
+    progressTotal: 13,
+    progressMonth: null,
     ...over,
   };
 }
@@ -242,6 +247,28 @@ describe('who Home is greeting', () => {
     await renderHome();
     expect(
       screen.getByLabelText('5-week rhythm. Next: A season with us'),
+    ).toBeOnTheScreen();
+  });
+
+  test('toward a month of Sundays, the strip says the count in the month counted (W4.16)', async () => {
+    signIn();
+    mockRhythm.mockReturnValue({
+      data: rhythmRow({
+        currentWeeks: 2,
+        longestWeeks: 2,
+        nextKind: '4_week_rhythm',
+        progressDone: 2,
+        progressTotal: 4,
+        progressMonth: '2026-08-01',
+      }),
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderHome();
+    expect(
+      screen.getByLabelText(
+        '2-week rhythm. Next: A month of Sundays · 2 of 4 in August',
+      ),
     ).toBeOnTheScreen();
   });
 

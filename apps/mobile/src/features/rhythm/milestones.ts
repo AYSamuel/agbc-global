@@ -1,51 +1,30 @@
-// The rhythm milestone ladders, as the SERVER awards them.
+// What the rhythm milestone kinds are CALLED. Never whether one was reached.
 //
-// `attendance_after_insert` (20260808214722) awards every week rung at or below the
-// current run and every gathering count reached. This file is the app's mirror of
-// those two ladders: it exists so a screen can say what is NEXT and what a kind is
-// called, and it never decides that a milestone was reached, which is the trigger's
-// job and the trigger's alone. If a ladder changes it changes in SQL first, and this
-// follows in the same PR.
+// The server awards (`attendance_after_insert`) and the server says what is next and
+// how far along it is (`rhythm_state`'s `next_kind` and `progress_*`, W4.16). This
+// file used to mirror the week ladder so a screen could count toward the next rung
+// itself, and that mirror is gone on purpose: since W4.16 a month of Sundays is every
+// week of one calendar month and a season is three calendar months, which depends on
+// "today" in the browsed branch's timezone and on which badges the member already
+// holds, and the app decides neither.
 //
-// Both are endless, which is the whole point of W2.8 slice 5: `4, 12, done` meant the
-// ring sat permanently full and nothing was ever celebrated again for the people who
-// show up most.
+// THE WEEK-RHYTHM KINDS ARE IDENTIFIERS, NOT COUNTS. They kept their names when W4.16
+// moved them onto the calendar: `4_week_rhythm` is a month of Sundays, `12_week_rhythm`
+// a season, `26_week_rhythm` half a year, `52_week_rhythm` a year and `<52n>_week_rhythm`
+// n years. Renaming them would re-celebrate every badge already held, because
+// `celebrated.ts` keeps each device's list of kinds it has told (and a renamed kind
+// reads as news). So the numbers below are parsed as names; do not "fix" them into
+// weeks.
+//
+// Both ladders are endless, which is the whole point of W2.8 slice 5: `4, 12, done`
+// meant the ring sat permanently full and nothing was ever celebrated again for the
+// people who show up most.
 
-/** Named week tiers; past the last one it is one rung per year, forever. */
-const NAMED_WEEK_RUNGS = [4, 12, 26, 52] as const;
 /** Named gathering tiers; past the last one it is one rung per hundred, forever. */
 const NAMED_GATHERING_RUNGS = [10, 25, 50, 100] as const;
+/** The identifier step of the yearly kinds: `104_week_rhythm` is two years. */
 const WEEKS_IN_YEAR = 52;
 const GATHERINGS_PER_RUNG = 100;
-
-/**
- * The next week rung above `weeks`. There is always one.
- *
- * It used to return null past the top, and the strip had a "steady" sentence for
- * that case. Both are gone: a ladder with a last rung is a ladder that stops
- * rewarding the most faithful members, which is the dead end RHYTHM exposed.
- */
-export function nextMilestone(weeks: number): number {
-  const named = NAMED_WEEK_RUNGS.find((rung) => rung > weeks);
-  if (named !== undefined) return named;
-  // Past the named tiers: the next whole year of Sundays.
-  return (Math.floor(weeks / WEEKS_IN_YEAR) + 1) * WEEKS_IN_YEAR;
-}
-
-/**
- * How full the ring is: weeks over the NEXT rung, counted from zero.
- *
- * Taken from the approved frames rather than from taste, which is the point of
- * having them: `1` draws a 90deg arc (1/4, the first rung) and `5` draws 150deg
- * (5/12). An earlier version restarted the arc at each rung, which is defensible
- * in the abstract and wrong here twice over: it disagrees with the frame, and it
- * renders an EMPTY ring the moment a member reaches four weeks, so the reward for
- * hitting a milestone is a circle with nothing in it (seen on the phone,
- * 2026-08-08).
- */
-export function milestoneFraction(weeks: number): number {
-  return Math.max(0, Math.min(1, weeks / nextMilestone(weeks)));
-}
 
 /**
  * What a milestone kind IS, once read.
