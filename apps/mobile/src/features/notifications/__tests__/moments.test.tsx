@@ -39,11 +39,25 @@ jest.mock('@/features/rhythm/history', () => ({
   useMilestonesQuery: () => mockMilestones(),
 }));
 
-const mockShare = jest.fn<undefined, [string]>();
-jest.mock('@/features/family/share', () => ({
-  shareText: (text: string) => {
-    mockShare(text);
-  },
+// The celebration's Share opens the picture sheet since W4.15 slice 4, which reaches
+// the branch list (for the card's branch line) and, through the card, the QR and the two
+// natives. None of them is under test here; the mocks only stop construction.
+jest.mock('@/features/onboarding/useBranches', () => ({
+  useBranchesQuery: () => ({
+    data: [{ id: 'branch-1', name: 'AGBC Lighthouse Berlin' }],
+    isError: false,
+  }),
+}));
+jest.mock('react-native-view-shot', () => ({
+  captureRef: () => new Promise<string>(() => undefined),
+}));
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: () => Promise.resolve(true),
+  shareAsync: () => Promise.resolve(),
+}));
+jest.mock('react-native-qrcode-svg', () => ({
+  __esModule: true,
+  default: () => null,
 }));
 
 // The OS permission, which the dev client may not even carry (see permission.ts).
@@ -110,7 +124,7 @@ describe('the milestone celebration', () => {
     expect(screen.queryByText('A month of Sundays')).toBeNull();
   });
 
-  test('the share is text through the OS sheet, not a rendered image', async () => {
+  test('the share is the gold card, signed with the full name, and it outlives the overlay', async () => {
     signIn();
     mockMilestones.mockReturnValue({
       data: [{ kind: 'first_service', achievedAt: '2026-08-08T10:00:00Z' }],
@@ -120,9 +134,21 @@ describe('the milestone celebration', () => {
       screen.getByRole('button', { name: 'Share the joy' }),
     );
 
-    expect(mockShare).toHaveBeenCalledWith(
-      expect.stringContaining('Your first service'),
-    );
+    // The overlay is told and closes; the preview is still here to send.
+    expect(useCelebratedStore.getState().known).toContain('first_service');
+    expect(screen.getByText('Share this milestone')).toBeOnTheScreen();
+    const hidden = { includeHiddenElements: true } as const;
+    expect(screen.getByText('Your first service', hidden)).toBeTruthy();
+    // Spelled out (Ayo, 2026-09-14): a card that leaves the app names the church in full.
+    expect(
+      screen.getByText(
+        'With my church family at Amazing Grace Bible Church.',
+        hidden,
+      ),
+    ).toBeTruthy();
+    // The FULL profile name, a signature (plan §4), and the member's own branch.
+    expect(screen.getByText('Grace Bello', hidden)).toBeTruthy();
+    expect(screen.getByText('AGBC Lighthouse Berlin', hidden)).toBeTruthy();
   });
 
   test('a gathering count renders as an ORDINAL, not as its raw key', async () => {

@@ -112,7 +112,8 @@
       "prayer": "Dit gebedsverzoek delen",
       "event": "Dit evenement delen",
       "sermon": "Deze boodschap delen",
-      "branch": "Deze locatie delen"
+      "branch": "Deze locatie delen",
+      "milestone": "Deze mijlpaal delen"
     },
     "previewAlt": "De afbeelding die je gaat versturen",
     "kicker": {
@@ -120,9 +121,11 @@
       "prayer": "Gebedsverzoek",
       "event": "Je bent uitgenodigd",
       "sermon": "Boodschap",
-      "branch": "Kom eens langs"
+      "branch": "Kom eens langs",
+      "milestone": "Een mijlpaal"
     },
     "willYouPray": "Bid je mee?",
+    "milestoneLine": "Met mijn kerkfamilie bij Amazing Grace Bible Church.",
     "readItAll": "Lees alles in de app",
     "share": "Delen",
     "sendAsTextInstead": "Stuur in plaats daarvan tekst",

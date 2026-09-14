@@ -24,6 +24,7 @@ import type {
   BranchShareContent,
   BranchShareRow,
   EventShareContent,
+  MilestoneShareContent,
   PrayerShareContent,
   SermonShareContent,
   TestimonyShareContent,
@@ -189,5 +190,24 @@ export function branchShare(
       sunday,
       appName,
     ),
+  };
+}
+
+/**
+ * The milestone (W4.15 slice 4). The title is the celebration's own; the line is the one
+ * first-person sentence every kind shares (Ayo, 2026-09-14: one line for all nine kinds
+ * rather than nine bespoke ones, so a future kind owes no card copy). The words the text
+ * route sends are `rhythm:celebrateShareText`, exactly what the overlay always sent.
+ */
+export function milestoneShare(
+  title: string,
+  line: string,
+  name: string,
+  branchName: string | null,
+  fallbackText: string,
+): { content: MilestoneShareContent; fallbackText: string } {
+  return {
+    content: { kind: 'milestone', title, line, name, branchName },
+    fallbackText,
   };
 }

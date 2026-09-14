@@ -112,7 +112,8 @@
       "prayer": "Share this request",
       "event": "Share this event",
       "sermon": "Share this message",
-      "branch": "Share this branch"
+      "branch": "Share this branch",
+      "milestone": "Share this milestone"
     },
     "previewAlt": "The picture you're about to send",
     "kicker": {
@@ -120,9 +121,11 @@
       "prayer": "Prayer request",
       "event": "You're invited",
       "sermon": "Message",
-      "branch": "Come and visit"
+      "branch": "Come and visit",
+      "milestone": "A milestone"
     },
     "willYouPray": "Will you pray?",
+    "milestoneLine": "With my church family at Amazing Grace Bible Church.",
     "readItAll": "Read it all in the app",
     "share": "Share",
     "sendAsTextInstead": "Send as text instead",

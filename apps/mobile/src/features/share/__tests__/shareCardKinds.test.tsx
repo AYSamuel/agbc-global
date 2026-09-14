@@ -12,9 +12,12 @@ import type { ReactElement } from 'react';
 
 import { ThemeScope } from '@/theme';
 
+import { shareCard } from '@agbc/shared/theme';
+
 import type {
   BranchShareContent,
   EventShareContent,
+  MilestoneShareContent,
   PrayerShareContent,
   SermonShareContent,
   TestimonyShareContent,
@@ -103,7 +106,8 @@ async function renderCard(
     | PrayerShareContent
     | EventShareContent
     | SermonShareContent
-    | BranchShareContent,
+    | BranchShareContent
+    | MilestoneShareContent,
   onReady: () => void = () => undefined,
 ) {
   const client = new QueryClient({
@@ -593,5 +597,54 @@ describe('the event, the message and the branch (slice 3)', () => {
         5,
       );
     }
+  });
+});
+
+/** The milestone (slice 4): the only gold card, signed with the full name. */
+const MILESTONE: MilestoneShareContent = {
+  kind: 'milestone',
+  title: 'A season with us',
+  line: 'With my church family at Amazing Grace Bible Church.',
+  name: 'Ayo Samuel',
+  branchName: 'AGBC Lighthouse Berlin',
+};
+
+describe('the milestone (slice 4)', () => {
+  it('draws the gold card with the title, the line and the full name', async () => {
+    const onReady = jest.fn();
+    await renderCard(MILESTONE, onReady);
+    expect(screen.getByText('A milestone', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('A season with us', HIDDEN)).toBeTruthy();
+    expect(
+      screen.getByText(
+        'With my church family at Amazing Grace Bible Church.',
+        HIDDEN,
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('Ayo Samuel', HIDDEN)).toBeTruthy();
+    expect(screen.getByText('AGBC Lighthouse Berlin', HIDDEN)).toBeTruthy();
+    // No page of its own: the code opens the app's landing page.
+    expect(screen.getByTestId('qr-target', HIDDEN)).toHaveTextContent(
+      'https://www.agbcglobal.com/app',
+    );
+    // Drawn at `.scq` (the top rung), not `.sm`.
+    expect(sizeOf(screen.getByTestId('share-card-quote', HIDDEN))).toBeCloseTo(
+      75 * CARD_SCALE,
+      5,
+    );
+    await measure(700, 300);
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('inverts the mark on the gold ground, and the title reads navy on it', async () => {
+    await renderCard(MILESTONE);
+    const monogram = screen.getByText('A', HIDDEN);
+    expect((monogram.props.style as { color: string }).color).toBe(
+      shareCard.ground.gold.markText,
+    );
+    const quote = screen.getByTestId('share-card-quote', HIDDEN);
+    expect((quote.props.style as { color: string }).color).toBe(
+      shareCard.ground.gold.quote,
+    );
   });
 });

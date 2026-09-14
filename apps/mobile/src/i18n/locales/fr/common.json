@@ -114,7 +114,8 @@
       "prayer": "Partager cette demande",
       "event": "Partager cet événement",
       "sermon": "Partager ce message",
-      "branch": "Partager cette église"
+      "branch": "Partager cette église",
+      "milestone": "Partager cette étape"
     },
     "previewAlt": "L'image que tu vas envoyer",
     "kicker": {
@@ -122,9 +123,11 @@
       "prayer": "Demande de prière",
       "event": "Tu es invité(e)",
       "sermon": "Message",
-      "branch": "Viens nous voir"
+      "branch": "Viens nous voir",
+      "milestone": "Une étape"
     },
     "willYouPray": "Tu pries avec nous ?",
+    "milestoneLine": "Avec ma famille d'église à Amazing Grace Bible Church.",
     "readItAll": "Tout lire dans l'app",
     "share": "Partager",
     "sendAsTextInstead": "Envoyer plutôt en texte",

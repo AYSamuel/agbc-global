@@ -112,7 +112,8 @@
       "prayer": "Dieses Gebetsanliegen teilen",
       "event": "Diesen Termin teilen",
       "sermon": "Diese Botschaft teilen",
-      "branch": "Diesen Standort teilen"
+      "branch": "Diesen Standort teilen",
+      "milestone": "Diesen Meilenstein teilen"
     },
     "previewAlt": "Das Bild, das du senden wirst",
     "kicker": {
@@ -120,9 +121,11 @@
       "prayer": "Gebetsanliegen",
       "event": "Du bist eingeladen",
       "sermon": "Botschaft",
-      "branch": "Komm vorbei"
+      "branch": "Komm vorbei",
+      "milestone": "Ein Meilenstein"
     },
     "willYouPray": "Betest du mit?",
+    "milestoneLine": "Mit meiner Gemeindefamilie bei Amazing Grace Bible Church.",
     "readItAll": "Alles in der App lesen",
     "share": "Teilen",
     "sendAsTextInstead": "Stattdessen als Text senden",

@@ -64,7 +64,7 @@ Video (YouTube) or audio; **resume** from last position; **audio-only** switch; 
 | Audio-only toggle | in-place (switches to audio stream) |
 | Add note | `SERMON-NOTES` (gate) |
 | Save | write (gate) |
-| Share | OS share / WhatsApp |
+| Share | `SHARE-PREVIEW` (W4.15): the message card, then the OS share sheet; "Send as text instead" keeps the words |
 | Back | previous |
 
 ## Tab 3: FAMILY (`FAMILY`), the wedge
