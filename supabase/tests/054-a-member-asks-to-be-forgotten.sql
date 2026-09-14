@@ -192,8 +192,9 @@ insert into public.reports (testimony_id, reporter_id, reason, status, is_safegu
 values ('97000000-0000-4000-8000-0000000000a3', :'leaver', 'not right', 'open', false);
 
 -- The personal tables, one row each where a row is cheap to make.
-insert into public.streaks (profile_id, current_weeks, longest_weeks)
-  values (:'leaver', 3, 5);
+-- `run_started_on` (W4.16) named so the row carries every column the erasure has to take with it.
+insert into public.streaks (profile_id, current_weeks, longest_weeks, run_started_on)
+  values (:'leaver', 3, 5, '2026-08-23');
 -- A sermon of this file's OWN, never `from public.sermons limit 1`. Sermons are SYNCED from
 -- YouTube and never seeded, so on any database where the sync has not run (CI, which applies
 -- migrations and seeds and nothing else) that select returns no rows, the insert silently

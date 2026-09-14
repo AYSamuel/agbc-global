@@ -2124,6 +2124,7 @@ export type Database = {
           last_service_date: string | null
           longest_weeks: number
           profile_id: string
+          run_started_on: string | null
           updated_at: string
         }
         Insert: {
@@ -2131,6 +2132,7 @@ export type Database = {
           last_service_date?: string | null
           longest_weeks?: number
           profile_id: string
+          run_started_on?: string | null
           updated_at?: string
         }
         Update: {
@@ -2138,6 +2140,7 @@ export type Database = {
           last_service_date?: string | null
           longest_weeks?: number
           profile_id?: string
+          run_started_on?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2852,6 +2855,10 @@ export type Database = {
           current_weeks: number
           last_service_date: string
           longest_weeks: number
+          next_kind: string
+          progress_done: number
+          progress_month: string
+          progress_total: number
           recorded: boolean
           state: string
           today: string
@@ -2892,7 +2899,26 @@ export type Database = {
       }
       release_job_lease: { Args: { job_name: string }; Returns: undefined }
       restore_branch: { Args: { branch: string }; Returns: undefined }
+      rhythm_covered_months: {
+        Args: { service_dates: string[] }
+        Returns: string[]
+      }
       rhythm_gathering_rungs: { Args: { total: number }; Returns: number[] }
+      rhythm_month_weeks: { Args: { month: string }; Returns: string[] }
+      rhythm_next_milestone: {
+        Args: {
+          held_kinds: string[]
+          run_started_on: string
+          service_dates: string[]
+          today: string
+        }
+        Returns: {
+          next_kind: string
+          progress_done: number
+          progress_month: string
+          progress_total: number
+        }[]
+      }
       rhythm_state: {
         Args: { p_branch_id?: string }
         Returns: {
@@ -2900,12 +2926,27 @@ export type Database = {
           current_weeks: number
           last_service_date: string
           longest_weeks: number
+          next_kind: string
+          progress_done: number
+          progress_month: string
+          progress_total: number
           state: string
           today: string
         }[]
       }
+      rhythm_time_ladder: {
+        Args: { years: number }
+        Returns: {
+          months: number
+          rung: number
+        }[]
+      }
+      rhythm_time_rungs: {
+        Args: { latest: string; run_started_on: string }
+        Returns: number[]
+      }
       rhythm_week: { Args: { service_date: string }; Returns: string }
-      rhythm_week_rungs: { Args: { weeks: number }; Returns: number[] }
+      rhythm_week_month: { Args: { service_date: string }; Returns: string }
       rsvp_reminder_batch: {
         Args: { at_time?: string; lead_hours?: number; tick_minutes?: number }
         Returns: {
