@@ -1,6 +1,7 @@
 import {
   branchShare,
   eventShare,
+  milestoneShare,
   prayerShare,
   sermonShare,
   testimonyShare,
@@ -212,6 +213,28 @@ describe('branchShare (slice 3)', () => {
     ]);
     expect(share.fallbackText).toBe(
       'AGBC Lighthouse Berlin · Berlin, Germany · AGBC Global',
+    );
+  });
+});
+
+describe('milestoneShare (slice 4)', () => {
+  it('carries the celebration title, the one line, the full name and the old words', () => {
+    const share = milestoneShare(
+      'A season with us',
+      'With my church family at Amazing Grace Bible Church.',
+      'Ayo Samuel',
+      'AGBC Lighthouse Berlin',
+      'A season with us, with my church family at AGBC.',
+    );
+    expect(share.content).toEqual({
+      kind: 'milestone',
+      title: 'A season with us',
+      line: 'With my church family at Amazing Grace Bible Church.',
+      name: 'Ayo Samuel',
+      branchName: 'AGBC Lighthouse Berlin',
+    });
+    expect(share.fallbackText).toBe(
+      'A season with us, with my church family at AGBC.',
     );
   });
 });

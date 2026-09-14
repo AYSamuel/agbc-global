@@ -119,8 +119,24 @@ export interface BranchShareContent {
   rows: BranchShareRow[];
 }
 
+/**
+ * A milestone (mockup `CARD · a milestone`), the only gold-ground card. It carries the
+ * member's FULL profile name where every other card uses the feed's abbreviated shape
+ * (plan §4): the subject and the sharer are always the same person, so there is no third
+ * party to protect and the name reads as a signature. `title` is the celebration's own
+ * title; `line` the one first-person sentence under it (`share.milestoneLine`).
+ */
+export interface MilestoneShareContent {
+  kind: 'milestone';
+  title: string;
+  line: string;
+  name: string;
+  branchName: string | null;
+}
+
 export type ShareContent =
   | VerseShareContent
+  | MilestoneShareContent
   | TestimonyShareContent
   | PrayerShareContent
   | EventShareContent

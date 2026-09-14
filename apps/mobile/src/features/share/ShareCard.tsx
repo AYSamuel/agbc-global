@@ -13,6 +13,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { fontFamily, palette, shareCard } from '@agbc/shared/theme';
 
 import {
+  AwardIcon,
   BookIcon,
   CalendarIcon,
   ClockIcon,
@@ -64,7 +65,7 @@ const QUOTE_RUNGS = [
  * that says they were cut does not itself push the footer off the card. */
 const CUT_LINE_UNITS = 33 + 42;
 
-type Ground = 'cream' | 'ink' | 'photo';
+type Ground = 'cream' | 'ink' | 'photo' | 'gold';
 
 /**
  * The share card (W4.15), drawn from the mockup's `.sc` frames.
@@ -118,7 +119,13 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
   }, [fitted, photo, onReady]);
 
   const ground: Ground =
-    content.kind === 'verse' ? 'cream' : photo === 'shown' ? 'photo' : 'ink';
+    content.kind === 'verse'
+      ? 'cream'
+      : content.kind === 'milestone'
+        ? 'gold'
+        : photo === 'shown'
+          ? 'photo'
+          : 'ink';
   const tokens = shareCard.ground[ground];
 
   const kicker =
@@ -178,12 +185,24 @@ export const ShareCard = forwardRef<View, ShareCardProps>(function ShareCard(
         label={t('share.kicker.sermon')}
         color={tokens.kickerLabel}
       />
-    ) : (
+    ) : content.kind === 'branch' ? (
       <Kicker
         icon={
           <PinIcon size={48 * u} color={tokens.kickerIcon} strokeWidth={1.8} />
         }
         label={t('share.kicker.branch')}
+        color={tokens.kickerLabel}
+      />
+    ) : (
+      <Kicker
+        icon={
+          <AwardIcon
+            size={48 * u}
+            color={tokens.kickerIcon}
+            strokeWidth={1.9}
+          />
+        }
+        label={t('share.kicker.milestone')}
         color={tokens.kickerLabel}
       />
     );
@@ -390,6 +409,16 @@ function GroundLayer({
         direction="diagonal"
         from={shareCard.ground.cream.from}
         to={shareCard.ground.cream.to}
+      />
+    );
+  }
+  if (ground === 'gold') {
+    // `.sc-gold`: the milestone alone, linear-gradient(140deg).
+    return (
+      <GradientFill
+        angle={140}
+        from={shareCard.ground.gold.from}
+        to={shareCard.ground.gold.to}
       />
     );
   }
@@ -628,6 +657,9 @@ function Middle({
     ) : content.kind === 'sermon' ? (
       // `.scby` on a message: who preached it, then how long and which series.
       <ByLine name={content.speaker} branch={content.meta} ground={ground} />
+    ) : content.kind === 'milestone' ? (
+      // `.scby` on a milestone: the member's FULL name, a signature (plan §4).
+      <ByLine name={content.name} branch={content.branchName} ground={ground} />
     ) : null;
 
   // What sits ABOVE the title on the two cards that have a badge: the event's date block
@@ -742,6 +774,22 @@ function Middle({
           </View>
         ) : null}
         {content.kind === 'branch' ? <Rows rows={content.rows} /> : null}
+        {content.kind === 'milestone' ? (
+          // `.scline`: the sentence under the title, so the sentence and the signature
+          // are two things instead of one run-on.
+          <Text
+            allowFontScaling={false}
+            style={{
+              fontFamily: fontFamily.body.semiBold,
+              fontSize: 39 * u,
+              lineHeight: 56.55 * u,
+              marginTop: 33 * u,
+              color: shareCard.ground.gold.line,
+            }}
+          >
+            {content.line}
+          </Text>
+        ) : null}
         {attribution}
       </View>
     </View>
@@ -766,6 +814,8 @@ function quoteFor(content: ShareContent): string {
       return content.title;
     case 'branch':
       return content.name;
+    case 'milestone':
+      return content.title;
   }
 }
 
@@ -979,7 +1029,12 @@ function Footer({
             width: 81 * u,
             height: 81 * u,
             borderRadius: 24 * u,
-            backgroundColor: shareCard.accent,
+            // The mark inverts on the gold ground (navy tile, gold letter): `accent`
+            // would vanish into it.
+            backgroundColor:
+              ground === 'gold'
+                ? shareCard.ground.gold.markBackground
+                : shareCard.accent,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -989,7 +1044,10 @@ function Footer({
             style={{
               fontFamily: fontFamily.display.extraBold,
               fontSize: 48 * u,
-              color: shareCard.onAccent,
+              color:
+                ground === 'gold'
+                  ? shareCard.ground.gold.markText
+                  : shareCard.onAccent,
             }}
           >
             {t('brand.monogram')}

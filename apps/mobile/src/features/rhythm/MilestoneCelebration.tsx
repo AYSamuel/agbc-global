@@ -2,7 +2,9 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Celebration } from '@/components/ui';
-import { shareText } from '@/features/family/share';
+import { useBranchNames } from '@/features/family/useBranchNames';
+import { milestoneShare } from '@/features/share/presets';
+import { useShareSheet } from '@/features/share/useShareSheet';
 import { useAuthStore } from '@/state/auth';
 
 import { useCelebratedStore, uncelebrated } from './celebrated';
@@ -27,6 +29,9 @@ import { badgeFor } from './milestones';
 export function MilestoneCelebration() {
   const { t } = useTranslation();
   const isMember = useAuthStore((state) => state.status === 'member');
+  const profile = useAuthStore((state) => state.profile);
+  const branchNames = useBranchNames();
+  const shareSheet = useShareSheet();
   const query = useMilestonesQuery(isMember);
   const known = useCelebratedStore((state) => state.known);
   const seedBaseline = useCelebratedStore((state) => state.seedBaseline);
@@ -60,7 +65,9 @@ export function MilestoneCelebration() {
   // The query is disabled for a guest, so this is belt AND braces: a milestone
   // is a fact about a member, and "the read happens to be off" is a weaker thing
   // to depend on than saying so (found by the test that asserted it, W2.8).
-  if (!isMember || badge === null) return null;
+  // The sheet outlives the overlay on purpose: sharing closes the celebration
+  // (the milestone is told), and the preview must still be there to send.
+  if (!isMember || badge === null) return shareSheet.element;
 
   // `count` is undefined for the named kinds, which i18next ignores.
   const title = t(badge.celebrateTitleKey, {
@@ -72,24 +79,34 @@ export function MilestoneCelebration() {
   const body = t(badge.celebrateBodyKey, { count: badge.count });
 
   return (
-    <Celebration
-      visible
-      glyph={badge.glyph}
-      eyebrow={t('rhythm:celebrateEyebrow')}
-      title={title}
-      body={body}
-      // Text-only through the share sheet the app already uses, not a rendered
-      // image: `10` calls the share optional, and a branded milestone card would
-      // be new work for a gain nobody asked for (W2.8 decision 5).
-      shareLabel={t('rhythm:celebrateShare')}
-      onShare={() => {
-        void shareText(t('rhythm:celebrateShareText', { title }));
-        markCelebrated(badge.kind);
-      }}
-      closeLabel={t('common:close')}
-      onClose={() => {
-        markCelebrated(badge.kind);
-      }}
-    />
+    <>
+      <Celebration
+        visible
+        glyph={badge.glyph}
+        eyebrow={t('rhythm:celebrateEyebrow')}
+        title={title}
+        body={body}
+        // A PICTURE since W4.15 slice 4 (W2.8 decision 5 sent words; the card the
+        // church asked for reversed it): the gold card with the member's full name.
+        // The words the text route sends are the ones this overlay always sent.
+        shareLabel={t('rhythm:celebrateShare')}
+        onShare={() => {
+          const share = milestoneShare(
+            title,
+            t('share.milestoneLine'),
+            profile?.displayName ?? '',
+            profile ? (branchNames[profile.branchId] ?? null) : null,
+            t('rhythm:celebrateShareText', { title }),
+          );
+          shareSheet.open(share.content, share.fallbackText);
+          markCelebrated(badge.kind);
+        }}
+        closeLabel={t('common:close')}
+        onClose={() => {
+          markCelebrated(badge.kind);
+        }}
+      />
+      {shareSheet.element}
+    </>
   );
 }

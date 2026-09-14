@@ -81,6 +81,16 @@ describe('shareUrlFor', () => {
     expect(shareUrlFor({ kind: 'branch', id: ID, name: 'n', rows: [] })).toBe(
       `https://www.agbcglobal.com/app/b/${ID}`,
     );
+    // A milestone is personal and has no page: the landing page, like the verse.
+    expect(
+      shareUrlFor({
+        kind: 'milestone',
+        title: 't',
+        line: 'l',
+        name: 'n',
+        branchName: null,
+      }),
+    ).toBe('https://www.agbcglobal.com/app');
     // The apex 308-redirects and is not claimed, so a card printed with it could never
     // open the app (app.config.js, the website's SPEC-app-links.md).
     expect(SHARE_ORIGIN.startsWith('https://www.')).toBe(true);

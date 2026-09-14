@@ -25,6 +25,7 @@ import type { SvgProps } from 'react-native-svg';
 // six identical glyphs render pixel-for-pixel as they did before.
 
 import AudioLines from 'lucide-react-native/icons/audio-lines';
+import Award from 'lucide-react-native/icons/award';
 import Ban from 'lucide-react-native/icons/ban';
 import Bell from 'lucide-react-native/icons/bell';
 import Book from 'lucide-react-native/icons/book';
@@ -185,6 +186,7 @@ export const MoreIcon = houseStyle(Ellipsis, 'MoreIcon');
 // gold palette), and changed artwork on an OS update.
 export const BookOpenIcon = houseStyle(BookOpen, 'BookOpenIcon');
 export const CalendarIcon = houseStyle(Calendar, 'CalendarIcon');
+export const AwardIcon = houseStyle(Award, 'AwardIcon');
 export const InfoIcon = houseStyle(Info, 'InfoIcon');
 export const StoreIcon = houseStyle(ShoppingBag, 'StoreIcon');
 export const LibraryIcon = houseStyle(Library, 'LibraryIcon');

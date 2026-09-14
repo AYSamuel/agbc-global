@@ -51,7 +51,7 @@ Composition, top to bottom:
 - **Operations:** 365+ rows/year need an owner, a quarterly batch cadence, and a low-queue alert (fewer than 14 future days queued alerts admins). Pipeline in `22-CONTENT-OPERATIONS.md`.
 - **Phasing:** until the Store/Library + entitlement pipeline ships (build Phase 4), the verse card renders WITHOUT the devotional CTA (verse + share only). The CTA appears when `BOOK-DETAIL` exists to route to (`18`).
 - Caching: prefetch today's on open; cache last N for offline.
-- Share renders a branded verse image/text.
+- Share renders a branded verse image/text. **Built at W4.15 (2026-09-12)**: `SHARE-PREVIEW` shows the cream verse card (1080 × 1080, a QR to the app's landing page) and hands it to the OS sheet; "Send as text instead" sends the words.
 
 ## Data
 - Reads: `branches` (current), `daily_verses` (today), `sermons` (latest), `testimonies` (1 highlight, approved), member `streaks`.

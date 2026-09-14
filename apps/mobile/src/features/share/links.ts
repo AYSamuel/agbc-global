@@ -37,9 +37,9 @@ export const SHARE_ORIGIN_LABEL = SHARE_ORIGIN.replace(
 );
 
 /**
- * The URL a card's QR encodes. The verse has no page of its own, so its code goes to the
- * app's landing page, which is still a truer answer than the homepage: it says what the
- * app is and where to get it.
+ * The URL a card's QR encodes. The verse and the milestone have no page of their own, so
+ * their codes go to the app's landing page, which is still a truer answer than the
+ * homepage: it says what the app is and where to get it.
  */
 export function shareUrlFor(content: ShareContent): string {
   switch (content.kind) {
@@ -54,6 +54,8 @@ export function shareUrlFor(content: ShareContent): string {
     case 'branch':
       return `${SHARE_ORIGIN}/app/b/${content.id}`;
     case 'verse':
+    case 'milestone':
+      // Neither has a page of its own: the verse is the day's, the milestone is personal.
       return `${SHARE_ORIGIN}/app`;
   }
 }

@@ -21,7 +21,7 @@ Keep members aware of what's happening, at **their branch** and **ministry-wide*
 - Hero image, title, full date/time (branch timezone), location (+ map/directions link), description. The hero is built from `events.image_path` in the public-read `event-images` bucket (W3.5 slice 4b), never a stored URL.
 - **RSVP** (gate): Going / Interested / Cancel → `rsvps` (unique per event+profile). Confirmation toast.
 - **Add to calendar** (device calendar via `expo-calendar`).
-- **Share** (OS/WhatsApp).
+- **Share** (OS/WhatsApp). **Since W4.15 (2026-09-13)** it opens `SHARE-PREVIEW` with the event card (the event's picture when it has one, else ink; the date block; a QR to `/app/e/<id>`) and then the OS sheet; "Send as text instead" keeps the words this screen always sent.
 - **Global events** show "Ministry-wide: the whole family" treatment.
 
 ## Data source
