@@ -31,7 +31,33 @@ describe('app identity is frozen', () => {
     );
   });
 
+  // Same reason as the versionCode test above: EAS keeps the iOS build number too.
+  test('no local ios buildNumber, because EAS owns it', () => {
+    expect(config.ios?.buildNumber).toBeUndefined();
+  });
+
+  // Grace Portal 1.0.0 (18) supports iPad, and an App Store update may not drop a
+  // device family the version before it supported. Expo's default is false, so this
+  // line going missing fails the upload, not a test anyone runs on an iPad (W4.17).
+  test('ios supports iPad, because the record it replaces does', () => {
+    expect(config.ios?.supportsTablet).toBe(true);
+  });
+
+  // App Store Connect's Apple ID for the existing record. W4.10's iOS update check
+  // looks it up; a wrong one answers about somebody else's app.
+  test('ios carries the App Store id of the existing record', () => {
+    expect(config.ios?.infoPlist?.AppStoreID).toBe('6760579106');
+  });
+
   test('runtime version uses the fingerprint policy', () => {
     expect(config.runtimeVersion).toEqual({ policy: 'fingerprint' });
+  });
+});
+
+describe('ios release declarations', () => {
+  // Answers App Store Connect's export compliance question once, in the binary,
+  // instead of by hand on every upload. The app uses only the OS's own encryption.
+  test('declares no non-exempt encryption', () => {
+    expect(config.ios?.config?.usesNonExemptEncryption).toBe(false);
   });
 });

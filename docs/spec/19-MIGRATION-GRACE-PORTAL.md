@@ -92,7 +92,7 @@ Grace Portal used OneSignal; the new app uses Expo Push (APNs/FCM). Nothing to m
 
 ## Checklist
 
-- [x] Highest uploaded `versionCode` and iOS build number confirmed in Play Console / App Store Connect (both 19 on 1.0.0, 2026-07-18)
+- [x] Highest uploaded `versionCode` and iOS build number confirmed in Play Console / App Store Connect. **Android: 19 on 1.0.0 (2026-07-18). iOS: 18 on 1.0.0, NOT 19** (corrected 2026-09-14, W4.17, read from TestFlight, which holds builds 17 and 18 only; "both 19" had been Android's number written for both). The live App Store version is 1.0.0 (18), Apple ID `6760579106`
 - [ ] EAS credentials: existing Android upload keystore + Apple distribution cert configured
 - [ ] App config uses `com.oami.agbcapp` / `com.olayinkaademiluka.grace-portal`, `versionCode` >= 20
 - [x] Supabase audit complete; website objects fenced and recorded in project CLAUDE.md (2026-07-30, `docs/runbooks/prod-audit-2026-07-30.md`)

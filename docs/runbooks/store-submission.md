@@ -356,11 +356,19 @@ it out of logs for the opposite reason: it belongs to a real person).
 - [ ] Release notes: the Grace Portal transition copy from `listing.json`, not "bug fixes".
 - [ ] **Pre-launch report is a release gate** (`21` §8). Read it before promoting.
 
-## 3b. iOS, when there is a device (deferred)
+## 3b. iOS (W4.17, in progress, and WITHOUT a device)
 
-Same listing and answers, plus: the AASA file needs the Apple Team ID before universal links
-work (`Desktop/agbc` docs/SPEC-app-links.md), `APP_STORE_URL` in `apps/mobile/src/lib/links.ts`
-is still a search URL and wants the numeric App Store id, and `18` carries the iOS E2E as owed.
+**This section used to say "when there is a device (deferred)". On 2026-09-14 Ayo decided the
+first iOS release goes out without one**, as 1.0.2 alongside Android's. The steps, the order and
+what that decision accepts live in `docs/spec/plans/W4.17-ios-release.md` while the item is
+open; what outlives it moves here at close-out. The facts that unblocked it, read from the
+consoles that day: Team ID `58MF8H28K5` (the association file's prefix), App Store Connect Apple
+ID `6760579106` (now `ios.infoPlist.AppStoreID`; `APP_STORE_URL` in
+`apps/mobile/src/lib/links.ts` still waits for AGBC Global to be LIVE, or it would point iPhones
+at Grace Portal), the last iOS build 18, and iPad support inherited from Grace Portal and not
+removable. Same listing and review notes as Play, plus the fields only Apple has (subtitle,
+keywords, promotional text), Apple's own privacy labels and age-rating questions, and 6.9"
+iPhone plus 13" iPad screenshots. `18` carries the iOS E2E as owed.
 
 ---
 
