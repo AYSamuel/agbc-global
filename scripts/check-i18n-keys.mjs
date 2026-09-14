@@ -246,7 +246,12 @@ for (const file of files) {
 // covered, if at all, by the tests of the screens that own them. If this moves,
 // a new family of runtime-built keys exists and wants that coverage. Update it
 // deliberately, never to make a build pass.
-const OPAQUE_CALL_SITES = 35;
+//
+// 35 to 34 at W4.16 slice 3: the rhythm milestone's label (`t(badge.labelKey)`)
+// was looked up twice, in StreakStrip and in NextMilestone, and is now looked up
+// once in features/rhythm/nextProgress.ts, which both draw from. No family was
+// removed; strip.test.ts covers it (a named tier and a generated year).
+const OPAQUE_CALL_SITES = 34;
 if (opaque !== OPAQUE_CALL_SITES) {
   fail(
     `${opaque} keys are built at runtime, expected ${OPAQUE_CALL_SITES}. If that is intended, update OPAQUE_CALL_SITES and say why in the commit.`,
