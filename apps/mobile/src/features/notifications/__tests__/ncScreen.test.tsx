@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import i18n from '@/i18n';
+import '@/i18n';
 import { ToastProvider } from '@/components/ui';
 import { useGateStore } from '@/state/gate';
 import { ThemeScope } from '@/theme';
@@ -13,8 +13,6 @@ import NotificationsScreen from '../../../../app/notifications';
 // row shapes narrate, unread answers the tap, the stored deep link is resolved
 // through the allowlist, and the cursor surfaces as "Show older" until the
 // retention boundary is truly reached.
-
-void i18n;
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */

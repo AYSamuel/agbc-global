@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import i18n from '@/i18n';
+import '@/i18n';
 import { ToastProvider } from '@/components/ui';
 import { ThemeScope } from '@/theme';
 
@@ -10,8 +10,6 @@ import More from '../../../../app/(tabs)/more';
 // section)` and `More · member (no rhythm yet)`): the identity card, the five
 // My-life rows with the unread number, the rhythm line that waits for the
 // first "I'm here", and a Library that stops asking a member to sign in.
-
-void i18n;
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
    documented jest.mock factory shapes */

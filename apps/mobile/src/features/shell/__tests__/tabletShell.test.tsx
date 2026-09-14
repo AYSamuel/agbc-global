@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import i18n from '@/i18n';
+// Loaded for its side effect, so the rail's labels resolve to real words rather
+// than to their keys (the same shape the other screen suites use).
+import '@/i18n';
 import { ThemeScope } from '@/theme';
 
 import { TabletShell } from '../TabletShell';
@@ -9,10 +11,6 @@ import { TabletShell } from '../TabletShell';
 // A const, because the repo forbids literal strings inside JSX (i18n rule) and
 // the rule applies to test files too.
 const CONTENT = 'Screen content';
-
-// Loaded for its side effect, so the rail's labels resolve to real words rather
-// than to their keys (the same shape the other screen suites use).
-void i18n;
 
 /**
  * The tablet shell (W4.7 slice 4).
