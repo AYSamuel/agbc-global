@@ -10,9 +10,11 @@
 // production profile auto-increments, so an `android.versionCode` here is read by nobody
 // and was removed at 1.0.1 while it still said 20 and the real one was 22. The floor that
 // mattered is history now: Grace Portal's highest upload was 19, this app started at 20,
-// and Play will not accept anything lower ever again. Read the live number with
-// `eas build:version:get --platform android`; the release table is in
-// docs/runbooks/releases.md.
+// and Play will not accept anything lower ever again. iOS has the same arrangement and
+// its own counter: Grace Portal's highest App Store Connect build was 18 (read from the
+// console 2026-09-14, W4.17), so `ios.buildNumber` is absent here for the same reason.
+// Read the live numbers with `eas build:version:get --platform android|ios`; the release
+// table is in docs/runbooks/releases.md.
 
 // Sourcemap upload needs an org and a project, and the plugin fails a build when it has
 // neither. Conditional so a local prebuild and anyone else's checkout still work: the
@@ -36,7 +38,7 @@ const sentryPlugin =
 const config = {
   name: 'AGBC Global',
   slug: 'agbc-global',
-  version: '1.0.1',
+  version: '1.0.2',
   // NO ORIENTATION LOCK IN THE MANIFEST (W4.11). This was 'portrait',
   // which Expo turns into android:screenOrientation="PORTRAIT" on MainActivity and
   // applies to every device on every Android version. That held TABLETS in portrait on
@@ -54,14 +56,33 @@ const config = {
   runtimeVersion: { policy: 'fingerprint' },
   ios: {
     bundleIdentifier: 'com.olayinkaademiluka.grace-portal',
-    // NO `infoPlist.AppStoreID` YET, and that is what keeps W4.10's update
-    // notice inert on iOS rather than wrong. `expo-in-app-updates` reads that key
-    // to look the app up in the iTunes Search API; with no id the lookup matches
-    // nothing and resolves "no update available", which is the safe answer. The
-    // numeric id lives only in App Store Connect (same blocker as the store link
-    // in src/lib/links.ts); adding it here turns the iOS half on with no code
-    // change.
-    //
+    // IPAD IS NOT OPTIONAL (W4.17), and not only because `05` §Tablet makes tablet
+    // rendering v1. Grace Portal 1.0.0 (18), the version this app replaces on the same
+    // App Store record, supports iPad: the live listing names 80 iPad models and carries
+    // iPad screenshots. An update may not drop a device family the version before it
+    // supported, and Expo defaults this to false, so leaving it unset would have failed
+    // the first iOS upload. The cost is 13" iPad screenshots on every listing. iPad
+    // multitasking needs every orientation in the Info.plist, which `orientation:
+    // 'default'` above already gives; the phone's portrait rule is src/lib/orientation.ts.
+    supportsTablet: true,
+    // ITSAppUsesNonExemptEncryption = NO, so App Store Connect stops asking the export
+    // compliance question on every upload. True of this app: the only encryption in it
+    // is the operating system's own (HTTPS, the keychain behind expo-secure-store), which
+    // is exempt. A dependency that brings its own cryptography reopens the question.
+    config: { usesNonExemptEncryption: false },
+    infoPlist: {
+      // W4.10's update notice, switched on for iOS (W4.17). `expo-in-app-updates` looks
+      // this id up in the iTunes Search API and compares the store's version with
+      // CFBundleShortVersionString, numerically (read from the installed 0.12.0 Swift
+      // source, not from memory). Without the key the lookup matched nothing and
+      // resolved "nothing new". The id is App Store Connect's Apple ID for the record
+      // Grace Portal already holds. No `AppStoreCountry` is set, so the lookup asks the
+      // US storefront, which does carry the app (checked 2026-09-14). While Grace Portal
+      // is the live version the store reports the string "1.0.0 (18)", which that
+      // comparison reads as older than 1.0.2, so the notice cannot fire until a newer
+      // AGBC Global is itself on the store.
+      AppStoreID: '6760579106',
+    },
     // NO `icon` OVERRIDE, deliberately: iOS falls back to the top-level
     // `icon` above, which is the app's own mark. It used to point at
     // './assets/expo.icon', the Icon Composer bundle `create-expo-app`
@@ -74,12 +95,12 @@ const config = {
     // beside the church's own logo and the mismatch became obvious.
     // Universal links (docs/spec/15). The other half is an
     // apple-app-site-association file served by the church website at
-    // /.well-known/, as JSON with no redirect, carrying the team id and this
-    // bundle id. It is NOT served yet: it needs the Apple Team ID, which only
-    // App Store Connect has, and a file with a placeholder appID is worse than
-    // no file because Apple caches it (Desktop/agbc docs/SPEC-app-links.md
-    // carries the template and the steps). Until then iOS silently declines to
-    // open these links and the agbcglobal:// scheme still works.
+    // /.well-known/, as JSON with no redirect, carrying the church's Team ID
+    // (`58MF8H28K5`, on the Apple Developer account's Membership page, not only in
+    // App Store Connect as this comment used to say) and this bundle id. It goes up
+    // with W4.17 (Desktop/agbc docs/SPEC-app-links.md carries the template and the
+    // steps). Until it is served iOS silently declines to open these links and the
+    // agbcglobal:// scheme still works.
     //
     // ONE HOST, for the reason spelled out on the Android filter below.
     associatedDomains: ['applinks:www.agbcglobal.com'],

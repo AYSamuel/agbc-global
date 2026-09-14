@@ -30,7 +30,8 @@ to W4.4) which waits on the church wanting to sell books through the app. The ap
 Google Play and the leader dashboard is deployed. **W4.16** (the rhythm
 keeps a real calendar) has its database live on production (dispatched 2026-09-14 by decision,
 ahead of the app) and its app waiting for the next store build, which also carries #264's Expo
-and React Native update. With that, no Phase 4 item is open for building, and a session
+and React Native update. **That store build is W4.17 (opened 2026-09-14)**: release 1.0.2 on
+Google Play AND the App Store, the first iOS release, which is the item to resume. Beyond it, a session
 that wants work is choosing between three things rather than reading one off: closing something on `18`'s launch checklist, scoping a Phase 4 exit audit the way
 W2.10 and W3.6 did for their phases, or taking an item off a plan file's deferred backlog
 (W4.12's is the largest, and W4.13 came off it).
@@ -564,6 +565,13 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
   - **A function a client may EXECUTE is an RPC on the public API.** The new calendar helpers hold no client grant, and self-review found the older `rhythm_gathering_rungs` had been handing every guest a `generate_series` of their chosen length since W2.8.
   - **CI runs checks the local gates do not.** The mobile job's `pnpm i18n:check` counts runtime-built translation keys as a tripwire, and merging two identical label lookups into one helper moved it (35 to 34), turning #309 red after every local gate was green. The supabase job's types drift was already known; the mobile job's i18n and store checks are now on the same list.
   - **Two local environment traps, neither in the code.** After a `pnpm db:reset`, PostgREST refused every token carrying `iat` as "issued at future", which failed ~150 dashboard server tests with `no_profile` until the `supabase_rest` container was restarted. And the #264 upgrade, applied by incremental `expo install` runs, left `@babel/generator` out of pnpm's hidden hoist, so every mobile Jest suite failed locally while a fresh install (what CI does) was fine: prove an upgrade on a fresh install, not on the `node_modules` that performed it.
+
+**W4.17 · AGBC Global reaches the App Store: release 1.0.2 on both stores · OPEN (2026-09-14)**, with Ayo. Plan and resume point at `docs/spec/plans/W4.17-ios-release.md`; read it before any store, signing or build step.
+- Why it exists: Ayo, 2026-09-14, the day the church's Account Holder made him an Admin on the Apple Developer team: ship the iOS app, name, screenshots, listing and all, with the iOS version matching Android's.
+- Decided (Ayo): **both stores ship 1.0.2 from one commit on `main`**, because Android 1.0.1 was built from its tag and `main` now carries W4.11, W4.15, W4.16's app and #264, all waiting for this train; and **iOS ships without verification on an Apple device**, because there is none. Found while reading the consoles, not chosen: **iPad support is mandatory** (Grace Portal 1.0.0 (18) supports iPad and an update may not drop it, while Expo defaults it off), the **minimum iOS rises from 15.6 to 16.4** (SDK 57), and the last iOS build was **18**, not the 19 `19` recorded.
+- Refs: `18` §Launch checklist · `19` · `03` §Security · `15` · `docs/runbooks/store-submission.md` · `docs/runbooks/releases.md` · `docs/store/` · `Desktop/agbc` `docs/SPEC-app-links.md`.
+- Build: 1 config and doc corrections · 2 signing (Ayo) · 3 tag and build both platforms · 4 Android walked by hand (R8, tray icon, rhythm, share cards) and uploaded · 5 the association file on the website · 6 App Store copy and screenshots · 7 App Store Connect and submission · 8 close-out.
+- Done: 1.0.2 live on Google Play and the App Store from the same tagged commit, with `releases.md`, `18` and `store-submission.md` recording it; the review bypass off at the later approval plus 7 days and proven off.
 
 ### Track P · Production (parallel, gated; interleave after Phase 1)
 
