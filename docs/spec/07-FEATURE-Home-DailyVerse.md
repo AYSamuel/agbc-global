@@ -42,12 +42,14 @@ Composition, top to bottom:
 
   | Language | Translation | `translation` value |
   |---|---|---|
-  | English | World English Bible | `WEB` |
+  | English | World English Bible, British Edition | `WEB` |
   | German | Luther 1912 | `Luther 1912` |
   | Dutch | Statenvertaling | `Statenvertaling` |
   | French | Louis Segond 1910 | `Louis Segond 1910` |
 
   **The cost is accepted and worth restating, because somebody will raise it.** Luther 1912 and the Statenvertaling are archaic; the Dutch especially reads to a modern congregation roughly as Jacobean English does to us. The modern alternatives (NBG 1951, Elberfelder, Segond 21) are all copyrighted, so switching means an attribution line on the verse card AND on every share image, plus quotation limits. That is the trade this doc already made once for English; it is made the same way for the other three. Revisiting it is a licensing decision, not a technical one, and it changes this table.
+
+  `WEB` means the **British Edition** of the World English Bible (Ayo, 2026-09-15). It is the same public-domain translation, but it renders the divine name "the LORD" where the standard edition prints "Yahweh" (1 Kings 18:1), and it uses British spelling. The label stays `WEB`, which is still accurate and is what the column's default, the dashboard's form and every card already say.
 
   `Statenvertaling` means the **1888 text** (the Jongbloed edition before its later spelling revisions). Editions of the Statenvertaling differ in wording, not only in spelling (Matthew 9:30 reads "dat niemand het wete" in 1888 and "dat het niemand wete" in a later one), so a batch is taken from one edition and not mixed.
 
