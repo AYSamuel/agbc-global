@@ -108,10 +108,18 @@ no member id (ADR 0020), so no App Tracking Transparency prompt is needed.
 |---|---|
 | Contact Info | Email Address, Name |
 | User Content | Photos, Other User Content (testimonies, prayer requests, notes) |
-| Identifiers | User ID |
+| Identifiers | User ID, **Device ID** (the Expo push token, stored against the account; and PostHog's device id once analytics is accepted) |
 | Usage Data | Product Interaction (only once analytics is accepted) |
 | Sensitive Info | Religious beliefs, for the same reason as Play below |
 | Diagnostics | Crash Data, Performance Data |
+
+**As published in App Store Connect on 2026-09-15** (W4.17): exactly the table above, ten data
+types, every one linked to the member and none used for tracking. Purposes: app functionality for
+all of them, except Product Interaction (analytics) and Device ID (app functionality and
+analytics). Device ID was missing from this table until then while Play's form below already
+declared it; the push token is kept against the member's account, so it is linked data and was
+declared. Privacy policy URL `https://www.agbcglobal.com/privacy`. **These answers go live on the
+listing the moment they are published**, not with an app version.
 
 **Data Not Linked to You:** none that is not already listed above. Crash reports are scrubbed of
 the user record but are reported here as linked, because that is the conservative reading and
@@ -140,6 +148,15 @@ Answered consistently with `19` and with what the app actually does.
 descriptor; Apple 12+ or 17+ depending on how the UGC questions are scored. The moderation and
 reporting answers are the ones that keep it low; answer them accurately rather than
 optimistically.
+
+**Apple's actual outcome, 2026-09-15 (W4.17).** Apple's questionnaire had gained questions this
+sheet predates, and was answered: user-generated content **yes**; **social media yes** (a feed that
+spreads posts to many members); social media disabled for users under 13 **no**; messaging and
+chat, advertising, parental controls, age assurance and unrestricted web access **no**; every
+content category (profanity, horror, alcohol, medical, sexual content, violence, gambling,
+contests, loot boxes) **none**. Apple calculated **13+**. **Ayo overrode it to 16+**, which is
+what the app's own account rule, Play's target audience and `20` already say; Brazil shows its
+local equivalent, 15+.
 
 ---
 

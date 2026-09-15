@@ -356,7 +356,7 @@ it out of logs for the opposite reason: it belongs to a real person).
 - [ ] Release notes: the Grace Portal transition copy from `listing.json`, not "bug fixes".
 - [ ] **Pre-launch report is a release gate** (`21` §8). Read it before promoting.
 
-## 3b. iOS (W4.17, in progress, and WITHOUT a device)
+## 3b. iOS (W4.17, SUBMITTED 2026-09-15, and WITHOUT a device)
 
 **This section used to say "when there is a device (deferred)". On 2026-09-14 Ayo decided the
 first iOS release goes out without one**, as 1.0.2 alongside Android's. The steps, the order and
@@ -369,6 +369,34 @@ at Grace Portal), the last iOS build 18, and iPad support inherited from Grace P
 removable. Same listing and review notes as Play, plus the fields only Apple has (subtitle,
 keywords, promotional text), Apple's own privacy labels and age-rating questions, and 6.9"
 iPhone plus 13" iPad screenshots. `18` carries the iOS E2E as owed.
+
+### iOS SUBMISSION RECORD
+
+**AGBC Global 1.0.2 (24) went to App Review on 2026-09-15 at 06:38 UTC and is "Waiting for
+Review".** Everything below was read back from App Store Connect's API after saving, not from the
+form. **What to do when Apple answers is a numbered checklist: `docs/spec/plans/W4.17-ios-release.md`
+§6.**
+
+| | |
+|---|---|
+| Build | 1.0.2 (24), EAS `24f10277`, from tag `v1.0.2` (`c66e6c6`), uploaded by `eas submit` |
+| Release | **MANUAL** (nothing is public until Ayo presses Release This Version), all users at once, no phased release, **star rating reset** on release (Grace Portal's rating belonged to a different app) |
+| Name and subtitle | AGBC Global · One family, many nations (English (U.K.)) |
+| Listing | **English (U.K.) only.** Description, keywords, promotional text and What's New ("Grace Portal is now AGBC Global") from `docs/store/listing.json` `en`; support `https://www.agbcglobal.com/contact`; marketing `https://www.agbcglobal.com/app`; copyright "2026 Amazing Grace Bible Church Global LTD" (the name on the Apple membership) |
+| Screenshots | iPhone 6.9": 5 (Home, Watch, share as a picture, map, branches). iPad 13": 4, **without the share screen**, whose preview was cropped on tablets (fixed in #315, ships 1.0.3) |
+| Age rating | Apple calculated **13+** from the answers (user-generated content: yes; social media: yes; social media disabled for under-13s: no; messaging, advertising, parental controls, age assurance, unrestricted web: no; every content category: none). **Overridden to 16+** (Ayo), matching the app's 16+ accounts, Play's target audience and `20`. Brazil shows its own equivalent, 15+ |
+| App Privacy | **Published 2026-09-15** (these go live immediately, not with the version). Ten data types, every one linked to the member and none used for tracking: Name, Email Address, Sensitive Info, Photos or Videos, Other User Content, User ID and Crash Data and Performance Data (app functionality); Device ID (app functionality and analytics); Product Interaction (analytics). Grace Portal's Phone Number and Physical Address were removed. Privacy policy `https://www.agbcglobal.com/privacy` (it was the dead `agbc-web.vercel.app`) |
+| Availability | 174 countries or regions. **China mainland removed**: App Store Connect warns that apps with religious content need a Chinese government permit there, and the church has none |
+| Other platforms | "Make available on Mac" and "on Apple Vision Pro" **turned off** (both were on from Grace Portal; the app has never run on either) |
+| App Review | Sign-in required: the review address and the current code, entered and proven in the app by Ayo before submitting. Notes: section 2 of this runbook, plus a line that the app replaces Grace Portal on this record |
+
+**Why the listing is English only.** Adding German failed: Apple refused **"AGBC Global" as the
+German app name**, "already being used", though English (U.K.) had accepted it the same morning.
+Names are reserved per locale, no live app of that name exists (iTunes search, Germany and the UK),
+and the team holds one app record, so another developer's unreleased record is the likely holder.
+Dutch and French were not tried. Ayo decided to ship English only; every storefront shows it and
+the app still runs in all four languages. The ways to add localized listings later are in the
+checklist's step 13.
 
 ---
 
@@ -423,6 +451,10 @@ silently, and the store link is still the whole of the iOS path.
 ---
 
 ## 5. After approval
+
+**For the first iOS release (1.0.2) the list to work is `docs/spec/plans/W4.17-ios-release.md`
+§6**, which carries these items with their exact commands, values and proofs, plus the iOS-only
+steps (release, the website's App Store button, Apple's association CDN). The generic list:
 
 - [ ] Turn the review bypass **off** (section 1) and diary it for approval + 7 days.
 - [ ] Purge the review account's posts.
