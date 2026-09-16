@@ -3,6 +3,7 @@ import { FunctionsHttpError } from '@supabase/supabase-js';
 import type { ContactRequest, ContactResponse } from '@agbc/shared';
 
 import { mintContactKey } from './contactKey';
+import { budget } from './fetchWithTimeout';
 import { supabase } from './supabase';
 
 // The one caller of the `contact-form` function (docs/spec/04 CONTACT; W4.18
@@ -19,6 +20,9 @@ import { supabase } from './supabase';
 // 24 hours and refuses a second email under it. The key is minted here and
 // KEPT BY CONTENT (see `keyFor`), so a retry of the same words cannot post
 // twice and a rephrased message is never silently swallowed as a duplicate.
+
+/** How long the phone waits for the function, instead of the client's default ten. */
+export const CONTACT_BUDGET_MS = 30_000;
 
 export type ContactSendOutcome =
   | 'sent'
@@ -90,9 +94,18 @@ export async function sendContactMessage(
   try {
     // The SDK types this response's error loosely; pin it to unknown and
     // narrow by instance below.
+    // A budget of its own (W4.18 follow-up to slice 3). The function cold-boots
+    // and then waits up to six seconds for Resend; the client's default ten was
+    // expiring first often enough that "unconfirmed" was the common case rather
+    // than the rare one. Thirty seconds is room, not a promise: the key above is
+    // what makes the retry safe when even this runs out.
     const { error } = (await supabase.functions.invoke<ContactResponse>(
       'contact-form',
-      { body, headers: { 'Idempotency-Key': key } },
+      {
+        body,
+        headers: { 'Idempotency-Key': key },
+        signal: budget(CONTACT_BUDGET_MS),
+      },
     )) as { error: unknown };
     if (!error) return 'sent';
     if (error instanceof FunctionsHttpError) {
