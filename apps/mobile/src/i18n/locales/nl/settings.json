@@ -151,6 +151,7 @@
     "understand": "Ik begrijp dat dit definitief is.",
     "confirm": "Mijn account verwijderen",
     "failed": "We konden je account niet verwijderen. Er is niets veranderd. Controleer je verbinding en probeer het opnieuw.",
+    "unconfirmed": "We konden niet bevestigen of dat is gelukt. Tik nog eens op \"{{button}}\": als je account al weg is, laten we het je weten en gebeurt er verder niets.",
     "done": "Je account is verwijderd."
   },
   "deleteRow": "Account verwijderen"

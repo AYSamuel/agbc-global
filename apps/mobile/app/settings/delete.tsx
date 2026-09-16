@@ -16,7 +16,8 @@ import {
   useToast,
   WarnIcon,
 } from '@/components/ui';
-import { supabase } from '@/lib/supabase';
+import type { DeleteAttempt } from '@/features/settings/deleteOutcome';
+import { requestDeletion } from '@/features/settings/requestDeletion';
 import { useAuthStore } from '@/state/auth';
 import { useTheme } from '@/theme';
 
@@ -41,6 +42,16 @@ import { useTheme } from '@/theme';
  * person changed their mind, with nothing having confirmed it server-side. There is no draft
  * of this and no retry behind their back: either the call reaches the server, or the screen
  * says so and nothing has happened.
+ *
+ * AND THE SCREEN ONLY SAYS SO WHEN IT KNOWS (W4.18 slice 1). "Nothing has changed" used to be
+ * the answer to every failure, including a request that timed out while the server went on
+ * to finish the erasure: the account gone, the member told otherwise and left signed in on
+ * it. The truth now has three shapes, decided in `features/settings/deleteOutcome.ts`:
+ * erased; refused by the server, the one case where "nothing has changed" is a fact; or
+ * unconfirmed, where the member is asked to press again and that press becomes the check,
+ * because `erase_profile` refuses a second erasure with a code that proves the first one
+ * happened. The rule above survives intact: the member's press is still the only thing that
+ * ever calls the server. What changed is that the words are now true.
  */
 export default function DeleteAccount() {
   const router = useRouter();
@@ -54,6 +65,9 @@ export default function DeleteAccount() {
   const [understood, setUnderstood] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Once an attempt goes unanswered, every later press is a confirming one for the rest of
+  // this screen's life: the question "did it already happen" never goes back to "no".
+  const [attempt, setAttempt] = useState<DeleteAttempt>('first');
 
   const confirmWord = t('settings:delete.confirmWord');
   const confirmPrompt = t('settings:delete.typeToConfirm', {
@@ -71,18 +85,14 @@ export default function DeleteAccount() {
   async function onDelete() {
     setBusy(true);
     setError(null);
-    try {
-      // No id: `delete_my_account` is hard-wired to auth.uid(), so this call cannot name
-      // anybody but the person making it (20260901160000).
-      const { error: rpcError } = await supabase.rpc('delete_my_account', {
-        p_keep_posts: keepPosts,
-      });
-      if (rpcError) throw new Error(rpcError.message);
+    const outcome = await requestDeletion(keepPosts, attempt);
 
-      // The account is gone server-side the moment that returned. Signing out is about this
-      // DEVICE: the session is already dead, and what remains is dropping the tokens and the
-      // personal caches so the next screen is an honest guest view rather than a member one
-      // failing on every read.
+    if (outcome === 'erased') {
+      // The account is gone server-side: by this call, or provably by the one before it
+      // whose answer never arrived. Signing out is about this DEVICE: the erasure already
+      // deleted the session, and what remains is dropping the tokens and the personal
+      // caches so the next screen is an honest guest view rather than a member one failing
+      // on every read.
       await useAuthStore
         .getState()
         .signOut()
@@ -93,13 +103,25 @@ export default function DeleteAccount() {
 
       toast.show(t('settings:delete.done'));
       router.replace('/');
-    } catch {
-      // ONE message for every failure. Distinguishing "offline" from "the server refused"
-      // would be guessing, and what they need to know is the same either way: nothing has
-      // happened.
-      setError(t('settings:delete.failed'));
-      setBusy(false);
+      return;
     }
+
+    if (outcome === 'refused') {
+      // The server said so before doing anything. This is the ONLY time "nothing has
+      // changed" is a fact rather than a hope (deleteOutcome.ts).
+      setError(t('settings:delete.failed'));
+    } else {
+      // The answer never came and the request may have run, so the screen claims neither
+      // way. The member's next press is the check, and it is their press: no retry behind
+      // their back, only truthful words about what is not yet known.
+      setError(
+        t('settings:delete.unconfirmed', {
+          button: t('settings:delete.confirm'),
+        }),
+      );
+      setAttempt('confirm');
+    }
+    setBusy(false);
   }
 
   return (

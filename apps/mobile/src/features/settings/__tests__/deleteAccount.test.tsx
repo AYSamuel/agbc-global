@@ -13,6 +13,7 @@ import { useAuthStore } from '@/state/auth';
 import { ThemeScope } from '@/theme';
 
 import DeleteAccount from '../../../../app/settings/delete';
+import type { DeleteAttempt, DeleteOutcome } from '../deleteOutcome';
 
 /**
  * DELETE (frame `DELETE · account deletion`; docs/spec/16 §DELETE).
@@ -21,6 +22,12 @@ import DeleteAccount from '../../../../app/settings/delete';
  * other screen in this app can be undone by tapping again; this one cannot be undone at all,
  * and the two gates in front of the button are the only thing between a bad moment and an
  * irreversible one. So most of what follows asserts what the screen REFUSES to do.
+ *
+ * AND, SINCE W4.18 SLICE 1, WHAT THE SCREEN REFUSES TO CLAIM. It used to answer every
+ * failure with "Nothing has changed", which on a timed-out request was a guess and often
+ * a wrong one. The screen now asks `requestDeletion` for one of three outcomes and only
+ * says nothing changed when the server proved it; the boundary is mocked HERE, and what
+ * each wire shape means is `deleteOutcome.test.ts`'s business.
  *
  * What is NOT tested here, deliberately: what the erasure actually removes. That is `054`'s,
  * over the real database, where a claim about twenty tables can be checked against twenty
@@ -65,11 +72,7 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
-const mockRpc = jest.fn<
-  Promise<{ error: { message: string } | null }>,
-  [string, Record<string, unknown>]
->(() => Promise.resolve({ error: null }));
-
+// The auth store still reaches for the client at import; nothing here calls it.
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
@@ -77,8 +80,16 @@ jest.mock('@/lib/supabase', () => ({
         data: { subscription: { unsubscribe: () => undefined } },
       }),
     },
-    rpc: (name: string, args: Record<string, unknown>) => mockRpc(name, args),
   },
+}));
+
+const mockRequest = jest.fn<Promise<DeleteOutcome>, [boolean, DeleteAttempt]>(
+  () => Promise.resolve('erased'),
+);
+
+jest.mock('@/features/settings/requestDeletion', () => ({
+  requestDeletion: (keepPosts: boolean, attempt: DeleteAttempt) =>
+    mockRequest(keepPosts, attempt),
 }));
 
 const mockSignOut = jest.fn<Promise<void>, []>(() => Promise.resolve());
@@ -133,6 +144,12 @@ async function arm() {
   });
   await waitFor(() => {
     expect(deleteButton()).toBeEnabled();
+  });
+}
+
+async function pressDelete() {
+  await act(async () => {
+    await fireEvent.press(deleteButton());
   });
 }
 
@@ -248,14 +265,10 @@ test('a near miss is still a miss', async () => {
 test('remove is the default, and the choice reaches the server as made', async () => {
   await renderScreen();
   await arm();
-  await act(async () => {
-    await fireEvent.press(deleteButton());
-  });
+  await pressDelete();
 
   await waitFor(() => {
-    expect(mockRpc).toHaveBeenCalledWith('delete_my_account', {
-      p_keep_posts: false,
-    });
+    expect(mockRequest).toHaveBeenCalledWith(false, 'first');
   });
 });
 
@@ -265,23 +278,17 @@ test('keeping the posts is carried through rather than assumed', async () => {
     await fireEvent.press(screen.getByText('Keep my approved posts'));
   });
   await arm();
-  await act(async () => {
-    await fireEvent.press(deleteButton());
-  });
+  await pressDelete();
 
   await waitFor(() => {
-    expect(mockRpc).toHaveBeenCalledWith('delete_my_account', {
-      p_keep_posts: true,
-    });
+    expect(mockRequest).toHaveBeenCalledWith(true, 'first');
   });
 });
 
 test('the device is signed out and sent to a guest screen', async () => {
   await renderScreen();
   await arm();
-  await act(async () => {
-    await fireEvent.press(deleteButton());
-  });
+  await pressDelete();
 
   await waitFor(() => {
     expect(mockSignOut).toHaveBeenCalled();
@@ -291,13 +298,11 @@ test('the device is signed out and sent to a guest screen', async () => {
   expect(mockReplace).toHaveBeenCalledWith('/');
 });
 
-test('a failure says nothing happened, and leaves the session alone', async () => {
-  mockRpc.mockResolvedValueOnce({ error: { message: 'network' } });
+test('a refusal the server made says nothing happened, and leaves the session alone', async () => {
+  mockRequest.mockResolvedValueOnce('refused');
   await renderScreen();
   await arm();
-  await act(async () => {
-    await fireEvent.press(deleteButton());
-  });
+  await pressDelete();
 
   expect(
     await screen.findByText(
@@ -313,6 +318,71 @@ test('a failure says nothing happened, and leaves the session alone', async () =
   await waitFor(() => {
     expect(deleteButton()).toBeEnabled();
   });
+});
+
+// W4.18 slice 1. The bug this closes: a timed-out request used to be told "Nothing has
+// changed" while the server finished the erasure anyway, and the member was left signed
+// in on an account that no longer existed.
+test('an unanswered request claims nothing either way, and the next press is the check', async () => {
+  mockRequest
+    .mockResolvedValueOnce('unconfirmed')
+    .mockResolvedValueOnce('erased');
+  await renderScreen();
+  await arm();
+  await pressDelete();
+
+  // Neither "deleted" nor "nothing has changed": the screen does not know yet.
+  expect(
+    await screen.findByText(/We couldn't confirm whether that went through/),
+  ).toBeOnTheScreen();
+  expect(screen.queryByText(/Nothing has changed/)).toBeNull();
+  expect(mockSignOut).not.toHaveBeenCalled();
+  expect(mockReplace).not.toHaveBeenCalled();
+
+  // The copy names the button the member has to press, in their own language.
+  expect(screen.getByText(/"Delete my account" again/)).toBeOnTheScreen();
+
+  // Still armed: the check is one press, and it is the member's press, not the app's.
+  await waitFor(() => {
+    expect(deleteButton()).toBeEnabled();
+  });
+  expect(mockRequest).toHaveBeenCalledTimes(1);
+
+  await pressDelete();
+
+  // The second call says it is confirming, so `deleteOutcome` reads a session error as
+  // possibly the erasure's own footprint rather than as proof nothing happened.
+  await waitFor(() => {
+    expect(mockRequest).toHaveBeenLastCalledWith(false, 'confirm');
+  });
+  await waitFor(() => {
+    expect(mockSignOut).toHaveBeenCalled();
+  });
+  expect(mockReplace).toHaveBeenCalledWith('/');
+});
+
+test('once unanswered, every later press keeps confirming', async () => {
+  mockRequest
+    .mockResolvedValueOnce('unconfirmed')
+    .mockResolvedValueOnce('unconfirmed')
+    .mockResolvedValueOnce('refused');
+  await renderScreen();
+  await arm();
+
+  await pressDelete();
+  await screen.findByText(/We couldn't confirm whether that went through/);
+  await pressDelete();
+  await screen.findByText(/We couldn't confirm whether that went through/);
+  await pressDelete();
+
+  // A last-admin refusal is the one thing that can still prove the account intact, and
+  // then, and only then, the old words are true again.
+  expect(await screen.findByText(/Nothing has changed/)).toBeOnTheScreen();
+  expect(mockRequest.mock.calls.map(([, attempt]) => attempt)).toEqual([
+    'first',
+    'confirm',
+    'confirm',
+  ]);
 });
 
 test('the word to type is the language being read, not English', async () => {

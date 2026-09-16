@@ -151,6 +151,7 @@
     "understand": "I understand this is permanent.",
     "confirm": "Delete my account",
     "failed": "We couldn't delete your account. Nothing has changed. Check your connection and try again.",
+    "unconfirmed": "We couldn't confirm whether that went through. Press \"{{button}}\" again: if your account is already gone, we'll tell you, and nothing more will happen.",
     "done": "Your account has been deleted."
   },
   "deleteRow": "Delete account"

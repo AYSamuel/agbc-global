@@ -1,4 +1,8 @@
-import { FETCH_TIMEOUT_MS, fetchWithTimeout } from '../fetchWithTimeout';
+import {
+  budget,
+  FETCH_TIMEOUT_MS,
+  fetchWithTimeout,
+} from '../fetchWithTimeout';
 
 // Regression for the 2026-07-20 field bug: an unreachable-but-routed Supabase
 // host hung fetch forever, so ONB-2's error fallback (bundled branches) never
@@ -56,5 +60,58 @@ describe('fetchWithTimeout', () => {
     const assertion = expect(promise).rejects.toThrow('Aborted');
     controller.abort();
     await assertion;
+  });
+
+  // W4.18 slice 1: one call may bring its own budget. Erasing an account commits
+  // twenty tables in one transaction and was being cut off at ten seconds while
+  // the server finished the job anyway, so the screen told the member nothing
+  // had happened when it had.
+  describe('a call that brings its own budget', () => {
+    test('a budgeted signal replaces the default timer rather than adding to it', async () => {
+      hangingFetch();
+      const promise = fetchWithTimeout('http://example.test/rpc/erase', {
+        signal: budget(30_000),
+      });
+      let settled = false;
+      const assertion = expect(promise).rejects.toThrow('Aborted');
+      void promise.catch(() => {
+        settled = true;
+      });
+
+      // Past the default budget: still waiting, because the caller said so.
+      jest.advanceTimersByTime(FETCH_TIMEOUT_MS + 1);
+      await Promise.resolve();
+      expect(settled).toBe(false);
+
+      // Past the caller's own budget: now it gives up.
+      jest.advanceTimersByTime(30_000 - FETCH_TIMEOUT_MS);
+      await assertion;
+      expect(settled).toBe(true);
+    });
+
+    // THE SAFETY THIS DESIGN HINGES ON. TanStack Query passes a cancellation
+    // signal on every fetch. If merely bringing a signal disabled the default
+    // timer, every read in the app would lose the protection this file exists
+    // for. Only a signal minted by `budget()` is honoured; any other still gets
+    // the ten seconds.
+    test('an ordinary caller signal still gets the default budget', async () => {
+      hangingFetch();
+      const controller = new AbortController();
+      const promise = fetchWithTimeout('http://example.test/rest/v1/feed', {
+        signal: controller.signal,
+      });
+      const assertion = expect(promise).rejects.toThrow('Aborted');
+      jest.advanceTimersByTime(FETCH_TIMEOUT_MS + 1);
+      await assertion;
+    });
+
+    test('a budgeted request that completes clears its own timer', async () => {
+      const response = { ok: true } as Response;
+      jest.spyOn(fetchHost, 'fetch').mockResolvedValue(response);
+      await expect(
+        fetchWithTimeout('http://example.test', { signal: budget(30_000) }),
+      ).resolves.toBe(response);
+      expect(jest.getTimerCount()).toBe(0);
+    });
   });
 });

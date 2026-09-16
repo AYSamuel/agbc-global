@@ -151,6 +151,7 @@
     "understand": "Mir ist klar, dass das endgültig ist.",
     "confirm": "Mein Konto löschen",
     "failed": "Wir konnten dein Konto nicht löschen. Es hat sich nichts geändert. Prüfe deine Verbindung und versuche es erneut.",
+    "unconfirmed": "Wir konnten nicht bestätigen, ob das geklappt hat. Tippe noch einmal auf „{{button}}“: Falls dein Konto bereits gelöscht ist, sagen wir es dir, und es passiert nichts weiter.",
     "done": "Dein Konto wurde gelöscht."
   },
   "deleteRow": "Konto löschen"
