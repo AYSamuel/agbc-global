@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -68,6 +68,22 @@ export default function DeleteAccount() {
   // Once an attempt goes unanswered, every later press is a confirming one for the rest of
   // this screen's life: the question "did it already happen" never goes back to "no".
   const [attempt, setAttempt] = useState<DeleteAttempt>('first');
+  // THE ERROR IS THE LAST THING IN THE SCROLL AND THE BUTTON IS NOT IN IT.
+  // Unlike the composer, whose error and Post button share one scroll container,
+  // this frame pins its action bar below the scroll, so pressing Delete on a
+  // short screen leaves the button in place and the new message off the bottom.
+  // Found on the device at W4.18's verification pass: the copy was correct and
+  // nobody could see it without scrolling. The error is the last child, so
+  // scrolling to the end always reveals it (docs/spec/plans/W4.18…).
+  const scroller = useRef<ScrollView>(null);
+
+  const showError = (message: string) => {
+    setError(message);
+    // After the state has painted, not before: the text does not exist yet.
+    requestAnimationFrame(() => {
+      scroller.current?.scrollToEnd({ animated: true });
+    });
+  };
 
   const confirmWord = t('settings:delete.confirmWord');
   const confirmPrompt = t('settings:delete.typeToConfirm', {
@@ -109,12 +125,12 @@ export default function DeleteAccount() {
     if (outcome === 'refused') {
       // The server said so before doing anything. This is the ONLY time "nothing has
       // changed" is a fact rather than a hope (deleteOutcome.ts).
-      setError(t('settings:delete.failed'));
+      showError(t('settings:delete.failed'));
     } else {
       // The answer never came and the request may have run, so the screen claims neither
       // way. The member's next press is the check, and it is their press: no retry behind
       // their back, only truthful words about what is not yet known.
-      setError(
+      showError(
         t('settings:delete.unconfirmed', {
           button: t('settings:delete.confirm'),
         }),
@@ -130,6 +146,7 @@ export default function DeleteAccount() {
     // Same structure as app/course/[slug].tsx, for the same reason.
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
+        ref={scroller}
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: insets.top,
