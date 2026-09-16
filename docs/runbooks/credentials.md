@@ -165,10 +165,24 @@ project, after the migrations are applied.
    ```
 
 2. [ ] **Function secrets** (`supabase secrets set`, per env): `RESEND_API_KEY`,
-       `ALERTS_FROM_EMAIL` (a verified sender on the domain), `DASHBOARD_URL`, and the two
+       `ALERTS_FROM_EMAIL` (a verified sender on the domain), `CONTACT_FROM_EMAIL` +
+       `CONTACT_TO_EMAIL` (the contact form, see below), `DASHBOARD_URL`, and the two
        healthchecks ping URLs `HEALTHCHECK_URL_MODERATION_ALERTS` +
        `HEALTHCHECK_URL_VERSE_MONITOR`. Missing email config is not a silent no-op: the jobs
        log, ping FAILURE and answer 503.
+
+       **The contact pair was missing from this list until 2026-09-16, and so was missing
+       from production**, which is the whole of why it was missed: `contact-form/index.ts`
+       was the only place in the repo that named them. Every message a member sent from
+       CONTACT since launch hit the `503 not_configured` branch and was dropped, and the app
+       told them "Your message didn't send". Nothing alerted, because that branch returns
+       before the try/catch that calls `captureEdgeError`. **A value that exists only in the
+       code that reads it is a value no environment will ever have.** Production now holds
+       `CONTACT_FROM_EMAIL = AGBC Global <app@agbcglobal.com>` and
+       `CONTACT_TO_EMAIL = hello@agbcglobal.com`; both are Cloudflare Email Routing rules on
+       `agbcglobal.com` (`app@` to Ayo for bounces, `hello@` to the church inbox), and the
+       catch-all there is DISABLED, so a From address without its own rule has its bounces
+       rejected rather than delivered.
 3. [ ] **healthchecks.io checks**, one per job per environment, with periods matching the
        schedules (hourly / daily) and a grace of one period.
 4. [ ] **Verify**: `select jobs.invoke_edge_function('verse-monitor');` then read
