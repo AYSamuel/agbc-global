@@ -94,6 +94,19 @@ jest.mock('@/features/settings/requestDeletion', () => ({
 
 const mockSignOut = jest.fn<Promise<void>, []>(() => Promise.resolve());
 
+// THE ERROR MUST BE BROUGHT INTO VIEW, not merely rendered (W4.18 verification
+// pass, on the device). This frame pins its action bar BELOW the scroll, unlike
+// the composer whose error and button share one container, so a new message
+// lands off the bottom of a short screen while the button stays put: the copy
+// was right and nobody could see it. Spying on the real ScrollView's method is
+// the only honest assertion here, because "is it visible" is not something the
+// test renderer knows.
+const scrollToEnd = jest.spyOn(
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-require-imports -- RN's ScrollView prototype is untyped here
+  require('react-native').ScrollView.prototype as { scrollToEnd: () => void },
+  'scrollToEnd',
+);
+
 /** AWAITED. See the harness note above; that is the whole reason it is a helper. */
 async function renderScreen() {
   const view = await render(
@@ -383,6 +396,39 @@ test('once unanswered, every later press keeps confirming', async () => {
     'confirm',
     'confirm',
   ]);
+});
+
+test.each([
+  ['refused', /Nothing has changed/],
+  ['unconfirmed', /We couldn't confirm whether that went through/],
+] as const)(
+  'a %s outcome scrolls its message into view, not just onto the page',
+  async (outcome, copy) => {
+    mockRequest.mockResolvedValueOnce(outcome);
+    await renderScreen();
+    await arm();
+    scrollToEnd.mockClear();
+    await pressDelete();
+
+    expect(await screen.findByText(copy)).toBeOnTheScreen();
+    // Rendering it is not showing it: the action bar is pinned outside the
+    // scroll, so without this the member sees an unchanged screen.
+    await waitFor(() => {
+      expect(scrollToEnd).toHaveBeenCalled();
+    });
+  },
+);
+
+test('a success never scrolls, because the screen is leaving', async () => {
+  await renderScreen();
+  await arm();
+  scrollToEnd.mockClear();
+  await pressDelete();
+
+  await waitFor(() => {
+    expect(mockReplace).toHaveBeenCalledWith('/');
+  });
+  expect(scrollToEnd).not.toHaveBeenCalled();
 });
 
 test('the word to type is the language being read, not English', async () => {
