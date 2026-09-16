@@ -1,5 +1,7 @@
 import * as Crypto from 'expo-crypto';
 
+import { FunctionsHttpError, StorageApiError } from '@supabase/supabase-js';
+
 import {
   TESTIMONY_PHOTO_BUCKET,
   TESTIMONY_PHOTO_MAX_BYTES,
@@ -133,11 +135,31 @@ export function resizeTarget(
   return width >= height ? { width: maxEdge } : { height: maxEdge };
 }
 
+/**
+ * Why a photo could not be attached, at the granularity the app can HONESTLY
+ * tell apart (W4.19, extending ADR 0026's vocabulary to this path).
+ *
+ * Until this, everything except a permission refusal and the guard's two verdicts
+ * collapsed into `failed`, whose line told the member to check their connection.
+ * That was wrong far more often than it was right: a refused credential, a server
+ * that answered, a rate limit and a genuine dead network all said the same thing,
+ * so the one report we ever got back was "it errored" and the production defect
+ * this item fixes hid behind it for the app's whole life.
+ *
+ * The split is the same one `mapComposeError` makes, for the same reason: a
+ * failure the SERVER answered is not a network failure, and must not be described
+ * as one. `unconfirmed` is the only reason allowed to mention the connection,
+ * because it is the only one where nothing answered at all.
+ */
 export type PhotoFailure =
   | 'cancelled'
   | 'permission'
   | 'too_large'
   | 'not_an_image'
+  /** photo-guard's own rate limit: 20 in 10 minutes, per member. */
+  | 'rate_limited'
+  /** Nothing answered: no network, or our own budget ran out first. */
+  | 'unconfirmed'
   | 'unavailable'
   | 'failed';
 
@@ -154,10 +176,42 @@ export type PhotoResult =
 
 /** Maps the wire error from photo-guard onto the app's reasons. Anything the app
  * does not recognise is a generic failure: never surface a server string. */
-function guardFailure(code: unknown): PhotoFailure {
+export function guardFailure(code: unknown): PhotoFailure {
   if (code === 'not_an_image') return 'not_an_image';
   if (code === 'too_large') return 'too_large';
+  if (code === 'rate_limited') return 'rate_limited';
   return 'failed';
+}
+
+/**
+ * Why an upload did not land. A `StorageApiError` means Storage ANSWERED, with a
+ * status, so whatever went wrong the network reached it and the copy must not
+ * blame the connection; anything else (a wrapped fetch failure, our own ten-second
+ * abort) never got an answer at all.
+ *
+ * 413 is the bucket's own `file_size_limit` talking. The client checks the size
+ * first, so reaching this means the two disagree, and the member is still better
+ * served by "too large" than by "something went wrong".
+ */
+export function uploadFailure(error: unknown): PhotoFailure {
+  if (error instanceof StorageApiError) {
+    return error.status === 413 ? 'too_large' : 'failed';
+  }
+  return 'unconfirmed';
+}
+
+/** photo-guard's machine hint out of a non-2xx response. The member's line always
+ * comes from i18n; this only ever chooses WHICH line (CLAUDE.md error rules). */
+async function machineCode(error: FunctionsHttpError): Promise<unknown> {
+  const context: unknown = (error as { context?: unknown }).context;
+  if (!(context instanceof Response)) return null;
+  try {
+    const body = (await context.json()) as { error?: unknown };
+    return body.error ?? null;
+  } catch {
+    // Not JSON, or already consumed.
+    return null;
+  }
 }
 
 /**
@@ -223,7 +277,7 @@ export async function pickAndUploadTestimonyPhoto(
   const upload = await supabase.storage
     .from(TESTIMONY_PHOTO_BUCKET)
     .upload(path, bytes, { contentType: 'image/jpeg', upsert: false });
-  if (upload.error) return { ok: false, reason: 'failed' };
+  if (upload.error) return { ok: false, reason: uploadFailure(upload.error) };
 
   // The server opens the file. A refusal has already deleted the object, so
   // there is nothing to clean up here.
@@ -234,20 +288,19 @@ export async function pickAndUploadTestimonyPhoto(
     },
   );
   if (guard.error) {
-    // supabase-js hangs the raw Response off the error as `context`; reading the
-    // machine code out of it is what turns "it failed" into copy the author can
-    // act on. Anything unexpected in there falls through to the generic line.
-    let code: unknown = null;
-    const context: unknown = (guard.error as { context?: unknown }).context;
-    if (context instanceof Response) {
-      try {
-        const body = (await context.json()) as { error?: unknown };
-        code = body.error ?? null;
-      } catch {
-        // Not JSON, or already consumed.
-      }
+    // A FunctionsHttpError means the guard ANSWERED and refused, and supabase-js
+    // hangs the raw Response off it as `context`; reading the machine code out of
+    // that is what turns "it failed" into copy the author can act on. Every other
+    // error shape means nothing answered (no network, a relay fault, or our own
+    // budget), which is `unconfirmed` and is the ONLY reason allowed to mention
+    // the connection. Same split as sendContactMessage, for the same reason.
+    if (guard.error instanceof FunctionsHttpError) {
+      return {
+        ok: false,
+        reason: guardFailure(await machineCode(guard.error)),
+      };
     }
-    return { ok: false, reason: guardFailure(code) };
+    return { ok: false, reason: 'unconfirmed' };
   }
 
   return { ok: true, path, bytes: bytes.byteLength, previewUri };

@@ -4039,7 +4039,14 @@
           <div class="clabel">Category (optional)</div>
           <div class="chips"><span class="catchip on">Provision</span><span class="catchip">Healing</span><span class="catchip">Salvation</span><span class="catchip">Breakthrough</span></div>
           <div class="addphoto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg> Add a photo</div>
-          <div class="photoerr">We couldn&#39;t add that photo. Check your connection and try again, or share without it.</div>
+          <!-- ONE LINE, SIX POSSIBLE STRINGS (W4.19). The layout is the frame and
+               the words are data: permission, too large, not a photo, rate limited,
+               unconfirmed, and this generic one. Only the UNCONFIRMED line mentions
+               the connection, because it is the only failure where nothing answered.
+               Until W4.19 the generic line said it too, and it was the line almost
+               every failure reached. The strings live in the family namespace
+               (photoError*), not here. -->
+          <div class="photoerr">We couldn&#39;t add that photo just now. Please try again in a moment, or share without it.</div>
           <div style="padding:18px"><button class="btn primary">Continue</button></div>
         </div>
       </div>
