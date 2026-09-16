@@ -109,7 +109,7 @@
   "pendingBodyPrayer": "A leader will review your request shortly. You'll be notified the moment it's live for the family to see.",
   "errorLimit": "You've shared a lot with the family today. Please come back tomorrow to share more.",
   "errorConsentStale": "Please update the app to share: the wording you agree to has changed.",
-  "errorOffline": "That didn't send. Your draft is saved, so try again when you're back online.",
+  "errorUnconfirmed": "We couldn't confirm that went through. Your draft is saved. Tap Post again: if it already did, you'll see it was sent, and it won't be posted twice.",
   "errorGeneric": "That didn't send. Your draft is safe, so please try again.",
   "categories": {
     "healing": "Healing",

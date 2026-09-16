@@ -109,7 +109,7 @@
   "pendingBodyPrayer": "Eine Leitung prüft dein Anliegen in Kürze. Du wirst benachrichtigt, sobald es für die Familie sichtbar ist.",
   "errorLimit": "Du hast heute schon viel mit der Familie geteilt. Komm morgen gerne wieder.",
   "errorConsentStale": "Bitte aktualisiere die App: Der Zustimmungstext hat sich geändert.",
-  "errorOffline": "Das konnte nicht gesendet werden. Dein Entwurf ist gespeichert, versuche es online erneut.",
+  "errorUnconfirmed": "Wir konnten nicht bestätigen, ob das durchgegangen ist. Dein Entwurf ist gespeichert. Tippe noch einmal auf Veröffentlichen: Falls es schon durch ist, siehst du das, und es wird nicht doppelt veröffentlicht.",
   "errorGeneric": "Das konnte nicht gesendet werden. Dein Entwurf ist sicher, bitte versuche es erneut.",
   "categories": {
     "healing": "Heilung",

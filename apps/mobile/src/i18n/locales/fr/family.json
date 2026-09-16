@@ -120,7 +120,7 @@
   "pendingBodyPrayer": "Un responsable relira ta demande sous peu. Tu seras averti dès qu'elle sera visible par la famille.",
   "errorLimit": "Tu as beaucoup partagé avec la famille aujourd'hui. Reviens demain pour partager davantage.",
   "errorConsentStale": "Mets l'application à jour pour partager : le texte d'accord a changé.",
-  "errorOffline": "L'envoi a échoué. Ton brouillon est enregistré, réessaie une fois en ligne.",
+  "errorUnconfirmed": "Nous n'avons pas pu confirmer que c'est passé. Ton brouillon est enregistré. Appuie de nouveau sur Publier : si c'est déjà passé, tu le verras, et rien ne sera publié deux fois.",
   "errorGeneric": "L'envoi a échoué. Ton brouillon est en sécurité, réessaie.",
   "categories": {
     "healing": "Guérison",

@@ -41,7 +41,9 @@ import {
   pickAndUploadTestimonyPhoto,
   type PhotoFailure,
 } from './photo';
+import { mintPostId } from './postId';
 import { PostPendingStep } from './PostPendingStep';
+import { findOwnPost } from './reconcilePost';
 import { PRAYER_SURFACE_KEYS, TESTIMONY_SURFACE_KEYS } from './keys';
 
 // TESTIMONY-COMPOSE / PRAYER-COMPOSE -> CONSENT -> POST-PENDING (docs/spec/09),
@@ -142,6 +144,10 @@ export function ComposeFlow({
   const [photoPreviewUri, setPhotoPreviewUri] = useState<string | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoFailure, setPhotoFailure] = useState<PhotoFailure | null>(null);
+  // The id this post will be born with: null until the first submit, then kept for
+  // every retry (and restored with the draft), so a repeat is a conflict the database
+  // refuses rather than a second post (W4.18 slice 2; see `submitForm`).
+  const [postId, setPostId] = useState<string | null>(null);
 
   const schema = useMemo(
     () => composeSchema(target, editing ? 'edit' : 'create'),
@@ -202,6 +208,9 @@ export function ComposeFlow({
         });
         if (draft) toast.show(t('draftRestored'));
       }
+      // The id travels with the words: a draft that was submitted once and never
+      // answered keeps naming the same row after the app died in between.
+      if (draft?.postId) setPostId(draft.postId);
       setHydrated(true);
     });
     return () => {
@@ -229,7 +238,7 @@ export function ComposeFlow({
     const timer = setTimeout(() => {
       void saveDraft(
         target,
-        { body, categoryId, imagePath, isAnonymous },
+        { body, categoryId, imagePath, isAnonymous, postId },
         editId,
         linkId,
       );
@@ -247,6 +256,7 @@ export function ComposeFlow({
     categoryId,
     imagePath,
     isAnonymous,
+    postId,
   ]);
 
   // Hardware back mirrors the on-screen control: consent returns to compose,
@@ -352,7 +362,12 @@ export function ComposeFlow({
               .eq('id', editId);
 
       if (editError) {
-        setErrorKey(mapComposeError(editError));
+        // An edit rewrites a row that already exists, so "already posted" is not an
+        // answer it can get: the link is immutable on update (the guard refuses a
+        // changed `from_prayer_id`), which is the only unique index an update could
+        // touch. Kept as a generic refusal rather than a success it did not have.
+        const outcome = mapComposeError(editError);
+        setErrorKey(outcome === 'alreadyPosted' ? 'errorGeneric' : outcome);
         return;
       }
       await clearDraft(target, editId);
@@ -386,10 +401,80 @@ export function ComposeFlow({
       // database refuses the pairing if the two ever disagree (docs/spec/20).
       consent_version: consentVersionFor(form.imagePath !== null),
     };
+    // ONE ID PER DRAFT, MINTED HERE AND KEPT (W4.18 slice 2). The insert used to let the
+    // database choose the id, so a request that timed out after the row had landed left
+    // nothing to recognise it by, and the member's retry posted it again. The id is
+    // minted on the first attempt, written into the draft BEFORE the request goes out
+    // (so it survives the app dying between attempts), and sent as the row's own id: a
+    // retry that lands twice is a primary-key conflict, which the database refuses and
+    // this code reads as "already posted". Idempotency by construction, the same move
+    // the write queue makes for every write it carries.
+    const attempted = postId !== null;
+    const id = postId ?? mintPostId();
+    if (!attempted) {
+      setPostId(id);
+      await saveDraft(
+        target,
+        {
+          body: form.body,
+          categoryId: form.categoryId,
+          imagePath: form.imagePath,
+          isAnonymous: form.isAnonymous,
+          postId: id,
+        },
+        editId,
+        linkId,
+      );
+    }
+
+    const finishAsPosted = async () => {
+      // The row is on the server, whether this call put it there or an earlier one
+      // did whose answer never arrived. The events fire once per post, here (never on
+      // the edit path above: a re-submission is not a second post).
+      // `from_answered_prayer` uses `linkId`, not `fromPrayerId`, because only the
+      // validated link was written to the row; the pair below is north star 2's
+      // numerator (docs/spec/22 §5).
+      if (target === 'testimony') {
+        track('testimony_posted', {
+          from_answered_prayer: linkId !== undefined,
+        });
+        if (linkId !== undefined) track('answered_converted_to_testimony');
+      } else {
+        track('prayer_posted');
+      }
+      // The words are safely on the server now; the local copy has done its job.
+      await clearDraft(target, editId, linkId);
+      // The author's own pending row is not in the public feed, but a refetch
+      // keeps counts and any concurrent approval honest when they land back.
+      // Only the surfaces this post belongs to: a blanket sweep also re-signs every
+      // photo. A LINKED testimony is the exception to "a new testimony has nothing to
+      // say about the prayer feed": it is written onto the request's row too, and
+      // without this PRAYER-DETAIL keeps offering to write the testimony that now
+      // exists (W2.5).
+      await Promise.all(
+        (target === 'testimony'
+          ? surfacesTouchedByTestimony(linkId)
+          : PRAYER_SURFACE_KEYS
+        ).map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      );
+      setStage('sent');
+    };
+
+    // A second attempt asks first. The earlier request may have landed, and asking is
+    // cheaper and kinder than a refused insert: at the daily quota's edge the insert
+    // guard would answer "come back tomorrow" before the primary key ever got to say
+    // "already there". Unknown (no network to ask with) falls through to the insert,
+    // where the id is still the net.
+    if (attempted && (await findOwnPost(target, id)) === 'exists') {
+      await finishAsPosted();
+      return;
+    }
+
     const { error } =
       target === 'testimony'
         ? await supabase.from('testimonies').insert({
             ...common,
+            id,
             category_id: form.categoryId,
             image_path: form.imagePath,
             // The loop's last link (W2.5). Null unless this composer was opened from the
@@ -398,37 +483,18 @@ export function ComposeFlow({
           })
         : await supabase
             .from('prayers')
-            .insert({ ...common, is_anonymous: form.isAnonymous });
+            .insert({ ...common, id, is_anonymous: form.isAnonymous });
 
     if (error) {
-      setErrorKey(mapComposeError(error));
+      const outcome = mapComposeError(error);
+      if (outcome === 'alreadyPosted') {
+        await finishAsPosted();
+        return;
+      }
+      setErrorKey(outcome);
       return;
     }
-    // The insert stood, so the events follow it here (never on the edit path
-    // above: a re-submission is not a second post). `from_answered_prayer` uses
-    // `linkId`, not `fromPrayerId`, because only the validated link was written
-    // to the row; the pair below is north star 2's numerator (docs/spec/22 §5).
-    if (target === 'testimony') {
-      track('testimony_posted', { from_answered_prayer: linkId !== undefined });
-      if (linkId !== undefined) track('answered_converted_to_testimony');
-    } else {
-      track('prayer_posted');
-    }
-    // The words are safely on the server now; the local copy has done its job.
-    await clearDraft(target, editId, linkId);
-    // The author's own pending row is not in the public feed, but a refetch
-    // keeps counts and any concurrent approval honest when they land back.
-    // Only the surfaces this post belongs to: a blanket sweep also re-signs every photo.
-    // A LINKED testimony is the exception to "a new testimony has nothing to say about
-    // the prayer feed": it is written onto the request's row too, and without this
-    // PRAYER-DETAIL keeps offering to write the testimony that now exists (W2.5).
-    await Promise.all(
-      (target === 'testimony'
-        ? surfacesTouchedByTestimony(linkId)
-        : PRAYER_SURFACE_KEYS
-      ).map((queryKey) => queryClient.invalidateQueries({ queryKey })),
-    );
-    setStage('sent');
+    await finishAsPosted();
   });
 
   if (stage === 'compose') {
