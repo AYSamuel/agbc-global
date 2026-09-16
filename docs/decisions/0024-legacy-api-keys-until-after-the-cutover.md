@@ -152,3 +152,63 @@ send it); it dies when the legacy keys are disabled.
 Vercel the `sb_secret_` key) and the app (Phase 4 gives EAS the `sb_publishable_` key), and
 only after every consumer is off legacy, deactivating the legacy pair in the dashboard. The
 do-not-press warning in `credentials.md` narrows accordingly but does not lift.
+
+## Amendment 2026-09-16: "the user-facing functions survive untouched" was true of all but one request
+
+This ADR's migration design says of `course-handoff` and `photo-guard` that caller identity
+"survives untouched: user access tokens are still JWTs and supabase-js still sends them as
+`Authorization: Bearer`. Only the project key moves to `apikey`." That is right about the
+CALLER. It is silent about the one request in this repo that these functions make as
+themselves, by hand, and that silence cost the church every testimony photo from launch until
+today.
+
+**What broke.** `photo-guard` reads the first 8 bytes of the uploaded object to decide what
+the file actually is. storage-js cannot ask for a byte range, so that one request is built by
+hand, and it carried `Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY` and **no `apikey`
+header at all**. Everything else in this repo reaches Storage through supabase-js, which
+always sends both, which is exactly why nothing else showed a symptom.
+
+**Why that fails, in the gateway's own terms.** Supabase's description of the key
+architecture gives the rule as a single conditional:
+
+```
+if authorization exists AND does not start with "Bearer sb_" then
+  keep authorization              -- taken for a USER SESSION JWT, passed upstream untouched
+elseif apikey matches secret key then
+  set authorization = "Bearer <service_role ES256 JWT>"
+```
+
+A legacy service-role JWT does not begin `Bearer sb_`, so the first branch takes it: the
+gateway hands Storage what it believes is a session token and never mints the service_role
+token, because there was no `apikey` to recognise. Storage then sees a caller with no
+privileged role, and RLS filters the bucket out of existence for them.
+
+**And the answer to that is unrecognisable.** Production replies **HTTP 400** with a body of
+`{"statusCode":"404","error":"Bucket not found","code":"NoSuchBucket"}`, for a bucket that
+plainly exists. Verified by unauthenticated curl on 2026-09-16: no credentials, a malformed
+Bearer and a well-formed-but-wrong service-role JWT all produce it. **A 400 from Storage means
+the credentials were refused, never that the bucket is missing**, and reading it the other way
+sends you hunting for a bucket, a path or a migration that were all fine.
+
+**What the members saw.** The object uploaded (it is still in the bucket), `photo-guard`
+answered 404 because it answers 404 for every unreadable object, and the app's only line for
+that is "We couldn't add that photo. Check your connection and try again." So a credential
+fault presented as a network fault, on a network that was working.
+
+**The fix** is in `_shared/auth.ts`: `serviceApiKeyFrom` prefers the `sb_secret_` key that this
+ADR's own migration proved works on production (the cron jobs run on it), and
+`serviceApiHeaders` sends `apikey` AND `Authorization`, which is what supabase-js does on every
+request it makes. The admin clients stay on the legacy key, here and in the other twelve
+functions, for the reason this ADR already gives: supabase-js sends both headers, so the
+consumer is identified from `apikey` whatever the key's vintage.
+
+**`course-handoff` was checked and is CLEAN**, so nobody checks it twice: it is the other
+function this ADR names, and it overrides supabase-js's `fetch` only to add a timeout, passing
+`init` straight through, so the library's own headers survive. Its path is also proven live
+(Track P Phase 4 landed a real registration). The same sweep found no other hand-built request
+to a Supabase surface anywhere in `supabase/functions`; the only other `Bearer` literals are
+Resend's API key.
+
+**The rule this leaves.** A hand-built request to one of the platform's own surfaces is not
+"the same request supabase-js would make, minus the library". It is a request whose headers
+are now your responsibility, and there is exactly one place in this repo that carries them.

@@ -23,6 +23,7 @@ import {
   TESTIMONY_PHOTO_BUCKET,
   type PhotoGuardError,
 } from '../../../packages/shared/src/contracts/family.ts';
+import { serviceApiHeaders, serviceApiKey } from '../_shared/auth.ts';
 import { requiredEnv } from '../_shared/env.ts';
 import { clientKey, createRateLimiter } from '../_shared/rateLimit.ts';
 import { captureEdgeError } from '../_shared/sentry.ts';
@@ -46,11 +47,27 @@ function fail(error: PhotoGuardError, status: number): Response {
   return Response.json({ ok: false, error }, { status });
 }
 
+// Stays on the legacy key, like every other function's admin client (ADR 0024's
+// migration moved the JOB PATH, not these). It works because supabase-js sends
+// both headers, so the gateway identifies the consumer from `apikey` whatever the
+// key's vintage. The hand-built request below is the one that could not rely on
+// that, and did not.
 const admin = createClient(
   requiredEnv('SUPABASE_URL'),
   requiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
   { auth: { autoRefreshToken: false, persistSession: false } },
 );
+
+/** An object this function has refused, for whatever reason, must not sit in the
+ * bucket: nothing can ever reference it (the insert guard needs a validation row
+ * this call did not write), so it is litter that shows on no screen and grows the
+ * nightly backup. Best effort, and through supabase-js rather than by hand. */
+async function discard(path: string): Promise<void> {
+  const { error } = await admin.storage
+    .from(TESTIMONY_PHOTO_BUCKET)
+    .remove([path]);
+  if (error) console.error('photo-guard: could not delete a refused object');
+}
 
 /** Total object size from a ranged response: `bytes 0-7/12345`. Falls back to
  * content-length for a server that ignored the Range header and sent it all. */
@@ -102,7 +119,18 @@ Deno.serve(async (req) => {
 
   // Ranged read: the verdict needs 8 bytes, and the object may be 5 MiB. The
   // response headers carry the total size and the declared type, so this is also
-  // the only round trip needed to gather the facts.
+  // the only round trip needed to gather the facts. storage-js cannot ask for a
+  // range, which is the whole reason this one request is built by hand; the
+  // headers therefore have to be built by hand too, and `serviceApiHeaders` is
+  // where that rule lives (see its comment: omitting `apikey` is what broke this).
+  const service = serviceApiKey();
+  if (service.key === null) {
+    // Fail closed: with no key at all this cannot check anything, and a photo
+    // that was never opened must never become a validation record.
+    console.error('photo-guard: no service key configured');
+    return fail('failed', 502);
+  }
+
   let head: Uint8Array;
   let response: Response;
   try {
@@ -110,14 +138,20 @@ Deno.serve(async (req) => {
       `${requiredEnv('SUPABASE_URL')}/storage/v1/object/${TESTIMONY_PHOTO_BUCKET}/${request.path}`,
       {
         headers: {
-          Authorization: `Bearer ${requiredEnv('SUPABASE_SERVICE_ROLE_KEY')}`,
+          ...serviceApiHeaders(service.key),
           Range: `bytes=0-${SNIFF_BYTES - 1}`,
         },
         signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
       },
     );
     if (!response.ok) {
-      console.warn(`photo-guard: object unreadable (${response.status})`);
+      // The KIND of key is in the line because the status alone sent this the
+      // wrong way once: production's 400 here reads "Bucket not found", which is
+      // a refused credential rather than a missing bucket.
+      console.warn(
+        `photo-guard: object unreadable (${response.status}, ${service.kind} key)`,
+      );
+      await discard(request.path);
       return fail(response.status === 404 ? 'invalid' : 'failed', 404);
     }
     head = new Uint8Array(await response.arrayBuffer());
@@ -142,14 +176,7 @@ Deno.serve(async (req) => {
   );
 
   if (!verdict.ok) {
-    // The object is refused, so it does not get to sit in the bucket waiting for
-    // someone to find a use for it.
-    const { error } = await admin.storage
-      .from(TESTIMONY_PHOTO_BUCKET)
-      .remove([request.path]);
-    if (error) {
-      console.error('photo-guard: could not delete a refused object');
-    }
+    await discard(request.path);
     console.info(`photo-guard: refused (${verdict.reason})`);
     return fail(verdict.reason, 422);
   }
