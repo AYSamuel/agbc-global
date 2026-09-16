@@ -134,14 +134,14 @@ Each row → its screen. Every leaf screen has back. Guest rows that need auth o
 - `LIBRARY` → `READER` (resume location).
 - `PLAN` (entitled owners; others → devotional `BOOK-DETAIL`) → `PLAN-DAY` → **Mark complete** → progress + possible milestone.
 - `RHYTHM` → streak, milestones, attendance history.
-- `SETTINGS` → Theme (Light/Dark/System), Language, Notifications prefs (`NOTIF-PREFS`), **Blocked members** (unblock list, see `16`), Profile edit, Privacy (`PRIVACY`), **Delete account** (`DELETE`), Sign out.
+- `SETTINGS` → Theme (Light/Dark/System), Language, Notifications prefs (`NOTIF-PREFS`), **Blocked members** (unblock list, see `16`), Profile edit, **Legal** (the website's terms, in the in-app browser), Privacy (`PRIVACY`), **Delete account** (`DELETE`), Sign out. It does NOT link to `ABOUT` or `CONTACT`: those are the church's pages and reach them from MORE > Church (2026-09-16, `16`).
 - `NC` (Notification center) → tap item → **deep link** to its target screen; mark read.
 
 ## Church screens (spec lives here; no feature doc owns them)
 
 - **`BRANCH-INFO`** (destination of Home's "Plan a visit", both map pin types, and `BRANCHES`): renders one branch from `branches` + `branch_services`: next services (computed from `branch_services`, displayed with `service_times` strings), address with a Directions link (OS maps), the branch's LEAD alone (confirmed 2026-09-08: the mockup's `.leadcard` has only ever drawn one person, and the code had drifted into printing the whole `leaders` array under it; a visitor opening a branch page is being introduced to the person who leads it, not handed a staff list, and the others remain in the data and on the dashboard), `welcome` copy, contact email. Actions: Directions, Share, "Watch this branch" (sets the browsing chip), and around service time the "I'm here" affordance (gate). Empty/edge: branch without coordinates hides the map link, never errors.
 - **`BRANCHES`**: list of all branches (name, city, country, HQ badge) → `BRANCH-INFO`. Same data as onboarding's picker.
-- **`ABOUT`**: the church's story + "One family · many nations" statement (static content, from the website's copy). Links to `BRANCHES` and `CONTACT`.
+- **`ABOUT`**: the church's story + "One family · many nations" statement (static content). Links to `BRANCHES` and `CONTACT`. **The story begins in Kharkiv, Ukraine**, from where the church was sent into Europe and Africa to preach the Gospel of His Grace and raise disciples (corrected 2026-09-16, Ayo: the copy had been ported from the website and said the church began in Glasgow, which is the HQ branch and not the beginning). Reached from MORE > Church only.
 - **`CONTACT`**: contact form (name, email, message → edge function → church inbox, reply-to = the sender's email) + direct email links per branch. Submit → confirmation; failure preserves the draft.
 - **`LEADER-HOME`** (role-gated): explains the leader role and links out to the web dashboard (`17`); shows the leader's branch scope. No moderation happens in the app.
 

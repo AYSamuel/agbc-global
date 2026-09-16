@@ -24,10 +24,15 @@ import { useTheme } from '@/theme';
 const HERO_MIN_HEIGHT = 168;
 
 // ABOUT (docs/spec/04, mockup ABOUT frame): the church's story as static,
-// localized copy ported from the website (agbc/src/i18n/ui.ts), with the
-// "One family, many nations" hero. Static surface: no data states. Links to
-// CONTACT and BRANCHES per 04 (the branches button is composed; the frame
-// shows only "Contact us", flagged in the PR).
+// localized copy, with the "One family, many nations" hero. Static surface: no
+// data states. Links to CONTACT and BRANCHES per 04 (the branches button is
+// composed; the frame shows only "Contact us", flagged in the PR).
+//
+// The story was ported from the website (agbc/src/i18n/ui.ts) and is no longer
+// a copy of it: it said the church began in Glasgow, and Glasgow is the HQ
+// branch, not the beginning. It began in Kharkiv, Ukraine (Ayo, 2026-09-16).
+// The website does not carry the claim either way, so the two are not in
+// conflict; if its About page ever tells the story, it tells this one.
 export default function About() {
   const router = useRouter();
   const { t } = useTranslation();

@@ -43,9 +43,6 @@
     "askFootnote": "Tout fonctionne pareil dans les deux cas, et le réglage reste dans les Paramètres. Les rapports d'erreur sont toujours envoyés, sans ton nom ni tes mots.",
     "askDismissed": "Fermé"
   },
-  "aboutSection": "À propos",
-  "aboutRow": "À propos",
-  "contact": "Contact",
   "legal": "Mentions légales",
   "signin": "Se connecter",
   "appVersion": "AGBC · v{{version}}",

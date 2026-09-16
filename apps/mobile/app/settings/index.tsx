@@ -12,10 +12,8 @@ import {
   BlockedIcon,
   Button,
   GlobeIcon,
-  InfoIcon,
   LegalIcon,
   LockIcon,
-  MailIcon,
   MenuCard,
   MenuLabel,
   MenuRow,
@@ -198,6 +196,19 @@ export default function Settings() {
           {t('settings:analytics.crashNote')}
         </Text>
         <MenuCard>
+          {/* Legal (terms, imprint) opens the website, and it sits ABOVE Privacy
+              because the three rows now read outward-in: the public documents,
+              then what this app holds about you, then the way out (Ayo,
+              2026-09-16). It is the only row left of what used to be an "About"
+              section here; About and Contact are the church's own pages and
+              live in MORE > Church, which is where a member looks for them. */}
+          <MenuRow
+            icon={LegalIcon}
+            label={t('settings:legal')}
+            onPress={() => {
+              openLink(termsUrl(i18n.language));
+            }}
+          />
           <MenuRow
             icon={LockIcon}
             label={t('settings:privacy')}
@@ -222,31 +233,6 @@ export default function Settings() {
               }}
             />
           ) : null}
-        </MenuCard>
-
-        <MenuLabel label={t('settings:aboutSection')} />
-        <MenuCard>
-          <MenuRow
-            icon={InfoIcon}
-            label={t('settings:aboutRow')}
-            onPress={() => {
-              router.push('/about');
-            }}
-          />
-          <MenuRow
-            icon={MailIcon}
-            label={t('settings:contact')}
-            onPress={() => {
-              router.push('/contact');
-            }}
-          />
-          <MenuRow
-            icon={LegalIcon}
-            label={t('settings:legal')}
-            onPress={() => {
-              openLink(termsUrl(i18n.language));
-            }}
-          />
         </MenuCard>
 
         {/* Guest: Sign in. Member: Sign out, as `.btn.outline` with a red label
