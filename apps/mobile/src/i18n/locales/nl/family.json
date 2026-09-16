@@ -109,7 +109,7 @@
   "pendingBodyPrayer": "Een leider beoordeelt je gebedspunt binnenkort. Je krijgt bericht zodra het zichtbaar is voor de familie.",
   "errorLimit": "Je hebt vandaag al veel met de familie gedeeld. Kom morgen gerust terug.",
   "errorConsentStale": "Werk de app bij om te delen: de tekst waarmee je akkoord gaat is gewijzigd.",
-  "errorOffline": "Dat is niet verzonden. Je concept is bewaard, probeer het opnieuw als je online bent.",
+  "errorUnconfirmed": "We konden niet bevestigen of dit is doorgekomen. Je concept is bewaard. Tik nog eens op Plaatsen: als het al is doorgekomen, zie je dat, en het wordt niet dubbel geplaatst.",
   "errorGeneric": "Dat is niet verzonden. Je concept is veilig, probeer het opnieuw.",
   "categories": {
     "healing": "Genezing",

@@ -43,16 +43,46 @@ describe('mapComposeError', () => {
   });
 
   test('a pg refusal we do not recognise is generic, never silently swallowed', () => {
-    expect(mapComposeError({ code: '23505', message: 'duplicate key' })).toBe(
-      'errorGeneric',
-    );
+    expect(
+      mapComposeError({ code: '42501', message: 'permission denied' }),
+    ).toBe('errorGeneric');
   });
 
-  test('a transport failure (no pg code) reads as offline', () => {
+  // W4.18 slice 2. This test used to assert the opposite, that 23505 was "generic", which
+  // was the bug written down as expected: an author whose linked testimony had already
+  // been published was told "please try again", and could, for ever.
+  test('a unique violation means the post is already there', () => {
+    expect(
+      mapComposeError({
+        code: '23505',
+        message:
+          'duplicate key value violates unique constraint "testimonies_pkey"',
+      }),
+    ).toBe('alreadyPosted');
+    expect(
+      mapComposeError({
+        code: '23505',
+        message:
+          'duplicate key value violates unique constraint "testimonies_one_live_answer_per_prayer"',
+      }),
+    ).toBe('alreadyPosted');
+  });
+
+  // Also W4.18: no code does not mean offline. postgrest-js gives an aborted request an
+  // empty code, and a gateway error with a non-JSON body arrives as a bare message; the
+  // database never spoke, so the request may have run.
+  test('a failure with no pg code is unconfirmed, not "offline"', () => {
     expect(mapComposeError({ message: 'Network request failed' })).toBe(
-      'errorOffline',
+      'errorUnconfirmed',
     );
-    expect(mapComposeError(new Error('aborted'))).toBe('errorOffline');
+    expect(mapComposeError(new Error('aborted'))).toBe('errorUnconfirmed');
+    expect(
+      mapComposeError({
+        code: '',
+        message: 'AbortError: Aborted',
+        hint: 'Request was aborted (timeout or manual cancellation)',
+      }),
+    ).toBe('errorUnconfirmed');
   });
 });
 
@@ -72,6 +102,7 @@ describe('parseDraft', () => {
       categoryId: 'c1',
       imagePath: null,
       isAnonymous: true,
+      postId: null,
       savedAt: 7,
     });
   });
@@ -89,8 +120,21 @@ describe('parseDraft', () => {
       categoryId: null,
       imagePath: null,
       isAnonymous: false,
+      postId: null,
       savedAt: 0,
     });
+  });
+
+  // W4.18 slice 2: the id a submitted-but-unanswered draft was sent with rides in the
+  // draft, so a retry after the app died still names the same row.
+  test('a post id survives the round trip, and a junk one reads as none', () => {
+    const id = '70000000-0000-4000-8000-000000000001';
+    expect(parseDraft(JSON.stringify({ body: 'hi', postId: id }))?.postId).toBe(
+      id,
+    );
+    expect(
+      parseDraft(JSON.stringify({ body: 'hi', postId: 42 }))?.postId,
+    ).toBeNull();
   });
 });
 

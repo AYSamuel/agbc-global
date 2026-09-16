@@ -22,6 +22,11 @@ export interface ComposeDraft {
    * approves the post, so a restored draft finds the photo still waiting. */
   imagePath: string | null;
   isAnonymous: boolean;
+  /** The id the post will be born with, set the first time it is submitted and
+   * kept for every retry after (W4.18 slice 2). Null until then. Persisted so a
+   * retry after the app died still names the same row, which is what makes a
+   * repeat a conflict the database refuses rather than a second post. */
+  postId: string | null;
   savedAt: number;
 }
 
@@ -64,6 +69,7 @@ export function parseDraft(raw: string | null): ComposeDraft | null {
         typeof record.categoryId === 'string' ? record.categoryId : null,
       imagePath: typeof record.imagePath === 'string' ? record.imagePath : null,
       isAnonymous: record.isAnonymous === true,
+      postId: typeof record.postId === 'string' ? record.postId : null,
       savedAt: typeof record.savedAt === 'number' ? record.savedAt : 0,
     };
   } catch {

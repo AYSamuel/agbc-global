@@ -99,6 +99,12 @@ jest.mock('@/lib/analytics', () => ({
 
 const mockInsert = jest.fn<Promise<{ error: unknown }>, [unknown]>();
 const mockFrom = jest.fn<unknown, [string]>();
+// The reconciliation read a SECOND attempt makes (W4.18 slice 2): `from().select('id')
+// .eq('id', …).maybeSingle()`. Absent by default, so a first attempt never sees it.
+const mockMaybeSingle = jest.fn<
+  Promise<{ data: { id: string } | null; error: unknown }>,
+  []
+>(() => Promise.resolve({ data: null, error: null }));
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -111,9 +117,23 @@ jest.mock('@/lib/supabase', () => ({
     },
     from: (table: string) => {
       mockFrom(table);
-      return { insert: (row: unknown) => mockInsert(row) };
+      return {
+        insert: (row: unknown) => mockInsert(row),
+        select: () => ({
+          eq: () => ({ maybeSingle: () => mockMaybeSingle() }),
+        }),
+      };
     },
   },
+}));
+
+// The id a post is born with (W4.18 slice 2), handed out here rather than by
+// expo-crypto so a test can say which id a repeat must carry.
+const POST_ID = '70000000-0000-4000-8000-000000000001';
+const mockMintPostId = jest.fn<string, []>(() => POST_ID);
+
+jest.mock('../postId', () => ({
+  mintPostId: () => mockMintPostId(),
 }));
 
 // RNTL v14 events are async and MUST be awaited (see the auth flow suite).
@@ -318,6 +338,103 @@ describe('TESTIMONY-COMPOSE', () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByText('Sent for review')).toBeNull();
+  });
+
+  // W4.18 slice 2. Until this the database chose the id, so a request that timed out
+  // after the row had landed left nothing to recognise it by, and the member's retry
+  // posted it again: a public post, through moderation twice, seen by the whole church.
+  describe('a post is posted once', () => {
+    async function composeAndPost(text: string) {
+      await renderFlow('testimony');
+      await writeBody('Share a testimony', text);
+      await press(screen.getByText('Continue'));
+      await press(screen.getByLabelText('I agree to share this publicly.'));
+      await press(screen.getByText('Post testimony'));
+    }
+
+    beforeEach(() => {
+      mockInsert.mockClear();
+      mockMaybeSingle.mockClear();
+      mockTrack.mockClear();
+    });
+
+    test('the insert carries an id the app minted, so a repeat is a conflict rather than a row', async () => {
+      await composeAndPost('Once, and only once.');
+
+      expect(await screen.findByText('Sent for review')).toBeTruthy();
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({ id: POST_ID }),
+      );
+      // A first attempt never asks whether it already landed.
+      expect(mockMaybeSingle).not.toHaveBeenCalled();
+    });
+
+    test('an unanswered post says so, and the next press asks before posting again', async () => {
+      mockInsert.mockResolvedValueOnce({
+        error: { code: '', message: 'AbortError: Aborted' },
+      });
+      await composeAndPost('Did this go through?');
+
+      // Neither "offline" nor "sent": the screen does not know yet, and says exactly that.
+      expect(
+        await screen.findByText(/We couldn't confirm that went through/),
+      ).toBeTruthy();
+      expect(screen.queryByText(/back online/)).toBeNull();
+      expect(screen.queryByText('Sent for review')).toBeNull();
+      expect(mockTrack).not.toHaveBeenCalled();
+
+      // The earlier attempt had in fact landed. The second press asks first and finds
+      // it, so nothing is inserted again and the events fire exactly once.
+      mockMaybeSingle.mockResolvedValueOnce({
+        data: { id: POST_ID },
+        error: null,
+      });
+      await press(screen.getByText('Post testimony'));
+
+      expect(await screen.findByText('Sent for review')).toBeTruthy();
+      expect(mockInsert).toHaveBeenCalledTimes(1);
+      expect(mockTrack).toHaveBeenCalledWith(
+        'testimony_posted',
+        expect.anything(),
+      );
+    });
+
+    test('when the earlier attempt truly failed, the retry posts once, naming the same row', async () => {
+      mockInsert.mockResolvedValueOnce({
+        error: { code: '', message: 'AbortError: Aborted' },
+      });
+      await composeAndPost('Second time lucky.');
+      await screen.findByText(/We couldn't confirm that went through/);
+
+      // "Nothing by that id", so the insert goes again, and with the same id: if the
+      // read was wrong, the primary key is still the net.
+      mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
+      await press(screen.getByText('Post testimony'));
+
+      expect(await screen.findByText('Sent for review')).toBeTruthy();
+      expect(mockMaybeSingle).toHaveBeenCalledTimes(1);
+      expect(mockInsert).toHaveBeenCalledTimes(2);
+      expect(
+        mockInsert.mock.calls.map(([row]) => (row as { id: string }).id),
+      ).toEqual([POST_ID, POST_ID]);
+    });
+
+    test('a row that already exists reads as posted, never as "please try again"', async () => {
+      // The one-live-answer index or the primary key: either way the post is there.
+      // Until W4.18 this fell through to the generic copy and an author whose testimony
+      // had been published could press Post for ever.
+      mockInsert.mockResolvedValueOnce({
+        error: {
+          code: '23505',
+          message:
+            'duplicate key value violates unique constraint "testimonies_one_live_answer_per_prayer"',
+        },
+      });
+      await composeAndPost('Already there.');
+
+      expect(await screen.findByText('Sent for review')).toBeTruthy();
+      expect(screen.queryByText(/please try again/)).toBeNull();
+    });
   });
 });
 

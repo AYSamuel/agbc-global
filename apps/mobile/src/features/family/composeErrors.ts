@@ -1,13 +1,25 @@
-// Maps a failed compose submit to the copy the author should see. The server
+// Maps a failed compose submit to what the author should see. The server
 // refusals here are real invariants, not edge cases: the daily sharing quota
 // (docs/spec/09) and the consent-version check (docs/spec/20) both raise
 // check_violation from a trigger, and the FK underneath the latter raises
-// foreign_key_violation. Everything that is not a recognised refusal is treated
-// as transport, because the honest thing to tell someone whose testimony did not
-// send is that it did not send and their words are safe.
+// foreign_key_violation.
+//
+// TWO ANSWERS ARE NOT COPY (W4.18 slice 2). A unique violation means the post
+// is already there: the composer sends each post with an id it minted itself,
+// so a retry of a request that had already landed conflicts on the primary
+// key, and a linked testimony conflicts on the one-live-answer index. Until
+// this, 23505 fell through to "please try again", and an author whose
+// testimony had in fact been published could press Post for ever. And a
+// failure with NO code is not "offline": postgrest-js gives an aborted
+// request an empty code, and a gateway error with a non-JSON body arrives as
+// a bare message. The database never spoke, so the request may have run, and
+// the copy says exactly that much and no more.
 
 export type ComposeErrorKey =
-  'errorLimit' | 'errorConsentStale' | 'errorOffline' | 'errorGeneric';
+  'errorLimit' | 'errorConsentStale' | 'errorUnconfirmed' | 'errorGeneric';
+
+/** What a failed insert means: copy to show, or the news that it did not fail. */
+export type ComposeOutcome = ComposeErrorKey | 'alreadyPosted';
 
 /** Shape of the PostgrestError supabase-js returns; narrowed, not imported,
  * so a transport failure (a bare Error, or nothing at all) maps too. */
@@ -20,11 +32,15 @@ function textOf(error: MaybePostgrestError): string {
   return typeof error.message === 'string' ? error.message : '';
 }
 
-export function mapComposeError(error: unknown): ComposeErrorKey {
-  if (typeof error !== 'object' || error === null) return 'errorGeneric';
+export function mapComposeError(error: unknown): ComposeOutcome {
+  if (typeof error !== 'object' || error === null) return 'errorUnconfirmed';
   const candidate = error as MaybePostgrestError;
   const code = typeof candidate.code === 'string' ? candidate.code : '';
   const message = textOf(candidate);
+
+  // The primary key (a retry of a post that landed) or the one-live-answer index
+  // (a second testimony for the same answered prayer): either way, it is there.
+  if (code === '23505') return 'alreadyPosted';
 
   if (code === '23514') {
     if (message.includes('daily sharing limit')) return 'errorLimit';
@@ -36,9 +52,10 @@ export function mapComposeError(error: unknown): ComposeErrorKey {
   if (code === '23503' && message.includes('consent_version')) {
     return 'errorConsentStale';
   }
-  // supabase-js surfaces transport failures with no pg code: a bounded fetch
-  // that aborted, a dropped connection, no network at all.
-  if (code === '') return 'errorOffline';
+  // No code at all: a bounded fetch that aborted, a dropped connection, no
+  // network, or a gateway answering for a database that never got the request.
+  // Not one of those says the row is absent, so the copy does not either.
+  if (code === '') return 'errorUnconfirmed';
   return 'errorGeneric';
 }
 
