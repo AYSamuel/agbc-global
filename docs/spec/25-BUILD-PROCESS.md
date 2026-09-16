@@ -27,11 +27,12 @@ place §1 tells every session to look first. So it no longer holds a table of co
 **The honest one-line position, 2026-09-15:** Phases 0 to 3 have exited, and every Phase 4
 board item up to W4.15 is either COMPLETE or PARKED, the parked ones being the book track (W4.1
 to W4.4) which waits on the church wanting to sell books through the app. The leader dashboard
-is deployed. **Release 1.0.2 (W4.17) is LIVE on Google Play (2026-09-14) and WAITING FOR APPLE'S
-REVIEW (submitted 2026-09-15)**, the first iOS release; it carries W4.16's app (the rhythm keeps a
-real calendar, database live since 2026-09-14) and #264's Expo and React Native update. **The item
-to resume is W4.17's checklist, `docs/spec/plans/W4.17-ios-release.md` §6**, worked the day Apple
-answers and a week after. Beyond it, a session
+is deployed. **Release 1.0.2 (W4.17) is LIVE ON BOTH STORES: Google Play since 2026-09-14 and
+the APP STORE since 2026-09-16**, the first iOS release the church has ever had; it carries
+W4.16's app (the rhythm keeps a real calendar, database live since 2026-09-14) and #264's Expo and
+React Native update. **The item to resume is the rest of W4.17's checklist,
+`docs/spec/plans/W4.17-ios-release.md` §6, and its one deadline: the store-review sign-in must be
+OFF and proven off by 2026-09-22.** Beyond it, a session
 that wants work is choosing between three things rather than reading one off: closing something on `18`'s launch checklist, scoping a Phase 4 exit audit the way
 W2.10 and W3.6 did for their phases, or taking an item off a plan file's deferred backlog
 (W4.12's is the largest, and W4.13 came off it).
@@ -566,7 +567,7 @@ TalkBack pass, both deliberately left un-ticked rather than claimed.
   - **CI runs checks the local gates do not.** The mobile job's `pnpm i18n:check` counts runtime-built translation keys as a tripwire, and merging two identical label lookups into one helper moved it (35 to 34), turning #309 red after every local gate was green. The supabase job's types drift was already known; the mobile job's i18n and store checks are now on the same list.
   - **Two local environment traps, neither in the code.** After a `pnpm db:reset`, PostgREST refused every token carrying `iat` as "issued at future", which failed ~150 dashboard server tests with `no_profile` until the `supabase_rest` container was restarted. And the #264 upgrade, applied by incremental `expo install` runs, left `@babel/generator` out of pnpm's hidden hoist, so every mobile Jest suite failed locally while a fresh install (what CI does) was fine: prove an upgrade on a fresh install, not on the `node_modules` that performed it.
 
-**W4.17 · AGBC Global reaches the App Store: release 1.0.2 on both stores · ANDROID LIVE (2026-09-14), iOS WAITING FOR REVIEW (submitted 2026-09-15)**, with Ayo; PRs #313, #314, #315 here and #51 in the website repo. Plan and resume point at `docs/spec/plans/W4.17-ios-release.md`; read it before any store, signing or build step. **What is left is its §6, a numbered checklist for the day Apple answers** (release, the website's App Store button, recording it, Apple's association CDN) **and for approval plus 7 days** (the review bypass off and proven off, the review account's posts purged), then 1.0.3 and the close-out.
+**W4.17 · AGBC Global reaches the App Store: release 1.0.2 on both stores · LIVE ON BOTH STORES (Play 2026-09-14, App Store 2026-09-16)**, with Ayo; PRs #313, #314, #315, #316 here and #51, #52 in the website repo. Plan and resume point at `docs/spec/plans/W4.17-ios-release.md`; read it before any store, signing or build step. Apple approved in about 15 hours, first pass, with nothing asked of us. **What is left is the rest of its §6: the review bypass OFF and proven off by 2026-09-22** (it is a working key into a member account until then, and the review account's posts go with it), then 1.0.3 (the tablet share-preview fix #315, the app's own App Store link, the missing iPad screenshot) and the close-out of both this item and W4.16.
 - Why it exists: Ayo, 2026-09-14, the day the church's Account Holder made him an Admin on the Apple Developer team: ship the iOS app, name, screenshots, listing and all, with the iOS version matching Android's.
 - Decided (Ayo): **both stores ship 1.0.2 from one commit on `main`**, because Android 1.0.1 was built from its tag and `main` now carries W4.11, W4.15, W4.16's app and #264, all waiting for this train; and **iOS ships without verification on an Apple device**, because there is none. Found while reading the consoles, not chosen: **iPad support is mandatory** (Grace Portal 1.0.0 (18) supports iPad and an update may not drop it, while Expo defaults it off), the **minimum iOS rises from 15.6 to 16.4** (SDK 57), and the last iOS build was **18**, not the 19 `19` recorded.
 - Refs: `18` §Launch checklist · `19` · `03` §Security · `15` · `docs/runbooks/store-submission.md` · `docs/runbooks/releases.md` · `docs/store/` · `Desktop/agbc` `docs/SPEC-app-links.md`.

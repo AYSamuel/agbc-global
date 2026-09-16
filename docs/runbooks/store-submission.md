@@ -372,15 +372,27 @@ iPhone plus 13" iPad screenshots. `18` carries the iOS E2E as owed.
 
 ### iOS SUBMISSION RECORD
 
-**AGBC Global 1.0.2 (24) went to App Review on 2026-09-15 at 06:38 UTC and is "Waiting for
-Review".** Everything below was read back from App Store Connect's API after saving, not from the
-form. **What to do when Apple answers is a numbered checklist: `docs/spec/plans/W4.17-ios-release.md`
-§6.**
+**AGBC Global 1.0.2 (24) went to App Review on 2026-09-15 at 06:38 UTC, was APPROVED the same day
+at 21:28 UTC (about 15 hours, first pass, nothing asked of us) and was RELEASED on 2026-09-16 into
+174 countries.** The App Store listing, the name and the icon are AGBC Global's from that day;
+Grace Portal is retired. Everything below was read back from App Store Connect's API after saving,
+not from the form. **The steps that remain, and the one with a deadline, are the checklist in
+`docs/spec/plans/W4.17-ios-release.md` §6**: the review bypass must be off by **2026-09-22**.
+
+**Two things the release itself taught, both worth having before the next one:**
+
+- **`itunes.apple.com/lookup` is cached per storefront and lags the release.** It went on
+  answering "Grace Portal 1.0.0 (18)" for GB, DE, NL and NG while the US already had AGBC Global
+  1.0.2 and `apps.apple.com/gb/app/id6760579106` was already titled AGBC Global. To know whether a
+  release is really out, read the STORE PAGE, and treat the lookup API as the slow second source.
+- **A 16+ app shows as 17+ on older systems**, which App Store Connect warns about in small print
+  ("Operating Systems Earlier than Version 26: global rating of 17+ with regional exceptions"):
+  the old scale has only 4+, 9+, 12+ and 17+. Nothing is wrong and nothing can be done about it.
 
 | | |
 |---|---|
 | Build | 1.0.2 (24), EAS `24f10277`, from tag `v1.0.2` (`c66e6c6`), uploaded by `eas submit` |
-| Release | **MANUAL** (nothing is public until Ayo presses Release This Version), all users at once, no phased release, **star rating reset** on release (Grace Portal's rating belonged to a different app) |
+| Release | **MANUAL**, pressed 2026-09-16 into 174 countries, all users at once, no phased release, **star rating reset** on release (Grace Portal's rating belonged to a different app) |
 | Name and subtitle | AGBC Global · One family, many nations (English (U.K.)) |
 | Listing | **English (U.K.) only.** Description, keywords, promotional text and What's New ("Grace Portal is now AGBC Global") from `docs/store/listing.json` `en`; support `https://www.agbcglobal.com/contact`; marketing `https://www.agbcglobal.com/app`; copyright "2026 Amazing Grace Bible Church Global LTD" (the name on the Apple membership) |
 | Screenshots | iPhone 6.9": 5 (Home, Watch, share as a picture, map, branches). iPad 13": 4, **without the share screen**, whose preview was cropped on tablets (fixed in #315, ships 1.0.3) |
