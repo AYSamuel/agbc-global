@@ -1,6 +1,6 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
 
-import { keyFor, sendContactMessage } from '../contactForm';
+import { CONTACT_BUDGET_MS, keyFor, sendContactMessage } from '../contactForm';
 
 /**
  * The one sender behind CONTACT and the registration sheet (W4.18 slice 3).
@@ -26,6 +26,16 @@ jest.mock('@/lib/supabase', () => ({
 const mockMinted = { n: 0 };
 jest.mock('@/lib/contactKey', () => ({
   mintContactKey: () => `key-${String(++mockMinted.n)}`,
+}));
+
+// The budget the call brings (follow-up to slice 3). The real `budget()` tags a
+// signal the wrapper recognises; here it hands back a sentinel so the test can
+// prove the request carried THAT signal and asked for the right length of time.
+const mockBudget = jest.fn<AbortSignal, [number]>(
+  () => new AbortController().signal,
+);
+jest.mock('@/lib/fetchWithTimeout', () => ({
+  budget: (ms: number) => mockBudget(ms),
 }));
 
 const MESSAGE = {
@@ -68,12 +78,20 @@ describe('keyFor', () => {
 });
 
 describe('sendContactMessage', () => {
-  test('the key travels as the Idempotency-Key header', async () => {
+  test('the key travels as the Idempotency-Key header, on a budgeted signal', async () => {
+    const signal = new AbortController().signal;
+    mockBudget.mockReturnValueOnce(signal);
+
     await expect(sendContactMessage(MESSAGE, 'key-x')).resolves.toBe('sent');
     expect(mockInvoke).toHaveBeenCalledWith('contact-form', {
       body: MESSAGE,
       headers: { 'Idempotency-Key': 'key-x' },
+      signal,
     });
+    // Thirty seconds, not the client's default ten: the function cold-boots and
+    // then waits up to six for Resend, and the default was expiring first.
+    expect(mockBudget).toHaveBeenCalledWith(CONTACT_BUDGET_MS);
+    expect(CONTACT_BUDGET_MS).toBe(30_000);
   });
 
   test('a rate limit is reported as such', async () => {
