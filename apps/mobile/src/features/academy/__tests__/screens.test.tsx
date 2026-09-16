@@ -88,9 +88,16 @@ jest.mock('../interest', () => ({
   useToggleInterest: () => ({ mutate: mockToggleMutate, isPending: false }),
 }));
 
-const mockSend = jest.fn<Promise<string>, [unknown]>();
+// W4.18 slice 3: the send answers with its outcome AND the attempt it went out as
+// (content + key), which the sheet hands back on a retry so the same words reuse
+// the same key.
+const mockSend = jest.fn<
+  Promise<{ outcome: string; attempt: { content: string; key: string } }>,
+  [unknown, unknown]
+>();
 jest.mock('../registrationContact', () => ({
-  sendRegistrationMessage: (input: unknown) => mockSend(input),
+  sendRegistrationMessage: (input: unknown, previous: unknown) =>
+    mockSend(input, previous),
   registrationMessage: jest.fn(),
 }));
 
@@ -420,7 +427,10 @@ describe('COURSE · registered', () => {
       isError: false,
       refetch: jest.fn(),
     });
-    mockSend.mockResolvedValue('sent');
+    mockSend.mockResolvedValue({
+      outcome: 'sent',
+      attempt: { content: 'c', key: 'k' },
+    });
     await renderUi(<CourseDetail />);
     await fireEvent.press(
       screen.getByRole('button', { name: 'Email us about this registration' }),
@@ -439,6 +449,8 @@ describe('COURSE · registered', () => {
         registrationId: 'r1-abcdef',
         text: "I'd like to cancel my registration, please.",
       }),
+      // No earlier attempt: a first send has no key to reuse.
+      null,
     );
   });
 });

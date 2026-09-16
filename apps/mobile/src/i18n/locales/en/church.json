@@ -50,6 +50,6 @@
   "sendAnother": "Send another message",
   "sendFailed": "Your message didn't send. Your draft is safe here, so please try again.",
   "rateLimited": "You've sent a few messages just now. Please wait a moment and try again.",
-  "offlineNote": "You're offline. Your draft is safe; reconnect to send.",
+  "unconfirmed": "We couldn't confirm your message was sent. Your draft is safe here. Tap Send again: if it already went through, it won't be sent twice.",
   "branchEmailsHeading": "Or email a branch directly"
 }

@@ -88,13 +88,29 @@ jest.mock('../queries', () => {
   };
 });
 
-const mockInvoke = jest.fn();
+// The one sender behind CONTACT (W4.18 slice 3). The send itself is mocked, the
+// key rule is the real one (`keyFor` from the actual module), and the key it
+// mints is handed out here, so a test can say which key a retry must reuse.
+const mockSend = jest.fn<Promise<string>, [unknown, string]>(() =>
+  Promise.resolve('sent'),
+);
+let minted = 0;
+const mockMint = jest.fn<string, []>(() => `key-${String(++minted)}`);
+
+/* eslint-disable @typescript-eslint/no-unsafe-return --
+   documented jest.mock factory shape: requireActual is untyped */
+jest.mock('@/lib/contactForm', () => ({
+  ...jest.requireActual('@/lib/contactForm'),
+  sendContactMessage: (body: unknown, key: string) => mockSend(body, key),
+}));
+/* eslint-enable @typescript-eslint/no-unsafe-return */
+jest.mock('@/lib/contactKey', () => ({
+  mintContactKey: () => mockMint(),
+}));
+// The real `contactForm` module (loaded above for `keyFor`) imports the client,
+// which refuses to construct without env; nothing here ever calls it.
 jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    functions: {
-      invoke: (...args: unknown[]) => mockInvoke(...args) as unknown,
-    },
-  },
+  supabase: { functions: { invoke: jest.fn() } },
 }));
 
 function renderUi(ui: React.ReactElement) {
@@ -172,30 +188,80 @@ describe('CONTACT form', () => {
     expect(screen.getByText('Please use a valid email address.')).toBeTruthy();
     expect(screen.getByText('Please write a message.')).toBeTruthy();
     expect(screen.getByDisplayValue('Ada')).toBeTruthy();
-    expect(mockInvoke).not.toHaveBeenCalled();
+    expect(mockSend).not.toHaveBeenCalled();
   });
 
-  it('a failed send preserves the draft (docs/spec/04)', async () => {
-    // A fetch-level error (no FunctionsHttpError instance) takes the offline
-    // branch; the copy differs by cause, the draft guarantee does not.
-    mockInvoke.mockResolvedValue({ data: null, error: new Error('boom') });
+  it('an unanswered send says so, keeps the draft, and never claims "offline" (docs/spec/04)', async () => {
+    // W4.18 slice 3. The answer not arriving is not the same as the email not going:
+    // on 2026-09-16 one message typed once reached the inbox twice because the app
+    // called the first attempt "offline" and the member did the only sensible thing.
+    mockSend.mockResolvedValue('unconfirmed');
     await renderUi(<Contact />);
     await fillValidForm();
     await fireEvent.press(screen.getByText('Send message'));
     await waitFor(() => {
       expect(
-        screen.getByText(
-          "You're offline. Your draft is safe; reconnect to send.",
-        ),
+        screen.getByText(/We couldn't confirm your message was sent/),
       ).toBeTruthy();
     });
+    expect(screen.queryByText(/You're offline/)).toBeNull();
     // The draft survives the failure, ready to retry.
     expect(screen.getByDisplayValue('Ada')).toBeTruthy();
     expect(screen.getByDisplayValue('Planning a visit.')).toBeTruthy();
   });
 
+  it('a refusal the function made is a failure, with the draft kept', async () => {
+    mockSend.mockResolvedValue('failed');
+    await renderUi(<Contact />);
+    await fillValidForm();
+    await fireEvent.press(screen.getByText('Send message'));
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Your message didn't send\. Your draft is safe here/),
+      ).toBeTruthy();
+    });
+    expect(screen.getByDisplayValue('Planning a visit.')).toBeTruthy();
+  });
+
+  it('the same words retry under the same key, so a retry cannot arrive twice', async () => {
+    mockSend.mockResolvedValueOnce('unconfirmed').mockResolvedValueOnce('sent');
+    await renderUi(<Contact />);
+    await fillValidForm();
+    await fireEvent.press(screen.getByText('Send message'));
+    await screen.findByText(/We couldn't confirm your message was sent/);
+    await fireEvent.press(screen.getByText('Send message'));
+    await waitFor(() => {
+      expect(screen.getByText('Message sent')).toBeTruthy();
+    });
+
+    expect(mockSend).toHaveBeenCalledTimes(2);
+    const [, firstKey] = mockSend.mock.calls[0];
+    const [, secondKey] = mockSend.mock.calls[1];
+    expect(secondKey).toBe(firstKey);
+  });
+
+  it('changed words mint a new key, so a rephrased message is never swallowed', async () => {
+    mockSend.mockResolvedValueOnce('unconfirmed').mockResolvedValueOnce('sent');
+    await renderUi(<Contact />);
+    await fillValidForm();
+    await fireEvent.press(screen.getByText('Send message'));
+    await screen.findByText(/We couldn't confirm your message was sent/);
+    await fireEvent.changeText(
+      screen.getByLabelText('Message'),
+      'Planning a visit, and bringing my family.',
+    );
+    await fireEvent.press(screen.getByText('Send message'));
+    await waitFor(() => {
+      expect(screen.getByText('Message sent')).toBeTruthy();
+    });
+
+    const [, firstKey] = mockSend.mock.calls[0];
+    const [, secondKey] = mockSend.mock.calls[1];
+    expect(secondKey).not.toBe(firstKey);
+  });
+
   it('success clears into the sent state', async () => {
-    mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
+    mockSend.mockResolvedValue('sent');
     await renderUi(<Contact />);
     await fillValidForm();
     await fireEvent.press(screen.getByText('Send message'));

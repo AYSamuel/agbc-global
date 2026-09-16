@@ -47,7 +47,7 @@
   "contactSent": "Gesendet. Wir antworten per E-Mail.",
   "contactEmpty": "Schreib zuerst eine kurze Nachricht.",
   "contactRateLimited": "Du hast gerade einige Nachrichten gesendet. Versuch es in einer Weile erneut.",
-  "contactOffline": "Das konnten wir nicht senden. Prüfe deine Verbindung und versuch es erneut.",
+  "contactUnconfirmed": "Wir konnten nicht bestätigen, dass das gesendet wurde. Tippe noch einmal auf Senden: Falls es schon durchgegangen ist, wird es nicht doppelt gesendet.",
   "contactFailed": "Das konnten wir gerade nicht senden. Versuch es erneut.",
   "contactDismissed": "Nachricht geschlossen",
   "gateTitle": "Melde dich an, um dich einzuschreiben",

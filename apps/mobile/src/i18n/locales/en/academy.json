@@ -47,7 +47,7 @@
   "contactSent": "Sent. We'll reply by email.",
   "contactEmpty": "Write a short message first.",
   "contactRateLimited": "You've sent a few messages recently. Try again in a little while.",
-  "contactOffline": "We couldn't send this. Check your connection and try again.",
+  "contactUnconfirmed": "We couldn't confirm this was sent. Tap Send again: if it already went through, it won't be sent twice.",
   "contactFailed": "We couldn't send this right now. Try again.",
   "contactDismissed": "Message closed",
   "gateTitle": "Sign in to register",

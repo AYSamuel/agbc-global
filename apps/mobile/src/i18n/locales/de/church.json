@@ -50,6 +50,6 @@
   "sendAnother": "Weitere Nachricht senden",
   "sendFailed": "Deine Nachricht wurde nicht gesendet. Dein Entwurf ist hier sicher, bitte versuche es erneut.",
   "rateLimited": "Du hast gerade mehrere Nachrichten gesendet. Bitte warte einen Moment und versuche es erneut.",
-  "offlineNote": "Du bist offline. Dein Entwurf ist sicher; verbinde dich, um zu senden.",
+  "unconfirmed": "Wir konnten nicht bestätigen, dass deine Nachricht gesendet wurde. Dein Entwurf ist hier sicher. Tippe noch einmal auf Senden: Falls sie schon durchgegangen ist, wird sie nicht doppelt gesendet.",
   "branchEmailsHeading": "Oder schreibe direkt an einen Standort"
 }

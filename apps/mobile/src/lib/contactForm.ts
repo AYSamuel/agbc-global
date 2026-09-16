@@ -1,0 +1,107 @@
+import { FunctionsHttpError } from '@supabase/supabase-js';
+
+import type { ContactRequest, ContactResponse } from '@agbc/shared';
+
+import { mintContactKey } from './contactKey';
+import { supabase } from './supabase';
+
+// The one caller of the `contact-form` function (docs/spec/04 CONTACT; W4.18
+// slice 3). Two screens send through it, CONTACT and the Academy's "Email us
+// about this registration" sheet, and until this each carried its own copy of
+// the call and its own reading of a failure, which had already drifted apart.
+//
+// A MESSAGE SENT ONCE ARRIVES ONCE. The function hands the email to Resend
+// synchronously, so a request the phone gave up on may still have been sent;
+// on 2026-09-16 one message typed once arrived at the church inbox twice, one
+// minute apart, because the app called the first attempt a failure and the
+// member did the only sensible thing. Every send now carries an
+// `Idempotency-Key`, which the function forwards to Resend, which keeps it for
+// 24 hours and refuses a second email under it. The key is minted here and
+// KEPT BY CONTENT (see `keyFor`), so a retry of the same words cannot post
+// twice and a rephrased message is never silently swallowed as a duplicate.
+
+export type ContactSendOutcome =
+  | 'sent'
+  | 'rate_limited'
+  /** The function answered and refused; nothing was sent. */
+  | 'failed'
+  /** The answer never arrived. The email may have gone; the copy says neither. */
+  | 'unconfirmed';
+
+/** One attempt's identity: the words it carried and the key it went out under. */
+export interface ContactAttempt {
+  content: string;
+  key: string;
+}
+
+/**
+ * The content a key is bound to. Whitespace is trimmed exactly as the shared
+ * schema trims it, so "the same words" here means the same email.
+ */
+export function contentOf(request: ContactRequest): string {
+  return JSON.stringify([
+    request.name.trim(),
+    request.email.trim(),
+    request.message.trim(),
+  ]);
+}
+
+/**
+ * The key for this send. Tied to the CONTENT, not to the tap and not to the
+ * screen: tied to the tap, a retry mints afresh and duplicates as before;
+ * tied to the screen, a member who rephrases after a failure and presses
+ * Send has the rewritten message discarded by Resend as a repeat of the old
+ * one. So the previous key is reused only while the words are unchanged.
+ */
+export function keyFor(
+  request: ContactRequest,
+  previous: ContactAttempt | null,
+): ContactAttempt {
+  const content = contentOf(request);
+  if (previous !== null && previous.content === content) return previous;
+  return { content, key: mintContactKey() };
+}
+
+// The function's machine hint out of a non-2xx response; the copy shown to the
+// member always comes from i18n, never from the wire (CLAUDE.md error rules).
+async function machineCode(error: FunctionsHttpError): Promise<string | null> {
+  const context: unknown = (error as { context?: unknown }).context;
+  if (!(context instanceof Response)) return null;
+  try {
+    const parsed: unknown = await context.json();
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'error' in parsed &&
+      typeof parsed.error === 'string'
+    ) {
+      return parsed.error;
+    }
+  } catch {
+    // Non-JSON body: fall through to the generic reading.
+  }
+  return null;
+}
+
+export async function sendContactMessage(
+  body: ContactRequest,
+  key: string,
+): Promise<ContactSendOutcome> {
+  try {
+    // The SDK types this response's error loosely; pin it to unknown and
+    // narrow by instance below.
+    const { error } = (await supabase.functions.invoke<ContactResponse>(
+      'contact-form',
+      { body, headers: { 'Idempotency-Key': key } },
+    )) as { error: unknown };
+    if (!error) return 'sent';
+    if (error instanceof FunctionsHttpError) {
+      return (await machineCode(error)) === 'rate_limited'
+        ? 'rate_limited'
+        : 'failed';
+    }
+    return 'unconfirmed';
+  } catch {
+    return 'unconfirmed';
+  }
+}
