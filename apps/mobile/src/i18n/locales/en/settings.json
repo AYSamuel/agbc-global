@@ -43,9 +43,6 @@
     "askFootnote": "Everything works the same either way, and Settings has the switch whenever you want it. Crash reports are always sent, with your name and your words left out.",
     "askDismissed": "Closed"
   },
-  "aboutSection": "About",
-  "aboutRow": "About",
-  "contact": "Contact",
   "legal": "Legal",
   "signin": "Sign in",
   "appVersion": "AGBC · v{{version}}",

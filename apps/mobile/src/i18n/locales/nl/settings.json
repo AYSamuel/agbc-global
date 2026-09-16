@@ -43,9 +43,6 @@
     "askFootnote": "Alles werkt hoe dan ook hetzelfde, en in Instellingen vind je de schakelaar wanneer je wilt. Foutmeldingen sturen we altijd, zonder je naam en zonder je woorden.",
     "askDismissed": "Gesloten"
   },
-  "aboutSection": "Over",
-  "aboutRow": "Over",
-  "contact": "Contact",
   "legal": "Juridisch",
   "signin": "Inloggen",
   "appVersion": "AGBC · v{{version}}",

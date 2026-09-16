@@ -13,9 +13,10 @@ Rows/sections:
 - **Language**: English · Deutsch · Nederlands · Français (writes `profiles.language`; UI relocalizes instantly). Content stays EN in v1.
 - **Notifications** → `NOTIF-PREFS`.
 - **Blocked members** → list of blocked users with unblock actions (`blocked_users`, see `02`/`09`; store-required UGC control).
+- **Legal** → the website's terms and imprint, in the in-app browser. First of the three rows under **Privacy & data**, above Privacy and Delete account.
 - **Privacy** → `PRIVACY`.
 - **Delete account** → `DELETE`.
-- **About / Contact / Legal** links.
+- **About and Contact are NOT here** (decided 2026-09-16, Ayo). They were, and they were the same two rows MORE > Church already carries. The church's story and the church's inbox belong to the church's part of the app, not to a screen about this device and this account, and two doors to one answer is how a member ends up unsure which is current. Settings keeps only what nothing else owns. `04` §MORE is unchanged by this: About (`ABOUT`) and Contact (`CONTACT`) were always listed under Church there.
 - **Sign in** (guest) / **Sign out** (member).
 
 ### `NOTIF-PREFS`

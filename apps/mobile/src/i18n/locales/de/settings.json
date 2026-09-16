@@ -43,9 +43,6 @@
     "askFootnote": "Alles funktioniert so oder so gleich, und in den Einstellungen findest du den Schalter jederzeit. Fehlerberichte senden wir immer, ohne deinen Namen und ohne deine Worte.",
     "askDismissed": "Geschlossen"
   },
-  "aboutSection": "Über",
-  "aboutRow": "Über",
-  "contact": "Kontakt",
   "legal": "Rechtliches",
   "signin": "Anmelden",
   "appVersion": "AGBC · v{{version}}",
