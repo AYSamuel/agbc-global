@@ -47,7 +47,7 @@
   "contactSent": "Verstuurd. We antwoorden per e-mail.",
   "contactEmpty": "Schrijf eerst een kort bericht.",
   "contactRateLimited": "Je hebt net een paar berichten gestuurd. Probeer het straks opnieuw.",
-  "contactOffline": "We konden dit niet versturen. Controleer je verbinding en probeer het opnieuw.",
+  "contactUnconfirmed": "We konden niet bevestigen dat dit is verstuurd. Tik nog eens op Versturen: als het al is doorgekomen, wordt het niet dubbel verstuurd.",
   "contactFailed": "We konden dit nu niet versturen. Probeer het opnieuw.",
   "contactDismissed": "Bericht gesloten",
   "gateTitle": "Log in om je in te schrijven",

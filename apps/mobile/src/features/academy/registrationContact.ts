@@ -1,8 +1,11 @@
-import { FunctionsHttpError } from '@supabase/supabase-js';
+import type { ContactRequest } from '@agbc/shared';
 
-import type { ContactRequest, ContactResponse } from '@agbc/shared';
-
-import { supabase } from '@/lib/supabase';
+import {
+  type ContactAttempt,
+  type ContactSendOutcome,
+  keyFor,
+  sendContactMessage,
+} from '@/lib/contactForm';
 
 // "Email us about this registration" (decided 2026-08-10, replacing in-app
 // self-cancel): members do not cancel from the app; a paid place is released by
@@ -10,13 +13,12 @@ import { supabase } from '@/lib/supabase';
 // function the CONTACT screen uses (same inbox, same rate limit), with the
 // course and a short registration reference attached automatically so the team
 // knows which row without the member typing it.
+//
+// Since W4.18 slice 3 it also goes through the same SENDER (`lib/contactForm`),
+// which carries the idempotency key. This file used to hold its own copy of the
+// call and its own reading of a failure, and the two had already drifted.
 
-export type RegistrationContactOutcome =
-  | 'sent'
-  | 'rate_limited'
-  | 'failed'
-  /** Fetch-level failure: no network is the usual cause. */
-  | 'offline';
+export type RegistrationContactOutcome = ContactSendOutcome;
 
 /**
  * The context line is deliberately English and machine-shaped: it is for the
@@ -32,14 +34,19 @@ export function registrationMessage(
   return `[Registration · ${courseName} · ref ${ref}]\n\n${text}`;
 }
 
-export async function sendRegistrationMessage(input: {
+export interface RegistrationMessageInput {
   name: string;
   email: string;
   courseName: string;
   registrationId: string;
   text: string;
-}): Promise<RegistrationContactOutcome> {
-  const body: ContactRequest = {
+}
+
+/** The exact request a given input sends, so the sheet can key it by content. */
+export function registrationRequest(
+  input: RegistrationMessageInput,
+): ContactRequest {
+  return {
     name: input.name,
     email: input.email,
     message: registrationMessage(
@@ -48,31 +55,18 @@ export async function sendRegistrationMessage(input: {
       input.text,
     ),
   };
-  try {
-    const { error } = (await supabase.functions.invoke<ContactResponse>(
-      'contact-form',
-      { body },
-    )) as { error: unknown };
-    if (!error) return 'sent';
-    if (error instanceof FunctionsHttpError) {
-      return (await machineCode(error)) === 'rate_limited'
-        ? 'rate_limited'
-        : 'failed';
-    }
-    return 'offline';
-  } catch {
-    return 'offline';
-  }
 }
 
-/** The `{ error: '<code>' }` body supabase-js hides behind error.context. */
-async function machineCode(error: FunctionsHttpError): Promise<string | null> {
-  const context: unknown = (error as { context?: unknown }).context;
-  if (!(context instanceof Response)) return null;
-  try {
-    const body = (await context.json()) as { error?: unknown };
-    return typeof body.error === 'string' ? body.error : null;
-  } catch {
-    return null;
-  }
+/**
+ * Sends the message under a key kept by content: pass back the attempt this
+ * returns on a retry, and the same words go out under the same key.
+ */
+export async function sendRegistrationMessage(
+  input: RegistrationMessageInput,
+  previous: ContactAttempt | null,
+): Promise<{ outcome: RegistrationContactOutcome; attempt: ContactAttempt }> {
+  const request = registrationRequest(input);
+  const attempt = keyFor(request, previous);
+  const outcome = await sendContactMessage(request, attempt.key);
+  return { outcome, attempt };
 }

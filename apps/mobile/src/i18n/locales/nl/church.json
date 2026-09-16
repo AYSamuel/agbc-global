@@ -50,6 +50,6 @@
   "sendAnother": "Nog een bericht sturen",
   "sendFailed": "Je bericht is niet verstuurd. Je concept is hier veilig, probeer het opnieuw.",
   "rateLimited": "Je hebt zojuist meerdere berichten gestuurd. Wacht even en probeer het opnieuw.",
-  "offlineNote": "Je bent offline. Je concept is veilig; maak verbinding om te versturen.",
+  "unconfirmed": "We konden niet bevestigen dat je bericht is verstuurd. Je concept is hier veilig. Tik nog eens op Versturen: als het al is doorgekomen, wordt het niet dubbel verstuurd.",
   "branchEmailsHeading": "Of mail een locatie rechtstreeks"
 }

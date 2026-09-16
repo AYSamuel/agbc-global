@@ -52,6 +52,6 @@
   "sendAnother": "Envoyer un autre message",
   "sendFailed": "Ton message n'a pas été envoyé. Ton brouillon est en sécurité ici, réessaie.",
   "rateLimited": "Tu viens d'envoyer plusieurs messages. Patiente un instant puis réessaie.",
-  "offlineNote": "Tu es hors ligne. Ton brouillon est en sécurité ; reconnecte-toi pour envoyer.",
+  "unconfirmed": "Nous n'avons pas pu confirmer l'envoi de ton message. Ton brouillon est en sécurité ici. Appuie de nouveau sur Envoyer : s'il est déjà passé, il ne sera pas envoyé deux fois.",
   "branchEmailsHeading": "Ou écrivez directement à une église"
 }

@@ -1,4 +1,3 @@
-import { FunctionsHttpError } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +14,6 @@ import {
   CONTACT_MESSAGE_MAX,
   contactRequestSchema,
   type ContactRequest,
-  type ContactResponse,
 } from '@agbc/shared';
 import { fontFamily, palette, radius, spacing } from '@agbc/shared/theme';
 
@@ -27,33 +25,15 @@ import {
   Skeleton,
 } from '@/components/ui';
 import { useBranchContactsQuery } from '@/features/church/queries';
-import { supabase } from '@/lib/supabase';
+import {
+  type ContactAttempt,
+  keyFor,
+  sendContactMessage,
+} from '@/lib/contactForm';
 import { useTheme } from '@/theme';
 
 type FieldKey = 'name' | 'email' | 'message';
 type SubmitPhase = 'idle' | 'sending' | 'sent';
-
-// The function's machine hint out of a non-2xx response; the copy shown to the
-// user always comes from i18n, never from the wire (docs/spec CLAUDE.md error
-// rules).
-async function machineCode(error: FunctionsHttpError): Promise<string | null> {
-  const response: unknown = error.context;
-  if (!(response instanceof Response)) return null;
-  try {
-    const parsed: unknown = await response.json();
-    if (
-      typeof parsed === 'object' &&
-      parsed !== null &&
-      'error' in parsed &&
-      typeof parsed.error === 'string'
-    ) {
-      return parsed.error;
-    }
-  } catch {
-    // Non-JSON body: fall through to the generic copy.
-  }
-  return null;
-}
 
 // CONTACT (docs/spec/04, mockup CONTACT frame): name + email + message to the
 // church inbox via the contact-form edge function. Client validation shares
@@ -75,6 +55,9 @@ export default function Contact() {
   >({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [phase, setPhase] = useState<SubmitPhase>('idle');
+  // The last attempt's words and key (W4.18 slice 3), kept across a failure so the
+  // same words retry under the same key and cannot arrive twice; cleared on success.
+  const [attempt, setAttempt] = useState<ContactAttempt | null>(null);
 
   const fieldErrorCopy: Record<FieldKey, string> = {
     name: t('church:invalidName'),
@@ -101,33 +84,27 @@ export default function Contact() {
     }
     setFieldErrors({});
     setPhase('sending');
-    try {
-      const body: ContactRequest = parsed.data;
-      // The SDK types this response's error loosely; pin it to unknown and
-      // narrow by instance below.
-      const { error } = (await supabase.functions.invoke<ContactResponse>(
-        'contact-form',
-        { body },
-      )) as { error: unknown };
-      if (error) {
-        if (error instanceof FunctionsHttpError) {
-          setSubmitError(
-            (await machineCode(error)) === 'rate_limited'
-              ? t('church:rateLimited')
-              : t('church:sendFailed'),
-          );
-        } else {
-          // Fetch-level failure: no network is the usual cause.
-          setSubmitError(t('church:offlineNote'));
-        }
-        setPhase('idle');
-        return;
-      }
+    const body: ContactRequest = parsed.data;
+    // Same words, same key; changed words, a new one (lib/contactForm.ts). The
+    // function forwards the key to Resend, which refuses a second email under it.
+    const current = keyFor(body, attempt);
+    setAttempt(current);
+    const outcome = await sendContactMessage(body, current.key);
+    if (outcome === 'sent') {
+      setAttempt(null);
       setPhase('sent');
-    } catch {
-      setSubmitError(t('church:sendFailed'));
-      setPhase('idle');
+      return;
     }
+    setSubmitError(
+      outcome === 'rate_limited'
+        ? t('church:rateLimited')
+        : outcome === 'unconfirmed'
+          ? // The answer never arrived. The email may have gone, so the copy
+            // claims neither way and the retry is safe by the key above.
+            t('church:unconfirmed')
+          : t('church:sendFailed'),
+    );
+    setPhase('idle');
   };
 
   const labelStyle = {

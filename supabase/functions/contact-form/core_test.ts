@@ -1,13 +1,15 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 
 import {
-  contactResponseSchema,
   CONTACT_MESSAGE_MAX,
+  contactResponseSchema,
 } from '../../../packages/shared/src/contracts/contact.ts';
 import {
   buildEmail,
   clientKey,
   createRateLimiter,
+  IDEMPOTENCY_KEY_MAX,
+  idempotencyKeyOf,
   isBot,
   parseContact,
 } from './core.ts';
@@ -74,10 +76,18 @@ Deno.test('the rate limiter blocks a flood and recovers after the window', () =>
   assertEquals(allow('ip-a'), true);
   assertEquals(allow('ip-a'), true);
   assertEquals(allow('ip-a'), true);
-  assertEquals(allow('ip-a'), false, 'the fourth hit inside the window is refused');
+  assertEquals(
+    allow('ip-a'),
+    false,
+    'the fourth hit inside the window is refused',
+  );
   assertEquals(allow('ip-b'), true, 'another sender is unaffected');
   clock = 1500;
-  assertEquals(allow('ip-a'), true, 'the window has passed; the sender may write again');
+  assertEquals(
+    allow('ip-a'),
+    true,
+    'the window has passed; the sender may write again',
+  );
 });
 
 Deno.test('clientKey buckets by first forwarded address', () => {
@@ -89,11 +99,34 @@ Deno.test('clientKey buckets by first forwarded address', () => {
 Deno.test('handler response shapes satisfy the shared contract', () => {
   assertEquals(contactResponseSchema.safeParse({ ok: true }).success, true);
   assertEquals(
-    contactResponseSchema.safeParse({ ok: false, error: 'rate_limited' }).success,
+    contactResponseSchema.safeParse({ ok: false, error: 'rate_limited' })
+      .success,
     true,
   );
   assertEquals(
     contactResponseSchema.safeParse({ ok: false, error: 'weird' }).success,
     false,
   );
+});
+
+// W4.18 slice 3: the key the app sends is forwarded verbatim to a third party,
+// so what is accepted is a token, never free text; and its absence is normal,
+// because the builds already in members' hands send none.
+Deno.test('an idempotency key is accepted only as a token, and is optional', () => {
+  const uuid = '70000000-0000-4000-8000-000000000001';
+  assertEquals(idempotencyKeyOf(uuid), uuid);
+  assertEquals(idempotencyKeyOf(`  ${uuid}  `), uuid);
+  assertEquals(idempotencyKeyOf('a.b_c-D9'), 'a.b_c-D9');
+
+  assertEquals(idempotencyKeyOf(null), null);
+  assertEquals(idempotencyKeyOf(''), null);
+  assertEquals(idempotencyKeyOf('   '), null);
+  assertEquals(idempotencyKeyOf('has space'), null);
+  assertEquals(idempotencyKeyOf('semi;colon'), null);
+  assertEquals(idempotencyKeyOf('new\nline'), null);
+  assertEquals(
+    idempotencyKeyOf('x'.repeat(IDEMPOTENCY_KEY_MAX)),
+    'x'.repeat(IDEMPOTENCY_KEY_MAX),
+  );
+  assertEquals(idempotencyKeyOf('x'.repeat(IDEMPOTENCY_KEY_MAX + 1)), null);
 });

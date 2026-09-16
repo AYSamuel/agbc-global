@@ -15,6 +15,7 @@ import {
   useSheetDismiss,
   useToast,
 } from '@/components/ui';
+import type { ContactAttempt } from '@/lib/contactForm';
 import {
   sendRegistrationMessage,
   type RegistrationContactOutcome,
@@ -51,6 +52,9 @@ export function RegistrationSheet({
   const [text, setText] = useState(() => t('academy:contactPrefill'));
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The last attempt's words and key, kept across a failure so the same words retry
+  // under the same key; cleared on success so the next message starts fresh.
+  const [attempt, setAttempt] = useState<ContactAttempt | null>(null);
 
   // Every exit resets to the prefill, so the next opening starts from the
   // frame's editable default rather than a previous, possibly sent, visit.
@@ -69,24 +73,32 @@ export function RegistrationSheet({
     }
     setSending(true);
     setError(null);
-    const outcome: RegistrationContactOutcome = await sendRegistrationMessage({
-      name: displayName,
-      email,
-      courseName,
-      registrationId: registration.id,
-      text: message,
-    });
+    // The key rides with the words (W4.18 slice 3): a retry of the same text goes out
+    // under the same key and cannot arrive twice; edited text mints a new one.
+    const sent = await sendRegistrationMessage(
+      {
+        name: displayName,
+        email,
+        courseName,
+        registrationId: registration.id,
+        text: message,
+      },
+      attempt,
+    );
+    const outcome: RegistrationContactOutcome = sent.outcome;
     setSending(false);
     if (outcome === 'sent') {
+      setAttempt(null);
       toast.show(t('academy:contactSent'));
       close();
       return;
     }
+    setAttempt(sent.attempt);
     setError(
       outcome === 'rate_limited'
         ? t('academy:contactRateLimited')
-        : outcome === 'offline'
-          ? t('academy:contactOffline')
+        : outcome === 'unconfirmed'
+          ? t('academy:contactUnconfirmed')
           : t('academy:contactFailed'),
     );
   };
