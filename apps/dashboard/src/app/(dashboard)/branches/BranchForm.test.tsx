@@ -42,6 +42,7 @@ function branch(overrides: Partial<BranchRow> = {}): BranchRow {
     addressLine1: '1 Test Street',
     addressLine2: '',
     serviceTimes: 'Sundays at 11',
+    otherServiceTimes: {},
     lead: { name: 'A Leader', role: 'Pastor', bio: '' },
     leaders: [
       { name: 'First Leader', role: 'Elder' },

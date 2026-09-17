@@ -9,6 +9,7 @@ import {
   TESTIMONY_PHOTO_QUALITY,
 } from '@agbc/shared';
 
+import { functionErrorCode } from '@/lib/functionError';
 import { supabase } from '@/lib/supabase';
 
 // The testimony photo pipeline (W2.3 slice 3): pick, re-encode, upload, then ask
@@ -154,12 +155,23 @@ export function resizeTarget(
 export type PhotoFailure =
   | 'cancelled'
   | 'permission'
+  /** The library would not open. Nothing to do with this photo or the network. */
+  | 'could_not_open'
+  /** The pick could not be read or re-encoded: a corrupt or unusual image. */
+  | 'could_not_prepare'
   | 'too_large'
   | 'not_an_image'
   /** photo-guard's own rate limit: 20 in 10 minutes, per member. */
   | 'rate_limited'
   /** Nothing answered: no network, or our own budget ran out first. */
   | 'unconfirmed'
+  /**
+   * The session died underneath them. Its own reason because its own advice: no
+   * amount of trying again fixes it, and `failed` told them to do exactly that.
+   * Reachable because the composer opens on the PERSISTED auth snapshot, which
+   * holds no tokens, so it can still say "member" after the session has gone.
+   */
+  | 'signed_out'
   | 'unavailable'
   | 'failed';
 
@@ -200,20 +212,6 @@ export function uploadFailure(error: unknown): PhotoFailure {
   return 'unconfirmed';
 }
 
-/** photo-guard's machine hint out of a non-2xx response. The member's line always
- * comes from i18n; this only ever chooses WHICH line (CLAUDE.md error rules). */
-async function machineCode(error: FunctionsHttpError): Promise<unknown> {
-  const context: unknown = (error as { context?: unknown }).context;
-  if (!(context instanceof Response)) return null;
-  try {
-    const body = (await context.json()) as { error?: unknown };
-    return body.error ?? null;
-  } catch {
-    // Not JSON, or already consumed.
-    return null;
-  }
-}
-
 /**
  * Pick a photo and leave it uploaded, re-encoded and server-checked, returning
  * the object path the testimony row will carry. Every failure is a value, not a
@@ -244,7 +242,7 @@ export async function pickAndUploadTestimonyPhoto(
     }
     picked = result.assets[0];
   } catch {
-    return { ok: false, reason: 'failed' };
+    return { ok: false, reason: 'could_not_open' };
   }
 
   let bytes: Uint8Array;
@@ -260,11 +258,11 @@ export async function pickAndUploadTestimonyPhoto(
       compress: TESTIMONY_PHOTO_QUALITY,
       base64: true,
     });
-    if (!saved.base64) return { ok: false, reason: 'failed' };
+    if (!saved.base64) return { ok: false, reason: 'could_not_prepare' };
     bytes = base64ToBytes(saved.base64);
     previewUri = saved.uri;
   } catch {
-    return { ok: false, reason: 'failed' };
+    return { ok: false, reason: 'could_not_prepare' };
   }
 
   // Storage enforces this too; checking here turns a rejected upload into copy
@@ -297,7 +295,7 @@ export async function pickAndUploadTestimonyPhoto(
     if (guard.error instanceof FunctionsHttpError) {
       return {
         ok: false,
-        reason: guardFailure(await machineCode(guard.error)),
+        reason: guardFailure(await functionErrorCode(guard.error)),
       };
     }
     return { ok: false, reason: 'unconfirmed' };

@@ -1,5 +1,6 @@
 import type { CourseHandoffError, CourseHandoffResponse } from '@agbc/shared';
 
+import { functionErrorCode } from '@/lib/functionError';
 import { supabase } from '@/lib/supabase';
 import { localizedWebsiteUrl } from '@/lib/websiteUrl';
 import { openExternal } from '@/lib/openExternal';
@@ -86,16 +87,11 @@ export async function openCourseRegistration(
   return opened ? 'opened' : 'could_not_open';
 }
 
-/** supabase-js hangs the raw Response off the error as `context` (photo.ts). */
+/** The handoff's own refusal code, read through the shared duck-typed reader.
+ * This used to require `context instanceof Response`, which is always false on a
+ * device (see lib/functionError.ts), so every one of this function's refusals
+ * was read as "no code" and the screen showed its generic line instead. */
 async function machineCode(error: unknown): Promise<CourseHandoffError | null> {
-  const context: unknown = (error as { context?: unknown }).context;
-  if (!(context instanceof Response)) return null;
-  try {
-    const body = (await context.json()) as { error?: unknown };
-    return typeof body.error === 'string'
-      ? (body.error as CourseHandoffError)
-      : null;
-  } catch {
-    return null; // Not JSON, or already consumed.
-  }
+  const code = await functionErrorCode(error);
+  return code === null ? null : (code as CourseHandoffError);
 }

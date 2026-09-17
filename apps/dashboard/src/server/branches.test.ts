@@ -211,6 +211,58 @@ describe('adding a branch', () => {
     expect(appeared.map((row) => row.id)).toContain(created.id);
   });
 
+  test('editing the Sunday line does not delete the midweek one', async () => {
+    // THE REGRESSION. The form edits `sunday`; the save used to write `{ sunday }`
+    // and nothing else, replacing the whole jsonb. So the first edit of a branch
+    // here erased its midweek display string, and AGBC UK lost "Wednesdays 6:00 PM
+    // (UK time)" that way: its share card and branch page stopped mentioning
+    // midweek prayer while the service itself sat untouched in `branch_services`.
+    const admin = ministryAdmin.serverClient();
+    const slug = `test-branch-keep-${stamp}`;
+    const create = { ...input(), slug, name: 'AGBC Test Keep' };
+    expect(await saveBranch(admin, create)).toEqual({ ok: true, slug });
+
+    const made = must(await loadBranch(admin, slug), 'the branch just added');
+    branchIds.push(made.id);
+
+    // A key this form has no field for, exactly as a seed or the website writes it.
+    await admin
+      .from('branches')
+      .update({
+        service_times: {
+          sunday: made.serviceTimes,
+          midweek: 'Wednesdays 6:00 PM (UK time)',
+        },
+      })
+      .eq('id', made.id);
+
+    const before = must(
+      await loadBranch(admin, slug),
+      'the branch with midweek',
+    );
+    expect(before.otherServiceTimes).toEqual({
+      midweek: 'Wednesdays 6:00 PM (UK time)',
+    });
+
+    // Now save the form again, changing only the one line it owns.
+    expect(
+      await saveBranch(
+        admin,
+        { ...create, serviceTimes: 'Sundays 12:00 PM (UK time)' },
+        before,
+      ),
+    ).toEqual({ ok: true, slug });
+
+    const after = must(
+      await loadBranch(admin, slug),
+      'the branch after editing',
+    );
+    expect(after.serviceTimes).toBe('Sundays 12:00 PM (UK time)');
+    expect(after.otherServiceTimes).toEqual({
+      midweek: 'Wednesdays 6:00 PM (UK time)',
+    });
+  });
+
   test('a leader cannot add one, however the form is posted', async () => {
     const refused = await saveBranch(
       leader.serverClient(),

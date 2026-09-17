@@ -1,4 +1,6 @@
 import { StorageApiError } from '@supabase/supabase-js';
+
+import { TESTIMONY_PHOTO_MAX_LABEL } from '@agbc/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
@@ -280,11 +282,70 @@ describe('the copy contract', () => {
     // `unavailable` and `failed` deliberately share the generic line; everything
     // else is distinct, so a member is never told the wrong thing to do next.
     expect(photoFailureKey('permission')).toBe('photoErrorPermission');
+    expect(photoFailureKey('could_not_open')).toBe('photoErrorCouldNotOpen');
+    expect(photoFailureKey('could_not_prepare')).toBe(
+      'photoErrorCouldNotPrepare',
+    );
     expect(photoFailureKey('too_large')).toBe('photoErrorTooLarge');
     expect(photoFailureKey('not_an_image')).toBe('photoErrorNotAnImage');
     expect(photoFailureKey('rate_limited')).toBe('photoErrorRateLimited');
     expect(photoFailureKey('unconfirmed')).toBe('photoErrorUnconfirmed');
+    expect(photoFailureKey('signed_out')).toBe('photoErrorSignedOut');
     expect(photoFailureKey('failed')).toBe('photoErrorGeneric');
     expect(photoFailureKey('unavailable')).toBe('photoErrorGeneric');
+  });
+
+  test('signing in is never described as trying again', () => {
+    // The generic line says "try again in a moment", and no amount of trying
+    // fixes a dead session. This is the one reason whose advice was actively
+    // wrong before it had a line of its own.
+    const line = i18n.t('family:photoErrorSignedOut');
+    expect(line).toMatch(/sign in again/i);
+    expect(line).not.toMatch(/try again/i);
+  });
+
+  test('the size a member is told is the size the bucket enforces', () => {
+    // Four locale files could each drift from TESTIMONY_PHOTO_MAX_BYTES, so the
+    // number is interpolated rather than written out. Change the constant and
+    // every language follows; write "5 MB" into a locale by hand and this fails.
+    expect(TESTIMONY_PHOTO_MAX_LABEL).toBe('5 MB');
+    for (const locale of ['en', 'de', 'nl', 'fr']) {
+      /* eslint-disable-next-line @typescript-eslint/no-require-imports --
+         the four namespaces are read as data, by locale, in one loop */
+      const strings = require(`@/i18n/locales/${locale}/family.json`) as Record<
+        string,
+        string
+      >;
+      for (const key of ['composePhotoHint', 'photoErrorTooLarge']) {
+        expect(strings[key]).toContain('{{size}}');
+        expect(strings[key]).not.toContain('MB');
+      }
+    }
+  });
+});
+
+describe('the size hint on the compose affordance', () => {
+  test('is offered BEFORE a pick, with the real number in it', async () => {
+    await renderField({});
+    expect(
+      screen.getByText(
+        'Any photo works, we resize it before sending so it stays under 5 MB.',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('gives way to the failure line, so only one of the two ever shows', async () => {
+    await renderField({ failure: 'too_large' });
+    expect(screen.queryByText(/Any photo works/)).toBeNull();
+    expect(
+      screen.getByText(
+        'That photo is still over 5 MB after resizing. Please choose another one.',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('and is still there after a cancelled pick, which is not a failure', async () => {
+    await renderField({ failure: 'cancelled' });
+    expect(screen.getByText(/Any photo works/)).toBeTruthy();
   });
 });

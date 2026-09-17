@@ -49,6 +49,13 @@ export const TESTIMONY_PHOTO_BUCKET = 'testimony-photos';
  * so an oversized pick fails with grace-framed copy instead of a storage error. */
 export const TESTIMONY_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
+/**
+ * The cap as a MEMBER is told it, derived from the rule above so the number in the
+ * copy cannot drift from the number the bucket enforces. Interpolated into the
+ * compose hint and the too-large line rather than written into four locale files.
+ */
+export const TESTIMONY_PHOTO_MAX_LABEL = `${TESTIMONY_PHOTO_MAX_BYTES / (1024 * 1024)} MB`;
+
 /** Longest edge, in pixels, the app re-encodes a picked photo down to. The
  * re-encode is also what strips EXIF/GPS (a testimony photo can carry a member's
  * home coordinates, docs/spec/02 §Storage). */

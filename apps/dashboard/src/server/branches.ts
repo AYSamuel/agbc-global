@@ -75,6 +75,9 @@ export interface BranchRow {
   addressLine2: string;
   /** The display sentence members read; the machine-readable schedule is `services`. */
   serviceTimes: string;
+  /** The `service_times` keys this form does not edit (`midweek`, `classes`),
+   * carried so the save can put them back instead of dropping them. */
+  otherServiceTimes: Record<string, string>;
   lead: BranchLead;
   leaders: BranchPerson[];
   welcome: string;
@@ -133,6 +136,26 @@ function textAt(value: unknown, key: string): string {
   return typeof found === 'string' ? found : '';
 }
 
+/**
+ * Every string key of a jsonb object EXCEPT the named one.
+ *
+ * `service_times` carries three keys (`02`) and this form edits exactly one of
+ * them. Until W4.19 the save wrote `{ sunday }` and nothing else, which silently
+ * deleted a branch's midweek line the first time anyone touched that branch here:
+ * AGBC UK lost "Wednesdays 6:00 PM (UK time)" that way, so its share card and its
+ * branch page stopped mentioning midweek prayer at all while the service itself
+ * sat untouched in `branch_services`. Editing one key must not delete the others.
+ */
+function otherKeys(value: unknown, owned: string): Record<string, string> {
+  if (typeof value !== 'object' || value === null) return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).filter(
+      (entry): entry is [string, string] =>
+        entry[0] !== owned && typeof entry[1] === 'string',
+    ),
+  );
+}
+
 function person(value: unknown): BranchPerson {
   return { name: textAt(value, 'name'), role: textAt(value, 'role') };
 }
@@ -170,6 +193,7 @@ function toRow(
     // `02` calls this "display strings only". The website's JSON carries three keys; the
     // form edits one sentence, and `sunday` is the one members read on the church page.
     serviceTimes: textAt(record.service_times, 'sunday'),
+    otherServiceTimes: otherKeys(record.service_times, 'sunday'),
     lead: lead(record.lead),
     leaders: people(record.leaders),
     welcome: record.welcome,
@@ -442,7 +466,12 @@ export async function saveBranch(
       line1: input.addressLine1.trim(),
       line2: input.addressLine2.trim(),
     },
-    service_times: { sunday: input.serviceTimes.trim() },
+    // Merge, never replace: the form owns `sunday` and the other keys are the
+    // branch's own words in the branch's own language (see `otherKeys`).
+    service_times: {
+      ...(existing?.otherServiceTimes ?? {}),
+      sunday: input.serviceTimes.trim(),
+    },
     lead: {
       name: input.lead.name.trim(),
       role: input.lead.role.trim(),

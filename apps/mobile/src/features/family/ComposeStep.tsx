@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Controller, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
@@ -7,12 +8,7 @@ import {
   type ComposeForm,
   type ComposeTarget,
 } from '@agbc/shared';
-import {
-  icon,
-  palette,
-  spacing,
-  typeScale,
-} from '@agbc/shared/theme';
+import { icon, palette, spacing, typeScale } from '@agbc/shared/theme';
 
 import {
   AppHeader,
@@ -94,6 +90,27 @@ export function ComposeStep({
 }: ComposeStepProps) {
   const { t } = useTranslation('family');
   const { colors } = useTheme();
+  // THE PHOTO ERROR IS THE LAST THING IN THE SCROLL AND THE BUTTON IS NOT IN IT.
+  // The submit error shares the pinned bar, so it is always visible; the photo
+  // line sits at the bottom of the scroll, under a bar that is pinned outside
+  // it. Found on the device on 2026-09-17, in German at the maximum font scale:
+  // the line rendered correctly and was cut off mid-sentence by Weiter, which is
+  // exactly the defect W4.18's verification pass found on DELETE. Same remedy,
+  // and it works for the same reason: the photo field is the last child, so the
+  // end of the scroll is the line.
+  const scroller = useRef<ScrollView>(null);
+  const photoFailure = photo.failure;
+  useEffect(() => {
+    // A cancelled pick draws no line, so it must not move the screen either.
+    if (photoFailure === null || photoFailure === 'cancelled') return;
+    // After the state has painted, not before: the text does not exist yet.
+    const frame = requestAnimationFrame(() => {
+      scroller.current?.scrollToEnd({ animated: true });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [photoFailure]);
   const categories = useTestimonyCategoriesQuery();
   const max = composeBodyMax(target);
 
@@ -123,6 +140,7 @@ export function ComposeStep({
           onBack={onClose}
         />
         <ScrollView
+          ref={scroller}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingHorizontal: spacing.gutter,

@@ -288,7 +288,11 @@ export function ComposeFlow({
       .getSession()
       .then(({ data }) => {
         const userId = data.session?.user.id;
-        if (!userId) return { ok: false, reason: 'failed' } as const;
+        // Not `failed`: that line says "try again in a moment", and no amount of
+        // trying fixes a session that has gone. The composer can be standing open
+        // for someone signed out, because `isMember` comes from the persisted
+        // snapshot and that holds no tokens (W4.19).
+        if (!userId) return { ok: false, reason: 'signed_out' } as const;
         return pickAndUploadTestimonyPhoto(userId);
       })
       .then((result) => {
