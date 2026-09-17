@@ -25,7 +25,7 @@ values
     'UCTwx8j2Z0DZPlUhPyqfilfA',
     'oami.gospel@gmail.com',
     55.8622, -4.0245, -- Summerlee Museum, Coatbridge (venue-level approximation)
-    '{"sunday": "12:00 PM", "midweek": "Wednesdays 6:00 PM (UK time)"}'::jsonb,
+    '{"sunday": "Sundays 12:00 PM (UK time)", "midweek": "Wednesdays 6:00 PM (UK time)"}'::jsonb,
     '{"line1": "Summerlee Museum of Scottish Industrial Life", "line2": "Heritage Way, Coatbridge ML5 1QD"}'::jsonb,
     '{"name": "Pastor Esther Olayinka", "role": "Founder & Lead Pastor", "bio": "Founder of Amazing Grace Bible Church, leading our headquarters in Glasgow with a heart to raise disciples who are sound in the Word, alive in the Spirit, Christlike in character and equipped for mission."}'::jsonb,
     '[{"name": "Grace Bello", "role": "Worship Lead"}, {"name": "Sarah McKay", "role": "Kids & Family"}]'::jsonb,
@@ -45,7 +45,7 @@ values
     null,
     'agbc.lighthouse@gmail.com',
     52.5502, 13.3563, -- Oudenarder Str. 16, Wedding (venue-level approximation)
-    '{"sunday": "11:00 AM", "midweek": "Mittwochs 19:00 Uhr (CET)"}'::jsonb,
+    '{"sunday": "Sonntags 11:00 Uhr (CET)", "midweek": "Mittwochs 19:00 Uhr (CET)"}'::jsonb,
     '{"line1": "Oudenarder Str. 16", "line2": "13347 Berlin"}'::jsonb,
     '{"name": "Pastor AY Samuel", "role": "Lead Pastor, Lighthouse Berlin"}'::jsonb,
     '[]'::jsonb,
@@ -65,7 +65,7 @@ values
     null,
     'oami.gospel@gmail.com',
     52.7769, 6.8935, -- De Bukakkers, Emmen (venue-level approximation)
-    '{"sunday": "11:00 AM", "midweek": "Woensdag 19:00 uur (CET)"}'::jsonb,
+    '{"sunday": "Zondag 11:00 uur (CET)", "midweek": "Woensdag 19:00 uur (CET)"}'::jsonb,
     '{"line1": "De Bukakkers 18B4", "line2": "7811 KZ Emmen"}'::jsonb,
     '{"name": "Pastor Blossom Anukposi", "role": "Lead Pastor, Emmen"}'::jsonb,
     '[]'::jsonb,
@@ -85,7 +85,7 @@ values
     null,
     'oami.gospel@gmail.com',
     8.1335, 4.2407, -- Ogbomosho, Oyo State (city-level approximation)
-    '{"sunday": "11:00 AM", "midweek": "Wednesdays 7:00 PM (WAT)"}'::jsonb,
+    '{"sunday": "Sundays 11:00 AM (WAT)", "midweek": "Wednesdays 7:00 PM (WAT)"}'::jsonb,
     '{"line1": "Adjacent Alajikii Mosque, Tarkii", "line2": "Ogbomosho, Oyo State"}'::jsonb,
     '{"name": "Pastor Taiwo Falayi", "role": "Lead Pastor, Miracle Centre"}'::jsonb,
     '[]'::jsonb,
