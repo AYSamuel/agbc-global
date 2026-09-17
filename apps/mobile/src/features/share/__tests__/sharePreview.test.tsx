@@ -32,6 +32,16 @@ jest.mock('@/lib/analytics', () => ({
   },
 }));
 
+// The reporter this sheet did not call until W4.20. Everything here is local work, so a
+// failure leaves no server trace at all: if the app does not say what threw, nobody can
+// ever answer "why could this member not share the verse?".
+const mockCapture = jest.fn();
+jest.mock('@/lib/sentry', () => ({
+  captureHandledError: (...args: unknown[]) => {
+    mockCapture(...args);
+  },
+}));
+
 const mockCaptureRef = jest.fn<Promise<string>, unknown[]>();
 jest.mock('react-native-view-shot', () => ({
   captureRef: (...args: unknown[]) => mockCaptureRef(...args),
@@ -211,6 +221,48 @@ describe('SHARE-PREVIEW', () => {
       content_kind: 'verse',
       sent_as: 'text_after_failure',
     });
+  });
+
+  it('reports what actually threw, so the next report is answerable', async () => {
+    // THE POINT OF THIS CHANGE. The member's line is the same for a full disk, an OEM
+    // that refuses the capture and an OS with nowhere to send a file; the only way to
+    // tell them apart afterwards is for the app to have said so at the time.
+    const thrown = new Error('ENOSPC: no space left on device');
+    mockCaptureRef.mockRejectedValue(thrown);
+    await renderSheet();
+    await layOutTheCard();
+
+    await screen.findByText(/couldn't make the picture/);
+    expect(mockCapture).toHaveBeenCalledWith(thrown);
+  });
+
+  it('reports the OS having nowhere to send a file, which throws nothing', async () => {
+    mockIsAvailable.mockResolvedValue(false);
+    await renderSheet();
+    await layOutTheCard();
+
+    await screen.findByText(/couldn't make the picture/);
+    expect(mockCapture).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not claim the picture was never made when only the sending failed', async () => {
+    // The member is looking at the picture. Telling them it could not be made
+    // contradicts the thing on their screen.
+    mockShareAsync.mockRejectedValue(new Error('no activity found'));
+    const user = userEvent.setup();
+    await renderSheet();
+    await layOutTheCard();
+    await screen.findByTestId('share-preview-image');
+
+    await user.press(screen.getByText('Share'));
+
+    expect(
+      await screen.findByText(
+        "The picture is ready, but it couldn't be sent this time. Try again, or send it as words instead.",
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(/couldn't make the picture/)).toBeNull();
+    expect(mockCapture).toHaveBeenCalled();
   });
 
   it('keeps the sheet open when even the words could not be sent', async () => {

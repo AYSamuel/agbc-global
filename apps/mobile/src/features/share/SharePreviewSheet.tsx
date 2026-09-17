@@ -13,6 +13,7 @@ import {
 } from '@/components/ui';
 import { shareText } from '@/features/family/share';
 import { track } from '@/lib/analytics';
+import { captureHandledError } from '@/lib/sentry';
 import { useTheme } from '@/theme';
 
 import { canShareImage, captureShareCard, shareCardImage } from './capture';
@@ -43,10 +44,20 @@ import { ShareCard } from './ShareCard';
  * than a courtesy.
  */
 
+/**
+ * WHICH failure, because the two are not the same news and used to share one line.
+ *
+ * `make` is a picture that was never produced: the OS has nowhere to send files, or the
+ * rasterise threw. `send` is a picture that WAS produced, shown to the member, and then
+ * refused by the OS on the way out; telling that member "we couldn't make the picture"
+ * contradicts the picture they are looking at.
+ */
+type FailedAt = 'make' | 'send';
+
 type PreviewState =
   | { status: 'preparing' }
   | { status: 'ready'; uri: string }
-  | { status: 'failed' };
+  | { status: 'failed'; at: FailedAt };
 
 export interface SharePreviewSheetProps {
   visible: boolean;
@@ -103,16 +114,27 @@ export function SharePreviewSheet({
     void (async () => {
       try {
         if (!(await canShareImage())) {
-          setState({ status: 'failed' });
+          // Not a throw, so it needs reporting on its own: the OS told us it has
+          // nowhere to send a file, which on a real phone is rare enough to be
+          // worth knowing about.
+          captureHandledError(
+            new Error('share: the OS reports no way to share a file'),
+          );
+          setState({ status: 'failed', at: 'make' });
           return;
         }
         setState({ status: 'ready', uri: await captureShareCard(cardRef) });
-      } catch {
+      } catch (error) {
         // Everything on this sheet is local work (lay out, rasterise, write a file), so
         // there is no server to blame and nothing to retry against: it fails on a device
         // that is out of space, or on an OEM that refuses the capture. The member is told
         // what happened and handed the way out, never the error.
-        setState({ status: 'failed' });
+        //
+        // AND THE ERROR IS REPORTED, because until W4.20 it was not, and the message
+        // the member reads is the same for every cause. A share that failed for a
+        // member we cannot ask is only diagnosable if the app said so at the time.
+        captureHandledError(error);
+        setState({ status: 'failed', at: 'make' });
       }
     })();
   }, []);
@@ -155,8 +177,11 @@ export function SharePreviewSheet({
           sent_as: 'image',
         });
         onClose();
-      } catch {
-        setState({ status: 'failed' });
+      } catch (error) {
+        // The picture exists and the member is looking at it; only the hand-off
+        // failed, so the line must not claim it was never made.
+        captureHandledError(error);
+        setState({ status: 'failed', at: 'send' });
       }
     })();
   }, [content.kind, onClose, state, t]);
@@ -207,7 +232,11 @@ export function SharePreviewSheet({
       </Text>
 
       {state.status === 'failed' ? (
-        <FailNote message={t('share.failed')} />
+        <FailNote
+          message={
+            state.at === 'send' ? t('share.sendFailed') : t('share.failed')
+          }
+        />
       ) : (
         <PreviewWindow
           uri={state.status === 'ready' ? state.uri : null}

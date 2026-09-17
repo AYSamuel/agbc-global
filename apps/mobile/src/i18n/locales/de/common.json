@@ -133,6 +133,7 @@
     "tryAgain": "Bild noch einmal versuchen",
     "preparing": "Wird vorbereitet…",
     "failed": "Wir konnten das Bild diesmal nicht erstellen. Du kannst es trotzdem als Worte senden, es geht nichts verloren.",
+    "sendFailed": "Das Bild ist fertig, konnte diesmal aber nicht gesendet werden. Versuche es erneut, oder sende es als Worte.",
     "dismissed": "Teilen geschlossen"
   }
 }
