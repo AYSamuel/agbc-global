@@ -4,6 +4,7 @@ import type { ContactRequest, ContactResponse } from '@agbc/shared';
 
 import { mintContactKey } from './contactKey';
 import { budget } from './fetchWithTimeout';
+import { functionErrorCode } from './functionError';
 import { supabase } from './supabase';
 
 // The one caller of the `contact-form` function (docs/spec/04 CONTACT; W4.18
@@ -66,27 +67,6 @@ export function keyFor(
   return { content, key: mintContactKey() };
 }
 
-// The function's machine hint out of a non-2xx response; the copy shown to the
-// member always comes from i18n, never from the wire (CLAUDE.md error rules).
-async function machineCode(error: FunctionsHttpError): Promise<string | null> {
-  const context: unknown = (error as { context?: unknown }).context;
-  if (!(context instanceof Response)) return null;
-  try {
-    const parsed: unknown = await context.json();
-    if (
-      typeof parsed === 'object' &&
-      parsed !== null &&
-      'error' in parsed &&
-      typeof parsed.error === 'string'
-    ) {
-      return parsed.error;
-    }
-  } catch {
-    // Non-JSON body: fall through to the generic reading.
-  }
-  return null;
-}
-
 export async function sendContactMessage(
   body: ContactRequest,
   key: string,
@@ -109,7 +89,7 @@ export async function sendContactMessage(
     )) as { error: unknown };
     if (!error) return 'sent';
     if (error instanceof FunctionsHttpError) {
-      return (await machineCode(error)) === 'rate_limited'
+      return (await functionErrorCode(error)) === 'rate_limited'
         ? 'rate_limited'
         : 'failed';
     }

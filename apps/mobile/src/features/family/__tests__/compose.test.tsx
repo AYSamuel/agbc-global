@@ -73,15 +73,18 @@ jest.mock('../queries', () => ({
 const PHOTO_PATH =
   '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg';
 const mockDiscard = jest.fn();
+// Mutable so a test can make the pick FAIL; the name must start with `mock` or
+// jest refuses to let the hoisted factory close over it.
+let mockPhotoResult: unknown = null;
+const PHOTO_OK = {
+  ok: true,
+  path: '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg',
+  bytes: 204800,
+  previewUri: 'file:///cache/photo.jpg',
+};
 jest.mock('../photo', () => ({
   photoPickingAvailable: true,
-  pickAndUploadTestimonyPhoto: () =>
-    Promise.resolve({
-      ok: true,
-      path: '93000000-0000-4000-8000-00000000000a/11111111-2222-4333-8444-555555555555.jpg',
-      bytes: 204800,
-      previewUri: 'file:///cache/photo.jpg',
-    }),
+  pickAndUploadTestimonyPhoto: () => Promise.resolve(mockPhotoResult),
   discardTestimonyPhoto: (path: string) => {
     mockDiscard(path);
     return Promise.resolve();
@@ -167,6 +170,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   jest.clearAllMocks();
+  mockPhotoResult = PHOTO_OK;
   await AsyncStorage.clear();
   mockOriginPrayer = undefined;
   mockInsert.mockResolvedValue({ error: null });
@@ -626,5 +630,54 @@ describe('drafts', () => {
     await waitFor(async () => {
       expect(await AsyncStorage.getItem(draftKey('testimony'))).toBeNull();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A photo error has to be SEEN, not just rendered (W4.19, device pass)
+// ---------------------------------------------------------------------------
+// Found on the S22 in German at the maximum font scale: the line rendered
+// correctly and Weiter cut it off mid-sentence, because the composer pins its
+// action bar OUTSIDE the ScrollView while the photo field is the last child
+// inside it. Exactly the defect W4.18's pass found on DELETE, same remedy.
+
+describe('a photo error that lands below the fold', () => {
+  const scrollToEnd = jest.spyOn(
+    /* eslint-disable-next-line @typescript-eslint/no-require-imports --
+       documented jest spy on a react-native prototype */
+    (require('react-native') as typeof import('react-native')).ScrollView
+      .prototype as unknown as { scrollToEnd: () => void },
+    'scrollToEnd',
+  );
+
+  test('is scrolled into view when it appears', async () => {
+    mockPhotoResult = { ok: false, reason: 'rate_limited' };
+    await renderFlow('testimony');
+    await writeBody('Share a testimony', 'God provided, and here we are.');
+    scrollToEnd.mockClear();
+
+    await press(screen.getByLabelText('Add a photo'));
+    // Inside the waitFor, not after it: the scroll is scheduled on the frame
+    // AFTER the line paints, so asserting it the instant the text exists is a
+    // race that only loses on a loaded machine.
+    await waitFor(() => {
+      expect(
+        screen.getByText(/still catching up with your last few photos/),
+      ).toBeTruthy();
+      expect(scrollToEnd).toHaveBeenCalled();
+    });
+  });
+
+  test('but a cancelled pick draws no line, so it must not move the screen', async () => {
+    mockPhotoResult = { ok: false, reason: 'cancelled' };
+    await renderFlow('testimony');
+    await writeBody('Share a testimony', 'God provided, and here we are.');
+    scrollToEnd.mockClear();
+
+    await press(screen.getByLabelText('Add a photo'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Add a photo')).toBeTruthy();
+    });
+    expect(scrollToEnd).not.toHaveBeenCalled();
   });
 });

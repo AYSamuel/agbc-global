@@ -9,6 +9,7 @@ import {
   TESTIMONY_PHOTO_QUALITY,
 } from '@agbc/shared';
 
+import { functionErrorCode } from '@/lib/functionError';
 import { supabase } from '@/lib/supabase';
 
 // The testimony photo pipeline (W2.3 slice 3): pick, re-encode, upload, then ask
@@ -200,20 +201,6 @@ export function uploadFailure(error: unknown): PhotoFailure {
   return 'unconfirmed';
 }
 
-/** photo-guard's machine hint out of a non-2xx response. The member's line always
- * comes from i18n; this only ever chooses WHICH line (CLAUDE.md error rules). */
-async function machineCode(error: FunctionsHttpError): Promise<unknown> {
-  const context: unknown = (error as { context?: unknown }).context;
-  if (!(context instanceof Response)) return null;
-  try {
-    const body = (await context.json()) as { error?: unknown };
-    return body.error ?? null;
-  } catch {
-    // Not JSON, or already consumed.
-    return null;
-  }
-}
-
 /**
  * Pick a photo and leave it uploaded, re-encoded and server-checked, returning
  * the object path the testimony row will carry. Every failure is a value, not a
@@ -297,7 +284,7 @@ export async function pickAndUploadTestimonyPhoto(
     if (guard.error instanceof FunctionsHttpError) {
       return {
         ok: false,
-        reason: guardFailure(await machineCode(guard.error)),
+        reason: guardFailure(await functionErrorCode(guard.error)),
       };
     }
     return { ok: false, reason: 'unconfirmed' };
