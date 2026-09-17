@@ -135,6 +135,7 @@
     "tryAgain": "Réessayer l'image",
     "preparing": "Préparation…",
     "failed": "Nous n'avons pas pu créer l'image cette fois. Tu peux toujours l'envoyer en mots, rien n'est perdu.",
+    "sendFailed": "L'image est prête, mais elle n'a pas pu être envoyée cette fois. Réessaie, ou envoie-la en mots.",
     "dismissed": "Partage fermé"
   }
 }

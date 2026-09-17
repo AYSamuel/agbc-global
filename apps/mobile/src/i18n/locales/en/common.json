@@ -133,6 +133,7 @@
     "tryAgain": "Try the picture again",
     "preparing": "Getting it ready…",
     "failed": "We couldn't make the picture this time. You can still send it as words, and nothing is lost.",
+    "sendFailed": "The picture is ready, but it couldn't be sent this time. Try again, or send it as words instead.",
     "dismissed": "Share closed"
   }
 }

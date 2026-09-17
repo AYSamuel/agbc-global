@@ -133,6 +133,7 @@
     "tryAgain": "Probeer de afbeelding opnieuw",
     "preparing": "Wordt klaargezet…",
     "failed": "Het maken van de afbeelding is deze keer niet gelukt. Je kunt het nog steeds als woorden versturen, er gaat niets verloren.",
+    "sendFailed": "De afbeelding is klaar, maar versturen lukte deze keer niet. Probeer het opnieuw, of verstuur het als woorden.",
     "dismissed": "Delen gesloten"
   }
 }
