@@ -1,3 +1,5 @@
+import type { PhotoFailure } from './photo';
+
 // Maps a failed compose submit to what the author should see. The server
 // refusals here are real invariants, not edge cases: the daily sharing quota
 // (docs/spec/09) and the consent-version check (docs/spec/20) both raise
@@ -61,18 +63,29 @@ export function mapComposeError(error: unknown): ComposeOutcome {
 
 // Same idea one layer out: why a photo could not be attached. Kept here rather
 // than in photo.ts so it stays a pure decision with no client to mock, and
-// beside its sibling so the two failure vocabularies are read together.
+// beside its sibling so the two failure vocabularies are read together. The
+// import above is TYPE-ONLY and erases at compile time, so this file still pulls
+// in no client; what it buys is that the reason list lives in one place.
 export type PhotoErrorKey =
   | 'photoErrorPermission'
   | 'photoErrorTooLarge'
   | 'photoErrorNotAnImage'
+  | 'photoErrorRateLimited'
+  | 'photoErrorUnconfirmed'
   | 'photoErrorGeneric';
 
-/** Every failure gets a line that says what the author can do next; a cancelled
- * pick is not a failure and never reaches here (docs/spec/04, error handling). */
+/**
+ * Every failure gets a line that says what the author can do next; a cancelled
+ * pick is not a failure and never reaches here (docs/spec/04, error handling).
+ *
+ * ONLY `unconfirmed` MENTIONS THE CONNECTION (W4.19). The generic line used to,
+ * and it was the line every unclassified failure reached, so for the app's whole
+ * life a server that answered and refused told the member their network was at
+ * fault. The reason is taken from `PhotoFailure` rather than re-listed here, so
+ * a new one cannot be added without this switch being confronted with it.
+ */
 export function photoFailureKey(
-  failure:
-    'permission' | 'too_large' | 'not_an_image' | 'unavailable' | 'failed',
+  failure: Exclude<PhotoFailure, 'cancelled'>,
 ): PhotoErrorKey {
   switch (failure) {
     case 'permission':
@@ -81,6 +94,10 @@ export function photoFailureKey(
       return 'photoErrorTooLarge';
     case 'not_an_image':
       return 'photoErrorNotAnImage';
+    case 'rate_limited':
+      return 'photoErrorRateLimited';
+    case 'unconfirmed':
+      return 'photoErrorUnconfirmed';
     default:
       return 'photoErrorGeneric';
   }

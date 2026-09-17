@@ -22,20 +22,33 @@ export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
 /**
  * The platform's key-dictionary envs (SUPABASE_SECRET_KEYS, SUPABASE_PUBLISHABLE_KEYS)
  * are JSON objects of name -> key, one entry per currently-valid key. Absent or
- * malformed parses to no keys at all, so a misconfigured environment refuses callers
- * instead of throwing a 500 out of an auth check (fail closed, security standard).
+ * malformed parses to an EMPTY dictionary, so a misconfigured environment refuses
+ * callers instead of throwing a 500 out of an auth check (fail closed, security
+ * standard).
+ *
+ * The names are kept rather than thrown away because the two directions need
+ * different things from them: checking who called us iterates every value (that is
+ * what makes a rotation an overlap), while deciding what WE send has to pick one,
+ * and it picks `default`.
  */
-function keysFrom(dictionaryJson: string | null): string[] {
-  if (!dictionaryJson) return [];
+function dictionaryFrom(dictionaryJson: string | null): Record<string, string> {
+  if (!dictionaryJson) return {};
   try {
     const parsed: unknown = JSON.parse(dictionaryJson);
-    if (parsed === null || typeof parsed !== 'object') return [];
-    return Object.values(parsed).filter(
-      (value): value is string => typeof value === 'string' && value.length > 0,
+    if (parsed === null || typeof parsed !== 'object') return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, string] =>
+          typeof entry[1] === 'string' && entry[1].length > 0,
+      ),
     );
   } catch {
-    return [];
+    return {};
   }
+}
+
+function keysFrom(dictionaryJson: string | null): string[] {
+  return Object.values(dictionaryFrom(dictionaryJson));
 }
 
 async function matchesAny(presented: string, keys: string[]): Promise<boolean> {
@@ -136,4 +149,71 @@ export function unauthorized(): Response {
     { error: 'service invocations only' },
     { status: 401 },
   );
+}
+
+// ---------------------------------------------------------------------------
+// Calling the platform's own REST surfaces by hand
+// ---------------------------------------------------------------------------
+// The two above decide who may call US. These decide how WE call Storage or
+// PostgREST when the request is built here instead of by supabase-js, which is
+// rare: photo-guard's ranged read is the only one in this repo, because the
+// verdict needs 8 bytes and storage-js cannot ask for a range.
+
+/** Which credential the outgoing request ended up carrying. Logged on failure so
+ * a refusal says which key was refused; never the key itself. */
+export type ServiceKeyKind = 'secret' | 'legacy' | 'none';
+
+export interface ServiceApiKey {
+  key: string | null;
+  kind: ServiceKeyKind;
+}
+
+/**
+ * The key to present, preferring the `sb_secret_` one and falling back to the
+ * legacy service-role JWT, which is all a legacy-only stack has.
+ *
+ * `default` wins where the dictionary names it (ADR 0024 records that shape), so
+ * a rotation that adds a second key does not quietly change which one outgoing
+ * calls carry.
+ */
+export function serviceApiKeyFrom(env: {
+  secretKeysJson: string | null;
+  serviceRoleKey: string | null;
+}): ServiceApiKey {
+  const secrets = dictionaryFrom(env.secretKeysJson);
+  const preferred = secrets.default ?? Object.values(secrets)[0];
+  if (typeof preferred === 'string' && preferred.length > 0) {
+    return { key: preferred, kind: 'secret' };
+  }
+  if (env.serviceRoleKey) return { key: env.serviceRoleKey, kind: 'legacy' };
+  return { key: null, kind: 'none' };
+}
+
+export function serviceApiKey(): ServiceApiKey {
+  return serviceApiKeyFrom({
+    secretKeysJson: optionalEnv('SUPABASE_SECRET_KEYS'),
+    serviceRoleKey: optionalEnv('SUPABASE_SERVICE_ROLE_KEY'),
+  });
+}
+
+/**
+ * The pair of headers supabase-js puts on EVERY request, built by hand for the
+ * callers that cannot use it.
+ *
+ * BOTH ARE LOAD-BEARING, and leaving `apikey` out is not "one header short": it
+ * changes how the gateway READS the request. Its rule, from Supabase's own
+ * description of the key architecture, is that an `Authorization` which does not
+ * begin `Bearer sb_` is taken for a USER SESSION token and passed upstream
+ * untouched, and only a recognised `apikey` makes it mint the service_role token.
+ *
+ * So a lone `Authorization: Bearer <legacy service-role JWT>` reaches Storage as
+ * a session token, resolves to no privileged role, and the bucket is then filtered
+ * away from the caller by RLS. Production answers that with **HTTP 400 and a body
+ * saying "Bucket not found"**, which reads like a missing bucket and is really a
+ * refused credential. That is what silently broke every testimony photo from
+ * launch until 2026-09-16: the object uploaded, this read was refused, photo-guard
+ * answered 404, and the app said "check your connection".
+ */
+export function serviceApiHeaders(key: string): Record<string, string> {
+  return { apikey: key, Authorization: `Bearer ${key}` };
 }

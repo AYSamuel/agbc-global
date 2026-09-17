@@ -1,6 +1,11 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 
-import { isPublishableCaller, isServiceCaller } from './auth.ts';
+import {
+  isPublishableCaller,
+  isServiceCaller,
+  serviceApiHeaders,
+  serviceApiKeyFrom,
+} from './auth.ts';
 
 // Caller auth for the new API keys (ADR 0024, pulled forward at Track P Phase 2).
 //
@@ -165,4 +170,71 @@ Deno.test('a malformed publishable dictionary with no anon key fails closed', as
     }),
     false,
   );
+});
+
+// ---------------------------------------------------------------------------
+// The other direction: how WE present a key when we call Storage or PostgREST
+// ---------------------------------------------------------------------------
+// Added 2026-09-16, with the defect it describes. photo-guard's ranged read sent
+// only `Authorization: Bearer <legacy service-role JWT>` and no `apikey`, so the
+// gateway read it as a user session token, passed it upstream untouched, and
+// production Storage answered 400 "Bucket not found" to every testimony photo
+// since launch. Both halves of that mistake are asserted below.
+
+Deno.test('the secret key is preferred over the legacy service-role JWT', () => {
+  assertEquals(
+    serviceApiKeyFrom({
+      secretKeysJson: SECRETS,
+      serviceRoleKey: LEGACY_SERVICE,
+    }),
+    { key: 'sb_secret_live_one', kind: 'secret' },
+  );
+});
+
+Deno.test('`default` decides which key outgoing calls carry during a rotation', () => {
+  // Both keys are valid INBOUND (the rotation tests above). Outbound has to pick
+  // one, and picking by dictionary order would change the answer when a second
+  // key is added.
+  assertEquals(
+    serviceApiKeyFrom({
+      secretKeysJson: JSON.stringify({
+        next: 'sb_secret_live_two',
+        default: 'sb_secret_live_one',
+      }),
+      serviceRoleKey: null,
+    }).key,
+    'sb_secret_live_one',
+  );
+});
+
+Deno.test('a legacy-only stack still gets a key, and says so', () => {
+  // The local stack and any self-hosted legacy deployment. The KIND is what the
+  // failure log prints, so it has to be true.
+  assertEquals(
+    serviceApiKeyFrom({ secretKeysJson: null, serviceRoleKey: LEGACY_SERVICE }),
+    { key: LEGACY_SERVICE, kind: 'legacy' },
+  );
+  assertEquals(
+    serviceApiKeyFrom({
+      secretKeysJson: '{"default": ""}',
+      serviceRoleKey: LEGACY_SERVICE,
+    }).kind,
+    'legacy',
+  );
+});
+
+Deno.test('no key at all is reported, never guessed at', () => {
+  assertEquals(
+    serviceApiKeyFrom({ secretKeysJson: 'not json', serviceRoleKey: null }),
+    { key: null, kind: 'none' },
+  );
+});
+
+Deno.test('an outgoing service request carries BOTH apikey and Authorization', () => {
+  // THE REGRESSION TEST. Dropping either line from serviceApiHeaders turns this
+  // red; before the fix the real request had no `apikey` at all.
+  assertEquals(serviceApiHeaders('sb_secret_live_one'), {
+    apikey: 'sb_secret_live_one',
+    Authorization: 'Bearer sb_secret_live_one',
+  });
 });

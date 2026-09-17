@@ -1,11 +1,18 @@
+import { StorageApiError } from '@supabase/supabase-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import i18n from '@/i18n';
 import { ThemeScope } from '@/theme';
 
+import { photoFailureKey } from '../composeErrors';
 import { PhotoField } from '../PhotoField';
-import { base64ToBytes, resizeTarget } from '../photo';
+import {
+  base64ToBytes,
+  guardFailure,
+  resizeTarget,
+  uploadFailure,
+} from '../photo';
 import { testimonyPhotoQueryKey } from '../useSignedPhotoUrl';
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access --
@@ -193,5 +200,91 @@ describe('the photo field on TESTIMONY-COMPOSE', () => {
     // half of that: no failure, no line.
     await renderField({ failure: null });
     expect(screen.queryByText(/couldn't add that photo/)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// What a photo failure is allowed to claim (W4.19)
+// ---------------------------------------------------------------------------
+// The defect these pin: every unclassified failure reached one line, and that
+// line told the member to check their connection. So a refused credential on
+// production (Storage answers 400) read as a network fault on a working network,
+// and the only report that ever came back was "it errored".
+
+describe('reading an upload failure', () => {
+  test('a status means Storage ANSWERED, so the connection is never blamed', () => {
+    // 400 is what production returns for a credential it refuses, 403 for an RLS
+    // refusal, 500 for its own trouble. The network reached Storage in all three.
+    for (const status of [400, 403, 500]) {
+      expect(
+        uploadFailure(new StorageApiError('refused', status, String(status))),
+      ).toBe('failed');
+    }
+  });
+
+  test('413 is the bucket cap talking, and says so', () => {
+    expect(uploadFailure(new StorageApiError('too big', 413, '413'))).toBe(
+      'too_large',
+    );
+  });
+
+  test('no status at all is unconfirmed: nothing answered', () => {
+    // A wrapped fetch failure, or fetchWithTimeout's own ten-second abort.
+    expect(uploadFailure(new Error('Network request failed'))).toBe(
+      'unconfirmed',
+    );
+    expect(uploadFailure(null)).toBe('unconfirmed');
+  });
+});
+
+describe('reading a photo-guard refusal', () => {
+  test('each verdict keeps its own words', () => {
+    expect(guardFailure('not_an_image')).toBe('not_an_image');
+    expect(guardFailure('too_large')).toBe('too_large');
+    expect(guardFailure('rate_limited')).toBe('rate_limited');
+  });
+
+  test('anything unrecognised is generic, never a server string', () => {
+    expect(guardFailure('some_new_code')).toBe('failed');
+    expect(guardFailure(null)).toBe('failed');
+  });
+});
+
+describe('the copy contract', () => {
+  test('ONLY the unconfirmed line mentions the connection, in every language', () => {
+    // THE REGRESSION TEST. Put "connection" back into photoErrorGeneric, in any
+    // of the four languages, and this goes red. That is the sentence that hid a
+    // production outage for the whole life of the app.
+    const connection = {
+      en: 'connection',
+      de: 'Verbindung',
+      nl: 'verbinding',
+      fr: 'connexion',
+    };
+    for (const [locale, word] of Object.entries(connection)) {
+      /* eslint-disable-next-line @typescript-eslint/no-require-imports --
+         the four namespaces are read as data, by locale, in one loop */
+      const strings = require(`@/i18n/locales/${locale}/family.json`) as Record<
+        string,
+        string
+      >;
+      const mentions = Object.entries(strings)
+        .filter(([key]) => key.startsWith('photoError'))
+        .filter(([, line]) => line.toLowerCase().includes(word.toLowerCase()))
+        .map(([key]) => key);
+      expect(mentions).toEqual(['photoErrorUnconfirmed']);
+    }
+  });
+
+  test('every reason the app can produce has a line of its own', () => {
+    // `unavailable` and `failed` deliberately share the generic line; everything
+    // else is distinct, so a member is never told the wrong thing to do next.
+    expect(photoFailureKey('permission')).toBe('photoErrorPermission');
+    expect(photoFailureKey('too_large')).toBe('photoErrorTooLarge');
+    expect(photoFailureKey('not_an_image')).toBe('photoErrorNotAnImage');
+    expect(photoFailureKey('rate_limited')).toBe('photoErrorRateLimited');
+    expect(photoFailureKey('unconfirmed')).toBe('photoErrorUnconfirmed');
+    expect(photoFailureKey('failed')).toBe('photoErrorGeneric');
+    expect(photoFailureKey('unavailable')).toBe('photoErrorGeneric');
   });
 });
