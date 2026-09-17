@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
+import { TESTIMONY_PHOTO_MAX_LABEL } from '@agbc/shared';
 import {
   fontFamily,
   icon,
@@ -178,7 +179,24 @@ export function PhotoField({
       {/* Backing out of the system picker is not a failure and gets no copy;
           ComposeFlow already filters it, and saying so here makes the rule
           visible at the place that would otherwise show a line. */}
-      {failure === null || failure === 'cancelled' ? null : (
+      {failure === null || failure === 'cancelled' ? (
+        // The cap, said once, where it is useful: BEFORE a pick rather than after
+        // a refusal. It also says what the app does about it, which is the part
+        // that stops a member worrying about the size of their photos at all
+        // (W4.19). The number is interpolated from TESTIMONY_PHOTO_MAX_BYTES, so
+        // the copy cannot drift from the bucket's own limit.
+        <Text
+          style={{
+            fontFamily: fontFamily.body.regular,
+            fontSize: 12,
+            lineHeight: 12 * 1.45,
+            color: colors.muted,
+            marginTop: spacing.sm,
+          }}
+        >
+          {t('composePhotoHint', { size: TESTIMONY_PHOTO_MAX_LABEL })}
+        </Text>
+      ) : (
         <Text
           accessibilityLiveRegion="polite"
           style={{
@@ -189,7 +207,7 @@ export function PhotoField({
             marginTop: spacing.sm,
           }}
         >
-          {t(photoFailureKey(failure))}
+          {t(photoFailureKey(failure), { size: TESTIMONY_PHOTO_MAX_LABEL })}
         </Text>
       )}
     </>

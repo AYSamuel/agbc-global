@@ -68,10 +68,13 @@ export function mapComposeError(error: unknown): ComposeOutcome {
 // in no client; what it buys is that the reason list lives in one place.
 export type PhotoErrorKey =
   | 'photoErrorPermission'
+  | 'photoErrorCouldNotOpen'
+  | 'photoErrorCouldNotPrepare'
   | 'photoErrorTooLarge'
   | 'photoErrorNotAnImage'
   | 'photoErrorRateLimited'
   | 'photoErrorUnconfirmed'
+  | 'photoErrorSignedOut'
   | 'photoErrorGeneric';
 
 /**
@@ -92,8 +95,14 @@ export function photoFailureKey(
       return 'photoErrorPermission';
     case 'too_large':
       return 'photoErrorTooLarge';
+    case 'could_not_open':
+      return 'photoErrorCouldNotOpen';
+    case 'could_not_prepare':
+      return 'photoErrorCouldNotPrepare';
     case 'not_an_image':
       return 'photoErrorNotAnImage';
+    case 'signed_out':
+      return 'photoErrorSignedOut';
     case 'rate_limited':
       return 'photoErrorRateLimited';
     case 'unconfirmed':

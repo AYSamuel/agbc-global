@@ -155,12 +155,23 @@ export function resizeTarget(
 export type PhotoFailure =
   | 'cancelled'
   | 'permission'
+  /** The library would not open. Nothing to do with this photo or the network. */
+  | 'could_not_open'
+  /** The pick could not be read or re-encoded: a corrupt or unusual image. */
+  | 'could_not_prepare'
   | 'too_large'
   | 'not_an_image'
   /** photo-guard's own rate limit: 20 in 10 minutes, per member. */
   | 'rate_limited'
   /** Nothing answered: no network, or our own budget ran out first. */
   | 'unconfirmed'
+  /**
+   * The session died underneath them. Its own reason because its own advice: no
+   * amount of trying again fixes it, and `failed` told them to do exactly that.
+   * Reachable because the composer opens on the PERSISTED auth snapshot, which
+   * holds no tokens, so it can still say "member" after the session has gone.
+   */
+  | 'signed_out'
   | 'unavailable'
   | 'failed';
 
@@ -231,7 +242,7 @@ export async function pickAndUploadTestimonyPhoto(
     }
     picked = result.assets[0];
   } catch {
-    return { ok: false, reason: 'failed' };
+    return { ok: false, reason: 'could_not_open' };
   }
 
   let bytes: Uint8Array;
@@ -247,11 +258,11 @@ export async function pickAndUploadTestimonyPhoto(
       compress: TESTIMONY_PHOTO_QUALITY,
       base64: true,
     });
-    if (!saved.base64) return { ok: false, reason: 'failed' };
+    if (!saved.base64) return { ok: false, reason: 'could_not_prepare' };
     bytes = base64ToBytes(saved.base64);
     previewUri = saved.uri;
   } catch {
-    return { ok: false, reason: 'failed' };
+    return { ok: false, reason: 'could_not_prepare' };
   }
 
   // Storage enforces this too; checking here turns a rejected upload into copy
