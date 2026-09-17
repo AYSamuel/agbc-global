@@ -1174,8 +1174,12 @@
   .sc .scdate .d{font-family:var(--disp);font-weight:800;font-size:25px;line-height:1}
   .sc .scdate .m{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
   .sc .scrows{margin-top:15px;display:flex;flex-direction:column;gap:7px}
-  .sc .scrows div{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;color:#c8d1e0}
-  .sc .scrows svg{flex:none;color:#ffcf4a}
+  /* `flex-start`, not `center`: the address row wraps to two lines on any branch whose
+     address is longer than Berlin's, and a centred icon then floats into the gap between
+     the lines pointing at nothing. The half-pixel nudge puts the icon back on the first
+     line's centre, so a one-line row is drawn exactly where `center` drew it. */
+  .sc .scrows div{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;font-weight:600;color:#c8d1e0;line-height:1.35}
+  .sc .scrows svg{flex:none;color:#ffcf4a;margin-top:1.5px}
   .sc .scrows b{font-weight:800;color:#ffffff}
 
   /* SERMON · the play disc, the app's gold disc at the size a 1080 card can carry. */
@@ -3041,6 +3045,39 @@
               <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span><b>Sundays 11:00 AM</b></span></div>
               <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Mittwochs 19:00 Uhr</span></div>
               <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span>Oudenarder Str. 16, 13347 Berlin</span></div>
+            </div>
+          </div>
+          <div class="scfoot">
+            <div class="scmark"><span class="scmk">A</span><span class="scnames"><span class="scwm">AGBC Global</span><span class="scurl">agbcglobal.com</span></span></div>
+            <span class="scqr" role="img" aria-label="QR code to agbcglobal.com"></span>
+          </div>
+        </div>
+      </div>
+      <!-- CARD - a branch - STATE - a long address. The frame above draws Berlin, whose
+           address is one line, so the wrapped state had no frame and the build truncated
+           it: `numberOfLines={1}` on the row put an ellipsis through AGBC UK's address on
+           every card it shared (reported 2026-09-17). An address is the one thing on this
+           card a stranger has to ACT on, so it is the one thing that must never be cut -
+           a half-printed address is not a shorter address, it is a wrong one.
+           THE ADDRESS WRAPS AND THE ICON HOLDS THE FIRST LINE. `align-items:center` is
+           right for the one-line rows above and wrong the moment a row is two lines: it
+           floats the pin into the gap between them, pointing at nothing. `flex-start`
+           with the icon nudged onto the cap height keeps every row reading the same way,
+           one-line and two-line alike, which is why the rule is set here for ALL rows
+           rather than for the address alone.
+           There is room: the middle has ~579 units of the 1080 and this block needs ~370
+           at three rows with a two-line address, so the auto-fit ladder is never reached
+           and the branch NAME is never the thing that shrinks to fit its own address. -->
+      <div class="device">
+        <p class="name"><b>CARD</b> &middot; a branch &middot; a long address</p>
+        <div class="sc sc-ink">
+          <div class="scrow1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffcf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span class="sceye">Come and visit</span></div>
+          <div class="scmid">
+            <div class="scq sm">AGBC UK</div>
+            <div class="scrows">
+              <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span><b>Sundays 12:00 PM (UK time)</b></span></div>
+              <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Wednesdays 6:00 PM (UK time)</span></div>
+              <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span>Summerlee Museum of Scottish Industrial Life, Heritage Way, Coatbridge ML5 1QD</span></div>
             </div>
           </div>
           <div class="scfoot">

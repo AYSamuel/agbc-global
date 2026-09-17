@@ -85,7 +85,10 @@ values
     null,
     'oami.gospel@gmail.com',
     8.1335, 4.2407, -- Ogbomosho, Oyo State (city-level approximation)
-    '{"sunday": "Sundays 11:00 AM (WAT)", "midweek": "Wednesdays 7:00 PM (WAT)"}'::jsonb,
+    -- The midweek hour DEPARTS from the website JSON on purpose (2026-09-17,
+    -- migration 20260917140000): the service is 6:00 PM WAT and the site still says
+    -- 7:00 PM. Correct the site rather than this, or the next reset undoes the fix.
+    '{"sunday": "Sundays 11:00 AM (WAT)", "midweek": "Wednesdays 6:00 PM (WAT)"}'::jsonb,
     '{"line1": "Adjacent Alajikii Mosque, Tarkii", "line2": "Ogbomosho, Oyo State"}'::jsonb,
     '{"name": "Pastor Taiwo Falayi", "role": "Lead Pastor, Miracle Centre"}'::jsonb,
     '[]'::jsonb,
@@ -123,7 +126,7 @@ values
   ('00000000-0000-4000-8000-000000000131', '00000000-0000-4000-8000-000000000003', 0, '11:00', 'sunday', 120, 'Sunday Worship'),
   ('00000000-0000-4000-8000-000000000132', '00000000-0000-4000-8000-000000000003', 3, '19:00', 'midweek', 90, 'Midweek Prayer'),
   ('00000000-0000-4000-8000-000000000141', '00000000-0000-4000-8000-000000000004', 0, '11:00', 'sunday', 120, 'Sunday Worship'),
-  ('00000000-0000-4000-8000-000000000142', '00000000-0000-4000-8000-000000000004', 3, '19:00', 'midweek', 90, 'Midweek Prayer')
+  ('00000000-0000-4000-8000-000000000142', '00000000-0000-4000-8000-000000000004', 3, '18:00', 'midweek', 90, 'Midweek Prayer')
 on conflict (id) do update set
   branch_id = excluded.branch_id,
   weekday = excluded.weekday,

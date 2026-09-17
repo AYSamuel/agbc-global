@@ -904,7 +904,31 @@ function PlayDisc() {
   );
 }
 
-/** `.scrows`: a branch card's service times and address, one icon each. */
+/** `.scrows`' own type, written out because the icon's nudge below is derived from it
+ *  and a platform line-height default would make that arithmetic wrong. */
+const ROW_FONT_UNITS = 37.5;
+const ROW_LINE_UNITS = ROW_FONT_UNITS * 1.35;
+const ROW_ICON_UNITS = 42;
+/** Onto the FIRST line's centre: half the gap between the line box and the icon. With
+ *  `flex-start` below, this draws a one-line row exactly where `center` drew it. */
+const ROW_ICON_NUDGE_UNITS = (ROW_LINE_UNITS - ROW_ICON_UNITS) / 2;
+
+/**
+ * `.scrows`: a branch card's service times and address, one icon each.
+ *
+ * THE ADDRESS WRAPS AND IS NEVER CUT (frame `CARD · a branch · a long address`). It is
+ * the one thing on this card that a stranger has to ACT on, and a half-printed address
+ * is not a shorter address, it is a wrong one. Until 2026-09-17 this row carried
+ * `numberOfLines={1}`, which put an ellipsis through every address longer than Berlin's
+ * one-liner; AGBC UK's never once shared in full. No test caught it because `getByText`
+ * passes just as happily on a `Text` that renders its words with an ellipsis, so the
+ * assertion that holds this now is on the prop rather than on the string.
+ *
+ * There is room for the wrap: the middle has ~579 of the card's 1080 units and three
+ * rows with a two-line address need ~370, so the auto-fit ladder is never reached. That
+ * margin is the point rather than a happy accident, because on a branch card the ladder
+ * shrinks and ultimately CUTS the quote, and the quote here is the church's own name.
+ */
 function Rows({ rows }: { rows: BranchShareRow[] }) {
   return (
     <View style={{ marginTop: 45 * u, gap: 21 * u }}>
@@ -913,22 +937,38 @@ function Rows({ rows }: { rows: BranchShareRow[] }) {
           // Rows have no identity of their own; two identical rows would be a data bug,
           // not a key collision to work around.
           key={`${String(index)}:${row.text}`}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 27 * u }}
+          style={{
+            flexDirection: 'row',
+            // `flex-start`, never `center`: the moment a row is two lines, a centred
+            // icon floats into the gap between them and points at nothing.
+            alignItems: 'flex-start',
+            gap: 27 * u,
+          }}
         >
           {row.icon === 'clock' ? (
-            <ClockIcon size={42 * u} color={shareCard.accent} strokeWidth={2} />
+            <ClockIcon
+              size={ROW_ICON_UNITS * u}
+              color={shareCard.accent}
+              strokeWidth={2}
+              style={{ marginTop: ROW_ICON_NUDGE_UNITS * u }}
+            />
           ) : (
-            <PinIcon size={42 * u} color={shareCard.accent} strokeWidth={2} />
+            <PinIcon
+              size={ROW_ICON_UNITS * u}
+              color={shareCard.accent}
+              strokeWidth={2}
+              style={{ marginTop: ROW_ICON_NUDGE_UNITS * u }}
+            />
           )}
           <Text
             allowFontScaling={false}
-            numberOfLines={1}
             style={{
               flex: 1,
               fontFamily: row.strong
                 ? fontFamily.body.extraBold
                 : fontFamily.body.semiBold,
-              fontSize: 37.5 * u,
+              fontSize: ROW_FONT_UNITS * u,
+              lineHeight: ROW_LINE_UNITS * u,
               color: row.strong
                 ? shareCard.ground.ink.quote
                 : shareCard.ground.ink.rows,

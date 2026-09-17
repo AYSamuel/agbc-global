@@ -588,6 +588,36 @@ describe('the event, the message and the branch (slice 3)', () => {
     );
   });
 
+  /**
+   * The address is the one thing on this card a stranger has to act on, so it may never
+   * be cut. It was, from W4.15 until 2026-09-17: the row carried `numberOfLines={1}` and
+   * put an ellipsis through AGBC UK's address on every card it ever shared.
+   *
+   * ASSERTED ON THE PROP, NOT ON THE WORDS, and that is the whole point of this test.
+   * The case above already reads the address back with `getByText` and passed happily
+   * throughout, because `getByText` matches the string a `Text` was GIVEN and knows
+   * nothing about the one it draws. A truncating row and a wrapping row are identical to
+   * every query in this file.
+   */
+  it('lets a long address wrap instead of cutting it', async () => {
+    const longAddress =
+      'Summerlee Museum of Scottish Industrial Life, Heritage Way, Coatbridge ML5 1QD';
+    await renderCard({
+      ...BRANCH,
+      name: 'AGBC UK',
+      rows: [
+        { icon: 'clock', text: 'Sundays 12:00 PM (UK time)', strong: true },
+        { icon: 'pin', text: longAddress, strong: false },
+      ],
+    });
+    const address = screen.getByText(longAddress, HIDDEN);
+    expect(address.props.numberOfLines).toBeUndefined();
+    // And the row hangs its icon on the first line rather than centring it between two.
+    expect(address.parent?.props.style).toMatchObject({
+      alignItems: 'flex-start',
+    });
+  });
+
   it('starts the three of them one rung down, as every frame draws them', async () => {
     for (const content of [EVENT, SERMON, BRANCH]) {
       await renderCard(content);
