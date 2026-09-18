@@ -12,6 +12,7 @@ import {
   attachAudio,
   createAudioOnlySermon,
   isMp3Magic,
+  loadShelf,
   mintUpload,
   removeAudio,
   SERMON_AUDIO_BUCKET,
@@ -492,4 +493,121 @@ describe('the audio-only message', () => {
       .single();
     expect(data?.title).toBe('Kept As Typed');
   }, 30_000);
+});
+
+/**
+ * The shelf search (W4.21 slice 2), driven through PostgREST rather than reasoned
+ * about. The escaping below is the reason this is a server test and not a unit test:
+ * what a `%` or a comma does to an `or=` filter is PostgREST's answer to give, and a
+ * hand-rolled stand-in would only prove this file agrees with my belief about it.
+ */
+describe('finding a message the recent window does not reach', () => {
+  const service = admin();
+  const marks: string[] = [];
+
+  /** A sermon with a title of our choosing, old enough to fall outside any window. */
+  async function createTitled(title: string, speaker = ''): Promise<string> {
+    const { data, error } = await service
+      .from('sermons')
+      .insert({
+        title,
+        speaker,
+        youtube_id: `search-${String(Date.now())}-${String(marks.length)}`,
+        published_at: '2019-05-12T11:00:00Z',
+      })
+      .select('id')
+      .single();
+    if (error) throw new Error(error.message);
+    sermonIds.push(data.id);
+    marks.push(data.id);
+    return data.id;
+  }
+
+  test('a term matches a title, a speaker or a series, and nothing else', async () => {
+    const tag = `Zz${String(Date.now())}`;
+    const byTitle = await createTitled(`Standing in ${tag}`);
+    const bySpeaker = await createTitled('A different message', `Pastor ${tag}`);
+    await createTitled('Neither one nor the other');
+
+    const found = await loadShelf(service, 'all', tag);
+    const ids = found.rows.map((row) => row.id);
+
+    expect(ids).toContain(byTitle);
+    expect(ids).toContain(bySpeaker);
+    expect(found.rows).toHaveLength(2);
+    expect(found.search).toBe(tag);
+  });
+
+  test('the shelf-wide counts do not move, and the scoped ones do', async () => {
+    const tag = `Yy${String(Date.now())}`;
+    await createTitled(`Only this one says ${tag}`);
+
+    const plain = await loadShelf(service, 'all');
+    const searched = await loadShelf(service, 'all', tag);
+
+    // The stats are the whole library either way: that is the promise the frame makes.
+    expect(searched.withAudio).toBe(plain.withAudio);
+    expect(searched.withoutAudio).toBe(plain.withoutAudio);
+    expect(searched.audioOnly).toBe(plain.audioOnly);
+
+    // And the segment counts only what the list holds.
+    expect(searched.scoped.withAudio + searched.scoped.withoutAudio).toBe(1);
+    expect(plain.scoped.withoutAudio).toBe(plain.withoutAudio);
+  });
+
+  test('a filter and a search narrow together', async () => {
+    const tag = `Xx${String(Date.now())}`;
+    const withoutAudio = await createTitled(`${tag} has no audio`);
+    await createTitled(`${tag} is not in this view`);
+
+    const found = await loadShelf(service, 'without', tag);
+    expect(found.rows.map((row) => row.id)).toContain(withoutAudio);
+    expect(found.rows).toHaveLength(2);
+    expect(found.scoped.withAudio).toBe(0);
+  });
+
+  test('a LIKE wildcard in the term is a character, not a wildcard', async () => {
+    // "50%" must not match "50 years"; `%` and `_` are escaped before the pattern is
+    // built, and a term that is ONLY wildcards must match nothing rather than
+    // everything, which is the failure that would look like a working search.
+    const tag = `Ww${String(Date.now())}`;
+    await createTitled(`${tag} fifty years on`);
+
+    const literal = await loadShelf(service, 'all', `${tag}%years`);
+    expect(literal.rows).toHaveLength(0);
+
+    const underscore = await loadShelf(service, 'all', `${tag}_fifty`);
+    expect(underscore.rows).toHaveLength(0);
+
+    const onlyWildcards = await loadShelf(service, 'all', '%%');
+    expect(onlyWildcards.rows).toHaveLength(0);
+  });
+
+  test('a comma or a parenthesis is searched for, not parsed as another filter', async () => {
+    // PostgREST splits `or=(...)` on commas and parentheses, so an unquoted term
+    // carrying one is not a failed search, it is a DIFFERENT filter than the one
+    // meant. "Grace, Mercy and Peace" is an ordinary thing to paste in here.
+    const tag = `Vv${String(Date.now())}`;
+    const comma = await createTitled(`${tag}, Mercy and Peace`);
+    await createTitled(`${tag} without the punctuation`);
+
+    const found = await loadShelf(service, 'all', `${tag}, Mercy`);
+    expect(found.rows.map((row) => row.id)).toEqual([comma]);
+
+    // And a term that would close the filter list early comes back empty rather than
+    // erroring or matching everything.
+    const parens = await loadShelf(service, 'all', `${tag})`);
+    expect(parens.rows).toHaveLength(0);
+  });
+
+  test('a term under two characters is not a search at all', async () => {
+    const searched = await loadShelf(service, 'all', 'a');
+    expect(searched.search).toBeNull();
+    // And the rows are the ordinary recent window, not a filtered view.
+    expect(searched.scoped).toEqual({
+      withAudio: searched.withAudio,
+      withoutAudio: searched.withoutAudio,
+      audioOnly: searched.audioOnly,
+    });
+  });
 });

@@ -28,10 +28,15 @@ export default async function SermonAudioPage({
   const params = await searchParams;
 
   const filter = readFilter(params.filter);
+  // The search travels in the URL, like every screen here except the moderation queue
+  // (ADR 0025, W4.13): a search is worth a back button and worth pasting to somebody
+  // else, and it costs no new machinery because the segment links and the segment's
+  // own `loading.tsx` skeleton already work that way.
+  const search = readParam(params.q) ?? null;
   // Not loaded at all for a caller who may not act here: not what protects the data
   // (sermons are public content), just what keeps a refusal from being a screen that
   // fetched everything and then decided not to show it.
-  const shelf = admin ? await loadShelf(supabase, filter) : null;
+  const shelf = admin ? await loadShelf(supabase, filter, search) : null;
 
   return (
     <>

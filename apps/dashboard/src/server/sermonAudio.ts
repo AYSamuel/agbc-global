@@ -73,10 +73,24 @@ export interface ShelfRow {
 
 export interface Shelf {
   rows: ShelfRow[];
+  /** SHELF-WIDE, always. "How does the shelf stand" must not move when somebody types. */
   withAudio: number;
   withoutAudio: number;
   audioOnly: number;
+  /**
+   * Counts for the CURRENT view, which is what the filter segment shows: identical to
+   * the three above when nothing is searched, and narrowed to the matches when
+   * something is. Two scopes on one screen (frame `SERMON-AUDIO-SEARCH`, W4.21), kept
+   * apart because letting the stats follow the search would quietly redefine the only
+   * number anyone checks.
+   */
+  scoped: { withAudio: number; withoutAudio: number; audioOnly: number };
+  /** The term these rows were found for, or null when this is the recent list. */
+  search: string | null;
 }
+
+/** Below this a search matches most of the archive and is not worth a round trip. */
+export const MIN_SEARCH_LENGTH = 2;
 
 export type ShelfFilter = 'all' | 'without' | 'with' | 'audio_only';
 
@@ -94,46 +108,97 @@ const SERMON_FIELDS =
 export async function loadShelf(
   supabase: Client,
   filter: ShelfFilter = 'all',
+  search: string | null = null,
 ): Promise<Shelf> {
-  let query = supabase
+  const term = (search ?? '').trim();
+  const searching = term.length >= MIN_SEARCH_LENGTH;
+
+  const available = () =>
+    supabase.from('sermons').select('id', { count: 'exact', head: true }).eq(
+      'status',
+      'available',
+    );
+  const matching = <T extends { or: (f: string) => T }>(query: T): T =>
+    searching ? query.or(searchFilter(term)) : query;
+
+  let list = supabase
     .from('sermons')
     .select(SERMON_FIELDS)
     .eq('status', 'available')
     .order('published_at', { ascending: false })
     .limit(30);
-  if (filter === 'without') query = query.is('audio_path', null);
-  if (filter === 'with') query = query.not('audio_path', 'is', null);
-  if (filter === 'audio_only') query = query.is('youtube_id', null);
+  if (filter === 'without') list = list.is('audio_path', null);
+  if (filter === 'with') list = list.not('audio_path', 'is', null);
+  if (filter === 'audio_only') list = list.is('youtube_id', null);
 
-  const [list, withAudio, withoutAudio, audioOnly] = await Promise.all([
-    query,
-    supabase
-      .from('sermons')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'available')
-      .not('audio_path', 'is', null),
-    supabase
-      .from('sermons')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'available')
-      .is('audio_path', null),
-    supabase
-      .from('sermons')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'available')
-      .is('youtube_id', null),
+  // Parallel, never chained: none of these depends on another's answer, and a read
+  // waiting behind a read it does not need is the waterfall W4.13 went and removed.
+  const [rows, withAudio, withoutAudio, audioOnly, inView] = await Promise.all([
+    matching(list),
+    available().not('audio_path', 'is', null),
+    available().is('audio_path', null),
+    available().is('youtube_id', null),
+    searching
+      ? Promise.all([
+          matching(available().not('audio_path', 'is', null)),
+          matching(available().is('audio_path', null)),
+          matching(available().is('youtube_id', null)),
+        ])
+      : null,
   ]);
-  if (list.error) throw new Error(list.error.message);
-  for (const counted of [withAudio, withoutAudio, audioOnly]) {
+
+  if (rows.error) throw new Error(rows.error.message);
+  const counts = [withAudio, withoutAudio, audioOnly, ...(inView ?? [])];
+  for (const counted of counts) {
     if (counted.error) throw new Error(counted.error.message);
   }
 
-  return {
-    rows: list.data.map(toShelfRow),
+  const shelfWide = {
     withAudio: withAudio.count ?? 0,
     withoutAudio: withoutAudio.count ?? 0,
     audioOnly: audioOnly.count ?? 0,
   };
+
+  return {
+    rows: rows.data.map(toShelfRow),
+    ...shelfWide,
+    scoped:
+      inView === null
+        ? shelfWide
+        : {
+            withAudio: inView[0].count ?? 0,
+            withoutAudio: inView[1].count ?? 0,
+            audioOnly: inView[2].count ?? 0,
+          },
+    search: searching ? term : null,
+  };
+}
+
+/**
+ * One PostgREST `or=` filter matching the term in a title, a speaker or a series.
+ *
+ * TWO ESCAPES, in this order, and both are load-bearing.
+ *
+ * `%` and `_` are LIKE wildcards, so a search for "50%" would otherwise match anything
+ * beginning "50". They are escaped with a backslash, which means a literal backslash has
+ * to be doubled first or it would escape whatever followed it.
+ *
+ * Then the whole value is double-quoted, because PostgREST parses `or=(...)` by splitting
+ * on commas and parentheses: an unquoted term containing either is not a failed search,
+ * it is a DIFFERENT filter than the one meant, and the sermon title "Grace, Mercy and
+ * Peace" is an ordinary thing for someone to paste in here. Inside the quotes, `"` and
+ * `\` are the two characters that need escaping in turn.
+ *
+ * Not escaped, and deliberately: PostgREST reads `*` in a LIKE value as `%`, with no
+ * escape offered. A star behaving as a wildcard is a harmless surprise rather than a
+ * wrong answer, so it is left as documented behaviour rather than worked around.
+ */
+function searchFilter(term: string): string {
+  const pattern = `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+  const quoted = `"${pattern.replace(/["\\]/g, (c) => `\\${c}`)}"`;
+  return ['title', 'speaker', 'series']
+    .map((column) => `${column}.ilike.${quoted}`)
+    .join(',');
 }
 
 export async function loadSermon(

@@ -38,6 +38,12 @@ export function Shelf({
 }) {
   const text = copy.sermonAudio;
   const spoken = outcome ? OUTCOMES[outcome] : undefined;
+  // `with` and `without` partition the shelf (a row either has an audio_path or it
+  // does not), so their sum is the total without a fourth count query.
+  const matches = shelf.scoped.withAudio + shelf.scoped.withoutAudio;
+  const total = shelf.withAudio + shelf.withoutAudio;
+  /** A search that found nothing: the one state that drops the segment and the label. */
+  const blank = shelf.search !== null && shelf.rows.length === 0;
 
   return (
     <>
@@ -81,43 +87,173 @@ export function Shelf({
         </Link>
       </div>
 
-      <nav
-        aria-label={text.filtersLabel}
-        className="mt-4 inline-flex flex-wrap gap-1 rounded-control bg-alt p-1"
-      >
-        {FILTERS.map((entry) => (
-          <Link
-            key={entry.value}
-            href={
-              entry.value === 'all'
-                ? '/sermon-audio'
-                : `/sermon-audio?filter=${entry.value}`
-            }
-            aria-current={filter === entry.value ? 'page' : undefined}
-            className={`flex min-h-11 items-center rounded-control px-4 text-body font-bold ${
-              filter === entry.value
-                ? 'bg-raised text-text shadow-sm'
-                : 'text-muted hover:text-text'
-            }`}
-          >
-            {entry.label}
-            {' '}
-            {entry.count(shelf)}
-          </Link>
-        ))}
-      </nav>
+      <Search term={shelf.search} />
 
-      <h2 className="pt-5 pb-2.5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
-        {text.listLabel}
-      </h2>
+      {/* No segment over an empty search: four filters reading 0 are four dead
+          controls, the same rule that hides a primary action over data that is
+          not there (frame `SERMON-AUDIO-SEARCH · nothing matched`). */}
+      {blank ? null : (
+        <nav
+          aria-label={text.filtersLabel}
+          className="mt-4 inline-flex flex-wrap gap-1 rounded-control bg-alt p-1"
+        >
+          {FILTERS.map((entry) => (
+            <Link
+              key={entry.value}
+              href={withQuery(entry.value, shelf.search)}
+              aria-current={filter === entry.value ? 'page' : undefined}
+              className={`flex min-h-11 items-center rounded-control px-4 text-body font-bold ${
+                filter === entry.value
+                  ? 'bg-raised text-text shadow-sm'
+                  : 'text-muted hover:text-text'
+              }`}
+            >
+              {entry.label}
+              {' '}
+              {entry.count(shelf)}
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {blank ? null : (
+        <h2 className="pt-5 pb-2.5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
+          {shelf.search === null
+            ? text.listLabel
+            : text.search.resultsLabel(matches, shelf.search)}
+        </h2>
+      )}
 
       {shelf.rows.length === 0 ? (
-        <Empty filtered={filter !== 'all'} />
+        shelf.search === null ? (
+          <Empty filtered={filter !== 'all'} />
+        ) : (
+          <NoMatch term={shelf.search} total={total} />
+        )
       ) : (
-        shelf.rows.map((row) => <Row key={row.id} row={row} />)
+        <>
+          {shelf.rows.map((row) => (
+            <Row key={row.id} row={row} />
+          ))}
+          {/* Stated where the cap is reached rather than as a warning up front: 30 is
+              almost always enough, and saying so in advance makes the reader carry a
+              rule they will rarely need. */}
+          {shelf.rows.length >= SHELF_WINDOW && matches > shelf.rows.length ? (
+            <p className="pt-4 text-body text-muted">
+              {text.search.cappedNote(shelf.rows.length, matches)}
+            </p>
+          ) : null}
+        </>
       )}
     </>
   );
+}
+
+/**
+ * A plain GET form, so the term lands in the URL and the browser does the work. No
+ * client JavaScript, which keeps this screen the shape the rest of the dashboard is:
+ * the filter segment is links, and this is a form.
+ */
+function Search({ term }: { term: string | null }) {
+  const text = copy.sermonAudio.search;
+
+  return (
+    <form method="get" action="/sermon-audio" className="mt-1">
+      <h2 className="pt-5 pb-2.5 text-label font-extrabold tracking-[0.14em] text-muted uppercase">
+        <label htmlFor="shelf-search">{text.label}</label>
+      </h2>
+      <input
+        id="shelf-search"
+        name="q"
+        type="search"
+        defaultValue={term ?? ''}
+        placeholder={text.placeholder}
+        aria-describedby="shelf-search-hint"
+        className="min-h-12 w-full max-w-[35rem] rounded-card border border-controlline bg-card px-3.5 text-body text-text"
+      />
+      <p
+        id="shelf-search-hint"
+        className="mt-2 max-w-[52ch] text-body text-muted"
+      >
+        {text.hint}
+      </p>
+      <div className="mt-3.5 flex flex-wrap items-center gap-2">
+        <button
+          type="submit"
+          className="inline-flex min-h-12 items-center rounded-button bg-btn px-5 text-body font-extrabold text-btn-text hover:opacity-90"
+        >
+          {text.submit}
+        </button>
+        {term === null ? null : (
+          <Link
+            href="/sermon-audio"
+            className="inline-flex min-h-12 items-center px-3 text-body font-semibold text-muted hover:text-text"
+          >
+            {text.clear}
+          </Link>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/**
+ * Nothing matched. The shelf counts above still stand, which is what says this is an
+ * empty SEARCH and not an empty shelf, and the body names the fields it looked in.
+ */
+function NoMatch({ term, total }: { term: string; total: number }) {
+  const text = copy.sermonAudio.search;
+
+  return (
+    <div className="flex flex-col items-center px-8 py-14 text-center">
+      {/* An SVG rather than a character (the frame's own magnifier): `⌕` was tried here
+          first and renders as a speck, because the glyph has almost no font coverage and
+          falls back to something tiny. The `♪` the other empty state uses is common
+          enough to be safe; this one is not. Caught by looking at the real screen. */}
+      <span
+        aria-hidden="true"
+        className="grid h-16 w-16 place-items-center rounded-full bg-alt text-muted"
+      >
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+      </span>
+      <h3 className="mt-4 font-display text-card font-extrabold text-text">
+        {text.emptyTitle(term)}
+      </h3>
+      <p className="mt-1.5 max-w-[44ch] text-body leading-relaxed text-sub">
+        {text.emptyBody(total)}
+      </p>
+      <Link
+        href="/sermon-audio"
+        className="mt-4 inline-flex min-h-12 items-center rounded-button border border-controlline bg-card px-5 text-body font-semibold text-text hover:bg-alt"
+      >
+        {text.emptyAction}
+      </Link>
+    </div>
+  );
+}
+
+/** The list window `loadShelf` applies; the note under the rows names it. */
+const SHELF_WINDOW = 30;
+
+/** A filter link keeps the search it was clicked under, or a tap loses the term. */
+function withQuery(value: ShelfFilter, search: string | null): string {
+  const params = new URLSearchParams();
+  if (value !== 'all') params.set('filter', value);
+  if (search !== null) params.set('q', search);
+  const query = params.toString();
+  return query === '' ? '/sermon-audio' : `/sermon-audio?${query}`;
 }
 
 function Row({ row }: { row: ShelfRow }) {
@@ -212,25 +348,40 @@ function Empty({ filtered }: { filtered: boolean }) {
   );
 }
 
+/**
+ * EVERY count here reads `shelf.scoped`, never the shelf-wide fields beside it. The
+ * segment filters the list under it, so it must count what that list is drawn from;
+ * `scoped` simply IS the shelf-wide trio when nothing is searched. Reading the wrong
+ * one puts "Without audio 3" over a search holding 38 of them, which is how this was
+ * first written and what the shelf-counts test caught.
+ */
 const FILTERS: {
   value: ShelfFilter;
   label: string;
   count: (shelf: ShelfData) => string;
 }[] = [
-  { value: 'all', label: copy.sermonAudio.filters.all, count: () => '' },
+  {
+    value: 'all',
+    label: copy.sermonAudio.filters.all,
+    // Nothing to count when the view is everything; a search gives it a total.
+    count: (shelf) =>
+      shelf.search === null
+        ? ''
+        : String(shelf.scoped.withAudio + shelf.scoped.withoutAudio),
+  },
   {
     value: 'without',
     label: copy.sermonAudio.filters.without,
-    count: (shelf) => String(shelf.withoutAudio),
+    count: (shelf) => String(shelf.scoped.withoutAudio),
   },
   {
     value: 'with',
     label: copy.sermonAudio.filters.with,
-    count: (shelf) => String(shelf.withAudio),
+    count: (shelf) => String(shelf.scoped.withAudio),
   },
   {
     value: 'audio_only',
     label: copy.sermonAudio.filters.audioOnly,
-    count: (shelf) => String(shelf.audioOnly),
+    count: (shelf) => String(shelf.scoped.audioOnly),
   },
 ];

@@ -32,7 +32,16 @@ function row(overrides: Partial<ShelfRow> = {}): ShelfRow {
 }
 
 function shelf(rows: ShelfRow[], counts?: Partial<ShelfData>): ShelfData {
-  return { rows, withAudio: 31, withoutAudio: 3, audioOnly: 2, ...counts };
+  const base = { withAudio: 31, withoutAudio: 3, audioOnly: 2 };
+  // `scoped` defaults to the shelf-wide counts, which is what `loadShelf` returns when
+  // nothing is searched; a search test passes its own.
+  return {
+    rows,
+    ...base,
+    scoped: base,
+    search: null,
+    ...counts,
+  };
 }
 
 test('the format rule leads the page, before the counts, and says MP3 and 50 MB', async () => {
@@ -146,4 +155,138 @@ test('an outcome in the URL is announced, not just printed', () => {
 
   const status = screen.getByRole('status');
   expect(status).toHaveTextContent(copy.sermonAudio.outcome.saved);
+});
+
+describe('finding a message past the recent window (W4.21 slice 2)', () => {
+  test('the search is a plain GET form, so the term lands in the URL', () => {
+    render(<Shelf shelf={shelf([row()])} filter="all" />);
+
+    const box = screen.getByLabelText(copy.sermonAudio.search.label);
+    expect(box).toHaveAttribute('name', 'q');
+    // A form, not a Server Action: the result is a page you can link to and go back
+    // from, and it needs no client JavaScript to work.
+    expect(box.closest('form')).toHaveAttribute('method', 'get');
+    expect(box.closest('form')).toHaveAttribute('action', '/sermon-audio');
+  });
+
+  test('Clear appears only once there is something to clear', () => {
+    const { rerender } = render(<Shelf shelf={shelf([row()])} filter="all" />);
+    expect(
+      screen.queryByRole('link', { name: copy.sermonAudio.search.clear }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <Shelf shelf={shelf([row()], { search: 'grace' })} filter="all" />,
+    );
+    expect(
+      screen.getByRole('link', { name: copy.sermonAudio.search.clear }),
+    ).toHaveAttribute('href', '/sermon-audio');
+  });
+
+  test('THE SHELF COUNTS DO NOT MOVE WHEN A SEARCH DOES', async () => {
+    // The decision this screen is built around (frame `SERMON-AUDIO-SEARCH`). "The
+    // shelf today" answers how the whole library stands; the segment counts the view.
+    // Letting the stats follow the search was the easier build and would have quietly
+    // redefined the only number anyone checks.
+    const { container } = render(
+      <Shelf
+        shelf={shelf([row()], {
+          search: 'grace',
+          scoped: { withAudio: 3, withoutAudio: 38, audioOnly: 0 },
+        })}
+        filter="all"
+      />,
+    );
+
+    const stats = screen
+      .getByText(copy.sermonAudio.statsLabel)
+      .closest('h2')?.nextElementSibling;
+    expect(stats).toHaveTextContent('31');
+    expect(stats).toHaveTextContent('3');
+
+    const filters = screen.getByRole('navigation', {
+      name: copy.sermonAudio.filtersLabel,
+    });
+    expect(filters).toHaveTextContent('38');
+    // 3 + 38: `with` and `without` partition the matches, so their sum is the total.
+    expect(
+      screen.getByText(copy.sermonAudio.search.resultsLabel(41, 'grace')),
+    ).toBeInTheDocument();
+
+    await expectNoA11yViolations(container);
+  });
+
+  test('a filter tap keeps the search it was tapped under', () => {
+    render(<Shelf shelf={shelf([row()], { search: 'grace' })} filter="all" />);
+
+    expect(screen.getByRole('link', { name: /Without audio/ })).toHaveAttribute(
+      'href',
+      '/sermon-audio?filter=without&q=grace',
+    );
+  });
+
+  test('a search that found nothing is not an empty shelf', async () => {
+    const { container } = render(
+      <Shelf
+        shelf={shelf([], {
+          search: 'kharkiv',
+          scoped: { withAudio: 0, withoutAudio: 0, audioOnly: 0 },
+        })}
+        filter="all"
+      />,
+    );
+
+    expect(
+      screen.getByText(copy.sermonAudio.search.emptyTitle('kharkiv')),
+    ).toBeInTheDocument();
+    // The pre-sync empty state would invite an audio-only message, which is the wrong
+    // conclusion entirely: there are 34 messages, none of them matched.
+    expect(
+      screen.queryByText(copy.sermonAudio.emptyTitle),
+    ).not.toBeInTheDocument();
+    // And it says so with the shelf total, from the counts that did not move.
+    expect(
+      screen.getByText(copy.sermonAudio.search.emptyBody(34)),
+    ).toBeInTheDocument();
+
+    // No dead controls: four filters reading 0 are four buttons that do nothing.
+    expect(
+      screen.queryByRole('navigation', {
+        name: copy.sermonAudio.filtersLabel,
+      }),
+    ).not.toBeInTheDocument();
+
+    await expectNoA11yViolations(container);
+  });
+
+  test('the 30-row cap is named only when it is actually reached', () => {
+    const many = Array.from({ length: 30 }, (_, i) =>
+      row({ id: `s${String(i)}` }),
+    );
+
+    const { rerender } = render(
+      <Shelf
+        shelf={shelf(many, {
+          search: 'grace',
+          scoped: { withAudio: 3, withoutAudio: 38, audioOnly: 0 },
+        })}
+        filter="all"
+      />,
+    );
+    expect(
+      screen.getByText(copy.sermonAudio.search.cappedNote(30, 41)),
+    ).toBeInTheDocument();
+
+    // 30 found and 30 shown is not a capped view, and saying so would be a lie.
+    rerender(
+      <Shelf
+        shelf={shelf(many, {
+          search: 'grace',
+          scoped: { withAudio: 0, withoutAudio: 30, audioOnly: 0 },
+        })}
+        filter="all"
+      />,
+    );
+    expect(screen.queryByText(/Showing the newest/)).not.toBeInTheDocument();
+  });
 });
