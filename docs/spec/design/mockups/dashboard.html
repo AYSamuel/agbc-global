@@ -1523,6 +1523,253 @@
       </div>
     </div>
 
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-SEARCH</b> &middot; reaching past the recent messages</p>
+      <!-- W4.21 slice 2 (2026-09-18). The shelf has always shown the newest 30 messages and
+           nothing else, which was a complete view of the library while the YouTube sync only
+           ever pulled about a hundred videos. Slice 1 makes the sync walk the whole channel,
+           so "Without audio" goes from 3 to most of an archive past two thousand, and the
+           newest 30 stop being a shelf and become a window. Without this box there is no way
+           at all to reach a 2019 message to give it audio or artwork.
+
+           The search REPLACES the recent messages for as long as it is a search, and never
+           sits above them competing for the same decision: the LINK-SEARCH lesson (W4.0),
+           where a searched row and a suggested row had to stop looking like two answers to
+           one question. Clear brings the recent list back.
+
+           TWO SCOPES ON ONE SCREEN, and the headings are what keep them apart. "The shelf
+           today" is the whole library and must not move when somebody types, because it
+           answers how the shelf stands; the segment counts the CURRENT view, because it is a
+           filter of the list under it. Letting the stats follow the search would have been
+           the easier build and would have quietly redefined the only number anyone checks.
+
+           It lives in the URL (?q=), like every screen here except the moderation queue: a
+           search is worth a back button and worth pasting to somebody else, and it means the
+           segment and the loading skeleton keep working with no new machinery. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio?q=grace</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a class="on" href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Sermon audio</h2>
+                <p class="scope">Every branch &middot; one shelf</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9834;</span>
+              <p><b>MP3 only, exported at speech quality.</b> 64&#8211;96 kbps mono MP3 sounds
+                identical for a preached message and halves both storage and every member's data;
+                a full service lands near 25 MB, and the shelf takes files up to 50 MB. If your
+                recording is not an MP3 (m4a, aac or wav), save it as MP3 first: your editing app
+                can export one, and any free online converter can too.</p>
+            </div>
+
+            <div class="mlabel">The shelf today</div>
+            <div class="stats" style="margin-top:0">
+              <div class="ps"><div class="n">3</div><div class="l">With audio</div></div>
+              <div class="ps low"><div class="n">2,147</div><div class="l">Without audio</div></div>
+              <div class="ps"><div class="n">2</div><div class="l">Audio only</div></div>
+            </div>
+
+            <div class="actions" style="border:none;padding-top:18px">
+              <button class="btn outline">Add an audio-only message</button>
+            </div>
+
+            <div class="mlabel">Find a message</div>
+            <div class="field" style="max-width:560px">
+              <div class="inp">grace</div>
+              <div class="hint">Title, speaker or series. Two letters or more. The whole shelf
+                is searched, not only the recent messages below.</div>
+            </div>
+            <div class="actions" style="border:none;padding-top:14px">
+              <button class="btn">Search</button>
+              <button class="btn ghost">Clear</button>
+            </div>
+            <div class="seg">
+              <button class="on">All 41</button>
+              <button>Without audio 38</button>
+              <button>With audio 3</button>
+              <button>Audio only 0</button>
+            </div>
+
+            <div class="mlabel">41 messages match &ldquo;grace&rdquo; &middot; newest first</div>
+            <!-- THE YEAR APPEARS ONLY WHEN IT CARRIES INFORMATION: this year's
+                 messages read as they always have, and an older one says which
+                 year. Until this item the shelf dropped the year always, which was
+                 right while the list was the newest 30 and wrong the moment a
+                 search could return 2019 above 2021. Found on the real screen. -->
+
+            <div class="item">
+              <div class="top">
+                <span class="pill good">Audio &middot; 47 min</span>
+                <span class="pill lang">Video</span>
+                <span class="spacer"></span>
+                <span class="time">Sunday 9 August</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Manage</button>
+              </div>
+              <div class="body">The Grace That Finds You</div>
+              <div class="meta">
+                <span>Pastor Olayinka</span><span class="dot"></span><span>24 MB</span><span class="dot"></span><span>shelved 11 August</span>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="top">
+                <span class="pill late">No audio</span>
+                <span class="pill lang">Live replay</span>
+                <span class="spacer"></span>
+                <span class="time">Sunday 3 November 2019</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Add audio</button>
+              </div>
+              <div class="body">Grace Upon Grace &middot; Part Two</div>
+              <div class="meta">
+                <span>AGBC Glasgow</span><span class="dot"></span><span>1 h 12 min on YouTube</span>
+              </div>
+            </div>
+
+            <!-- No speaker line, and it is not a mistake in the mockup: the sync learns a
+                 title, a date, a thumbnail and a duration, and nothing about who preached.
+                 Every one of the 2,000+ rows it creates carries an empty speaker until a
+                 leader fills one in, so most of the archive will look like this row. -->
+            <div class="item">
+              <div class="top">
+                <span class="pill late">No audio</span>
+                <span class="pill lang">Video</span>
+                <span class="spacer"></span>
+                <span class="time">Sunday 12 May 2019</span>
+                <button class="btn ghost" style="padding:5px 10px;font-size:12.5px">Add audio</button>
+              </div>
+              <div class="body">Standing in Grace</div>
+              <div class="meta">
+                <span>38 min on YouTube</span>
+              </div>
+            </div>
+
+            <!-- The cap is stated where it is reached rather than as a warning up front: 30
+                 is almost always more than enough, and saying so in advance would make the
+                 reader carry a rule they will rarely need. -->
+            <div class="hint" style="max-width:none;padding:16px 2px 0">Showing the newest 30
+              of 41. Narrow the words if what you want is not here.</div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <p class="name"><b>SERMON-AUDIO-SEARCH</b> &middot; nothing matched &middot; says what it searched</p>
+      <!-- A SURFACE IS A STATE (25 §4): the no-results view is its own frame, because what it
+           has to get right is not the list, it is what the reader concludes. The danger is a
+           reader deciding the archive never arrived when their word simply is not in a title,
+           so the copy names the fields that were searched and offers the way back, rather
+           than apologising.
+
+           It also has to be honest about the limit above: searching by preacher will miss
+           almost the whole archive, because the sync cannot know who preached. Saying that
+           here is the difference between a reader trusting the result and a reader hunting
+           for a bug that is not there.
+
+           The stats stay put and still read 2,147, which is the proof that this is an empty
+           SEARCH and not an empty shelf. That is the whole reason the two scopes are kept
+           apart. -->
+      <div class="win">
+        <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">dashboard.agbcglobal.com/sermon-audio?q=kharkiv</span></div>
+        <div class="app">
+          <nav class="rail">
+            <div class="brand">AGBC</div>
+            <a href="#"><span class="ic">&#9744;</span>Moderation</a>
+            <a href="#"><span class="ic">&#9873;</span>Reports</a>
+            <a href="#"><span class="ic">&#9998;</span>Daily verses</a>
+            <a class="on" href="#"><span class="ic">&#9834;</span>Sermon audio</a>
+            <a href="#"><span class="ic">&#9787;</span>People</a>
+            <div class="sect">Later</div>
+            <a class="soon" href="#"><span class="ic">&#9993;</span>Broadcasts<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9788;</span>Events<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9750;</span>Branches<span class="ph">B</span></a>
+            <a class="soon" href="#"><span class="ic">&#9633;</span>Library<span class="ph">C</span></a>
+            <a class="soon" href="#"><span class="ic">&#9645;</span>Insights<span class="ph">C</span></a>
+            <div class="who">Signed in as<b>Pastor AY Samuel</b>Admin &middot; all branches</div>
+          </nav>
+          <div class="main">
+            <div class="phead">
+              <div>
+                <h2>Sermon audio</h2>
+                <p class="scope">Every branch &middot; one shelf</p>
+              </div>
+              <button class="btn ghost">Sign out</button>
+            </div>
+
+            <div class="guide">
+              <span class="gi">&#9834;</span>
+              <p><b>MP3 only, exported at speech quality.</b> 64&#8211;96 kbps mono MP3 sounds
+                identical for a preached message and halves both storage and every member's data;
+                a full service lands near 25 MB, and the shelf takes files up to 50 MB. If your
+                recording is not an MP3 (m4a, aac or wav), save it as MP3 first: your editing app
+                can export one, and any free online converter can too.</p>
+            </div>
+
+            <div class="mlabel">The shelf today</div>
+            <div class="stats" style="margin-top:0">
+              <div class="ps"><div class="n">3</div><div class="l">With audio</div></div>
+              <div class="ps low"><div class="n">2,147</div><div class="l">Without audio</div></div>
+              <div class="ps"><div class="n">2</div><div class="l">Audio only</div></div>
+            </div>
+
+            <div class="actions" style="border:none;padding-top:18px">
+              <button class="btn outline">Add an audio-only message</button>
+            </div>
+
+            <div class="mlabel">Find a message</div>
+            <div class="field" style="max-width:560px">
+              <div class="inp">kharkiv</div>
+              <div class="hint">Title, speaker or series. Two letters or more. The whole shelf
+                is searched, not only the recent messages below.</div>
+            </div>
+            <div class="actions" style="border:none;padding-top:14px">
+              <button class="btn">Search</button>
+              <button class="btn ghost">Clear</button>
+            </div>
+            <!-- No segment here. Four filters reading 0 are four dead controls, and the
+                 house rule against a primary action over data that is not there applies to
+                 a filter over rows that are not there just as much. It comes back with the
+                 results, or with the recent list when the search is cleared. -->
+            <div class="empty">
+              <div class="ei">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              </div>
+              <h3>No message matches &ldquo;kharkiv&rdquo;</h3>
+              <p>Titles, speakers and series were searched, across all 2,152 messages on the
+                shelf. Most carry no speaker until someone adds one, so a preacher&#39;s name
+                will miss more than a word from the title will.</p>
+              <div class="actions" style="border:none;justify-content:center;padding-top:18px">
+                <button class="btn outline">Clear the search</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="device">
       <p class="name"><b>SERMON-AUDIO-ATTACH</b> &middot; add the audio &middot; before a file is chosen</p>
       <!-- No Save button yet, deliberately: the house rule is that a primary action operating

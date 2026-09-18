@@ -753,6 +753,29 @@ export const copy = {
     listLabel: 'Recent messages · newest first',
     filtersLabel: 'Filter the list',
     filterEmpty: 'Nothing in this view. The other tabs still hold messages.',
+    // W4.21 slice 2. Before the sync walked the whole channel the newest 30 WERE the
+    // library, so there was nothing to search for; now they are a window onto 2,000+
+    // and an old message is otherwise unreachable.
+    search: {
+      label: 'Find a message',
+      hint: 'Title, speaker or series. Two letters or more. The whole shelf is searched, not only the recent messages below.',
+      placeholder: 'grace, or a series name',
+      submit: 'Search',
+      clear: 'Clear',
+      // Says what it searched, because the sharpest wrong conclusion here is "the
+      // archive never arrived" when the word simply is not in a title.
+      resultsLabel: (count: number, term: string) =>
+        `${String(count)} ${count === 1 ? 'message matches' : 'messages match'} “${term}” · newest first`,
+      cappedNote: (shown: number, total: number) =>
+        `Showing the newest ${String(shown)} of ${String(total)}. Narrow the words if what you want is not here.`,
+      emptyTitle: (term: string) => `No message matches “${term}”`,
+      // The speaker sentence is not a hedge: the sync learns a title, a date and a
+      // duration and NOTHING about who preached, so most of the archive has an empty
+      // speaker and a preacher's name really will miss.
+      emptyBody: (total: number) =>
+        `Titles, speakers and series were searched, across all ${String(total)} messages on the shelf. Most carry no speaker until someone adds one, so a preacher’s name will miss more than a word from the title will.`,
+      emptyAction: 'Clear the search',
+    },
     kind: {
       video: 'Video',
       live_replay: 'Live replay',

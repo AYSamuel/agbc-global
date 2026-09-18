@@ -39,13 +39,20 @@ export interface SyncPlan {
   restoredCount: number;
 }
 
+/**
+ * @param listedIds every id the channel still lists (the census). SEPARATE from
+ *   `fetched` since W4.21, and the separation is the whole point: `fetched` is
+ *   the bounded slice this run pulled details for, while rot is a question
+ *   about what the CHANNEL holds. Judging rot against `fetched` was safe only
+ *   while the two were the same list; the moment details are budgeted, it would
+ *   mark every row this run did not happen to read as gone from YouTube.
+ */
 export function planSync(
   existing: ExistingSermonRow[],
+  listedIds: ReadonlySet<string>,
   fetched: FetchedVideo[],
   mode: SyncMode,
 ): SyncPlan {
-  const fetchedIds = new Set(fetched.map((v) => v.youtubeId));
-
   const upserts = fetched.map((v) => ({
     youtube_id: v.youtubeId,
     title: v.title,
@@ -60,15 +67,76 @@ export function planSync(
   const unavailableIds =
     mode === 'api'
       ? existing
-          .filter((r) => r.status === 'available' && !fetchedIds.has(r.youtube_id))
+          .filter(
+            (r) => r.status === 'available' && !listedIds.has(r.youtube_id),
+          )
           .map((r) => r.youtube_id)
       : [];
 
+  // Counted against what this run will actually WRITE, not against the census:
+  // a row only returns to 'available' through the upsert, which needs details.
+  const restoredIds = new Set(upserts.map((r) => r.youtube_id));
   const restoredCount = existing.filter(
-    (r) => r.status === 'unavailable' && fetchedIds.has(r.youtube_id),
+    (r) => r.status === 'unavailable' && restoredIds.has(r.youtube_id),
   ).length;
 
   return { upserts, unavailableIds, restoredCount };
+}
+
+export interface DetailPlan {
+  /** Ids to call videos.list for this run, newest-first, budget applied. */
+  ids: string[];
+  /** Ids that need a write and did not fit; 0 means the archive has caught up. */
+  pending: number;
+}
+
+/**
+ * Which ids this run pays to read (W4.21).
+ *
+ * The census is cheap and complete; details are the cost, so they are budgeted
+ * and the run converges over several ticks instead of doing everything at once.
+ * The resume point is live state, exactly as `broadcast-fanout` resumes from
+ * its pending rows: "ids the channel lists that we hold no usable row for" is
+ * recomputed from scratch every run, so nothing has to remember where the last
+ * one stopped and a crash costs only the details it had not written yet.
+ *
+ * Two kinds of id qualify:
+ *   - no row at all: the whole archive, on the first runs after this ships;
+ *   - a row marked `unavailable`: only a write returns it to `available`, so a
+ *     video that came back needs its details read again.
+ *
+ * Plus a refresh of the head of the census, which is the Videos tab's newest.
+ * Before this change every run re-read all ~100 ids it knew, so a re-titled or
+ * re-thumbnailed message corrected itself within six hours. At 2,000+ videos
+ * that is no longer affordable for the whole archive, so it is kept for the
+ * front, where edits actually happen. A message re-titled deep in the archive
+ * now keeps its old title until something else writes the row: a deliberate
+ * trade, recorded here rather than discovered later.
+ */
+export function planDetailFetch(
+  listedIds: readonly string[],
+  existing: readonly ExistingSermonRow[],
+  options: { budget: number; refreshNewest: number },
+): DetailPlan {
+  const usable = new Set(
+    existing.filter((r) => r.status === 'available').map((r) => r.youtube_id),
+  );
+
+  // The refresh rides first because it is fixed-size and must never be the
+  // part a large backfill squeezes out.
+  const refresh = listedIds.slice(0, Math.max(0, options.refreshNewest));
+  const refreshed = new Set(refresh);
+
+  const needWrite = listedIds.filter(
+    (id) => !usable.has(id) && !refreshed.has(id),
+  );
+  const room = Math.max(0, options.budget - refresh.length);
+  const taken = needWrite.slice(0, room);
+
+  return {
+    ids: [...refresh, ...taken],
+    pending: needWrite.length - taken.length,
+  };
 }
 
 // ISO 8601 duration (YouTube contentDetails.duration, e.g. PT1H2M3S) → seconds.
