@@ -51,12 +51,13 @@ import { useTheme } from '@/theme';
 const HERO_MIN_HEIGHT = 196;
 
 // BRANCH-INFO (docs/spec/04 church screens, mockup BRANCH-INFO frame): one
-// branch's hero, next service (computed from branch_services with the
-// display-string fallback, docs/spec/07 zero-rows rule), the branch's lead,
-// welcome word, and the "Watch this branch" browsing-context action. "I'm
-// here" appears around service time only (`checkInOpen`, shared with Home so
-// the same action is offered at the same moments) and records attendance at
-// THIS branch, whether or not it is the member's own (docs/spec/07, W2.8).
+// branch's hero, which closes with the branch's own welcome word, then next
+// service (computed from branch_services with the display-string fallback,
+// docs/spec/07 zero-rows rule), the branch's lead, and the "Watch this branch"
+// browsing-context action. "I'm here" appears around service time only
+// (`checkInOpen`, shared with Home so the same action is offered at the same
+// moments) and records attendance at THIS branch, whether or not it is the
+// member's own (docs/spec/07, W2.8).
 export default function BranchInfo() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -288,6 +289,25 @@ export default function BranchInfo() {
             >
               {heroLoc}
             </Text>
+            {/* Mockup .branchhero .in .welcome. THE WELCOME IS PART OF THE HERO
+                (Ayo, 2026-09-18), not a card of its own further down: a branch
+                page opens by greeting whoever arrived, and the practical card
+                below then answers when and where. The old card carried a gold
+                "Welcome" eyebrow; here the quotation marks do that work and the
+                hero keeps the one eyebrow it already had. */}
+            {branch.welcome !== '' ? (
+              <Text
+                style={{
+                  fontFamily: fontFamily.display.bold,
+                  fontSize: 16,
+                  lineHeight: 23,
+                  color: onInk.text,
+                  marginTop: 12,
+                }}
+              >
+                {welcomeQuote}
+              </Text>
+            ) : null}
           </View>
         </View>
 
@@ -446,42 +466,6 @@ export default function BranchInfo() {
                 </View>
               </View>
             ))}
-          </View>
-        ) : null}
-
-        {/* Mockup .welcomecard: ink card, gold eyebrow, display quote. */}
-        {branch.welcome !== '' ? (
-          <View
-            style={{
-              marginTop: 14,
-              marginHorizontal: spacing.lg,
-              backgroundColor: palette.ink,
-              borderRadius: radius.card,
-              padding: 18,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: fontFamily.body.extraBold,
-                fontSize: 10.5,
-                letterSpacing: 1.4,
-                textTransform: 'uppercase',
-                color: palette.gold,
-                marginBottom: spacing.sm,
-              }}
-            >
-              {t('church:welcomeEyebrow')}
-            </Text>
-            <Text
-              style={{
-                fontFamily: fontFamily.display.bold,
-                fontSize: 18,
-                lineHeight: 26,
-                color: onInk.text,
-              }}
-            >
-              {welcomeQuote}
-            </Text>
           </View>
         ) : null}
 
