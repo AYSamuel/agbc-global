@@ -253,6 +253,30 @@ describe('AUTH-2 code step', () => {
     expect(screen.queryByRole('button', { name: 'Resend code' })).toBeNull();
     expect(screen.getByText(/Resend code in 0:/)).toBeTruthy();
   });
+
+  // The spam advice is the mitigation ADR 0011 leans on, and it only helps a
+  // member who reads it BEFORE leaving for their mail app. It used to draw
+  // after ~20s and to hide itself whenever an error was showing, so these two
+  // assert exactly what that could not do: it is on the first frame, and a
+  // rejected code does not take it away (2026-09-19).
+  it('carries the spam advice on the first frame, before any timer', async () => {
+    await reachCodeStep();
+    expect(screen.getByText(/Check your spam folder/)).toBeTruthy();
+  });
+
+  it('keeps the spam advice while a rejected code is showing', async () => {
+    await reachCodeStep();
+    mockVerifyOtp.mockResolvedValue({
+      error: new AuthApiError('Token expired', 403, 'otp_expired'),
+    });
+    mockInvoke.mockResolvedValue({ data: null, error: new Error('401') });
+
+    await type(screen.getByLabelText('6-digit code'), '999999');
+    await screen.findByText(
+      "That code isn't right. Check the email and try again.",
+    );
+    expect(screen.getByText(/Check your spam folder/)).toBeTruthy();
+  });
 });
 
 describe('AUTH-3 profile step', () => {

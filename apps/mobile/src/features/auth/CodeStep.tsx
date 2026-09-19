@@ -16,12 +16,20 @@ import { tryReviewSignin } from './reviewFallback';
 
 // AUTH-2 (docs/spec/03, mockup frame line 1042): six-cell code entry that
 // verifies itself on the sixth digit (the frame has no verify button), 30s
-// resend timer, masked sent-to, spam hint after ~20s, support hint after two
-// failures. The review bypass runs ONLY as a fallback to a rejected code and
-// stays invisible to real members (one extra request on a wrong code).
+// resend timer, masked sent-to, support hint after two failures. The review
+// bypass runs ONLY as a fallback to a rejected code and stays invisible to
+// real members (one extra request on a wrong code).
+//
+// THE SPAM ADVICE IS IN THE LEAD, not a line that arrives later (2026-09-19).
+// It used to appear after 20s and hide itself whenever an error was showing,
+// which is both the wrong moment and the wrong condition: a member reads the
+// "Sent to" line, leaves for their mail app within seconds, and finds nothing;
+// by the time the advice drew they were not looking at this screen, and if they
+// came back and mistyped they lost it again. `codeLead` now carries it, so it
+// is on screen from the first frame and survives every error. ADR 0011 called
+// this out as the known cost of email OTP and named the hint as its mitigation.
 
 const RESEND_COOLDOWN_MS = 30_000;
-const SPAM_HINT_AFTER_MS = 20_000;
 
 export interface CodeStepProps {
   email: string;
@@ -69,7 +77,6 @@ export function CodeStep({
   const sinceSend = now - sentAt;
   const resendRemaining = RESEND_COOLDOWN_MS - sinceSend;
   const canResend = resendRemaining <= 0;
-  const showSpamHint = sinceSend >= SPAM_HINT_AFTER_MS;
 
   const verify = async (token: string) => {
     const attempt = ++attemptRef.current;
@@ -239,19 +246,6 @@ export function CodeStep({
           }}
         >
           {t(errorKey)}
-        </Text>
-      ) : null}
-      {showSpamHint && !errorKey ? (
-        <Text
-          style={{
-            fontFamily: fontFamily.body.regular,
-            fontSize: 12.5,
-            lineHeight: 19,
-            color: colors.muted,
-            marginTop: 10,
-          }}
-        >
-          {t('spamHint')}
         </Text>
       ) : null}
       {failCount >= 2 ? (
