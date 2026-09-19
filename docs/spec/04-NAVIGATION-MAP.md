@@ -134,7 +134,7 @@ Each row → its screen. Every leaf screen has back. Guest rows that need auth o
 - `LIBRARY` → `READER` (resume location).
 - `PLAN` (entitled owners; others → devotional `BOOK-DETAIL`) → `PLAN-DAY` → **Mark complete** → progress + possible milestone.
 - `RHYTHM` → streak, milestones, attendance history.
-- `SETTINGS` → Theme (Light/Dark/System), Language, Notifications prefs (`NOTIF-PREFS`), **Blocked members** (unblock list, see `16`), Profile edit, **Legal** (the website's terms, in the in-app browser), Privacy (`PRIVACY`), **Delete account** (`DELETE`), Sign out. It does NOT link to `ABOUT` or `CONTACT`: those are the church's pages and reach them from MORE > Church (2026-09-16, `16`).
+- `SETTINGS` → Theme (Light/Dark/System), Language, Notification settings (`NOTIF-PREFS`, the row label since 2026-09-19; its own header still reads Notifications, see `16`), **Blocked members** (unblock list, see `16`), Profile edit, **Legal** (the website's terms, in the in-app browser), Privacy (`PRIVACY`), **Delete account** (`DELETE`), Sign out. It does NOT link to `ABOUT` or `CONTACT`: those are the church's pages and reach them from MORE > Church (2026-09-16, `16`).
 - `NC` (Notification center) → tap item → **deep link** to its target screen; mark read.
 
 ## Church screens (spec lives here; no feature doc owns them)
