@@ -11,7 +11,7 @@ The app is **fully browsable without an account.** An account is only required t
 ### Why email-OTP (and why the change)
 - **Cost.** Phone OTP required the full Twilio cluster: a paid account, per-code fees, Meta business verification for the WhatsApp channel, and NCC sender-ID registration for Nigeria. Email OTP runs on the Resend free tier the church website already uses: zero cost at church scale.
 - **Nigeria reliability.** SMS to Nigerian numbers is unreliable (DND filtering silently swallows OTP SMS). Email has no DND problem; to NG it is MORE reliable than SMS, not less.
-- **Universality with a known trade-off.** Every smartphone member has an email account (their app store requires one), but some rarely check it and OTP mail can land in spam. Mitigations: SPF + DKIM on the sending domain, the code repeated in the subject line, a check-spam hint on `AUTH-2`, and support copy after repeated failures.
+- **Universality with a known trade-off.** Every smartphone member has an email account (their app store requires one), but some rarely check it and OTP mail can land in spam. Mitigations: SPF + DKIM on the sending domain, the code repeated in the subject line, a check-spam hint on `AUTH-2`, and support copy after repeated failures. **The hint is IN the sent-to line, not a line that arrives later (2026-09-19).** It used to draw after ~20s and to hide itself whenever an error was showing, and both were wrong: a member reads the sent-to line, leaves for their mail app within seconds and finds nothing, so the advice arrived when they were not looking at the screen, and a mistyped code on their return took it away again. Members reported finding the mail in spam having never been told to look. **The copy is the mitigation, not the fix:** DMARC on `agbcglobal.com` is still `p=none` (checked live 2026-09-19) and enforcement remains the open launch item in `docs/runbooks/credentials.md`.
 - No password reset flows, no credential leaks.
 - Supported natively by Supabase Auth: email OTP with `{{ .Token }}` in the template, so the email carries the code itself, never a magic link.
 - Removes two multi-week external fuses (Meta business verification, NCC registration) from the launch critical path. **Update 2026-07-29:** Meta left the project entirely when WhatsApp broadcasts were dropped (ADR [0014](../decisions/0014-push-only-broadcasts.md)), so there is no remaining Meta dependency at any phase.
@@ -30,7 +30,7 @@ The app is **fully browsable without an account.** An account is only required t
 ## The OTP flow (screens: `AUTH-1` … `AUTH-4`)
 
 1. **`AUTH-1` Sign-in prompt**: reached from any gated action or Settings. Explains why ("Join the family to post, react, RSVP, and track your rhythm"). Field: email address (email keyboard, OS autofill enabled). Buttons: **Send code**, **Not now** (returns to prior screen as guest).
-2. **`AUTH-2` Enter code**: 6-digit typed input (`autocomplete="one-time-code"` so OS code suggestions work where the platform offers them), resend timer (30s), sent-to indicator with the address partially masked ("Sent to a•••@gmail.com"), a **check your spam folder** hint appearing after ~20s, **Change email** link. Errors: invalid code, expired code, too many attempts (rate-limited).
+2. **`AUTH-2` Enter code**: 6-digit typed input (`autocomplete="one-time-code"` so OS code suggestions work where the platform offers them), resend timer (30s), sent-to indicator with the address partially masked ("Sent to a•••@gmail.com"), the **check your spam folder** advice carried by the sent-to line itself, **Change email** link. Errors: invalid code, expired code, too many attempts (rate-limited).
 3. **`AUTH-3` Complete profile** (first sign-in only): display name, pick **home branch** (pre-filled from onboarding choice), confirm **language**, optional avatar, and a 16+ age confirmation (see `20-PRIVACY-COMPLIANCE.md`). Button: **Enter**.
 4. **`AUTH-4` Success** → returns the user to **the exact action they were attempting** (see "gate return" below), or Home if they came from Settings.
 
@@ -97,7 +97,7 @@ Any ❌-gate action triggers a lightweight **gate sheet** (bottom sheet, not a f
 
 ## Edge cases (must handle)
 
-- **No code received** → resend after timer; the `AUTH-2` spam-folder hint; fall back to "try a different email"; support email surfaced after 2 failures.
+- **No code received** → resend after timer; the `AUTH-2` spam-folder advice, which is on screen from the first frame; fall back to "try a different email"; support email surfaced after 2 failures.
 - **Total OTP outage (email provider down):** `AUTH-2` shows "Codes aren't being delivered right now: please try again in a little while." Existing sessions are unaffected (silent refresh does not involve OTP); guests browse as always. Detection: the ministry-wide OTP alarm in `21` §6.
 - **Email changed / lost** → re-auth with the new address creates/needs re-link; v1: new email = new profile (document limitation), admin can merge on request.
 - **Airplane/offline during OTP** → clear error, retry.

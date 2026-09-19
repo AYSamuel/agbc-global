@@ -3920,7 +3920,21 @@
       </div>
     </div>
 
-    <!-- AUTH-2 code -->
+    <!-- AUTH-2 code. THE SPAM ADVICE IS IN THE LEAD, from the first frame
+         (2026-09-19, Ayo), and the separate note that used to sit under the
+         resend row is GONE rather than moved: two lines saying the same thing
+         is worse than one. It drew only after ~20s and only when no error was
+         showing, which is both the wrong moment and the wrong condition. A
+         member reads "Sent to", leaves for their mail app within seconds and
+         finds nothing there; by the time the advice appeared they were not
+         looking at this screen, and if they came back and mistyped the code it
+         hid itself again. Reported by members who found the mail in spam and
+         had never been told to look. ADR 0011 named this as the known cost of
+         email OTP and made the hint its mitigation, so the hint has to be
+         where it can be read. `03` lines 14, 33 and 100 say the same now.
+         THE REAL FIX IS NOT COPY: DMARC on agbcglobal.com is still p=none
+         (checked live 2026-09-19), which credentials.md has carried as an open
+         launch item. This change makes the failure survivable, not rarer. -->
     <div class="device">
       <p class="name"><b>AUTH-2</b> · enter code (email)</p>
       <div class="phone">
@@ -3929,10 +3943,9 @@
           <button class="backbtn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
           <div class="authicon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></div>
           <h1>Enter your code</h1>
-          <p class="lead">Sent to <b>a&bull;&bull;&bull;@gmail.com</b>.</p>
+          <p class="lead">Sent to <b>a&bull;&bull;&bull;@gmail.com</b>. Not in your inbox? Check your spam folder.</p>
           <div class="otpwrap"><div class="otp">4</div><div class="otp">1</div><div class="otp">9</div><div class="otp f"></div><div class="otp"></div><div class="otp"></div></div>
           <div class="rowlink"><span class="t">Resend code in 0:24</span><span class="authlink">Change email</span></div>
-          <div class="authnote" style="text-align:left;margin-top:10px">Not seeing it? Check your spam folder.</div>
           <div class="spacer"></div>
         </div>
       </div>
