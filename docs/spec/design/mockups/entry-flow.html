@@ -6378,7 +6378,17 @@
       </div>
     </div>
 
-    <!-- SETTINGS tablet landscape (two-pane) -->
+    <!-- SETTINGS tablet landscape (two-pane). THE WHATSAPP SECTION IS GONE
+         (2026-09-19). This pane carried a "WhatsApp updates" switch that ADR
+         0014 dropped from the PRODUCT on 2026-07-29, not deferred: there are no
+         phone numbers to collect any more, and `20260729140000` dropped
+         `notification_prefs.whatsapp_opt_in` and `profiles.phone` while they
+         still held no data. Every other surface had already been swept. The
+         phone NOTIF-PREFS frame lost it, `16` says so in prose, and no spec
+         mentions it; only this pane kept drawing a control that cannot exist,
+         because a tablet variant does not feel like a second copy of a screen
+         while you are editing the first. The pane's toggle list is now exactly
+         the phone frame's five, and it should stay that way. -->
     <div class="device">
       <p class="name"><b>SETTINGS</b> · tablet landscape · menu + pane</p>
       <div class="tablet land">
@@ -6415,8 +6425,6 @@
                   <div class="togrow"><div class="tg"><div class="tl">Prayer activity</div><div class="td">When someone prays with you, and reminders to pray</div></div><div class="switch"><i></i></div></div>
                   <div class="togrow"><div class="tg"><div class="tl">Testimony (Glory) activity</div><div class="td">When people celebrate your testimony</div></div><div class="switch"><i></i></div></div>
                 </div>
-                <div class="mlabel">WhatsApp</div>
-                <div class="toglist"><div class="togrow"><div class="tg"><div class="tl">WhatsApp updates</div><div class="td">Opt-in, and we keep it rare.</div></div><div class="switch off"><i></i></div></div></div>
                 <p class="alwayson" style="padding-bottom:18px">Confirmations for things you do (registrations, purchases, post approvals) are always sent.</p>
               </div>
             </div>
