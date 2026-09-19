@@ -275,7 +275,7 @@ describe('WATCH tab four states (docs/spec/04)', () => {
     expect(screen.getByText('Messages are on their way')).toBeOnTheScreen();
   });
 
-  test('content: newest sermon leads as hero; rail excludes it; tapping navigates', async () => {
+  test('content: the newest message leads as hero AND opens the list; tapping navigates', async () => {
     mockSermons.mockReturnValue({
       data: [
         sermon({ id: 'newest', title: 'Newest Message' }),
@@ -285,6 +285,8 @@ describe('WATCH tab four states (docs/spec/04)', () => {
       refetch: jest.fn(),
     });
     await renderScreen(<Watch />);
+    // The hero's accessible name is the bare title; a row's carries the meta
+    // line too, so this exact name is the hero and only the hero.
     await fireEvent.press(
       screen.getByRole('button', { name: 'Newest Message' }),
     );
@@ -292,9 +294,39 @@ describe('WATCH tab four states (docs/spec/04)', () => {
       pathname: '/sermon/[id]',
       params: { id: 'newest' },
     });
+    // The list no longer skips the message the hero is showing (Ayo,
+    // 2026-09-19): the picture and the first row are the same message, which
+    // is what the frame has always drawn.
+    expect(screen.getAllByText('Newest Message')).toHaveLength(2);
+    expect(
+      screen.getByRole('button', {
+        name: 'Newest Message · Rev Olayinka Ademiluka · 38 min',
+      }),
+    ).toBeOnTheScreen();
     expect(
       screen.getByRole('button', { name: /Older Message/ }),
     ).toBeOnTheScreen();
+  });
+
+  test('Recent messages is the newest three of the half, the hero among them', async () => {
+    mockSermons.mockReturnValue({
+      data: [
+        sermon({ id: 'v1', title: 'Video One' }),
+        sermon({ id: 'v2', title: 'Video Two' }),
+        sermon({ id: 'v3', title: 'Video Three' }),
+        sermon({ id: 'v4', title: 'Video Four' }),
+      ],
+      isError: false,
+      refetch: jest.fn(),
+    });
+    await renderScreen(<Watch />);
+    // Hero + first row.
+    expect(screen.getAllByText('Video One')).toHaveLength(2);
+    expect(
+      screen.getByRole('button', { name: /Video Three/ }),
+    ).toBeOnTheScreen();
+    // The fourth sits behind See all, as the third used to.
+    expect(screen.queryByRole('button', { name: /Video Four/ })).toBeNull();
   });
 
   test('nothing on Watch ever announces a live stream (ADR 0021)', async () => {
@@ -311,7 +343,11 @@ describe('WATCH tab four states (docs/spec/04)', () => {
     });
     await renderScreen(<Watch />);
     expect(screen.queryByText('LIVE')).not.toBeOnTheScreen();
-    expect(screen.getByText('Newest Message')).toBeOnTheScreen();
+    // By role and exact name: the bare title is the hero's label, and the
+    // newest message is also a row now, so the plain text matches twice.
+    expect(
+      screen.getByRole('button', { name: 'Newest Message' }),
+    ).toBeOnTheScreen();
     // And the replay is still listed: it is a recorded message, not a live one.
     expect(
       screen.getByRole('button', { name: /Sunday Service/ }),
@@ -410,10 +446,12 @@ describe('WATCH Video / Audio segment (W4.9 slice 4)', () => {
     expect(
       screen.getByTestId('hero-glyph-listen', { includeHiddenElements: true }),
     ).toBeOnTheScreen();
+    // The audio hero opens the list too, so both audio-only messages are rows.
+    expect(screen.getAllByText('Multiple streams of income')).toHaveLength(2);
     expect(
       screen.getByRole('button', { name: /The Table He Sets/ }),
     ).toBeOnTheScreen();
-    expect(screen.getByTestId('row-glyph-listen')).toBeOnTheScreen();
+    expect(screen.getAllByTestId('row-glyph-listen')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /Video One/ })).toBeNull();
     expect(screen.queryByText('Recent live streams')).toBeNull();
     expect(screen.queryByText('Videos play via YouTube')).toBeNull();

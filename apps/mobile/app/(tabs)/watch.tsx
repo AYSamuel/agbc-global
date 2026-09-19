@@ -113,7 +113,12 @@ export default function Watch() {
   // running broadcast when one was detected; the app carries no live state at
   // all any more.
   const hero = shelf.length > 0 ? shelf[0] : null;
-  const rail = shelf.filter((s) => s.id !== hero?.id).slice(0, SECTION_LIMIT);
+  // The hero is ALSO the first row of Recent messages (Ayo, 2026-09-19): the
+  // list skipped whatever the picture was showing, so the newest message was
+  // missing from the one place a member scans for a message, and the list read
+  // as "the recent ones bar one". The frame `Watch · guest · Video segment` has
+  // drawn the repeat since it was composed; only the code disagreed.
+  const rail = shelf.slice(0, SECTION_LIMIT);
   const liveRail =
     segment === 'audio' ? [] : liveReplays.slice(0, SECTION_LIMIT);
   // The loaded feed has nothing for this half. For Video that is the tab's own
